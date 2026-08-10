@@ -40,11 +40,15 @@ npm run imagens   # regera as imagens de exemplo em public/exemplo
   cache sem o selo de "aberto agora" envelhecer.
 - `lib/tipos.ts` espelha o schema que vai para o Supabase.
 - `assets/` guarda a fonte usada só na geração da imagem de link, no servidor.
+- `supabase/` tem o schema, os testes de RLS e o Storage. Nada foi aplicado num
+  projeto ainda, mas o schema roda e passa nos testes num Postgres local.
+  Ver `supabase/LEIA-ME.md`.
 
 ## Etapas
 
 1. Página pública de exemplo no ar. **Feito.**
-2. Supabase conectado, schema criado, RLS testada.
+2. Supabase conectado, schema criado, RLS testada. **SQL escrito e testado
+   local, falta aplicar no projeto.**
 3. Página pública lendo do banco por slug.
 4. Login por link mágico e painel editando os campos básicos.
 5. Upload de imagens.
