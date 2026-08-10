@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/*
+ * Os tres temas do produto vao viver aqui, cada um trocando as mesmas
+ * variaveis. Hoje so existe "areia". @theme inline faz as classes do Tailwind
+ * apontarem para a variavel, entao trocar data-tema retematiza a pagina toda
+ * sem recompilar nada.
+ */
+@theme inline {
+  --color-fundo: var(--c-fundo);
+  --color-superficie: var(--c-superficie);
+  --color-texto: var(--c-texto);
+  --color-suave: var(--c-suave);
+  --color-borda: var(--c-borda);
+  --color-destaque: var(--c-destaque);
+  --color-zap: var(--c-zap);
+  --color-zap-forte: var(--c-zap-forte);
+  --color-aberto-fundo: var(--c-aberto-fundo);
+  --color-aberto-texto: var(--c-aberto-texto);
+  --color-fechado-fundo: var(--c-fechado-fundo);
+  --color-fechado-texto: var(--c-fechado-texto);
+
+  --font-corpo: var(--f-corpo);
+  --font-titulo: var(--f-titulo);
+}
+
+:root,
+[data-tema="areia"] {
+  --c-fundo: #f4f0e8;
+  --c-superficie: #ffffff;
+  --c-texto: #1c1917;
+  --c-suave: #57534e;
+  --c-borda: #e5ded1;
+  --c-destaque: #a4452a;
+  --c-zap: #0e7a55;
+  --c-zap-forte: #0a5f42;
+  --c-aberto-fundo: #e4f2ea;
+  --c-aberto-texto: #0a5f42;
+  --c-fechado-fundo: #efeae1;
+  --c-fechado-texto: #57534e;
+}
+
+* {
+  min-width: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--c-fundo);
+  color: var(--c-texto);
+  font-family: var(--f-corpo), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Foco visivel em tudo que recebe teclado, sem excecao. */
+:focus-visible {
+  outline: 3px solid var(--c-destaque);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Faixa de fotos do item: rolagem horizontal com encaixe, sem JavaScript. */
+.faixa {
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+.faixa::-webkit-scrollbar {
+  display: none;
+}
+.faixa > * {
+  scroll-snap-align: center;
+}
+
+/* Selo de horario. O estado vem do servidor e o script inline so atualiza. */
+#selo[data-aberto="1"] {
+  background: var(--c-aberto-fundo);
+  color: var(--c-aberto-texto);
+}
+#selo[data-aberto="0"] {
+  background: var(--c-fechado-fundo);
+  color: var(--c-fechado-texto);
+}
+#selo .bolinha {
+  background: currentColor;
+}
+#selo[data-aberto="1"] .bolinha {
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+}
+
+/* Dia de hoje na tabela de horarios, marcado pelo script. */
+[data-hoje] {
+  font-weight: 600;
+  color: var(--c-texto);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
