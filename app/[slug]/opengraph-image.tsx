@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { negocioExemplo } from "@/lib/exemplo";
+import { porSlug } from "@/lib/dados";
 
 /**
  * A previa do link e a primeira impressao do negocio, porque a distribuicao
@@ -11,7 +11,7 @@ import { negocioExemplo } from "@/lib/exemplo";
  */
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = `${negocioExemplo.nome}, página do negócio`;
+export const alt = "Página do negócio";
 
 async function fonteTitulo() {
   try {
@@ -41,8 +41,15 @@ async function logoEmBase64(caminho: string | undefined) {
   }
 }
 
-export default async function Imagem() {
-  const n = negocioExemplo;
+export default async function Imagem({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const n = await porSlug(slug);
+  if (!n) return new Response("não encontrado", { status: 404 });
+
   const [logo, fonts] = await Promise.all([
     logoEmBase64(n.logo?.url),
     fonteTitulo(),

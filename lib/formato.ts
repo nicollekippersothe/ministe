@@ -7,6 +7,21 @@ export function preco(centavos: number): string {
   return moeda.format(centavos / 100);
 }
 
+/**
+ * Arruma o que a pessoa digitou no campo de WhatsApp.
+ *
+ * Quase ninguém digita o 55 na frente, e sem ele o link do WhatsApp abre com
+ * o código de outro país e não acha o número. Então: tira tudo que não é
+ * dígito, tira o zero da operadora, e se sobrou um número brasileiro de 10 ou
+ * 11 dígitos, coloca o 55.
+ */
+export function normalizarWhatsapp(entrada: string): string | null {
+  const so = entrada.replace(/\D/g, "").replace(/^0+/, "");
+  if (so === "") return null;
+  if (so.length === 10 || so.length === 11) return `55${so}`;
+  return so;
+}
+
 /** 5511999999999 vira (11) 99999-9999 */
 export function telefoneVisivel(digitos: string): string {
   const d = digitos.replace(/\D/g, "");

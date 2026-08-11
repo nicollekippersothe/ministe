@@ -26,15 +26,19 @@ vírgula, dois pontos, parênteses ou ponto final.
 ```
 npm run dev       # desenvolvimento
 npm run build     # build de produção
-npm test          # testes da lógica de horário
+npm test          # testes de horário e de formatação
 npm run imagens   # regera as imagens de exemplo em public/exemplo
 ```
 
 ## Onde está o quê
 
-- `app/[slug]` ainda não existe. Hoje o exemplo vive em `app/demo`.
-- `componentes/PaginaPublica.tsx` é a página pública inteira. Quando o banco
-  entrar, a rota nova chama esse mesmo componente.
+- `app/[slug]` é a página pública, e só entrega negócio publicado.
+- `app/painel` é o painel do dono. **Ainda sem login**, então não pode ir para
+  a internet antes da etapa 4.
+- `componentes/PaginaPublica.tsx` é a página pública inteira, usada também pela
+  prévia do painel.
+- `lib/dados.ts` é a camada de dados. Hoje grava num arquivo local. Quando o
+  Supabase entrar, só este arquivo muda.
 - `lib/horarios.ts` concentra toda conta de fuso. O servidor monta uma linha do
   tempo em epoch e o navegador só compara número, então a página pode ficar em
   cache sem o selo de "aberto agora" envelhecer.
@@ -49,8 +53,10 @@ npm run imagens   # regera as imagens de exemplo em public/exemplo
 1. Página pública de exemplo no ar. **Feito.**
 2. Supabase conectado, schema criado, RLS testada. **SQL escrito e testado
    local, falta aplicar no projeto.**
-3. Página pública lendo do banco por slug.
-4. Login por link mágico e painel editando os campos básicos.
+3. Página pública lendo do banco por slug. **Rota pronta, lendo do arquivo
+   local em vez do banco.**
+4. Login por link mágico e painel editando os campos básicos. **Painel feito,
+   falta o login.**
 5. Upload de imagens.
 6. Catálogo e links.
 7. Contagem de visitas e cliques.
