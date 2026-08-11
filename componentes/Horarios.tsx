@@ -1,4 +1,5 @@
 import { IconeRelogio } from "./Icones";
+import { SeloHorario } from "./SeloHorario";
 import {
   dadosSelo,
   diaCivilDe,
@@ -37,17 +38,7 @@ export function Horarios({ negocio }: { negocio: Negocio }) {
 
   return (
     <div className="px-5 py-6">
-      <p
-        id="selo"
-        data-aberto={estado.aberto ? "1" : "0"}
-        className="inline-flex items-center gap-2 rounded-full py-1.5 pr-4 pl-3 text-sm"
-      >
-        <span className="bolinha h-2 w-2 shrink-0 rounded-full" aria-hidden />
-        <strong data-t className="font-semibold">
-          {estado.titulo}
-        </strong>
-        <span data-u>{estado.detalhe}</span>
-      </p>
+      <SeloHorario estado={estado} id="selo" />
 
       <details className="group mt-3">
         <summary className="inline-flex cursor-pointer list-none items-center gap-2 text-sm text-suave hover:text-texto">

@@ -1,8 +1,16 @@
 import Image from "next/image";
 import type { Negocio } from "@/lib/tipos";
 
-export function Capa({ negocio }: { negocio: Negocio }) {
+export function Capa({
+  negocio,
+  nivel = 1,
+}: {
+  negocio: Negocio;
+  /** 2 na prévia da tela inicial, para não existirem dois h1 na mesma página. */
+  nivel?: 1 | 2;
+}) {
   const temLogo = Boolean(negocio.logo);
+  const Titulo = nivel === 1 ? "h1" : "h2";
 
   return (
     <header className="relative">
@@ -44,9 +52,9 @@ export function Capa({ negocio }: { negocio: Negocio }) {
           </div>
         ) : null}
 
-        <h1 className="titulo mt-3 text-[1.9rem] leading-[1.15] text-balance text-texto">
+        <Titulo className="titulo mt-3 text-[1.9rem] leading-[1.15] text-balance text-texto">
           {negocio.nome}
-        </h1>
+        </Titulo>
 
         {negocio.frase ? (
           <p className="mt-2 max-w-[32ch] text-[0.95rem] leading-relaxed text-balance text-suave">

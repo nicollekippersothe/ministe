@@ -35,7 +35,7 @@ Lighthouse mobile, build de produção, com o cache quente:
 
 | categoria       | página do negócio | tela inicial |
 | --------------- | ----------------- | ------------ |
-| Performance     | 92 a 99           | 99           |
+| Performance     | 92 a 99           | 95 a 98      |
 | Acessibilidade  | 100               | 100          |
 | Boas práticas   | 100               | 100          |
 | SEO             | 100               | 100          |
@@ -47,6 +47,13 @@ acessibilidade.
 A página pública não tem nenhum componente de cliente. O único JavaScript
 próprio são 1,2 KB inline que recalculam o selo de "aberto agora", porque a
 página fica em cache e o HTML envelhece.
+
+## Tela inicial
+
+Mostra o produto, não fala sobre ele. O telefone na abertura e as três peças
+da seção seguinte são os componentes de verdade, renderizados no servidor com
+os dados do negócio de exemplo. Se a página do cliente mudar, a tela inicial
+muda junto.
 
 ## Letras
 

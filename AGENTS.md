@@ -9,6 +9,24 @@ já abre a conversa escrita.
 Nunca usar travessão, nem no produto nem em resposta nem em commit. Usar
 vírgula, dois pontos, parênteses ou ponto final.
 
+## Regras de layout
+
+Seis armadilhas que deixam qualquer interface com cara de gerada por máquina.
+Conferir antes de dar por pronta qualquer tela nova:
+
+1. Nada de degradê roxo e azul de fundo. Fundo neutro e quente.
+2. Nada de emoji fazendo papel de ícone. Ícone é desenho vetorial próprio.
+3. Nada de cartão com tarja colorida na borda esquerda.
+4. Nada de seção de abertura genérica, com título grande, subtítulo e dois
+   botões, e o produto só aparecendo lá embaixo. Mostrar o produto junto.
+5. Nada de grade simétrica de três colunas com ícone dentro de bolinha.
+   Layout assimétrico, do tamanho que cada assunto pede.
+6. Nada de ilustração vetorial abstrata de gente trabalhando.
+
+Na tela inicial, as peças mostradas são os componentes de verdade
+(`componentes/inicial/`), com os dados de verdade. Assim a propaganda não
+consegue divergir do produto.
+
 ## Regras do produto
 
 1. Celular primeiro, de verdade. O painel também vai ser usado no celular.

@@ -122,7 +122,10 @@ async function fontesBaixadas(rota) {
 
 passo("a página pública baixa só duas fontes", (await fontesBaixadas("/demo")) === 2);
 passo("o painel não baixa fonte nenhuma", (await fontesBaixadas("/painel")) === 0);
-passo("a tela inicial não baixa fonte nenhuma", (await fontesBaixadas("/")) === 0);
+// A tela inicial mostra a página de verdade dentro de um telefone, com a
+// letra de verdade. São as mesmas duas fontes da página do negócio, e não
+// mais que isso.
+passo("a tela inicial baixa só as duas da prévia", (await fontesBaixadas("/")) === 2);
 
 await p.goto(`${BASE}/painel/aparencia`, { waitUntil: "networkidle" });
 await p.check("#fonte-marcante");

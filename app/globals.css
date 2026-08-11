@@ -107,18 +107,18 @@ body {
 }
 
 /* Selo de horario. O estado vem do servidor e o script inline so atualiza. */
-#selo[data-aberto="1"] {
+.selo[data-aberto="1"] {
   background: var(--c-aberto-fundo);
   color: var(--c-aberto-texto);
 }
-#selo[data-aberto="0"] {
+.selo[data-aberto="0"] {
   background: var(--c-fechado-fundo);
   color: var(--c-fechado-texto);
 }
-#selo .bolinha {
+.selo .bolinha {
   background: currentColor;
 }
-#selo[data-aberto="1"] .bolinha {
+.selo[data-aberto="1"] .bolinha {
   box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
 }
 
