@@ -7,6 +7,7 @@ import { Horarios } from "./Horarios";
 import { LinksExtras } from "./LinksExtras";
 import { Rodape } from "./Rodape";
 import { Divisor, Secao } from "./Secao";
+import { combinacao } from "@/lib/fontes";
 import { localBusiness } from "@/lib/jsonld";
 import type { Negocio } from "@/lib/tipos";
 
@@ -24,9 +25,14 @@ export function PaginaPublica({
   urlBase: string;
 }) {
   const temItens = negocio.itens.some((i) => i.ativo);
+  const fonte = combinacao(negocio.fonte);
 
   return (
-    <div data-tema={negocio.tema} className="min-h-dvh bg-fundo">
+    <div
+      data-tema={negocio.tema}
+      data-fonte={fonte.chave}
+      className={`marca min-h-dvh bg-fundo ${fonte.classe}`}
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -22,6 +22,7 @@
 
   --font-corpo: var(--f-corpo);
   --font-titulo: var(--f-titulo);
+  --font-sistema: var(--f-sistema);
 }
 
 :root,
@@ -48,12 +49,41 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* A fonte do aparelho. No iPhone é a San Francisco. */
+:root {
+  --f-sistema: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
 body {
   background: var(--c-fundo);
   color: var(--c-texto);
-  font-family: var(--f-corpo), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--f-sistema);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* A página pública do negócio, e só ela, usa a fonte da marca. */
+.marca {
+  font-family: var(--f-corpo), var(--f-sistema);
+}
+
+.titulo {
+  font-family: var(--f-titulo), var(--f-sistema);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Cada combinação pede um peso e um espaçamento diferente para ficar certa. */
+[data-fonte="editorial"] .titulo,
+[data-fonte="marcante"] .titulo {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+[data-fonte="artesanal"] .titulo,
+[data-fonte="moderno"] .titulo {
+  letter-spacing: -0.015em;
 }
 
 /* Foco visivel em tudo que recebe teclado, sem excecao. */

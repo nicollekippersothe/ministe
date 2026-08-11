@@ -1,22 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
 import { urlBase } from "@/lib/site";
 import "./globals.css";
 
-const corpo = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--f-corpo",
-});
-
-// Uma fonte de titulo, um peso so. Cada peso extra e um arquivo a mais
-// competindo com a foto de capa na primeira tela, no 4G.
-const titulo = Fraunces({
-  subsets: ["latin"],
-  display: "swap",
-  weight: "700",
-  variable: "--f-titulo",
-});
+/**
+ * A fonte da marca não vem daqui.
+ *
+ * O painel, a tela inicial e o cadastro usam a fonte do próprio aparelho, que
+ * no iPhone é a San Francisco e no Android é a Roboto. Custa zero byte, carrega
+ * instantâneo e parece nativo.
+ *
+ * Só a página pública do negócio baixa fonte, e só a combinação que o dono
+ * escolheu. Ver lib/fontes.ts.
+ */
 
 export const metadata: Metadata = {
   metadataBase: new URL(urlBase),
@@ -29,13 +24,14 @@ export const viewport: Viewport = {
   themeColor: "#f4f0e8",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${corpo.variable} ${titulo.variable}`}>
+    <html lang="pt-BR">
       <body>{children}</body>
     </html>
   );

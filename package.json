@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "test": "node --test \"lib/**/*.test.ts\"",
-    "imagens": "node scripts/gerar-imagens.mjs"
+    "imagens": "node scripts/gerar-imagens.mjs",
+    "fluxo": "node testes/fluxo.mjs"
   },
   "dependencies": {
     "next": "16.3.0",
@@ -19,6 +20,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "playwright": "^1.62.1",
     "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"

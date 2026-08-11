@@ -13,7 +13,7 @@ export default function NaoEncontrado() {
       className="flex min-h-dvh items-center justify-center bg-fundo px-6 py-16"
     >
       <main className="w-full max-w-md text-center">
-        <h1 className="font-titulo text-2xl leading-tight font-bold tracking-tight text-balance text-texto">
+        <h1 className="text-[2rem] leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto">
           Esse endereço ainda está livre
         </h1>
         <p className="mt-3 leading-relaxed text-balance text-suave">
@@ -22,11 +22,16 @@ export default function NaoEncontrado() {
         </p>
 
         <Link
-          href="/"
-          className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-texto px-7 font-semibold text-superficie"
+          href="/criar"
+          className="mt-7 inline-flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
         >
-          Conhecer o {NOME_PRODUTO}
+          Pegar esse endereço
         </Link>
+        <p className="mt-4 text-sm text-suave">
+          <Link href="/" className="underline underline-offset-2">
+            Conhecer o {NOME_PRODUTO}
+          </Link>
+        </p>
       </main>
     </div>
   );

@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { alternarPublicacao } from "./acoes";
-import { IconePin, IconeRelogio, IconeSeta } from "@/componentes/Icones";
+import {
+  IconeLetras,
+  IconeLoja,
+  IconeRelogio,
+  IconeSeta,
+} from "@/componentes/Icones";
 import { doDono } from "@/lib/dados";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +21,11 @@ const SECOES = [
     titulo: "Horários",
     resumo: "Quando abre e quando fecha, dia por dia",
   },
+  {
+    href: "/painel/aparencia",
+    titulo: "Letras da página",
+    resumo: "Cinco combinações, com o nome do seu negócio em cada uma",
+  },
 ];
 
 export default async function Painel() {
@@ -24,7 +34,7 @@ export default async function Painel() {
 
   return (
     <main className="mt-6">
-      <h1 className="font-titulo text-2xl font-bold tracking-tight text-texto">
+      <h1 className="text-2xl font-bold tracking-tight text-texto">
         Sua página
       </h1>
 
@@ -74,7 +84,7 @@ export default async function Painel() {
         ) : null}
       </div>
 
-      <h2 className="mt-8 mb-3 font-titulo text-lg font-semibold tracking-tight text-texto">
+      <h2 className="mt-8 mb-3 text-lg font-semibold tracking-tight text-texto">
         Editar
       </h2>
 
@@ -85,11 +95,15 @@ export default async function Painel() {
               href={s.href}
               className="flex items-center gap-3 rounded-xl border border-borda bg-superficie px-4 py-3.5"
             >
-              {s.href.endsWith("horarios") ? (
-                <IconeRelogio className="h-5 w-5 shrink-0 text-destaque" />
-              ) : (
-                <IconePin className="h-5 w-5 shrink-0 text-destaque" />
-              )}
+              <span className="shrink-0 text-destaque" aria-hidden>
+                {s.href.endsWith("horarios") ? (
+                  <IconeRelogio className="h-5 w-5" />
+                ) : s.href.endsWith("aparencia") ? (
+                  <IconeLetras className="h-5 w-5" />
+                ) : (
+                  <IconeLoja className="h-5 w-5" />
+                )}
+              </span>
               <span className="flex-1">
                 <span className="block font-medium text-texto">{s.titulo}</span>
                 <span className="block text-xs text-suave">{s.resumo}</span>

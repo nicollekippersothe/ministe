@@ -37,7 +37,7 @@ export default async function Informacoes({
         Voltar
       </Link>
 
-      <h1 className="mt-2 font-titulo text-2xl font-bold tracking-tight text-texto">
+      <h1 className="mt-2 text-2xl font-bold tracking-tight text-texto">
         Informações do negócio
       </h1>
 

@@ -16,6 +16,7 @@ function foto(arquivo: string, alt: string, lado = 1000): Foto {
 
 export const negocioExemplo: Negocio = {
   slug: "demo",
+  slugAnterior: null,
   nome: "Cantinho da Rô",
   frase: "Bolos, tortas e salgados feitos na hora, no coração da Vila Mariana.",
   logo: foto("logo.jpg", "Logo do Cantinho da Rô", 512),
@@ -26,6 +27,7 @@ export const negocioExemplo: Negocio = {
     altura: 900,
   },
   tema: "areia",
+  fonte: "editorial",
   plano: "gratuito",
   publicado: true,
 

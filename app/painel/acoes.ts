@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { doDono, salvar } from "@/lib/dados";
+import { combinacao } from "@/lib/fontes";
 import { normalizarWhatsapp } from "@/lib/formato";
 import type { Intervalo, Negocio } from "@/lib/tipos";
 
@@ -113,6 +114,13 @@ export async function copiarSegundaParaSemana(formData: FormData) {
   });
 
   redirect("/painel/horarios?copiado=1");
+}
+
+export async function salvarAparencia(formData: FormData) {
+  const negocio = await doDono();
+  const escolha = texto(formData, "fonte");
+  await guardar({ ...negocio, fonte: combinacao(escolha).chave });
+  redirect("/painel/aparencia?salvo=1");
 }
 
 export async function alternarPublicacao() {

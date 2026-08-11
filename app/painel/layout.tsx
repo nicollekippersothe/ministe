@@ -17,7 +17,7 @@ export default function LayoutPainel({
       <div className="mx-auto w-full max-w-[34rem] px-5 pt-5 pb-8">
         <Link
           href="/painel"
-          className="font-titulo text-sm font-semibold tracking-[0.16em] text-destaque uppercase"
+          className="text-sm font-semibold tracking-[0.16em] text-destaque uppercase"
         >
           Banca
         </Link>

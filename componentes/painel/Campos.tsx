@@ -166,7 +166,7 @@ export function Marcar({
 export function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <fieldset className="flex flex-col gap-4">
-      <legend className="mb-1 font-titulo text-lg font-semibold tracking-tight text-texto">
+      <legend className="mb-1 text-lg font-semibold tracking-tight text-texto">
         {titulo}
       </legend>
       {children}

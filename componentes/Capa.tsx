@@ -44,7 +44,7 @@ export function Capa({ negocio }: { negocio: Negocio }) {
           </div>
         ) : null}
 
-        <h1 className="mt-3 font-titulo text-[1.75rem] leading-tight font-bold tracking-tight text-balance text-texto">
+        <h1 className="titulo mt-3 text-[1.9rem] leading-[1.15] text-balance text-texto">
           {negocio.nome}
         </h1>
 

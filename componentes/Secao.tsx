@@ -22,7 +22,7 @@ export function Secao({
     <section aria-labelledby={`${id}-titulo`} className="px-5 py-7">
       <h2
         id={`${id}-titulo`}
-        className="mb-4 font-titulo text-xl font-semibold tracking-tight text-texto"
+        className="titulo mb-4 text-xl text-texto"
       >
         {titulo}
       </h2>

@@ -5,6 +5,8 @@
  * Enquanto o banco nao existe, os dados vem de lib/exemplo.ts.
  */
 
+import type { ChaveFonte } from "./fontes";
+
 export type Tema = "areia" | "noite" | "menta";
 
 export type Plano = "gratuito" | "pago";
@@ -48,11 +50,15 @@ export type LinkExtra = {
 
 export type Negocio = {
   slug: string;
+  /** Endereço antigo, para o link de antes continuar funcionando. */
+  slugAnterior: string | null;
   nome: string;
   frase: string | null;
   logo: Foto | null;
   capa: Foto | null;
   tema: Tema;
+  /** Combinação de fontes da página pública. Ver lib/fontes.ts. */
+  fonte: ChaveFonte;
   plano: Plano;
   publicado: boolean;
 

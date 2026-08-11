@@ -42,6 +42,43 @@ export async function doDono(): Promise<Negocio> {
   return todos[0] ?? negocioExemplo;
 }
 
+/** Um endereço só está livre se ninguém pegou. Formato é conferido em lib/slug.ts. */
+export async function enderecoLivre(slug: string): Promise<boolean> {
+  const todos = await ler();
+  return !todos.some((n) => n.slug === slug || n.slugAnterior === slug);
+}
+
+export async function criar(slug: string, nome: string): Promise<Negocio> {
+  const novo: Negocio = {
+    ...negocioExemplo,
+    slug,
+    nome,
+    slugAnterior: null,
+    frase: null,
+    logo: null,
+    capa: null,
+    publicado: false,
+    whatsapp: null,
+    mensagemPadrao: null,
+    mensagemItem: null,
+    telefone: null,
+    endereco: null,
+    cidade: null,
+    estado: null,
+    cep: null,
+    mapsUrl: null,
+    horarios: [],
+    itens: [],
+    galeria: [],
+    links: [],
+  };
+
+  const todos = await ler();
+  todos.push(novo);
+  await gravar(todos);
+  return novo;
+}
+
 export async function salvar(negocio: Negocio): Promise<void> {
   const todos = await ler();
   const i = todos.findIndex((n) => n.slug === negocio.slug);

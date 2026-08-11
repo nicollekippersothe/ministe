@@ -14,38 +14,48 @@ os dados ficam num arquivo local.
 
 | rota | o que é |
 | --- | --- |
-| `/` | home provisória |
+| `/` | tela inicial, que apresenta e leva para o cadastro |
+| `/criar` | escolher nome e endereço, com conferência enquanto digita |
+| `/entrar` | pedir o link de acesso por e-mail |
 | `/[slug]` | a página pública, só entrega negócio publicado |
 | `/painel` | estado da página, publicar e tirar do ar |
 | `/painel/negocio` | nome, frase, WhatsApp, mensagens e endereço |
 | `/painel/horarios` | horários, vários intervalos por dia |
+| `/painel/aparencia` | escolher a combinação de letras da página |
 | `/painel/previa` | a página como vai ficar, antes de publicar |
 
-> **O painel ainda não tem login.** Quem chegar em `/painel` edita. Isso vale
-> enquanto roda só na sua máquina. Não subir para a internet antes do link
-> mágico, que é a etapa 4.
+> **Ainda não tem login.** Quem chegar em `/painel` edita, e o e-mail do link
+> de acesso não é enviado (falta o Supabase Auth e um provedor de e-mail).
+> Isso vale enquanto roda só na sua máquina. Não subir para a internet antes
+> da etapa 4.
 
 ## Medidas da página pública
 
 Lighthouse mobile, build de produção, com o cache quente:
 
-| categoria       | nota   |
-| --------------- | ------ |
-| Performance     | 94 a 99 |
-| Acessibilidade  | 100    |
-| Boas práticas   | 100    |
-| SEO             | 100    |
+| categoria       | página do negócio | tela inicial |
+| --------------- | ----------------- | ------------ |
+| Performance     | 92 a 99           | 99           |
+| Acessibilidade  | 100               | 100          |
+| Boas práticas   | 100               | 100          |
+| SEO             | 100               | 100          |
 
-LCP 2,2 s a 2,7 s, TBT 60 ms a 180 ms, CLS 0. A variação é ruído da máquina
-que roda a medição, não do código.
+CLS 0 nas duas. A variação em performance é ruído da máquina que roda a
+medição, não do código. As telas de cadastro e o painel também dão 100 em
+acessibilidade.
 
-Transferido na primeira visita: 253 KB, sendo 142 KB de JavaScript (a base do
-React que o Next carrega mesmo sem componente de cliente), 67 KB de fontes,
-24 KB de imagens, 13 KB de HTML e 6 KB de CSS.
+A página pública não tem nenhum componente de cliente. O único JavaScript
+próprio são 1,2 KB inline que recalculam o selo de "aberto agora", porque a
+página fica em cache e o HTML envelhece.
 
-A página não tem nenhum componente de cliente. O único JavaScript próprio são
-1,2 KB inline (787 bytes de script e 406 bytes de dados) que recalculam o selo
-de "aberto agora", porque a página fica em cache e o HTML envelhece.
+## Letras
+
+A página do negócio tem cinco combinações de fonte, escolhidas em
+`/painel/aparencia`, e baixa só a escolhida: dois arquivos, nunca dez.
+
+O painel, a tela inicial e o cadastro não baixam fonte nenhuma. Eles usam a do
+próprio aparelho, que no iPhone é a San Francisco. Custa zero byte e parece
+nativo. `testes/fluxo.mjs` conta os arquivos por rota para isso não regredir.
 
 ## Rodando
 
@@ -58,6 +68,7 @@ Abrir http://localhost:3000/demo
 
 ```
 npm test          # 23 testes de horário e de formatação
+npm run fluxo     # 23 passos no navegador, com o servidor rodando
 npm run build     # build de produção
 npm run imagens   # regera as imagens de exemplo
 ```
