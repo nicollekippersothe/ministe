@@ -127,17 +127,55 @@ passo("o painel não baixa fonte nenhuma", (await fontesBaixadas("/painel")) ===
 // mais que isso.
 passo("a tela inicial baixa só as duas da prévia", (await fontesBaixadas("/")) === 2);
 
+// A escolha de letra é do plano pago. O negócio de exemplo é gratuito, então
+// as opções aparecem para ver, mas travadas.
 await p.goto(`${BASE}/painel/aparencia`, { waitUntil: "networkidle" });
-await p.check("#fonte-marcante");
-await p.click('button[type="submit"]');
-await p.waitForURL(/salvo=1/);
-await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 passo(
-  "trocar a letra no painel muda a página pública",
-  (await p.getAttribute("[data-fonte]", "data-fonte")) === "marcante",
+  "no plano gratuito a letra fica travada",
+  await p.isDisabled("#fonte-marcante"),
 );
 passo(
-  "mesmo depois de trocar, ainda são só duas fontes",
+  "e a tela explica por quê",
+  (await p.textContent("body")).includes("plano pago"),
+);
+
+await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
+passo(
+  "a página gratuita usa a letra padrão",
+  (await p.getAttribute("[data-fonte]", "data-fonte")) === "moderno",
+);
+passo(
+  "a página do plano pago usa a letra escolhida",
+  (await (await p.goto(`${BASE}/studio-raiz`)) &&
+    (await p.getAttribute("[data-fonte]", "data-fonte"))) === "editorial",
+);
+
+// ---------------------------------------------------------------------------
+// Botões do rodapé
+// ---------------------------------------------------------------------------
+
+passo(
+  "dá para trocar o botão principal por um link",
+  (await p.textContent("body")).includes("Agendar aula experimental"),
+);
+passo(
+  "e o WhatsApp continua como segundo botão",
+  (await p.$('a[data-evento="clique_whatsapp"]')) !== null &&
+    (await p.$('a[data-evento="clique_acao"]')) !== null,
+);
+
+await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
+passo(
+  "o iFood aparece ao lado do WhatsApp na doceria",
+  (await p.textContent("body")).includes("Pedir pelo iFood"),
+);
+passo(
+  "o rodapé feito com Banca some no plano pago",
+  (await p.textContent("body")).includes("feito com"),
+);
+
+passo(
+  "mesmo com tudo isso, ainda são só duas fontes",
   (await fontesBaixadas("/demo")) === 2,
 );
 

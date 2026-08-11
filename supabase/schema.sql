@@ -52,6 +52,9 @@ create table public.negocios (
   capa_url text,
 
   tema text not null default 'areia',
+  -- Combinacao de letras. Trocar e recurso do plano pago, conferido no gatilho
+  -- protege_cobranca mais abaixo.
+  fonte text not null default 'moderno',
   plano text not null default 'gratuito',
   -- Vencimento do plano pago. Enquanto a cobrança é manual, é este campo que
   -- se preenche na mão depois de receber o Pix.
@@ -75,6 +78,15 @@ create table public.negocios (
 
   fuso text not null default 'America/Sao_Paulo',
   mostrar_precos boolean not null default true,
+  -- Nem todo negocio tem cardapio: estudio tem aulas, psicologa tem
+  -- atendimentos, loja tem catalogo. Quem escolhe o nome e o dono.
+  titulo_catalogo text not null default 'Catálogo',
+
+  -- Ate dois botoes no rodape fixo. Nulo na principal significa: usar o
+  -- WhatsApp, se houver numero. Guardados como json porque sao um objeto
+  -- pequeno e fechado, que so a pagina le inteiro.
+  acao_principal jsonb,
+  acao_secundaria jsonb,
 
   -- Aceite dos termos, guardado para valer como registro.
   aceite_termos_em timestamptz,
@@ -91,6 +103,24 @@ create table public.negocios (
   constraint nome_preenchido check (length(btrim(nome)) between 1 and 80),
   constraint frase_tamanho check (frase is null or length(frase) <= 160),
   constraint tema_conhecido check (tema in ('areia', 'noite', 'menta')),
+  constraint fonte_conhecida check (
+    fonte in ('editorial', 'artesanal', 'moderno', 'marcante', 'direto')
+  ),
+  constraint titulo_catalogo_tamanho check (
+    length(btrim(titulo_catalogo)) between 1 and 30
+  ),
+  constraint acao_principal_formato check (
+    acao_principal is null or (
+      acao_principal ->> 'tipo' in ('whatsapp', 'link', 'telefone')
+      and length(coalesce(acao_principal ->> 'rotulo', '')) between 1 and 40
+    )
+  ),
+  constraint acao_secundaria_formato check (
+    acao_secundaria is null or (
+      acao_secundaria ->> 'tipo' in ('whatsapp', 'link', 'telefone')
+      and length(coalesce(acao_secundaria ->> 'rotulo', '')) between 1 and 40
+    )
+  ),
   constraint plano_conhecido check (plano in ('gratuito', 'pago')),
   constraint status_conhecido check (status in ('ativo', 'suspenso')),
   constraint whatsapp_formato check (whatsapp is null or whatsapp ~ '^[0-9]{10,15}$'),
@@ -228,7 +258,9 @@ create table public.eventos (
   tipo text not null,
   criado_em timestamptz not null default now(),
 
-  constraint tipo_conhecido check (tipo in ('visita', 'clique_whatsapp'))
+  constraint tipo_conhecido check (
+    tipo in ('visita', 'clique_whatsapp', 'clique_acao')
+  )
 );
 
 create index eventos_negocio_idx on public.eventos (negocio_id, criado_em desc);
@@ -370,7 +402,13 @@ begin
     new.plano := 'gratuito';
     new.plano_expira_em := null;
     new.status := 'ativo';
+    new.fonte := 'moderno';
   else
+    -- Escolher a letra e do plano pago. Vale a mesma logica dos campos de
+    -- cobranca: o banco devolve o valor de antes, em silencio.
+    if public.plano_de(old.id) <> 'pago' then
+      new.fonte := old.fonte;
+    end if;
     new.plano := old.plano;
     new.plano_expira_em := old.plano_expira_em;
     new.status := old.status;
@@ -542,7 +580,7 @@ as $$
 declare
   v_id uuid;
 begin
-  if p_tipo not in ('visita', 'clique_whatsapp') then
+  if p_tipo not in ('visita', 'clique_whatsapp', 'clique_acao') then
     raise exception 'tipo de evento inválido' using errcode = 'check_violation';
   end if;
 

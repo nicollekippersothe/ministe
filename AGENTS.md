@@ -36,7 +36,10 @@ consegue divergir do produto.
    LocalBusiness em toda página pública.
 4. Acessibilidade: contraste conferido, foco visível, alt em toda imagem,
    formulário com label de verdade. Meta: 100 no Lighthouse.
-5. Sem dado inventado. Campo vazio faz a seção sumir, nunca vira "em breve"
+5. Escolher a letra é recurso do plano pago. A letra padrão precisa ser boa o
+   suficiente para a página gratuita já parecer profissional, senão ninguém
+   compartilha e o produto perde a única aquisição que tem.
+6. Sem dado inventado. Campo vazio faz a seção sumir, nunca vira "em breve"
    nem exemplo.
 
 ## Como rodar
@@ -63,6 +66,8 @@ npm run imagens   # regera as imagens de exemplo em public/exemplo
   cache sem o selo de "aberto agora" envelhecer.
 - `lib/fontes.ts` tem as cinco combinações de letra. Nenhuma é pré-carregada,
   senão o Next baixa todas em toda rota. Só o CSS aplicado puxa o arquivo.
+- `lib/acoes.ts` resolve os botões do rodapé. O WhatsApp é o padrão, não a
+  única opção: dá para apontar o principal para iFood, agenda ou qualquer link.
 - `lib/slug.ts` tem as regras do endereço, espelhando a lista do banco.
 - `lib/tipos.ts` espelha o schema que vai para o Supabase.
 - A imagem de prévia do link não pode embutir arquivo de fonte enquanto rodar

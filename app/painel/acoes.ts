@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { doDono, salvar } from "@/lib/dados";
-import { combinacao } from "@/lib/fontes";
+import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
 import { normalizarWhatsapp } from "@/lib/formato";
-import type { Intervalo, Negocio } from "@/lib/tipos";
+import type { Acao, Intervalo, Negocio } from "@/lib/tipos";
 
 const LIMITE_INTERVALOS = 3;
 
@@ -119,9 +119,50 @@ export async function copiarSegundaParaSemana(formData: FormData) {
 
 export async function salvarAparencia(formData: FormData) {
   const negocio = await doDono();
+
+  // A escolha de letra é do plano pago. Quem está no gratuito fica com a
+  // padrão, e o servidor decide isso, não a tela.
+  if (!podeEscolherFonte(negocio.plano)) {
+    await guardar({ ...negocio, fonte: FONTE_PADRAO });
+    redirect("/painel/aparencia?salvo=1");
+  }
+
   const escolha = texto(formData, "fonte");
   await guardar({ ...negocio, fonte: combinacao(escolha).chave });
   redirect("/painel/aparencia?salvo=1");
+}
+
+/** Lê um dos dois botões do rodapé. "nenhum" apaga o botão. */
+function lerAcao(formData: FormData, prefixo: string): Acao | null {
+  const tipo = texto(formData, `${prefixo}-tipo`);
+  if (!tipo || tipo === "nenhum") return null;
+  if (tipo !== "whatsapp" && tipo !== "link" && tipo !== "telefone") return null;
+
+  const url = texto(formData, `${prefixo}-url`);
+  if (tipo === "link" && !url) return null;
+
+  const padroes: Record<string, string> = {
+    whatsapp: "Chamar no WhatsApp",
+    telefone: "Ligar",
+    link: "Abrir",
+  };
+
+  return {
+    tipo,
+    rotulo: texto(formData, `${prefixo}-rotulo`) ?? padroes[tipo],
+    url: tipo === "link" ? url : null,
+    icone: (texto(formData, `${prefixo}-icone`) ?? "link") as Acao["icone"],
+  };
+}
+
+export async function salvarAcoes(formData: FormData) {
+  const negocio = await doDono();
+  await guardar({
+    ...negocio,
+    acaoPrincipal: lerAcao(formData, "principal"),
+    acaoSecundaria: lerAcao(formData, "secundaria"),
+  });
+  redirect("/painel/acoes-botoes?salvo=1");
 }
 
 export async function alternarPublicacao() {

@@ -21,6 +21,7 @@ os dados ficam num arquivo local.
 | `/painel` | estado da página, publicar e tirar do ar |
 | `/painel/negocio` | nome, frase, WhatsApp, mensagens e endereço |
 | `/painel/horarios` | horários, vários intervalos por dia |
+| `/painel/acoes-botoes` | os botões do rodapé, que não são só WhatsApp |
 | `/painel/aparencia` | escolher a combinação de letras da página |
 | `/painel/previa` | a página como vai ficar, antes de publicar |
 

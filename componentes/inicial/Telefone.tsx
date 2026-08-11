@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { BotaoWhatsapp } from "@/componentes/BarraWhatsapp";
+import { BotaoAcao } from "@/componentes/BarraAcoes";
 import { Capa } from "@/componentes/Capa";
 import { IconePin } from "@/componentes/Icones";
 import { SeloHorario } from "@/componentes/SeloHorario";
+import { acoesDoRodape } from "@/lib/acoes";
 import { combinacao } from "@/lib/fontes";
 import { diaCivilDe, estadoAgora, montarJanela } from "@/lib/horarios";
 import type { Negocio } from "@/lib/tipos";
@@ -23,6 +24,7 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
     diaCivilDe(agora, negocio.fuso),
   );
   const fonte = combinacao(negocio.fonte);
+  const acoes = acoesDoRodape(negocio).slice(0, 1);
 
   return (
     <div
@@ -71,7 +73,9 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
         )}
 
         <div className="absolute inset-x-0 bottom-0 border-t border-borda bg-fundo/92 px-3 pt-2.5 pb-4 backdrop-blur-sm">
-          <BotaoWhatsapp negocio={negocio} interativo={false} />
+          {acoes.map((a) => (
+            <BotaoAcao key={a.rotulo} acao={a} principal interativo={false} />
+          ))}
         </div>
       </div>
     </div>

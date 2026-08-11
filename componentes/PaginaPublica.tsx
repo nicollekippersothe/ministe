@@ -1,4 +1,4 @@
-import { BarraWhatsapp } from "./BarraWhatsapp";
+import { BarraAcoes } from "./BarraAcoes";
 import { Capa } from "./Capa";
 import { Catalogo } from "./Catalogo";
 import { Endereco } from "./Endereco";
@@ -67,7 +67,7 @@ export function PaginaPublica({
         <Rodape negocio={negocio} />
       </main>
 
-      <BarraWhatsapp negocio={negocio} />
+      <BarraAcoes negocio={negocio} />
     </div>
   );
 }

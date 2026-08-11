@@ -115,7 +115,7 @@ const TELAS = [
     grupo: "O produto",
     largura: "celular",
     vitrine: "Estúdio de yoga",
-    nota: "Mesmo produto, outro tipo de negócio. A seção do catálogo se chama Aulas e planos, e não Cardápio: quem escolhe o nome é o dono.",
+    nota: "Exemplo no plano pago: botão principal apontando para a agenda e WhatsApp como segundo botão, letra escolhida, e sem o rodapé feito com Banca. A seção do catálogo se chama Aulas e planos.",
   },
   {
     id: "nutri",
@@ -181,13 +181,22 @@ const TELAS = [
     nota: "O botão Salvar fica preso no rodapé enquanto a pessoa rola. Num formulário longo, no celular, isso evita rolar até o fim para salvar.",
   },
   {
+    id: "acoes",
+    rota: "/painel/acoes-botoes",
+    nome: "Botões da página",
+    grupo: "Painel do dono",
+    largura: "celular",
+    semFixos: true,
+    nota: "O botão do rodapé deixou de ser só WhatsApp. Pode virar iFood, agenda, link de parceiro ou uma ligação, e ainda cabe um segundo botão embaixo.",
+  },
+  {
     id: "aparencia",
     rota: "/painel/aparencia",
     nome: "Letras da página",
     grupo: "Painel do dono",
     largura: "celular",
     semFixos: true,
-    nota: "Cada opção aparece escrita com a própria letra, usando o nome do negócio, não texto de amostra. Só a escolhida é baixada por quem visita.",
+    nota: "Escolher a letra é do plano pago, então no gratuito as opções aparecem travadas, com a padrão marcada. Só a escolhida é baixada por quem visita.",
   },
   {
     id: "previa",

@@ -32,6 +32,8 @@ function item(
 
 const base = {
   slugAnterior: null,
+  acaoPrincipal: null,
+  acaoSecundaria: null,
   tema: "areia" as const,
   plano: "gratuito" as const,
   publicado: true,
@@ -60,6 +62,12 @@ export const doceria: Negocio = {
     "https://www.google.com/maps/search/?api=1&query=Rua+das+Palmeiras+214+Vila+Mariana+Sao+Paulo",
   mostrarPrecos: true,
   tituloCatalogo: "Cardápio",
+  acaoSecundaria: {
+    tipo: "link" as const,
+    rotulo: "Pedir pelo iFood",
+    url: "https://www.ifood.com.br/",
+    icone: "ifood" as const,
+  },
   horarios: [
     { dia: 2, abre: "09:00", fecha: "18:00" },
     { dia: 3, abre: "09:00", fecha: "18:00" },
@@ -143,6 +151,20 @@ export const estudio: Negocio = {
   logo: foto("raiz-logo.jpg", "Logotipo do Studio Raiz", 512),
   capa: capa("raiz-capa.jpg", "Sala de prática do Studio Raiz"),
   fonte: "editorial",
+  // Exemplo no plano pago: escolhe a letra e não leva o rodapé.
+  plano: "pago" as const,
+  acaoPrincipal: {
+    tipo: "link" as const,
+    rotulo: "Agendar aula experimental",
+    url: "https://exemplo.com.br/agenda",
+    icone: "agenda" as const,
+  },
+  acaoSecundaria: {
+    tipo: "whatsapp" as const,
+    rotulo: "Tirar dúvida no WhatsApp",
+    url: null,
+    icone: "link" as const,
+  },
   whatsapp: "5548988887777",
   mensagemPadrao: "Olá! Gostaria de agendar uma aula experimental.",
   endereco: "Rua Bocaiúva, 1120, Centro",

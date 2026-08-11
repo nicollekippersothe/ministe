@@ -5,6 +5,7 @@ import {
   IconeLoja,
   IconeRelogio,
   IconeSeta,
+  IconeWhatsapp,
 } from "@/componentes/Icones";
 import { doDono } from "@/lib/dados";
 
@@ -20,6 +21,11 @@ const SECOES = [
     href: "/painel/horarios",
     titulo: "Horários",
     resumo: "Quando abre e quando fecha, dia por dia",
+  },
+  {
+    href: "/painel/acoes-botoes",
+    titulo: "Botões da página",
+    resumo: "WhatsApp, iFood, agenda ou o link que você quiser",
   },
   {
     href: "/painel/aparencia",
@@ -99,6 +105,8 @@ export default async function Painel() {
                   <IconeRelogio className="h-5 w-5" />
                 ) : s.href.endsWith("aparencia") ? (
                   <IconeLetras className="h-5 w-5" />
+                ) : s.href.endsWith("acoes-botoes") ? (
+                  <IconeWhatsapp className="h-5 w-5" />
                 ) : (
                   <IconeLoja className="h-5 w-5" />
                 )}

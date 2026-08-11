@@ -54,6 +54,8 @@ export async function criar(slug: string, nome: string): Promise<Negocio> {
     slug,
     nome,
     slugAnterior: null,
+    acaoPrincipal: null,
+    acaoSecundaria: null,
     frase: null,
     logo: null,
     capa: null,

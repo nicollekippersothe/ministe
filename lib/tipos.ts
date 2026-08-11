@@ -39,7 +39,33 @@ export type Item = {
   ativo: boolean;
 };
 
-export type IconeLink = "instagram" | "mapa" | "ifood" | "site" | "link";
+export type IconeLink =
+  | "instagram"
+  | "mapa"
+  | "ifood"
+  | "site"
+  | "link"
+  | "telefone"
+  | "agenda"
+  | "cardapio"
+  | "loja";
+
+/**
+ * O botao fixo no rodape da pagina.
+ *
+ * Nem todo negocio vende pelo WhatsApp. Restaurante manda pro iFood, estudio
+ * manda pra agenda, quem vende por afiliado manda pra loja. Entao a acao
+ * principal e configuravel, e o WhatsApp e so o padrao.
+ */
+export type TipoAcao = "whatsapp" | "link" | "telefone";
+
+export type Acao = {
+  tipo: TipoAcao;
+  rotulo: string;
+  /** So para tipo "link". Nos outros o destino vem do whatsapp ou do telefone. */
+  url: string | null;
+  icone: IconeLink;
+};
 
 export type LinkExtra = {
   id: string;
@@ -61,6 +87,13 @@ export type Negocio = {
   fonte: ChaveFonte;
   plano: Plano;
   publicado: boolean;
+
+  /**
+   * Ate duas acoes no rodape fixo. A primeira aparece cheia, a segunda
+   * contornada. Nulo na principal significa: usar o WhatsApp, se houver.
+   */
+  acaoPrincipal: Acao | null;
+  acaoSecundaria: Acao | null;
 
   /** Somente digitos, com pais e DDD: 5511999999999 */
   whatsapp: string | null;

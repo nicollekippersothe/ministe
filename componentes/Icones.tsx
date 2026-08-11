@@ -127,7 +127,11 @@ export function IconeDoLink({
 }) {
   if (icone === "instagram") return <IconeInstagram className={className} />;
   if (icone === "mapa") return <IconePin className={className} />;
-  if (icone === "ifood") return <IconeSacola className={className} />;
+  if (icone === "ifood" || icone === "loja")
+    return <IconeSacola className={className} />;
+  if (icone === "telefone") return <IconeTelefone className={className} />;
+  if (icone === "agenda") return <IconeAgenda className={className} />;
+  if (icone === "cardapio") return <IconeCardapio className={className} />;
   return <IconeGlobo className={className} />;
 }
 
@@ -164,6 +168,36 @@ export function IconeLetras({ className }: Props) {
     >
       <path d="M4 18 9.2 6l5.2 12M5.8 14h6.8" />
       <path d="M16.5 18V11h2.2a2.4 2.4 0 0 1 0 4.8h-2.2" />
+    </svg>
+  );
+}
+
+export function IconeTelefone({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="M6.5 3h3l1.5 4-2 1.3a12 12 0 0 0 5.7 5.7L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 3.5 5.2 2 2 0 0 1 5.5 3Z" />
+    </svg>
+  );
+}
+
+export function IconeAgenda({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <rect x="3" y="5" width="18" height="16" rx="3" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+      <path d="m9.5 15 1.8 1.8 3.4-3.6" />
+    </svg>
+  );
+}
+
+export function IconeCardapio({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M14 3v5h5M9.5 12h6M9.5 16h4" />
     </svg>
   );
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { BotaoWhatsapp } from "@/componentes/BarraWhatsapp";
+import { BotaoAcao } from "@/componentes/BarraAcoes";
 import { SeloHorario } from "@/componentes/SeloHorario";
+import { acoesDoRodape } from "@/lib/acoes";
 import { combinacao } from "@/lib/fontes";
 import { diaCivilDe, estadoAgora, montarJanela } from "@/lib/horarios";
 import type { Negocio } from "@/lib/tipos";
@@ -50,22 +51,23 @@ export function Fragmentos({ negocio }: { negocio: Negocio }) {
   );
   const fonte = combinacao(negocio.fonte);
   const local = [negocio.cidade, negocio.estado].filter(Boolean).join(", ");
+  const acao = acoesDoRodape(negocio)[0];
 
   return (
     <ul className="flex flex-col gap-16 sm:gap-20">
       <Bloco
-        titulo="A conversa já começa escrita"
-        texto="O cliente toca uma vez e o WhatsApp abre com a mensagem pronta. Ninguém precisa saber o que dizer para te procurar."
+        titulo="O botão que fecha a venda"
+        texto="Fica preso no rodapé, sempre à vista. Pode abrir o WhatsApp com a mensagem já escrita, ou levar para o iFood, para a sua agenda ou para o link que você quiser."
         peca={
           <div aria-hidden>
-            <BotaoWhatsapp negocio={negocio} interativo={false} />
+            {acao ? <BotaoAcao acao={acao} principal interativo={false} /> : null}
           </div>
         }
       />
 
       <Bloco
         invertido
-        titulo="Aberto agora, e não um horário escrito"
+        titulo="Aberto ou fechado, calculado na hora"
         texto="A página calcula sozinha, no seu fuso, contando quem fecha depois da meia noite e quem fecha para o almoço."
         peca={
           <div

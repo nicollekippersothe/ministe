@@ -139,6 +139,19 @@ export const COMBINACOES: Record<ChaveFonte, Combinacao> = {
 
 export const LISTA_COMBINACOES = Object.values(COMBINACOES);
 
+/**
+ * A letra que todo mundo tem, inclusive no plano gratuito.
+ *
+ * Escolher outra é recurso do plano pago. A regra que guia a escolha desta:
+ * a página gratuita precisa parecer profissional mesmo assim, senão ninguém
+ * compartilha, e sem compartilhamento não existe aquisição.
+ */
+export const FONTE_PADRAO: ChaveFonte = "moderno";
+
+export function podeEscolherFonte(plano: string): boolean {
+  return plano === "pago";
+}
+
 export function combinacao(chave: string | null | undefined): Combinacao {
   return COMBINACOES[(chave ?? "") as ChaveFonte] ?? COMBINACOES.moderno;
 }
