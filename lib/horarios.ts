@@ -189,7 +189,7 @@ export function estadoAgora(
   const agora = Math.floor(agoraMs / 1000);
   const atual = segmentos.find((s) => agora >= s.inicio && agora < s.fim);
   if (atual) {
-    return { aberto: true, titulo: "Aberto agora", detalhe: `Fecha às ${atual.fecha}` };
+    return { aberto: true, titulo: "Aberto", detalhe: `até ${atual.fecha}` };
   }
 
   const proximo = segmentos.find((s) => s.inicio > agora);
@@ -200,8 +200,8 @@ export function estadoAgora(
     distancia <= 0 ? "" : distancia === 1 ? "amanhã " : `${proximo.diaNome} `;
   return {
     aberto: false,
-    titulo: "Fechado agora",
-    detalhe: `Abre ${quando}às ${proximo.abre}`,
+    titulo: "Fechado",
+    detalhe: `abre ${quando}${proximo.abre}`,
   };
 }
 

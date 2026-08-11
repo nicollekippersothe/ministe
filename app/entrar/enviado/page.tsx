@@ -24,7 +24,7 @@ export default async function Enviado({
       }
       rodape={
         <p className="text-center text-[0.95rem] text-suave">
-          Digitou errado?{" "}
+          Digitou o e-mail errado?{" "}
           <Link
             href="/entrar"
             className="font-medium text-destaque underline-offset-4 hover:underline"
@@ -36,8 +36,16 @@ export default async function Enviado({
     >
       <div className="rounded-2xl border border-borda bg-superficie p-5">
         <p className="leading-relaxed text-suave">
-          O link vale por uma hora e abre direto no seu painel. Se não achar,
-          olhe na caixa de spam ou na aba de promoções.
+          O link vale por uma hora e abre direto no seu painel. Se não encontrar,
+          verifique a caixa de spam e a aba de promoções.
+        </p>
+        <p className="mt-4 text-sm">
+          <Link
+            href="/entrar/ajuda"
+            className="text-destaque underline underline-offset-2"
+          >
+            O link não chegou
+          </Link>
         </p>
       </div>
     </Moldura>

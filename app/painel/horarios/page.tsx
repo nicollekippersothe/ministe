@@ -74,8 +74,8 @@ export default async function Horarios({
         Horários
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-suave">
-        Dia sem horário preenchido aparece como fechado. Quem fecha depois da
-        meia noite pode colocar 19:00 às 00:30, que a conta sai certa.
+        Dia sem horário preenchido aparece como fechado. Para turnos que passam
+        da meia noite, use 19:00 às 00:30.
       </p>
 
       <Aviso salvo={params.salvo === "1"} copiado={params.copiado === "1"} />
@@ -104,7 +104,7 @@ export default async function Horarios({
 
                 <details open={extras.length > 0}>
                   <summary className="cursor-pointer list-none text-sm text-destaque">
-                    Mais um horário nesse dia
+                    Adicionar outro horário
                   </summary>
                   <div className="mt-3 flex flex-col gap-3">
                     {Array.from({ length: SLOTS - 1 }, (_, i) => (

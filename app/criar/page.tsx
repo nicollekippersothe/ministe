@@ -18,13 +18,13 @@ export default async function Criar({
   const { erro, nome } = await searchParams;
   const mensagem =
     erro === "nome"
-      ? "Escreve o nome do negócio."
+      ? "Informe o nome do negócio."
       : (MOTIVOS[erro as Recusa] ?? null);
 
   return (
     <Moldura
       titulo="Criar sua página"
-      subtitulo="Duas informações agora. O resto você preenche depois, com calma."
+      subtitulo="Duas informações agora. O resto pode ser preenchido depois."
       rodape={
         <p className="text-center text-[0.95rem] text-suave">
           Já tem uma página?{" "}
@@ -67,7 +67,7 @@ export default async function Criar({
         <BotaoPrincipal type="submit">Criar página</BotaoPrincipal>
 
         <p className="text-center text-sm leading-relaxed text-suave">
-          Sua página nasce como rascunho. Ninguém vê até você publicar.
+          A página começa como rascunho. Ninguém vê até você publicar.
         </p>
       </form>
     </Moldura>

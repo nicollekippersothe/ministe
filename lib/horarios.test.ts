@@ -33,56 +33,56 @@ test("terça de manhã está aberto e mostra a hora de fechar", () => {
   // 2026-08-11 é uma terça.
   const e = selo("2026-08-11T10:00:00");
   assert.equal(e.aberto, true);
-  assert.equal(e.titulo, "Aberto agora");
-  assert.equal(e.detalhe, "Fecha às 18:00");
+  assert.equal(e.titulo, "Aberto");
+  assert.equal(e.detalhe, "até 18:00");
 });
 
 test("segunda fechada aponta a abertura de amanhã", () => {
   const e = selo("2026-08-10T10:00:00");
   assert.equal(e.aberto, false);
-  assert.equal(e.detalhe, "Abre amanhã às 09:00");
+  assert.equal(e.detalhe, "abre amanhã 09:00");
 });
 
 test("domingo aponta o dia da semana, não amanhã", () => {
   const e = selo("2026-08-09T10:00:00");
   assert.equal(e.aberto, false);
-  assert.equal(e.detalhe, "Abre terça às 09:00");
+  assert.equal(e.detalhe, "abre terça 09:00");
 });
 
 test("sexta às 23h continua aberto no turno que vira o dia", () => {
   const e = selo("2026-08-14T23:00:00");
   assert.equal(e.aberto, true);
-  assert.equal(e.detalhe, "Fecha às 00:30");
+  assert.equal(e.detalhe, "até 00:30");
 });
 
 test("sábado 00:10 ainda está aberto, vindo do turno de sexta", () => {
   const e = selo("2026-08-15T00:10:00");
   assert.equal(e.aberto, true);
-  assert.equal(e.detalhe, "Fecha às 00:30");
+  assert.equal(e.detalhe, "até 00:30");
 });
 
 test("sábado 00:40 já fechou e abre no mesmo dia", () => {
   const e = selo("2026-08-15T00:40:00");
   assert.equal(e.aberto, false);
-  assert.equal(e.detalhe, "Abre às 09:00");
+  assert.equal(e.detalhe, "abre 09:00");
 });
 
 test("sábado no almoço mostra a volta do intervalo da tarde", () => {
   const e = selo("2026-08-15T14:00:00");
   assert.equal(e.aberto, false);
-  assert.equal(e.detalhe, "Abre às 15:00");
+  assert.equal(e.detalhe, "abre 15:00");
 });
 
 test("sábado à noite pula domingo e segunda", () => {
   const e = selo("2026-08-15T20:00:00");
   assert.equal(e.aberto, false);
-  assert.equal(e.detalhe, "Abre terça às 09:00");
+  assert.equal(e.detalhe, "abre terça 09:00");
 });
 
 test("sexta 18:30 está no intervalo entre os dois turnos", () => {
   const e = selo("2026-08-14T18:30:00");
   assert.equal(e.aberto, false);
-  assert.equal(e.detalhe, "Abre às 19:00");
+  assert.equal(e.detalhe, "abre 19:00");
 });
 
 test("negócio sem horário cadastrado não gera segmento", () => {
@@ -97,5 +97,5 @@ test("o fuso do negócio manda, não o do servidor", () => {
   const janela = montarJanela(HORARIOS, "America/Manaus", agora);
   const e = estadoAgora(janela, agora, diaCivilDe(agora, "America/Manaus"));
   assert.equal(e.aberto, false);
-  assert.equal(e.detalhe, "Abre às 09:00");
+  assert.equal(e.detalhe, "abre 09:00");
 });

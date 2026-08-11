@@ -4,8 +4,9 @@ import { IconeSeta } from "@/componentes/Icones";
 import { Fragmentos } from "@/componentes/inicial/Fragmentos";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { NOME_PRODUTO } from "@/componentes/Rodape";
+import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
-import { negocioExemplo } from "@/lib/exemplo";
+import { doceria } from "@/lib/exemplos";
 
 export const revalidate = 3600;
 
@@ -23,17 +24,17 @@ const PASSOS = [
   {
     titulo: "Preencha o básico",
     texto:
-      "Nome, WhatsApp, horário e endereço. O resto dá para deixar para depois.",
+      "Nome, WhatsApp, horário e endereço. O resto pode ser preenchido depois.",
   },
   {
     titulo: "Publique e compartilhe",
     texto:
-      "Cole na bio do Instagram e mande no WhatsApp para quem já é seu cliente.",
+      "Cole na bio do Instagram e envie no WhatsApp para quem já é seu cliente.",
   },
 ];
 
 export default async function Home() {
-  const negocio = (await porSlug("demo")) ?? negocioExemplo;
+  const negocio = (await porSlug("demo")) ?? doceria;
 
   return (
     <div data-tema="areia" className="min-h-dvh bg-fundo">
@@ -55,11 +56,11 @@ export default async function Home() {
           <div className="grid items-center gap-14 lg:grid-cols-[1fr_auto] lg:gap-20">
             <div className="max-w-xl">
               <h1 className="text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.038em] text-balance text-texto sm:text-[3.4rem]">
-                Seu negócio merece mais que um link na bio.
+                Sua vitrine profissional, pronta hoje.
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-suave">
-                Uma página só sua, com endereço, horário, cardápio e o botão de
-                WhatsApp que já abre a conversa escrita.
+                Endereço, horário, serviços e um botão de WhatsApp que já abre a
+                conversa escrita. Você preenche do celular e publica em minutos.
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -79,7 +80,7 @@ export default async function Home() {
               </div>
 
               <p className="mt-6 text-sm text-suave">
-                De graça, sem cartão, sem instalar nada.
+                Sem instalar nada. Funciona pelo navegador do celular.
               </p>
             </div>
 
@@ -94,6 +95,24 @@ export default async function Home() {
                   Ver inteira
                 </Link>
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="vitrine" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-20">
+            <h2
+              id="vitrine"
+              className="max-w-lg text-2xl leading-[1.15] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-3xl"
+            >
+              Serve para quem vende produto e para quem vende hora.
+            </h2>
+            <p className="mt-3 max-w-xl leading-relaxed text-suave">
+              Quatro páginas prontas, de negócios bem diferentes. Todas estão no ar e podem
+              ser abertas agora.
+            </p>
+            <div className="mt-9">
+              <Vitrine />
             </div>
           </div>
         </section>

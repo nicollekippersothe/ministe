@@ -140,5 +140,5 @@ export const COMBINACOES: Record<ChaveFonte, Combinacao> = {
 export const LISTA_COMBINACOES = Object.values(COMBINACOES);
 
 export function combinacao(chave: string | null | undefined): Combinacao {
-  return COMBINACOES[(chave ?? "") as ChaveFonte] ?? COMBINACOES.editorial;
+  return COMBINACOES[(chave ?? "") as ChaveFonte] ?? COMBINACOES.moderno;
 }

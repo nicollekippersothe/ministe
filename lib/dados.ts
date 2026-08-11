@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { negocioExemplo } from "./exemplo";
+import { doceria, EXEMPLOS } from "./exemplos";
 import type { Negocio } from "./tipos";
 
 /**
@@ -19,7 +19,7 @@ async function ler(): Promise<Negocio[]> {
   try {
     return JSON.parse(await readFile(ARQUIVO, "utf8")) as Negocio[];
   } catch {
-    return [negocioExemplo];
+    return EXEMPLOS.map((n) => ({ ...n }));
   }
 }
 
@@ -39,7 +39,7 @@ export async function porSlug(slug: string): Promise<Negocio | null> {
  */
 export async function doDono(): Promise<Negocio> {
   const todos = await ler();
-  return todos[0] ?? negocioExemplo;
+  return todos[0] ?? doceria;
 }
 
 /** Um endereço só está livre se ninguém pegou. Formato é conferido em lib/slug.ts. */
@@ -50,7 +50,7 @@ export async function enderecoLivre(slug: string): Promise<boolean> {
 
 export async function criar(slug: string, nome: string): Promise<Negocio> {
   const novo: Negocio = {
-    ...negocioExemplo,
+    ...doceria,
     slug,
     nome,
     slugAnterior: null,

@@ -15,6 +15,15 @@ import { telefoneVisivel } from "@/lib/formato";
 
 export const dynamic = "force-dynamic";
 
+const TITULOS_CATALOGO = [
+  { valor: "Catálogo", rotulo: "Catálogo" },
+  { valor: "Cardápio", rotulo: "Cardápio" },
+  { valor: "Serviços", rotulo: "Serviços" },
+  { valor: "Produtos", rotulo: "Produtos" },
+  { valor: "Aulas e planos", rotulo: "Aulas e planos" },
+  { valor: "Atendimentos", rotulo: "Atendimentos" },
+];
+
 const FUSOS = [
   { valor: "America/Sao_Paulo", rotulo: "Brasília (a maior parte do país)" },
   { valor: "America/Manaus", rotulo: "Manaus (AM, RR, RO, MT oeste)" },
@@ -56,17 +65,17 @@ export default async function Informacoes({
           <AreaTexto
             id="frase"
             rotulo="Uma frase curta"
-            dica="Aparece embaixo do nome. Se deixar em branco, some da página."
+            dica="Aparece abaixo do nome. Se ficar em branco, não é exibida."
             valor={negocio.frase}
             maxLength={160}
           />
         </Grupo>
 
-        <Grupo titulo="WhatsApp">
+        <Grupo titulo="WhatsApp e catálogo">
           <Texto
             id="whatsapp"
             rotulo="Número do WhatsApp"
-            dica="Com DDD. Pode digitar com parênteses e traço, eu arrumo."
+            dica="Com DDD. Pode digitar com parênteses e traço."
             valor={negocio.whatsapp ? telefoneVisivel(negocio.whatsapp) : null}
             type="tel"
             inputMode="tel"
@@ -81,10 +90,17 @@ export default async function Informacoes({
           />
           <AreaTexto
             id="mensagemItem"
-            rotulo="Mensagem dos itens do cardápio"
+            rotulo="Mensagem dos itens"
             dica="Vale para todos os itens de uma vez. O {item} vira o nome do produto."
             valor={negocio.mensagemItem}
             maxLength={200}
+          />
+          <Escolha
+            id="tituloCatalogo"
+            rotulo="Nome dessa seção na página"
+            dica="Nem todo negócio tem cardápio. Escolha o nome que faz sentido para o seu."
+            valor={negocio.tituloCatalogo}
+            opcoes={TITULOS_CATALOGO}
           />
           <Marcar
             id="mostrarPrecos"
@@ -140,7 +156,7 @@ export default async function Informacoes({
           <Escolha
             id="fuso"
             rotulo="Fuso horário"
-            dica="Serve para o selo de aberto agora acertar a hora."
+            dica="Define a hora usada no selo de aberto e fechado."
             valor={negocio.fuso}
             opcoes={FUSOS}
           />

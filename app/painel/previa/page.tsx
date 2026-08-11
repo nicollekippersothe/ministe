@@ -24,7 +24,7 @@ export default async function Previa() {
   return (
     <>
       <div className="sticky top-0 z-50 bg-texto px-4 py-2.5 text-center text-sm text-superficie">
-        {negocio.publicado ? "Prévia da sua página" : "Rascunho, só você enxerga"}
+        {negocio.publicado ? "Prévia da sua página" : "Rascunho, visível apenas para você"}
         <Link href="/painel" className="ml-3 font-semibold underline">
           Voltar ao painel
         </Link>

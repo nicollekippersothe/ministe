@@ -59,7 +59,7 @@ export default async function Painel() {
             href={noAr ? `/${negocio.slug}` : "/painel/previa"}
             className="flex h-12 items-center justify-center gap-2 rounded-full border border-borda bg-fundo px-5 font-semibold text-texto"
           >
-            {noAr ? "Ver a página" : "Ver como vai ficar"}
+            {noAr ? "Ver a página" : "Ver a prévia"}
             <IconeSeta className="h-4 w-4" />
           </Link>
 
@@ -78,8 +78,7 @@ export default async function Painel() {
 
         {!noAr ? (
           <p className="mt-3 text-xs leading-relaxed text-suave">
-            Enquanto está em rascunho, só você enxerga. Ninguém acha pelo
-            endereço.
+            Em rascunho, a página não abre para ninguém, nem pelo endereço.
           </p>
         ) : null}
       </div>

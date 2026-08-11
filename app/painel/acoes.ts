@@ -57,6 +57,7 @@ export async function salvarBasico(formData: FormData) {
     mensagemPadrao: texto(formData, "mensagemPadrao"),
     mensagemItem: texto(formData, "mensagemItem"),
     mostrarPrecos: marcado(formData, "mostrarPrecos"),
+    tituloCatalogo: texto(formData, "tituloCatalogo") ?? "Catálogo",
     endereco: texto(formData, "endereco"),
     cidade: texto(formData, "cidade"),
     estado: estado ? estado.toUpperCase() : null,

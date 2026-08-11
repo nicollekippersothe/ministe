@@ -84,6 +84,7 @@ const TELAS = [
     nome: "Página do negócio",
     grupo: "O produto",
     largura: "celular",
+    vitrine: "Doceria",
     nota: "É o produto de verdade. Tudo aqui funciona: o selo de aberto agora se atualiza sozinho, o botão de WhatsApp abre a conversa escrita, o endereço abre o mapa. As fotos são marcações geradas por script, não fotos de negócio real.",
   },
   {
@@ -106,6 +107,33 @@ const TELAS = [
     grupo: "O produto",
     largura: "cartao",
     nota: "O que aparece quando o dono cola o link no WhatsApp ou na bio do Instagram. É a primeira impressão de quem nunca viu o negócio.",
+  },
+  {
+    id: "raiz",
+    rota: "/studio-raiz",
+    nome: "Estúdio de yoga",
+    grupo: "O produto",
+    largura: "celular",
+    vitrine: "Estúdio de yoga",
+    nota: "Mesmo produto, outro tipo de negócio. A seção do catálogo se chama Aulas e planos, e não Cardápio: quem escolhe o nome é o dono.",
+  },
+  {
+    id: "nutri",
+    rota: "/marina-nutricao",
+    nome: "Nutricionista",
+    grupo: "O produto",
+    largura: "celular",
+    vitrine: "Nutricionista",
+    nota: "Profissional autônoma que vende hora, não produto. Consulta, retorno e atendimento online aparecem como itens, com preço.",
+  },
+  {
+    id: "psi",
+    rota: "/camila-psicologia",
+    nome: "Psicóloga",
+    grupo: "O produto",
+    largura: "celular",
+    vitrine: "Psicóloga",
+    nota: "Sem endereço público e sem preço à mostra, que é o caso de muita gente da saúde. As duas seções somem sozinhas, sem deixar buraco no layout.",
   },
   {
     id: "nao-existe",
@@ -272,6 +300,7 @@ async function comprimir(capturadas) {
       grupo: t.grupo,
       rota: t.rota ?? t.imagem,
       largura: t.largura,
+      vitrine: t.vitrine ?? null,
       nota: t.nota,
       aviso: Boolean(t.aviso),
       w: meta.width,
@@ -290,6 +319,19 @@ async function comprimir(capturadas) {
 function montarPagina(telas) {
   const grupos = [...new Set(telas.map((t) => t.grupo))];
   const dados = JSON.stringify(telas).replace(/</g, "\\u003c");
+  const vitrine = telas.filter((t) => t.vitrine);
+
+  const familia = vitrine
+    .map(
+      (t) => `
+      <li class="mini">
+        <button class="mini-toque" type="button" data-id="${t.id}">
+          <span class="mini-tela"><img src="${t.src}" alt="Página de ${t.nome}" loading="lazy" /></span>
+          <span class="mini-rotulo">${t.vitrine}</span>
+        </button>
+      </li>`,
+    )
+    .join("");
 
   const menu = grupos
     .map(
@@ -314,17 +356,20 @@ function montarPagina(telas) {
   return `<title>Banca, telas para revisão</title>
 <style>
   :root {
-    --ground: #e8ebf1;
+    --ground: #faf8f5;
     --surface: #ffffff;
-    --sunken: #dde1ea;
-    --line: #cfd5e1;
-    --ink: #12151b;
-    --muted: #565d6d;
-    --accent: #1b4fd8;
-    --accent-suave: #e6ecfd;
-    --warn: #7d5200;
-    --warn-fundo: #fbf1dd;
-    --raio: 14px;
+    --line: #e6e0d7;
+    --ink: #171412;
+    --muted: #6b6259;
+    --accent: #b4522f;
+    --accent-fraco: #f6ebe5;
+    --palco: #17151300;
+    --palco-solido: #1a1714;
+    --palco-linha: #2e2924;
+    --palco-ink: #f3efe9;
+    --palco-muted: #a9a097;
+    --warn: #8a5a12;
+    --warn-fundo: #f8eeda;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
       "Helvetica Neue", Arial, sans-serif;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -332,30 +377,32 @@ function montarPagina(telas) {
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --ground: #0d1016;
-      --surface: #161a22;
-      --sunken: #10141b;
-      --line: #262c38;
-      --ink: #e7eaf1;
-      --muted: #949cac;
-      --accent: #8fa8ff;
-      --accent-suave: #1c2438;
-      --warn: #e3ad4d;
-      --warn-fundo: #2a2115;
+      --ground: #131110;
+      --surface: #1c1917;
+      --line: #2e2924;
+      --ink: #f3efe9;
+      --muted: #a49a90;
+      --accent: #e08a63;
+      --accent-fraco: #2a201b;
+      --palco-solido: #0c0a09;
+      --palco-linha: #241f1b;
+      --warn: #e0ac5c;
+      --warn-fundo: #2b2115;
     }
   }
 
   :root[data-theme="dark"] {
-    --ground: #0d1016;
-    --surface: #161a22;
-    --sunken: #10141b;
-    --line: #262c38;
-    --ink: #e7eaf1;
-    --muted: #949cac;
-    --accent: #8fa8ff;
-    --accent-suave: #1c2438;
-    --warn: #e3ad4d;
-    --warn-fundo: #2a2115;
+    --ground: #131110;
+    --surface: #1c1917;
+    --line: #2e2924;
+    --ink: #f3efe9;
+    --muted: #a49a90;
+    --accent: #e08a63;
+    --accent-fraco: #2a201b;
+    --palco-solido: #0c0a09;
+    --palco-linha: #241f1b;
+    --warn: #e0ac5c;
+    --warn-fundo: #2b2115;
   }
 
   * { box-sizing: border-box; min-width: 0; }
@@ -369,54 +416,105 @@ function montarPagina(telas) {
     -webkit-font-smoothing: antialiased;
   }
 
-  .bancada {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 28px 20px 64px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-
-  header .eyebrow { margin: 0 0 6px; }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.1rem);
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    text-wrap: balance;
-  }
-
-  .intro {
-    margin: 10px 0 0;
-    max-width: 62ch;
-    color: var(--muted);
-  }
-
   .eyebrow {
     font-family: var(--mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted);
     margin: 0;
   }
 
-  .corpo { display: flex; flex-direction: column; gap: 24px; }
+  .largura { max-width: 1120px; margin: 0 auto; padding-inline: 22px; }
 
-  @media (min-width: 900px) {
-    .corpo { flex-direction: row; align-items: flex-start; gap: 32px; }
-    .navegador { width: 232px; flex: none; position: sticky; top: 20px; }
-    .palco { flex: 1; min-width: 0; }
+  /* Abertura: a família de páginas, que é o que vende. */
+  .abertura { padding: 40px 0 12px; }
+  .abertura h1 {
+    margin: 10px 0 0;
+    font-size: clamp(1.9rem, 1.2rem + 2.6vw, 3rem);
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+  .abertura .intro {
+    margin: 14px 0 0;
+    max-width: 56ch;
+    color: var(--muted);
+    font-size: 1.02rem;
   }
 
-  .navegador { display: flex; flex-direction: column; gap: 18px; }
-  .grupo { display: flex; flex-direction: column; gap: 8px; }
-  .lista { display: flex; flex-direction: column; gap: 4px; }
+  .familia {
+    list-style: none;
+    display: flex;
+    gap: 14px;
+    margin: 34px 0 0;
+    padding: 0 0 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .familia::-webkit-scrollbar { display: none; }
+  .mini { flex: none; }
+  .mini-toque {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    align-items: center;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .mini-tela {
+    display: block;
+    width: 132px;
+    height: 268px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #fff;
+    border: 5px solid var(--palco-solido);
+    box-shadow: 0 14px 26px -16px rgba(23, 20, 18, 0.6);
+    transition: transform 0.18s ease;
+  }
+  .mini-toque:hover .mini-tela { transform: translateY(-3px); }
+  .mini-tela img { display: block; width: 100%; height: auto; }
+  .mini-rotulo { font-size: 0.82rem; color: var(--muted); }
 
-  @media (max-width: 899px) {
-    .lista { flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  /* Bancada: o palco escuro faz a tela clara aparecer. */
+  .bancada { padding: 46px 0 70px; }
+
+  .cabeca-bancada {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    border-top: 1px solid var(--line);
+    padding-top: 26px;
+  }
+  .cabeca-bancada h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+  }
+
+  .corpo { display: flex; flex-direction: column; gap: 22px; margin-top: 24px; }
+
+  @media (min-width: 940px) {
+    .corpo { flex-direction: row; align-items: flex-start; gap: 30px; }
+    .navegador { width: 218px; flex: none; position: sticky; top: 18px; }
+    .palco-col { flex: 1; min-width: 0; }
+  }
+
+  .navegador { display: flex; flex-direction: column; gap: 16px; }
+  .grupo { display: flex; flex-direction: column; gap: 7px; }
+  .lista { display: flex; flex-direction: column; gap: 3px; }
+
+  @media (max-width: 939px) {
+    .lista { flex-direction: row; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .lista::-webkit-scrollbar { display: none; }
     .aba { flex: none; }
   }
 
@@ -425,84 +523,60 @@ function montarPagina(telas) {
     flex-direction: column;
     gap: 1px;
     text-align: left;
-    padding: 8px 11px;
+    padding: 7px 10px;
     border: 1px solid transparent;
-    border-radius: 10px;
+    border-radius: 9px;
     background: transparent;
     color: var(--ink);
     font: inherit;
     cursor: pointer;
   }
   .aba:hover { background: var(--surface); }
-  .aba[aria-current="true"] {
-    background: var(--accent-suave);
-    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
-  }
-  .aba-nome { font-size: 0.92rem; font-weight: 550; }
-  .aba-rota {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    color: var(--muted);
-    white-space: nowrap;
-  }
+  .aba[aria-current="true"] { background: var(--accent-fraco); border-color: var(--accent); }
+  .aba-nome { font-size: 0.9rem; font-weight: 550; }
+  .aba-rota { font-family: var(--mono); font-size: 0.66rem; color: var(--muted); white-space: nowrap; }
   .aba[aria-current="true"] .aba-rota { color: var(--accent); }
 
-  .palco { display: flex; flex-direction: column; gap: 18px; }
+  .palco-col { display: flex; flex-direction: column; gap: 18px; }
 
-  .quadro {
-    background: var(--sunken);
-    border: 1px solid var(--line);
-    border-radius: var(--raio);
-    padding: 22px 16px;
+  .palco {
+    background: var(--palco-solido);
+    border-radius: 20px;
+    padding: 30px 18px;
     display: flex;
     justify-content: center;
   }
 
-  /* O aparelho. A moldura é discreta de propósito: quem tem que aparecer
-     é a tela dentro dela. */
   .aparelho {
     width: 100%;
-    max-width: 390px;
-    border-radius: 34px;
-    background: #0b0d12;
+    max-width: 386px;
+    border-radius: 36px;
+    background: #000;
     padding: 9px;
-    box-shadow: 0 1px 2px rgba(10, 12, 18, 0.2), 0 24px 50px -22px rgba(10, 12, 18, 0.55);
+    box-shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.9);
   }
   .aparelho .janela {
-    height: 640px;
+    height: 620px;
     overflow-y: auto;
     overflow-x: hidden;
-    border-radius: 26px;
+    border-radius: 28px;
     background: #fff;
     -webkit-overflow-scrolling: touch;
   }
-  .quadro[data-largura="desktop"] .aparelho,
-  .quadro[data-largura="cartao"] .aparelho {
+  .palco[data-largura="desktop"] .aparelho,
+  .palco[data-largura="cartao"] .aparelho {
     max-width: 100%;
-    border-radius: 12px;
-    padding: 6px;
+    border-radius: 10px;
+    padding: 5px;
   }
-  .quadro[data-largura="desktop"] .janela,
-  .quadro[data-largura="cartao"] .janela {
-    height: auto;
-    border-radius: 8px;
-  }
-
+  .palco[data-largura="desktop"] .janela,
+  .palco[data-largura="cartao"] .janela { height: auto; border-radius: 6px; }
   .janela img { display: block; width: 100%; height: auto; }
 
-  .ficha { display: flex; flex-direction: column; gap: 10px; }
-  .ficha h2 {
-    margin: 0;
-    font-size: 1.15rem;
-    letter-spacing: -0.02em;
-  }
-  .ficha p { margin: 0; color: var(--muted); max-width: 68ch; }
-
-  .marca-rota {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    color: var(--accent);
-  }
+  .ficha { display: flex; flex-direction: column; gap: 9px; }
+  .ficha h3 { margin: 0; font-size: 1.2rem; letter-spacing: -0.02em; }
+  .ficha p { margin: 0; color: var(--muted); max-width: 66ch; }
+  .marca-rota { font-family: var(--mono); font-size: 0.76rem; color: var(--accent); margin: 0; }
 
   .alerta {
     display: flex;
@@ -512,54 +586,56 @@ function montarPagina(telas) {
     color: var(--warn);
     border-radius: 10px;
     padding: 10px 13px;
-    font-size: 0.88rem;
-    max-width: 68ch;
+    font-size: 0.87rem;
+    max-width: 66ch;
   }
-  .alerta strong { font-weight: 650; }
 
   .rodape {
     border-top: 1px solid var(--line);
-    padding-top: 18px;
+    margin-top: 12px;
+    padding: 22px 0 60px;
     color: var(--muted);
-    font-size: 0.88rem;
-    max-width: 70ch;
+    font-size: 0.87rem;
+    max-width: 68ch;
   }
   .rodape p { margin: 0 0 8px; }
   .rodape code {
     font-family: var(--mono);
-    font-size: 0.85em;
+    font-size: 0.86em;
     background: var(--surface);
+    border: 1px solid var(--line);
     padding: 1px 5px;
     border-radius: 5px;
   }
 
-  :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
 </style>
 
-<div class="bancada">
-  <header>
-    <p class="eyebrow">Banca, revisão de interface</p>
-    <h1>As telas do produto, para você apontar o que melhorar.</h1>
-    <p class="intro">
-      Cada tela abaixo é um retrato fiel do que está construído, capturado num
-      iPhone 13. Role dentro do aparelho para ver a tela inteira. A nota ao
-      lado diz o que já funciona e o que ainda não está ligado, para você saber
-      o que é justo criticar.
-    </p>
-  </header>
+<div class="largura abertura">
+  <p class="eyebrow">Banca, revisão de interface</p>
+  <h1>Quatro negócios, a mesma página.</h1>
+  <p class="intro">
+    Uma doceria, um estúdio de yoga, uma nutricionista e uma psicóloga. Toque
+    em qualquer uma para abrir a tela inteira e conferir o acabamento.
+  </p>
+  <ul class="familia">${familia}</ul>
+</div>
+
+<div class="largura bancada">
+  <div class="cabeca-bancada">
+    <h2>Todas as telas</h2>
+    <p class="eyebrow" id="contagem"></p>
+  </div>
 
   <div class="corpo">
     <nav class="navegador" aria-label="Telas">${menu}</nav>
 
-    <div class="palco">
-      <div class="quadro" id="quadro" data-largura="celular">
+    <div class="palco-col">
+      <div class="palco" id="palco" data-largura="celular">
         <div class="aparelho">
           <div class="janela" id="janela"><img id="retrato" alt="" /></div>
         </div>
@@ -567,10 +643,9 @@ function montarPagina(telas) {
 
       <div class="ficha">
         <p class="marca-rota" id="rota"></p>
-        <h2 id="nome"></h2>
+        <h3 id="nome"></h3>
         <p id="nota"></p>
         <div class="alerta" id="alerta" hidden>
-          <strong>Ainda não está ligado.</strong>
           <span id="alerta-texto"></span>
         </div>
       </div>
@@ -579,15 +654,11 @@ function montarPagina(telas) {
 
   <div class="rodape">
     <p>
-      Isto é um retrato, não o produto rodando: não dá para digitar nem tocar
-      nos botões. O que dá para julgar é layout, espaçamento, hierarquia,
-      tamanho de toque e texto, que é onde estão as melhorias que eu preciso
-      de você.
+      São retratos do build de produção, não o produto rodando: não dá para
+      digitar nem tocar nos botões. O que dá para julgar é layout, espaçamento,
+      hierarquia, tamanho de toque e texto.
     </p>
-    <p>
-      Gerado a partir do build de produção com <code>npm run revisao</code>.
-      Para regerar depois de qualquer mudança, é o mesmo comando.
-    </p>
+    <p>Regerado com <code>npm run revisao</code> a cada mudança.</p>
   </div>
 </div>
 
@@ -597,10 +668,11 @@ function montarPagina(telas) {
 
   const retrato = document.getElementById("retrato");
   const janela = document.getElementById("janela");
-  const quadro = document.getElementById("quadro");
+  const palco = document.getElementById("palco");
   const alerta = document.getElementById("alerta");
+  document.getElementById("contagem").textContent = TELAS.length + " telas";
 
-  function mostrar(id) {
+  function mostrar(id, rolar) {
     const t = porId[id];
     if (!t) return;
 
@@ -609,7 +681,7 @@ function montarPagina(telas) {
     retrato.width = t.w;
     retrato.height = t.h;
     janela.scrollTop = 0;
-    quadro.dataset.largura = t.largura;
+    palco.dataset.largura = t.largura;
 
     document.getElementById("rota").textContent = t.rota;
     document.getElementById("nome").textContent = t.nome;
@@ -617,20 +689,24 @@ function montarPagina(telas) {
 
     alerta.hidden = !t.aviso;
     document.getElementById("alerta-texto").textContent = t.aviso
-      ? "Dá para avaliar o desenho e o texto desta tela, mas o funcionamento depende do login, que ainda não existe."
+      ? "Ainda não está ligado. Dá para avaliar o desenho e o texto, mas o funcionamento depende do login, que ainda não existe."
       : "";
 
     for (const b of document.querySelectorAll(".aba")) {
       b.setAttribute("aria-current", String(b.dataset.id === id));
     }
     if (location.hash.slice(1) !== id) history.replaceState(null, "", "#" + id);
+    if (rolar) palco.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   for (const b of document.querySelectorAll(".aba")) {
-    b.addEventListener("click", () => mostrar(b.dataset.id));
+    b.addEventListener("click", () => mostrar(b.dataset.id, false));
+  }
+  for (const b of document.querySelectorAll(".mini-toque")) {
+    b.addEventListener("click", () => mostrar(b.dataset.id, true));
   }
 
-  mostrar(porId[location.hash.slice(1)] ? location.hash.slice(1) : TELAS[0].id);
+  mostrar(porId[location.hash.slice(1)] ? location.hash.slice(1) : TELAS[0].id, false);
 </script>
 `;
 }

@@ -44,14 +44,14 @@ await p.fill("input[name=slug]", "Doceria da Ana!!");
 await p.waitForTimeout(800);
 passo(
   "o endereço é limpo e conferido enquanto digita",
-  (await p.textContent("[aria-live]")).includes("doceria-da-ana está livre"),
+  (await p.textContent("[aria-live]")).includes("banca.app/doceria-da-ana"),
 );
 
 await p.fill("input[name=slug]", "painel");
 await p.waitForTimeout(800);
 passo(
   "endereço reservado é avisado na hora",
-  (await p.textContent("[aria-live]")).includes("do sistema"),
+  (await p.textContent("[aria-live]")).includes("reservado pelo sistema"),
 );
 
 await p.fill("input[name=slug]", "demo");
@@ -83,7 +83,7 @@ await p.fill("#frase", "Bolo de pote, torta e salgado de festa, por encomenda.")
 await p.fill("#whatsapp", "(11) 98888-7777");
 await p.click('button[type="submit"]');
 await p.waitForURL(/salvo=1/);
-passo("salvou as informações", (await p.textContent("body")).includes("Pronto, salvo"));
+passo("salvou as informações", (await p.textContent("body")).includes("Alterações salvas"));
 passo(
   "o WhatsApp volta formatado para quem edita",
   (await p.inputValue("#whatsapp")) === "(11) 98888-7777",
@@ -185,13 +185,13 @@ const fora = await p.goto(`${BASE}/demo`);
 passo("página fora do ar responde 404", fora.status() === 404);
 passo(
   "o 404 oferece o endereço livre",
-  (await p.textContent("body")).includes("ainda está livre"),
+  (await p.textContent("body")).includes("está disponível"),
 );
 
 await p.goto(`${BASE}/painel/previa`, { waitUntil: "networkidle" });
 passo(
   "o dono continua vendo a prévia",
-  (await p.textContent("body")).includes("só você enxerga"),
+  (await p.textContent("body")).includes("visível apenas para você"),
 );
 
 await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });

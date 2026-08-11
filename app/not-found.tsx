@@ -14,11 +14,11 @@ export default function NaoEncontrado() {
     >
       <main className="w-full max-w-md text-center">
         <h1 className="text-[2rem] leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto">
-          Esse endereço ainda está livre
+          Este endereço está disponível
         </h1>
         <p className="mt-3 leading-relaxed text-balance text-suave">
-          Não existe nenhuma página aqui. Se o negócio é seu, dá para pegar esse
-          endereço.
+          Não existe página neste endereço. Se o negócio é seu, você pode
+          registrá-lo agora.
         </p>
 
         <Link

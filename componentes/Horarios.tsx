@@ -18,8 +18,8 @@ import type { Negocio } from "@/lib/tipos";
 const SCRIPT = `!function(){var e=document.getElementById("selo");if(!e)return;var d;try{d=JSON.parse(document.getElementById("selo-dados").textContent)}catch(_){return}
 var t=e.querySelector("[data-t]"),u=e.querySelector("[data-u]"),m=Date.now(),s=m/1000,h=Math.floor((m+d.o)/864e5),a=null,p=null,i,x;
 for(i=0;i<d.s.length;i++){x=d.s[i];if(s>=x[0]&&s<x[1])a=x;else if(!p&&x[0]>s)p=x}
-if(a){e.setAttribute("data-aberto","1");t.textContent="Aberto agora";u.textContent="Fecha às "+a[4]}
-else{e.setAttribute("data-aberto","0");t.textContent=p?"Fechado agora":"Fechado";u.textContent=p?"Abre "+(p[2]<=h?"":p[2]===h+1?"amanhã ":p[5]+" ")+"às "+p[3]:""}
+if(a){e.setAttribute("data-aberto","1");t.textContent="Aberto";u.textContent="até "+a[4]}
+else{e.setAttribute("data-aberto","0");t.textContent="Fechado";u.textContent=p?"abre "+(p[2]<=h?"":p[2]===h+1?"amanhã ":p[5]+" ")+p[3]:""}
 var r=document.querySelectorAll("[data-dia]"),w=(h+4)%7;for(i=0;i<r.length;i++)r[i].toggleAttribute("data-hoje",+r[i].getAttribute("data-dia")===w)}();`;
 
 const ORDEM_SEMANA = [1, 2, 3, 4, 5, 6, 0];

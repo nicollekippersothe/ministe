@@ -81,6 +81,11 @@ export type Negocio = {
   /** Chave unica do catalogo: esconde o preco de todos os itens de uma vez. */
   mostrarPrecos: boolean;
   /**
+   * Como a secao do catalogo se chama na pagina. Nem todo negocio tem
+   * cardapio: estudio tem aulas, psicologa tem atendimentos, loja tem catalogo.
+   */
+  tituloCatalogo: string;
+  /**
    * Modelo aplicado a todos os itens do catalogo de uma vez. O {item} vira o
    * titulo do produto. Se for nulo, o item nao ganha botao proprio.
    */

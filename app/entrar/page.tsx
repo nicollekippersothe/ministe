@@ -31,7 +31,7 @@ export default async function Entrar({
   return (
     <Moldura
       titulo="Entrar"
-      subtitulo="A gente manda um link no seu e-mail. Sem senha para inventar nem esquecer."
+      subtitulo="Enviamos um link de acesso para o seu e-mail. Sem senha para criar nem lembrar."
       rodape={
         <p className="text-center text-[0.95rem] text-suave">
           Ainda não tem página?{" "}
@@ -64,6 +64,12 @@ export default async function Entrar({
         </div>
 
         <BotaoPrincipal type="submit">Receber link de acesso</BotaoPrincipal>
+
+        <p className="text-center text-sm text-suave">
+          <Link href="/entrar/ajuda" className="underline underline-offset-2">
+            Não consigo entrar
+          </Link>
+        </p>
       </form>
     </Moldura>
   );

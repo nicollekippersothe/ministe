@@ -1,8 +1,8 @@
 const MENSAGENS: Record<string, string> = {
   nome: "O nome do negócio não pode ficar em branco.",
-  whatsapp: "Confira o WhatsApp: precisa ter DDD e o número completo.",
-  estado: "O estado é a sigla com duas letras, tipo SP.",
-  cep: "O CEP precisa ter oito dígitos, tipo 04113-000.",
+  whatsapp: "Confira o WhatsApp. Informe o DDD e o número completo.",
+  estado: "O estado é a sigla de duas letras, por exemplo SP.",
+  cep: "O CEP tem oito dígitos, por exemplo 04113-000.",
 };
 
 export function Aviso({
@@ -31,7 +31,7 @@ export function Aviso({
         role="status"
         className="mt-4 rounded-xl bg-aberto-fundo px-4 py-3 text-sm font-medium text-aberto-texto"
       >
-        {copiado ? "Horário copiado para terça a sexta." : "Pronto, salvo."}
+        {copiado ? "Horário copiado para terça a sexta." : "Alterações salvas."}
       </p>
     );
   }

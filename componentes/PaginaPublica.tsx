@@ -50,7 +50,7 @@ export function PaginaPublica({
         <Endereco negocio={negocio} />
 
         {temItens ? <Divisor /> : null}
-        <Secao id="catalogo" titulo="Cardápio" vazia={!temItens}>
+        <Secao id="catalogo" titulo={negocio.tituloCatalogo} vazia={!temItens}>
           <Catalogo negocio={negocio} />
         </Secao>
 

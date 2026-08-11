@@ -47,6 +47,12 @@ const ICONES = {
   vitrine: "M22 34h56v46H22zM22 48h56M40 80V60h20v20",
   folha: "M28 74C28 46 48 26 76 26c0 28-20 48-48 48zM28 74l24-24",
   caixa: "M20 36l30-14 30 14v34L50 84 20 70zM20 36l30 14 30-14M50 50v34",
+  yoga: "M50 20a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM50 36v22M28 44l22 8 22-8M50 58 30 78M50 58l20 20",
+  prato: "M50 24a26 26 0 1 1 0 52 26 26 0 0 1 0-52zM50 36a14 14 0 1 1 0 28 14 14 0 0 1 0-28M16 84h68",
+  poltrona: "M28 46v-8a8 8 0 0 1 8-8h28a8 8 0 0 1 8 8v8M22 46a6 6 0 0 1 12 0v14h32V46a6 6 0 0 1 12 0v20H22zM30 76v8M70 76v8",
+  planta: "M50 82V44M50 44c0-12 8-22 20-22 0 12-8 22-20 22zM50 52c0-10-7-18-17-18 0 10 7 18 17 18zM36 82h28",
+  peso: "M22 40v20M32 34v32M68 34v32M78 40v20M32 50h36",
+  agulha: "M30 70 70 30M62 22l16 16M26 74l-6 6M40 60l8 8M52 48l8 8",
 };
 
 function svg(nome, largura, altura, icone) {
@@ -85,6 +91,35 @@ function svg(nome, largura, altura, icone) {
 }
 
 const IMAGENS = [
+  // Estúdio de yoga e pilates
+  ["raiz-capa", 1600, 900, "yoga"],
+  ["raiz-logo", 512, 512, "planta"],
+  ["raiz-1", 1000, 1000, "yoga"],
+  ["raiz-2", 1000, 1000, "peso"],
+  ["raiz-3", 1000, 1000, "folha"],
+  ["raiz-g1", 1000, 1000, "planta"],
+  ["raiz-g2", 1000, 1000, "yoga"],
+  ["raiz-g3", 1000, 1000, "folha"],
+
+  // Nutricionista
+  ["nutri-capa", 1600, 900, "prato"],
+  ["nutri-logo", 512, 512, "folha"],
+  ["nutri-1", 1000, 1000, "prato"],
+  ["nutri-2", 1000, 1000, "planta"],
+  ["nutri-3", 1000, 1000, "caixa"],
+  ["nutri-g1", 1000, 1000, "prato"],
+  ["nutri-g2", 1000, 1000, "folha"],
+  ["nutri-g3", 1000, 1000, "planta"],
+
+  // Psicóloga
+  ["psi-capa", 1600, 900, "poltrona"],
+  ["psi-logo", 512, 512, "planta"],
+  ["psi-1", 1000, 1000, "poltrona"],
+  ["psi-2", 1000, 1000, "folha"],
+  ["psi-3", 1000, 1000, "planta"],
+  ["psi-g1", 1000, 1000, "poltrona"],
+  ["psi-g2", 1000, 1000, "planta"],
+
   ["capa", 1600, 900, "loja"],
   ["logo", 512, 512, "doce"],
   ["bolo-1", 1000, 1000, "bolo"],

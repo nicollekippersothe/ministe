@@ -41,8 +41,8 @@ export const MOTIVOS: Record<Recusa, string> = {
   curto: `Precisa de pelo menos ${TAMANHO_MINIMO} letras.`,
   longo: `No máximo ${TAMANHO_MAXIMO} letras.`,
   formato: "Use só letras, números e hífen.",
-  reservado: "Esse endereço é do sistema, escolhe outro.",
-  ocupado: "Esse endereço já é de outra pessoa.",
+  reservado: "Este endereço é reservado pelo sistema.",
+  ocupado: "Este endereço já está em uso.",
 };
 
 /** Confere só o formato. Se está ocupado é o banco que sabe. */

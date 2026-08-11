@@ -24,8 +24,8 @@ export default async function Aparencia({
         Letras da sua página
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-suave">
-        Cada opção aparece escrita com a própria letra, com o nome do seu
-        negócio. Só a que você escolher é baixada por quem visita.
+        Cada opção aparece escrita com a própria letra e com o nome do seu
+        negócio. Apenas a escolhida é carregada por quem visita a página.
       </p>
 
       <Aviso salvo={params.salvo === "1"} />

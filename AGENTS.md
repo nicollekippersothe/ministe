@@ -65,7 +65,9 @@ npm run imagens   # regera as imagens de exemplo em public/exemplo
   senão o Next baixa todas em toda rota. Só o CSS aplicado puxa o arquivo.
 - `lib/slug.ts` tem as regras do endereço, espelhando a lista do banco.
 - `lib/tipos.ts` espelha o schema que vai para o Supabase.
-- `assets/` guarda a fonte usada só na geração da imagem de link, no servidor.
+- A imagem de prévia do link não pode embutir arquivo de fonte enquanto rodar
+  no mesmo processo que o otimizador de imagem do Next. O motivo e as duas
+  saídas estão comentados em `app/[slug]/opengraph-image.tsx`.
 - `supabase/` tem o schema, os testes de RLS e o Storage. Nada foi aplicado num
   projeto ainda, mas o schema roda e passa nos testes num Postgres local.
   Ver `supabase/LEIA-ME.md`.
