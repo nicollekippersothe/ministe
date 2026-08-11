@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { doceria, EXEMPLOS } from "./exemplos";
+import { MODO_VITRINE } from "./site";
 import type { Negocio } from "./tipos";
 
 /**
@@ -16,6 +17,7 @@ import type { Negocio } from "./tipos";
 const ARQUIVO = join(process.cwd(), ".dados", "negocios.json");
 
 async function ler(): Promise<Negocio[]> {
+  if (MODO_VITRINE) return EXEMPLOS;
   try {
     return JSON.parse(await readFile(ARQUIVO, "utf8")) as Negocio[];
   } catch {
@@ -24,6 +26,9 @@ async function ler(): Promise<Negocio[]> {
 }
 
 async function gravar(negocios: Negocio[]): Promise<void> {
+  if (MODO_VITRINE) {
+    throw new Error("modo vitrine: os dados são somente leitura");
+  }
   await mkdir(dirname(ARQUIVO), { recursive: true });
   await writeFile(ARQUIVO, JSON.stringify(negocios, null, 2), "utf8");
 }

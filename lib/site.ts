@@ -13,3 +13,18 @@ export const urlBase = (
  */
 export const CONTATO_SUPORTE: string | null =
   process.env.NEXT_PUBLIC_CONTATO_SUPORTE ?? null;
+
+/**
+ * Modo vitrine.
+ *
+ * Enquanto o login não existe, o painel não pode ir para a internet: quem
+ * chegasse no endereço editaria a página dos outros. Com MODO_VITRINE=1 a
+ * publicação fica segura: as páginas de exemplo e a tela inicial funcionam,
+ * e as rotas de painel e cadastro respondem 404.
+ *
+ * Também deixa os dados só de leitura, o que resolve o outro problema: na
+ * Vercel o disco é somente leitura, então gravar em arquivo falharia.
+ *
+ * Sai quando o Supabase Auth entrar.
+ */
+export const MODO_VITRINE = process.env.MODO_VITRINE === "1";

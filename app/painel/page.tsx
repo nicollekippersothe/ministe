@@ -9,6 +9,8 @@ import {
 } from "@/componentes/Icones";
 import { doDono } from "@/lib/dados";
 
+import { exigirLogin } from "@/app/painel/vitrine";
+
 export const dynamic = "force-dynamic";
 
 const SECOES = [
@@ -35,6 +37,7 @@ const SECOES = [
 ];
 
 export default async function Painel() {
+  exigirLogin();
   const negocio = await doDono();
   const noAr = negocio.publicado;
 

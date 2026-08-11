@@ -13,6 +13,8 @@ import {
 import { doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
 
+import { exigirLogin } from "@/app/painel/vitrine";
+
 export const dynamic = "force-dynamic";
 
 const TITULOS_CATALOGO = [
@@ -38,6 +40,7 @@ export default async function Informacoes({
 }: {
   searchParams: Promise<{ salvo?: string; erro?: string }>;
 }) {
+  exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
 
   return (

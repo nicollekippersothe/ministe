@@ -11,6 +11,8 @@ import { urlBase } from "@/lib/site";
  * o dono ficaria no escuro até apertar publicar. É a mesma página, com uma
  * faixa em cima avisando que ainda é rascunho.
  */
+import { exigirLogin } from "@/app/painel/vitrine";
+
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -19,6 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Previa() {
+  exigirLogin();
   const negocio = await doDono();
 
   return (

@@ -73,6 +73,8 @@ npm run imagens   # regera as imagens de exemplo em public/exemplo
 - A imagem de prévia do link não pode embutir arquivo de fonte enquanto rodar
   no mesmo processo que o otimizador de imagem do Next. O motivo e as duas
   saídas estão comentados em `app/[slug]/opengraph-image.tsx`.
+- `MODO_VITRINE=1` fecha painel e cadastro com 404 e deixa os dados só de
+  leitura. É o que permite publicar antes de existir login. Ver `lib/site.ts`.
 - `supabase/` tem o schema, os testes de RLS e o Storage. Nada foi aplicado num
   projeto ainda, mas o schema roda e passa nos testes num Postgres local.
   Ver `supabase/LEIA-ME.md`.

@@ -5,6 +5,8 @@ import { BarraSalvar, Botao, Escolha, Texto } from "@/componentes/painel/Campos"
 import { doDono } from "@/lib/dados";
 import type { Acao } from "@/lib/tipos";
 
+import { exigirLogin } from "@/app/painel/vitrine";
+
 export const dynamic = "force-dynamic";
 
 const TIPOS = [
@@ -77,6 +79,7 @@ export default async function Acoes({
 }: {
   searchParams: Promise<{ salvo?: string }>;
 }) {
+  exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
 
   return (

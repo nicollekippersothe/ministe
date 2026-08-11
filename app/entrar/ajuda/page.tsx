@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { exigirLogin } from "@/app/painel/vitrine";
 import { Moldura } from "@/componentes/cadastro/Moldura";
 import { CONTATO_SUPORTE } from "@/lib/site";
 
@@ -34,6 +35,7 @@ const CAUSAS = [
 ];
 
 export default function Ajuda() {
+  exigirLogin();
   return (
     <Moldura
       titulo="Não consigo entrar"

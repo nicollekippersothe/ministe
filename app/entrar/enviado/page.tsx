@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { exigirLogin } from "@/app/painel/vitrine";
 import { Moldura } from "@/componentes/cadastro/Moldura";
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export default async function Enviado({
 }: {
   searchParams: Promise<{ para?: string }>;
 }) {
+  exigirLogin();
   const { para } = await searchParams;
 
   return (

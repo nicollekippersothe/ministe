@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { exigirLogin } from "@/app/painel/vitrine";
 import { BotaoPrincipal, Moldura } from "@/componentes/cadastro/Moldura";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default async function Entrar({
 }: {
   searchParams: Promise<{ erro?: string }>;
 }) {
+  exigirLogin();
   const { erro } = await searchParams;
 
   return (

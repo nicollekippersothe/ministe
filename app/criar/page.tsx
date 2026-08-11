@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { criarPagina } from "./acoes";
 import { CampoEndereco } from "@/componentes/cadastro/CampoEndereco";
+import { exigirLogin } from "@/app/painel/vitrine";
 import { BotaoPrincipal, Moldura } from "@/componentes/cadastro/Moldura";
 import { MOTIVOS, type Recusa } from "@/lib/slug";
 
@@ -15,6 +16,7 @@ export default async function Criar({
 }: {
   searchParams: Promise<{ erro?: string; nome?: string }>;
 }) {
+  exigirLogin();
   const { erro, nome } = await searchParams;
   const mensagem =
     erro === "nome"

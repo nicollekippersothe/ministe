@@ -6,6 +6,8 @@ import { doDono } from "@/lib/dados";
 import { DIAS_LONGO, porDiaSemana } from "@/lib/horarios";
 import type { Intervalo } from "@/lib/tipos";
 
+import { exigirLogin } from "@/app/painel/vitrine";
+
 export const dynamic = "force-dynamic";
 
 const ORDEM = [1, 2, 3, 4, 5, 6, 0];
@@ -61,6 +63,7 @@ export default async function Horarios({
 }: {
   searchParams: Promise<{ salvo?: string; copiado?: string }>;
 }) {
+  exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
   const semana = porDiaSemana(negocio.horarios);
 

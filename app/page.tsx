@@ -6,6 +6,7 @@ import { Telefone } from "@/componentes/inicial/Telefone";
 import { NOME_PRODUTO } from "@/componentes/Rodape";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
+import { MODO_VITRINE } from "@/lib/site";
 import { doceria } from "@/lib/exemplos";
 
 export const revalidate = 3600;
@@ -42,12 +43,14 @@ export default async function Home() {
         <span className="text-sm font-semibold tracking-[0.16em] text-destaque uppercase">
           {NOME_PRODUTO}
         </span>
-        <Link
-          href="/entrar"
-          className="text-[0.95rem] font-medium text-texto underline-offset-4 hover:underline"
-        >
-          Entrar
-        </Link>
+        {MODO_VITRINE ? null : (
+          <Link
+            href="/entrar"
+            className="text-[0.95rem] font-medium text-texto underline-offset-4 hover:underline"
+          >
+            Entrar
+          </Link>
+        )}
       </header>
 
       <main>
@@ -65,22 +68,26 @@ export default async function Home() {
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
-                  href="/criar"
+                  href={MODO_VITRINE ? `/${negocio.slug}` : "/criar"}
                   className="flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
                 >
-                  Criar minha página
+                  {MODO_VITRINE ? "Abrir uma página pronta" : "Criar minha página"}
                 </Link>
-                <Link
-                  href={`/${negocio.slug}`}
-                  className="flex h-13 items-center justify-center gap-1.5 rounded-full px-5 text-[1.05rem] font-medium text-destaque"
-                >
-                  Abrir esta página
-                  <IconeSeta className="h-4 w-4" />
-                </Link>
+                {MODO_VITRINE ? null : (
+                  <Link
+                    href={`/${negocio.slug}`}
+                    className="flex h-13 items-center justify-center gap-1.5 rounded-full px-5 text-[1.05rem] font-medium text-destaque"
+                  >
+                    Abrir esta página
+                    <IconeSeta className="h-4 w-4" />
+                  </Link>
+                )}
               </div>
 
               <p className="mt-6 text-sm text-suave">
-                Sem instalar nada. Funciona pelo navegador do celular.
+                {MODO_VITRINE
+                  ? "As páginas abaixo estão no ar e funcionam. O cadastro abre quando o login estiver pronto."
+                  : "Sem instalar nada. Funciona pelo navegador do celular."}
               </p>
             </div>
 
@@ -163,14 +170,16 @@ export default async function Home() {
               ))}
             </ol>
 
-            <div className="mt-14">
-              <Link
-                href="/criar"
-                className="inline-flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
-              >
-                Começar agora
-              </Link>
-            </div>
+            {MODO_VITRINE ? null : (
+              <div className="mt-14">
+                <Link
+                  href="/criar"
+                  className="inline-flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
+                >
+                  Começar agora
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       </main>
@@ -178,9 +187,11 @@ export default async function Home() {
       <footer className="border-t border-borda">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-suave">
           <p>{NOME_PRODUTO}, uma página pronta para o negócio local.</p>
-          <Link href="/entrar" className="underline underline-offset-2">
-            Entrar
-          </Link>
+          {MODO_VITRINE ? null : (
+            <Link href="/entrar" className="underline underline-offset-2">
+              Entrar
+            </Link>
+          )}
         </div>
       </footer>
     </div>

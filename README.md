@@ -25,6 +25,22 @@ os dados ficam num arquivo local.
 | `/painel/aparencia` | escolher a combinação de letras da página |
 | `/painel/previa` | a página como vai ficar, antes de publicar |
 
+## Publicar como vitrine
+
+Enquanto o login não existe, dá para publicar com segurança em modo vitrine:
+as páginas de exemplo e a tela inicial funcionam, e as rotas de painel e
+cadastro respondem 404. Também deixa os dados só de leitura, o que resolve o
+fato de o disco da Vercel ser somente leitura.
+
+Na Vercel, importar o repositório e definir duas variáveis:
+
+```
+MODO_VITRINE=1
+NEXT_PUBLIC_URL_BASE=https://o-endereco-que-a-vercel-der
+```
+
+Quando o Supabase Auth entrar, é só apagar `MODO_VITRINE`.
+
 > **Ainda não tem login.** Quem chegar em `/painel` edita, e o e-mail do link
 > de acesso não é enviado (falta o Supabase Auth e um provedor de e-mail).
 > Isso vale enquanto roda só na sua máquina. Não subir para a internet antes

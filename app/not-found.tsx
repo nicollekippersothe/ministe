@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NOME_PRODUTO } from "@/componentes/Rodape";
+import { MODO_VITRINE } from "@/lib/site";
 
 /**
  * Endereço que não existe é oportunidade, não erro. Em vez de um 404 seco,
@@ -22,16 +23,18 @@ export default function NaoEncontrado() {
         </p>
 
         <Link
-          href="/criar"
+          href={MODO_VITRINE ? "/" : "/criar"}
           className="mt-7 inline-flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
         >
-          Pegar esse endereço
+          {MODO_VITRINE ? `Conhecer o ${NOME_PRODUTO}` : "Pegar esse endereço"}
         </Link>
-        <p className="mt-4 text-sm text-suave">
-          <Link href="/" className="underline underline-offset-2">
-            Conhecer o {NOME_PRODUTO}
-          </Link>
-        </p>
+        {MODO_VITRINE ? null : (
+          <p className="mt-4 text-sm text-suave">
+            <Link href="/" className="underline underline-offset-2">
+              Conhecer o {NOME_PRODUTO}
+            </Link>
+          </p>
+        )}
       </main>
     </div>
   );

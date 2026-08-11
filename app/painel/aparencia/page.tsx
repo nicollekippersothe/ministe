@@ -5,6 +5,8 @@ import { BarraSalvar, Botao } from "@/componentes/painel/Campos";
 import { doDono } from "@/lib/dados";
 import { FONTE_PADRAO, LISTA_COMBINACOES, podeEscolherFonte } from "@/lib/fontes";
 
+import { exigirLogin } from "@/app/painel/vitrine";
+
 export const dynamic = "force-dynamic";
 
 export default async function Aparencia({
@@ -12,6 +14,7 @@ export default async function Aparencia({
 }: {
   searchParams: Promise<{ salvo?: string }>;
 }) {
+  exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
   const pode = podeEscolherFonte(negocio.plano);
   const atual = pode ? negocio.fonte : FONTE_PADRAO;
