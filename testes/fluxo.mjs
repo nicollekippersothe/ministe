@@ -164,13 +164,24 @@ passo(
     (await p.$('a[data-evento="clique_acao"]')) !== null,
 );
 
+// Ainda na página paga.
+const pago = await p.textContent("body");
+passo(
+  "a assinatura feito com Entrais some no plano pago",
+  !pago.includes("feito com"),
+);
+passo(
+  "mas a denúncia continua na página paga, que é onde o golpista está",
+  pago.includes("Denunciar esta página"),
+);
+
 await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 passo(
   "o iFood aparece ao lado do WhatsApp na doceria",
   (await p.textContent("body")).includes("Pedir pelo iFood"),
 );
 passo(
-  "o rodapé feito com Entrais some no plano pago",
+  "a assinatura aparece na página gratuita",
   (await p.textContent("body")).includes("feito com"),
 );
 
@@ -237,6 +248,66 @@ await p.click('button:has-text("Publicar")');
 await p.waitForSelector('button:has-text("Tirar do ar")');
 const dentro = await p.goto(`${BASE}/demo`);
 passo("publicar coloca de volta no ar", dentro.status() === 200);
+
+// ---------------------------------------------------------------------------
+// Anti golpe
+// ---------------------------------------------------------------------------
+// Server Action navega pelo cliente, sem carregar documento novo, então "load"
+// voltaria na hora. E esperar por [role="alert"] também não serve: o
+// anunciador de rota do Next usa esse mesmo papel e aparece vazio antes da
+// resposta. Quem chega junto com o resultado é a URL.
+
+await p.goto(`${BASE}/painel/acoes-botoes`, { waitUntil: "networkidle" });
+await p.selectOption("#secundaria-tipo", "link");
+
+await p.fill("#secundaria-url", "javascript:alert(1)");
+await p.click('button:has-text("Salvar")');
+await p.waitForURL(/erro=link_/);
+passo(
+  "script no lugar do link é recusado ao salvar",
+  (await p.textContent('main [role="alert"]')).includes("começam com https"),
+);
+
+await p.fill("#secundaria-url", "bit.ly/promo");
+await p.click('button:has-text("Salvar")');
+await p.waitForURL(/erro=link_encurtador/);
+passo(
+  "link encurtado é recusado, dizendo o motivo",
+  (await p.textContent('main [role="alert"]')).includes("não um link encurtado"),
+);
+
+await p.fill("#secundaria-url", "doceria-da-ana.com.br");
+await p.click('button:has-text("Salvar")');
+await p.waitForURL(/salvo=1/);
+passo(
+  "endereço sem https é aceito e completado",
+  (await p.inputValue("#secundaria-url")) === "https://doceria-da-ana.com.br/",
+);
+
+await p.goto(`${BASE}/criar`, { waitUntil: "networkidle" });
+await p.fill("input[name=slug]", "pix caixa");
+await p.waitForTimeout(800);
+passo(
+  "endereço com cara de banco é barrado no cadastro",
+  (await p.textContent("[aria-live]")).includes("palavra restrita"),
+);
+
+await p.goto(`${BASE}/demo`, { waitUntil: "load" });
+await p.click('a:has-text("Denunciar esta página")');
+await p.waitForSelector("#slug");
+passo(
+  "a denúncia abre já com o endereço da página preenchido",
+  (await p.inputValue("#slug")) === "demo",
+);
+
+await p.click('input[value="golpe"]');
+await p.fill("#detalhe", "O botão de agendar leva para uma página de Pix.");
+await p.click('button:has-text("Enviar denúncia")');
+await p.waitForSelector("h1:has-text('Denúncia recebida')");
+passo(
+  "e termina numa confirmação, sem pedir e-mail",
+  !(await p.textContent("body")).includes("Seu e-mail"),
+);
 
 await navegador.close();
 

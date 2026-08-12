@@ -62,6 +62,20 @@ export function BotaoAcao({
   );
 }
 
+/**
+ * Espaço que a página precisa deixar embaixo para o conteúdo não terminar
+ * debaixo da barra fixa.
+ *
+ * Mora aqui de propósito, junto de quem desenha a barra: com dois botões ela
+ * passa de 130px, e um número fixo lá na página não acompanha. Foi assim que
+ * a assinatura do rodapé ficou coberta sem ninguém ver.
+ */
+export function respiroDaBarra(negocio: Negocio): string {
+  const quantas = acoesDoRodape(negocio).length;
+  if (quantas === 0) return "pb-10";
+  return quantas === 1 ? "pb-32" : "pb-44";
+}
+
 export function BarraAcoes({ negocio }: { negocio: Negocio }) {
   const acoes = acoesDoRodape(negocio);
   if (acoes.length === 0) return null;

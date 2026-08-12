@@ -153,7 +153,6 @@ export default async function Informacoes({
             rotulo="Link do Google Maps"
             dica="Abra seu endereço no Maps, toque em compartilhar e cole aqui."
             valor={negocio.mapsUrl}
-            type="url"
             inputMode="url"
           />
           <Escolha

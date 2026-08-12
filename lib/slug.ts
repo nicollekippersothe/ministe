@@ -15,6 +15,31 @@ export const RESERVADOS = new Set([
   "_next", "favicon", "robots", "sitemap", "opengraph-image", "icon",
 ]);
 
+/**
+ * Palavras que fazem o endereço parecer oficial.
+ *
+ * O golpe não precisa de site falso: basta um endereço nosso que soe como
+ * banco, cobrança ou atendimento, e o link circula no WhatsApp sozinho. É por
+ * isso que as concorrentes reservam essa família de palavras.
+ *
+ * A regra é o pedaço, não o endereço inteiro: "pix-caixa" e "central-pix"
+ * precisam cair junto com "pix". Por isso a conferência é por pedaço separado
+ * por hífen, e não por igualdade. Negócio de verdade quase nunca se chama
+ * assim, e quem se chamar fala com o suporte.
+ */
+export const PEDACOS_BLOQUEADOS = new Set([
+  "pix", "banco", "banco-central", "bacen", "boleto", "pagamento",
+  "pagamentos", "pagar", "cobranca", "fatura", "cartao", "credito",
+  "emprestimo", "financeira", "investimento", "receita", "gov",
+  "seguranca", "verificado", "verificacao", "oficial", "atendimento",
+  "central", "reembolso", "estorno", "premio", "sorteio", "ganhou",
+  "promocao-oficial", "senha", "token", "cpf", "desbloqueio",
+  "recadastramento", "atualizacao", "confirmar", "validar",
+]);
+
+/** O golpe mais direto é se passar por nós. "entrais-suporte" é isso. */
+const MARCA = "entrais";
+
 export const TAMANHO_MINIMO = 3;
 export const TAMANHO_MAXIMO = 30;
 
@@ -35,6 +60,7 @@ export type Recusa =
   | "longo"
   | "formato"
   | "reservado"
+  | "restrito"
   | "ocupado";
 
 export const MOTIVOS: Record<Recusa, string> = {
@@ -42,6 +68,8 @@ export const MOTIVOS: Record<Recusa, string> = {
   longo: `No máximo ${TAMANHO_MAXIMO} letras.`,
   formato: "Use só letras, números e hífen.",
   reservado: "Este endereço é reservado pelo sistema.",
+  restrito:
+    "Este endereço usa uma palavra restrita, porque pode ser confundida com banco ou cobrança.",
   ocupado: "Este endereço já está em uso.",
 };
 
@@ -51,5 +79,10 @@ export function conferirFormato(slug: string): Recusa | null {
   if (slug.length > TAMANHO_MAXIMO) return "longo";
   if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug)) return "formato";
   if (RESERVADOS.has(slug)) return "reservado";
+
+  const pedacos = slug.split("-");
+  if (pedacos.some((p) => PEDACOS_BLOQUEADOS.has(p))) return "restrito";
+  if (pedacos.includes(MARCA)) return "restrito";
+
   return null;
 }

@@ -93,3 +93,38 @@ export async function salvar(negocio: Negocio): Promise<void> {
   else todos.push(negocio);
   await gravar(todos);
 }
+
+/**
+ * Denúncia de página.
+ *
+ * O destino de verdade é a tabela `denuncias`, com a função
+ * `registrar_denuncia` do schema. Enquanto o Supabase não entra, grava no
+ * mesmo arquivo local, e em modo vitrine (onde o disco é somente leitura)
+ * escreve no log do servidor.
+ *
+ * O log não é enfeite: na Vercel ele é lido, então a denúncia chega em
+ * algum lugar de verdade. O que não dá é fingir que gravou.
+ */
+export async function registrarDenuncia(denuncia: {
+  slug: string;
+  motivo: string;
+  detalhe: string | null;
+}): Promise<void> {
+  const linha = { ...denuncia, criadoEm: new Date().toISOString() };
+
+  if (MODO_VITRINE) {
+    console.error("DENUNCIA", JSON.stringify(linha));
+    return;
+  }
+
+  const arquivo = join(process.cwd(), ".dados", "denuncias.json");
+  let fila: unknown[] = [];
+  try {
+    fila = JSON.parse(await readFile(arquivo, "utf8")) as unknown[];
+  } catch {
+    fila = [];
+  }
+  fila.push(linha);
+  await mkdir(dirname(arquivo), { recursive: true });
+  await writeFile(arquivo, JSON.stringify(fila, null, 2), "utf8");
+}

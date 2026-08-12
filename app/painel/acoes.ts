@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { doDono, salvar } from "@/lib/dados";
 import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
 import { normalizarWhatsapp } from "@/lib/formato";
+import { conferirLink, type RecusaLink } from "@/lib/links";
 import type { Acao, Intervalo, Negocio } from "@/lib/tipos";
 
 const LIMITE_INTERVALOS = 3;
@@ -49,6 +50,14 @@ export async function salvarBasico(formData: FormData) {
     redirect("/painel/negocio?erro=cep");
   }
 
+  const mapaBruto = texto(formData, "mapsUrl");
+  let mapsUrl: string | null = null;
+  if (mapaBruto) {
+    const conferido = conferirLink(mapaBruto);
+    if (!conferido.ok) redirect(`/painel/negocio?erro=mapa_${conferido.motivo}`);
+    mapsUrl = conferido.url;
+  }
+
   await guardar({
     ...negocio,
     nome,
@@ -62,7 +71,7 @@ export async function salvarBasico(formData: FormData) {
     cidade: texto(formData, "cidade"),
     estado: estado ? estado.toUpperCase() : null,
     cep,
-    mapsUrl: texto(formData, "mapsUrl"),
+    mapsUrl,
     fuso: texto(formData, "fuso") ?? "America/Sao_Paulo",
   });
 
@@ -132,14 +141,33 @@ export async function salvarAparencia(formData: FormData) {
   redirect("/painel/aparencia?salvo=1");
 }
 
-/** Lê um dos dois botões do rodapé. "nenhum" apaga o botão. */
-function lerAcao(formData: FormData, prefixo: string): Acao | null {
+/**
+ * Lê um dos dois botões do rodapé. "nenhum" apaga o botão.
+ *
+ * O link passa pelo portão de lib/links.ts antes de virar dado. É o campo
+ * mais perigoso do produto: quem clica está confiando na página, e o endereço
+ * de destino nem aparece para ele.
+ */
+function lerAcao(
+  formData: FormData,
+  prefixo: string,
+): { acao: Acao | null } | { erro: RecusaLink } {
   const tipo = texto(formData, `${prefixo}-tipo`);
-  if (!tipo || tipo === "nenhum") return null;
-  if (tipo !== "whatsapp" && tipo !== "link" && tipo !== "telefone") return null;
+  if (!tipo || tipo === "nenhum") return { acao: null };
+  if (tipo !== "whatsapp" && tipo !== "link" && tipo !== "telefone") {
+    return { acao: null };
+  }
 
-  const url = texto(formData, `${prefixo}-url`);
-  if (tipo === "link" && !url) return null;
+  let url: string | null = null;
+  if (tipo === "link") {
+    const bruto = texto(formData, `${prefixo}-url`);
+    // Botão de link sem link nenhum simplesmente não existe, e apagar o
+    // endereço é como a pessoa tira o botão. Não é erro.
+    if (!bruto) return { acao: null };
+    const conferido = conferirLink(bruto);
+    if (!conferido.ok) return { erro: conferido.motivo };
+    url = conferido.url;
+  }
 
   const padroes: Record<string, string> = {
     whatsapp: "Chamar no WhatsApp",
@@ -148,19 +176,31 @@ function lerAcao(formData: FormData, prefixo: string): Acao | null {
   };
 
   return {
-    tipo,
-    rotulo: texto(formData, `${prefixo}-rotulo`) ?? padroes[tipo],
-    url: tipo === "link" ? url : null,
-    icone: (texto(formData, `${prefixo}-icone`) ?? "link") as Acao["icone"],
+    acao: {
+      tipo,
+      rotulo: texto(formData, `${prefixo}-rotulo`) ?? padroes[tipo],
+      url,
+      icone: (texto(formData, `${prefixo}-icone`) ?? "link") as Acao["icone"],
+    },
   };
 }
 
 export async function salvarAcoes(formData: FormData) {
   const negocio = await doDono();
+
+  const principal = lerAcao(formData, "principal");
+  if ("erro" in principal) {
+    redirect(`/painel/acoes-botoes?erro=link_${principal.erro}`);
+  }
+  const secundaria = lerAcao(formData, "secundaria");
+  if ("erro" in secundaria) {
+    redirect(`/painel/acoes-botoes?erro=link_${secundaria.erro}`);
+  }
+
   await guardar({
     ...negocio,
-    acaoPrincipal: lerAcao(formData, "principal"),
-    acaoSecundaria: lerAcao(formData, "secundaria"),
+    acaoPrincipal: principal.acao,
+    acaoSecundaria: secundaria.acao,
   });
   redirect("/painel/acoes-botoes?salvo=1");
 }

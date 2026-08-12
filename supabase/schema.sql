@@ -33,6 +33,31 @@ insert into public.slugs_reservados (slug) values
   ('_next'), ('favicon'), ('robots'), ('sitemap'), ('opengraph-image');
 
 -- -----------------------------------------------------------------------------
+-- Palavras que fazem o endereço parecer oficial.
+--
+-- Diferente da lista de cima: aqui a conferência é por pedaço separado por
+-- hífen, então "pix" barra também "pix-caixa" e "central-pix". Um endereço
+-- nosso com cara de banco circula sozinho no WhatsApp, e é golpe barato.
+--
+-- Espelha PEDACOS_BLOQUEADOS em lib/slug.ts. Ficar em tabela, e não dentro da
+-- função, é o que permite acrescentar palavra sem recriar gatilho quando
+-- aparecer golpe novo.
+
+create table public.pedacos_bloqueados (
+  pedaco text primary key
+);
+
+insert into public.pedacos_bloqueados (pedaco) values
+  ('pix'), ('banco'), ('bacen'), ('boleto'), ('pagamento'), ('pagamentos'),
+  ('pagar'), ('cobranca'), ('fatura'), ('cartao'), ('credito'),
+  ('emprestimo'), ('financeira'), ('investimento'), ('receita'), ('gov'),
+  ('seguranca'), ('verificado'), ('verificacao'), ('oficial'),
+  ('atendimento'), ('central'), ('reembolso'), ('estorno'), ('premio'),
+  ('sorteio'), ('ganhou'), ('senha'), ('token'), ('cpf'), ('desbloqueio'),
+  ('recadastramento'), ('atualizacao'), ('confirmar'), ('validar'),
+  ('entrais');
+
+-- -----------------------------------------------------------------------------
 -- 2. Negócios
 -- -----------------------------------------------------------------------------
 
@@ -265,6 +290,40 @@ create table public.eventos (
 
 create index eventos_negocio_idx on public.eventos (negocio_id, criado_em desc);
 
+-- -----------------------------------------------------------------------------
+-- 8. Denúncias
+-- -----------------------------------------------------------------------------
+-- Quem descobre o golpe é quem caiu nele, não nós. Por isso toda página
+-- pública tem um link de denúncia, como fazem as concorrentes: é o que
+-- transforma a vítima em aviso antes da próxima.
+--
+-- Não guarda quem denunciou. Denúncia identificada afasta justamente quem
+-- tem medo do denunciado, e o produto não tem para que usar o dado. O custo
+-- é não dar para responder à pessoa, e é um custo aceito.
+--
+-- Ninguém lê esta tabela pelo navegador, nem o dono do negócio denunciado.
+-- Só a chave de serviço, que é do servidor. Escrever é pela função
+-- registrar_denuncia().
+
+create table public.denuncias (
+  id bigint generated always as identity primary key,
+  negocio_id uuid not null references public.negocios (id) on delete cascade,
+  motivo text not null,
+  detalhe text,
+  criado_em timestamptz not null default now(),
+  -- Vira true quando alguém já olhou, para a fila não repetir trabalho.
+  analisada boolean not null default false,
+
+  constraint motivo_conhecido check (
+    motivo in ('golpe', 'nao_e_meu_negocio', 'conteudo', 'fora_do_ar', 'outro')
+  ),
+  constraint detalhe_tamanho check (detalhe is null or length(detalhe) <= 600)
+);
+
+create index denuncias_fila_idx on public.denuncias (criado_em desc)
+  where not analisada;
+create index denuncias_negocio_idx on public.denuncias (negocio_id, criado_em desc);
+
 -- =============================================================================
 -- Funções de apoio
 -- =============================================================================
@@ -359,6 +418,14 @@ as $$
 begin
   if exists (select 1 from public.slugs_reservados where slug = new.slug) then
     raise exception 'endereço reservado: %', new.slug
+      using errcode = 'check_violation';
+  end if;
+
+  if exists (
+    select 1 from public.pedacos_bloqueados
+    where pedaco = any (string_to_array(new.slug, '-'))
+  ) then
+    raise exception 'endereço com palavra restrita: %', new.slug
       using errcode = 'check_violation';
   end if;
 
@@ -596,6 +663,51 @@ begin
 end;
 $$;
 
+-- Denúncia de página. Recebe o slug, e não o id, porque quem denuncia só tem
+-- o endereço que abriu.
+--
+-- O teto por dia existe porque a tabela aceita escrita de qualquer visitante,
+-- que é o preço de não exigir login para denunciar. Sem teto, uma pessoa
+-- irritada enche a fila e as denúncias de verdade somem no meio. Vinte por
+-- página por dia é muito mais do que qualquer caso real precisa, e continua
+-- sendo um teto.
+--
+-- Devolve void de propósito: dizer "esse endereço não existe" transformaria a
+-- denúncia num jeito de descobrir quais páginas existem.
+create or replace function public.registrar_denuncia(
+  p_slug text,
+  p_motivo text,
+  p_detalhe text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_id uuid;
+begin
+  if p_motivo not in ('golpe', 'nao_e_meu_negocio', 'conteudo', 'fora_do_ar', 'outro') then
+    raise exception 'motivo inválido' using errcode = 'check_violation';
+  end if;
+
+  select id into v_id from public.negocios where slug = p_slug;
+  if v_id is null then
+    return;
+  end if;
+
+  if (
+    select count(*) from public.denuncias
+    where negocio_id = v_id and criado_em > now() - interval '1 day'
+  ) >= 20 then
+    return;
+  end if;
+
+  insert into public.denuncias (negocio_id, motivo, detalhe)
+  values (v_id, p_motivo, left(btrim(p_detalhe), 600));
+end;
+$$;
+
 -- Retenção. Rodar de tempos em tempos, com pg_cron, quando a tabela crescer.
 create or replace function public.limpar_eventos_antigos()
 returns integer
@@ -625,6 +737,8 @@ alter table public.fotos           enable row level security;
 alter table public.links           enable row level security;
 alter table public.eventos         enable row level security;
 alter table public.slugs_reservados enable row level security;
+alter table public.pedacos_bloqueados enable row level security;
+alter table public.denuncias       enable row level security;
 
 -- Negócios ------------------------------------------------------------------
 
@@ -727,6 +841,20 @@ create policy slugs_reservados_leitura on public.slugs_reservados
   for select to anon, authenticated
   using (true);
 
+-- Palavras restritas ---------------------------------------------------------
+-- Mesma coisa: a tela de cadastro precisa ler para avisar antes de enviar.
+-- Esconder a lista não protegeria nada, porque o gatilho recusa de qualquer
+-- jeito, e só faria a pessoa descobrir o motivo depois de tentar.
+
+create policy pedacos_bloqueados_leitura on public.pedacos_bloqueados
+  for select to anon, authenticated
+  using (true);
+
+-- Denúncias -------------------------------------------------------------------
+-- Nenhuma política, de propósito: com RLS ligada e sem política, ninguém lê
+-- nem escreve pelo navegador. Escrever é só pela função registrar_denuncia,
+-- e ler é só pela chave de serviço, que não passa por RLS.
+
 -- =============================================================================
 -- Permissões
 -- =============================================================================
@@ -734,7 +862,8 @@ create policy slugs_reservados_leitura on public.slugs_reservados
 grant usage on schema public to anon, authenticated;
 
 grant select on public.negocios, public.horarios, public.itens,
-  public.itens_fotos, public.fotos, public.links, public.slugs_reservados
+  public.itens_fotos, public.fotos, public.links, public.slugs_reservados,
+  public.pedacos_bloqueados
   to anon, authenticated;
 
 grant insert, update, delete on public.negocios, public.horarios, public.itens,
@@ -746,7 +875,12 @@ grant select on public.eventos to authenticated;
 -- Ninguém escreve em eventos direto, nem o dono. Só a função.
 revoke insert, update, delete on public.eventos from anon, authenticated;
 
+-- Ninguém escreve em denúncias direto. Só a função, que tem teto por dia.
+revoke all on public.denuncias from anon, authenticated;
+
 grant execute on function public.registrar_evento(text, text) to anon, authenticated;
+grant execute on function public.registrar_denuncia(text, text, text)
+  to anon, authenticated;
 grant execute on function public.negocio_publico(uuid) to anon, authenticated;
 
 -- Funções internas não ficam expostas.

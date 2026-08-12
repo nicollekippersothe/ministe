@@ -56,12 +56,16 @@ function Bloco({
         valor={acao?.rotulo ?? null}
         maxLength={40}
       />
+      {/*
+        Sem type="url" de propósito. O navegador exigiria o https escrito na
+        mão e travaria o envio de "doceria.com.br", que o servidor aceita e
+        completa. Quem confere é lib/links.ts, que recusa dizendo o motivo.
+      */}
       <Texto
         id={`${prefixo}-url`}
         rotulo="Endereço do link"
-        dica="Só é usado quando o botão abre um link."
+        dica="O endereço completo do site. Link encurtado não é aceito, porque esconde para onde leva."
         valor={acao?.url ?? null}
-        type="url"
         inputMode="url"
       />
       <Escolha
@@ -77,7 +81,7 @@ function Bloco({
 export default async function Acoes({
   searchParams,
 }: {
-  searchParams: Promise<{ salvo?: string }>;
+  searchParams: Promise<{ salvo?: string; erro?: string }>;
 }) {
   exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
@@ -97,7 +101,7 @@ export default async function Acoes({
         vende por link de parceiro pode apontar o botão principal para lá.
       </p>
 
-      <Aviso salvo={params.salvo === "1"} />
+      <Aviso salvo={params.salvo === "1"} erro={params.erro} />
 
       <form action={salvarAcoes} className="mt-6 flex flex-col gap-4">
         <Bloco

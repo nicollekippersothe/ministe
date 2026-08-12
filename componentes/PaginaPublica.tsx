@@ -1,4 +1,4 @@
-import { BarraAcoes } from "./BarraAcoes";
+import { BarraAcoes, respiroDaBarra } from "./BarraAcoes";
 import { Capa } from "./Capa";
 import { Catalogo } from "./Catalogo";
 import { Endereco } from "./Endereco";
@@ -26,6 +26,7 @@ export function PaginaPublica({
 }) {
   const temItens = negocio.itens.some((i) => i.ativo);
   const fonte = combinacao(negocio.fonte);
+  const respiro = respiroDaBarra(negocio);
 
   return (
     <div
@@ -43,7 +44,7 @@ export function PaginaPublica({
         }}
       />
 
-      <main className="mx-auto w-full max-w-[34rem] overflow-hidden bg-superficie pb-24 sm:my-8 sm:rounded-3xl sm:border sm:border-borda sm:shadow-[0_1px_3px_rgba(28,25,23,0.06),0_12px_36px_-12px_rgba(28,25,23,0.14)]">
+      <main className={`mx-auto w-full max-w-[34rem] overflow-hidden bg-superficie ${respiro} sm:my-8 sm:rounded-3xl sm:border sm:border-borda sm:shadow-[0_1px_3px_rgba(28,25,23,0.06),0_12px_36px_-12px_rgba(28,25,23,0.14)]`}>
         <Capa negocio={negocio} />
         <Horarios negocio={negocio} />
         <Divisor />
