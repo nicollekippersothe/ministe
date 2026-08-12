@@ -9,6 +9,7 @@
     "test": "node --test \"lib/**/*.test.ts\"",
     "imagens": "node scripts/gerar-imagens.mjs",
     "fluxo": "node testes/fluxo.mjs",
+    "mockup": "node scripts/mockup.mjs",
     "revisao": "node scripts/exportar-telas.mjs"
   },
   "dependencies": {

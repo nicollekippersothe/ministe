@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { NOME_PRODUTO } from "@/lib/marca";
+import { Marca } from "@/componentes/Marca";
 
 export const metadata: Metadata = {
   title: "Painel",
@@ -16,12 +15,7 @@ export default function LayoutPainel({
   return (
     <div data-tema="areia" className="min-h-dvh bg-fundo">
       <div className="mx-auto w-full max-w-[34rem] px-5 pt-5 pb-8">
-        <Link
-          href="/painel"
-          className="text-sm font-semibold tracking-[0.16em] text-destaque uppercase"
-        >
-          {NOME_PRODUTO}
-        </Link>
+        <Marca href="/painel" />
         {children}
       </div>
     </div>

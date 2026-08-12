@@ -1,6 +1,5 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
-import { NOME_PRODUTO } from "@/lib/marca";
+import { Marca } from "@/componentes/Marca";
 
 /**
  * Moldura das telas de entrada e cadastro. Uma coluna estreita, centralizada,
@@ -20,12 +19,7 @@ export function Moldura({
   return (
     <div data-tema="areia" className="flex min-h-dvh flex-col bg-fundo">
       <header className="mx-auto w-full max-w-md px-6 py-5">
-        <Link
-          href="/"
-          className="text-sm font-semibold tracking-[0.16em] text-destaque uppercase"
-        >
-          {NOME_PRODUTO}
-        </Link>
+        <Marca />
       </header>
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-6 pb-10">

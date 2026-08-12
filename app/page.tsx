@@ -3,6 +3,7 @@ import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
 import { Fragmentos } from "@/componentes/inicial/Fragmentos";
 import { Telefone } from "@/componentes/inicial/Telefone";
+import { Marca } from "@/componentes/Marca";
 import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
@@ -40,9 +41,7 @@ export default async function Home() {
   return (
     <div data-tema="areia" className="min-h-dvh bg-fundo">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-        <span className="text-sm font-semibold tracking-[0.16em] text-destaque uppercase">
-          {NOME_PRODUTO}
-        </span>
+        <Marca href={null} />
         {MODO_VITRINE ? null : (
           <Link
             href="/entrar"

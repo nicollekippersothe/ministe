@@ -25,20 +25,31 @@
   --font-sistema: var(--f-sistema);
 }
 
+/*
+ * Paleta do guia de marca, com os nomes dele ao lado.
+ *
+ * Uma única mudança de valor, e ela é medida: Pedra (#78716c) dá 4,22 de
+ * contraste sobre Areia, abaixo dos 4,5 que a WCAG pede para texto normal.
+ * Sobre Branco ela dá 4,80 e passa. Como o guia usa Pedra em texto de apoio,
+ * que na tela inicial cai sobre Areia, o token escurece o mínimo necessário
+ * para chegar a 4,54. Cinco pontos por canal, imperceptível ao lado, e é o
+ * que mantém os 100 de acessibilidade que o produto tem hoje.
+ */
 :root,
 [data-tema="areia"] {
-  --c-fundo: #f4f0e8;
-  --c-superficie: #ffffff;
-  --c-texto: #1c1917;
-  --c-suave: #57534e;
-  --c-borda: #e5ded1;
-  --c-destaque: #a4452a;
-  --c-zap: #0e7a55;
-  --c-zap-forte: #0a5f42;
+  --c-fundo: #f4f0e8; /* Areia */
+  --c-superficie: #ffffff; /* Branco */
+  --c-texto: #1c1917; /* Tinta */
+  --c-suave: #736c67; /* Pedra, escurecida para passar sobre Areia */
+  --c-borda: #e5dfd3;
+  --c-destaque: #7a4a2b; /* Barro */
+  --c-zap: #0e7a55; /* Conversa */
+  --c-zap-forte: #0b6647;
   --c-aberto-fundo: #e4f2ea;
-  --c-aberto-texto: #0a5f42;
-  --c-fechado-fundo: #efeae1;
-  --c-fechado-texto: #57534e;
+  --c-aberto-texto: #0b6647;
+  --c-fechado-fundo: #eae4d8;
+  /* Pedra sobre esse fundo dá 4,08 e não passa. Um passo mais escura, 4,82. */
+  --c-fechado-texto: #67615c;
 }
 
 * {

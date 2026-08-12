@@ -1,11 +1,11 @@
 /**
- * Nome da marca.
+ * Nome da marca, em caixa baixa, como manda o guia.
  *
- * Escrito assim, com uma maiúscula só. O cabeçalho e a assinatura aplicam
- * caixa alta pelo CSS, então aparece ENTRAIS onde é logo e Entrais dentro de
- * frase, como em "feito com Entrais". Guardar em caixa alta quebraria a frase.
+ * Vale nos dois usos: o logotipo é "entrais" e a assinatura é "feito com
+ * entrais". Nenhuma tela aplica caixa alta por cima, senão o logotipo fica o
+ * contrário do que a marca desenhou.
  */
-export const NOME_PRODUTO = "Entrais";
+export const NOME_PRODUTO = "entrais";
 
 /**
  * Domínio mostrado na hora de escolher o endereço da página.

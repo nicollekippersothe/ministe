@@ -27,14 +27,21 @@ function semente(texto) {
   };
 }
 
-const PALETAS = [
-  ["#d9b99a", "#b07d55", "#7a4a2a"],
-  ["#c3cdb0", "#8fa070", "#566642"],
-  ["#e6bfa6", "#c98460", "#8f4a2c"],
-  ["#b9c1d4", "#8592ae", "#525f7d"],
-  ["#e3cb9c", "#c2a25f", "#8a6b33"],
-  ["#cdb6cb", "#a3849f", "#6d5169"],
-];
+/*
+ * Paleta por negocio, e nao sorteada pelo nome.
+ *
+ * Sorteada, a nutricionista saia roxa e o estudio de yoga tambem, o que le
+ * como erro antes de ler como marcacao. Cada negocio agora tem a familia de
+ * cor que combina com o que ele vende, e as fotos de um mesmo negocio ficam
+ * parentes entre si, que e o que uma sessao de foto de verdade produz.
+ */
+const PALETAS = {
+  doce: ["#e3c6a8", "#c08d62", "#7a4a2a"],
+  verde: ["#c9d4b4", "#93a473", "#566642"],
+  barro: ["#e6bfa6", "#c98460", "#8f4a2c"],
+  sereno: ["#c2c9d6", "#8f9bb0", "#586479"],
+  trigo: ["#e6d2a6", "#c5a666", "#8a6b33"],
+};
 
 const ICONES = {
   bolo: "M20 62h60v14a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4zM26 62V44a6 6 0 0 1 6-6h36a6 6 0 0 1 6 6v18M50 38V26M50 20v2",
@@ -55,10 +62,13 @@ const ICONES = {
   agulha: "M30 70 70 30M62 22l16 16M26 74l-6 6M40 60l8 8M52 48l8 8",
 };
 
-function svg(nome, largura, altura, icone) {
+function svg(nome, largura, altura, icone, familia) {
   const r = semente(nome);
-  const paleta = PALETAS[Math.floor(r() * PALETAS.length)];
-  const [claro, medio, escuro] = paleta;
+  const [claro, medio, escuro] = PALETAS[familia] ?? PALETAS.barro;
+  // A capa e 16:9 e ocupa a tela inteira; o icone no meio dela e o que
+  // entrega que a imagem e marcacao. Sem ele, o campo de cor desfocado passa
+  // por foto de pouca profundidade, que e o recorte que a capa vai receber.
+  const capa = largura / altura > 1.5;
   const borroes = Array.from({ length: 4 }, () => {
     const cx = Math.round(r() * largura);
     const cy = Math.round(r() * altura);
@@ -82,67 +92,67 @@ function svg(nome, largura, altura, icone) {
   </defs>
   <rect width="${largura}" height="${altura}" fill="url(#f)"/>
   <g filter="url(#b)">${borroes}</g>
-  <g transform="translate(${largura / 2} ${altura / 2}) scale(${escala}) translate(-50 -50)"
+  ${capa ? "" : `<g transform="translate(${largura / 2} ${altura / 2}) scale(${escala}) translate(-50 -50)"
      fill="none" stroke="#fffdf9" stroke-opacity="0.62" stroke-width="3.6"
      stroke-linecap="round" stroke-linejoin="round">
     <path d="${desenho}"/>
-  </g>
+  </g>`}
 </svg>`);
 }
 
 const IMAGENS = [
   // Estúdio de yoga e pilates
-  ["raiz-capa", 1600, 900, "yoga"],
-  ["raiz-logo", 512, 512, "planta"],
-  ["raiz-1", 1000, 1000, "yoga"],
-  ["raiz-2", 1000, 1000, "peso"],
-  ["raiz-3", 1000, 1000, "folha"],
-  ["raiz-g1", 1000, 1000, "planta"],
-  ["raiz-g2", 1000, 1000, "yoga"],
-  ["raiz-g3", 1000, 1000, "folha"],
+  ["raiz-capa", 1600, 900, "yoga", "verde"],
+  ["raiz-logo", 512, 512, "planta", "verde"],
+  ["raiz-1", 1000, 1000, "yoga", "verde"],
+  ["raiz-2", 1000, 1000, "peso", "verde"],
+  ["raiz-3", 1000, 1000, "folha", "verde"],
+  ["raiz-g1", 1000, 1000, "planta", "verde"],
+  ["raiz-g2", 1000, 1000, "yoga", "verde"],
+  ["raiz-g3", 1000, 1000, "folha", "verde"],
 
   // Nutricionista
-  ["nutri-capa", 1600, 900, "prato"],
-  ["nutri-logo", 512, 512, "folha"],
-  ["nutri-1", 1000, 1000, "prato"],
-  ["nutri-2", 1000, 1000, "planta"],
-  ["nutri-3", 1000, 1000, "caixa"],
-  ["nutri-g1", 1000, 1000, "prato"],
-  ["nutri-g2", 1000, 1000, "folha"],
-  ["nutri-g3", 1000, 1000, "planta"],
+  ["nutri-capa", 1600, 900, "prato", "trigo"],
+  ["nutri-logo", 512, 512, "folha", "trigo"],
+  ["nutri-1", 1000, 1000, "prato", "trigo"],
+  ["nutri-2", 1000, 1000, "planta", "trigo"],
+  ["nutri-3", 1000, 1000, "caixa", "trigo"],
+  ["nutri-g1", 1000, 1000, "prato", "trigo"],
+  ["nutri-g2", 1000, 1000, "folha", "trigo"],
+  ["nutri-g3", 1000, 1000, "planta", "trigo"],
 
   // Psicóloga
-  ["psi-capa", 1600, 900, "poltrona"],
-  ["psi-logo", 512, 512, "planta"],
-  ["psi-1", 1000, 1000, "poltrona"],
-  ["psi-2", 1000, 1000, "folha"],
-  ["psi-3", 1000, 1000, "planta"],
-  ["psi-g1", 1000, 1000, "poltrona"],
-  ["psi-g2", 1000, 1000, "planta"],
+  ["psi-capa", 1600, 900, "poltrona", "sereno"],
+  ["psi-logo", 512, 512, "planta", "sereno"],
+  ["psi-1", 1000, 1000, "poltrona", "sereno"],
+  ["psi-2", 1000, 1000, "folha", "sereno"],
+  ["psi-3", 1000, 1000, "planta", "sereno"],
+  ["psi-g1", 1000, 1000, "poltrona", "sereno"],
+  ["psi-g2", 1000, 1000, "planta", "sereno"],
 
-  ["capa", 1600, 900, "loja"],
-  ["logo", 512, 512, "doce"],
-  ["bolo-1", 1000, 1000, "bolo"],
-  ["bolo-2", 1000, 1000, "bolo"],
-  ["bolo-3", 1000, 1000, "doce"],
-  ["torta-1", 1000, 1000, "torta"],
-  ["torta-2", 1000, 1000, "torta"],
-  ["coxinha-1", 1000, 1000, "salgado"],
-  ["brigadeiro-1", 1000, 1000, "doce"],
-  ["brigadeiro-2", 1000, 1000, "caixa"],
-  ["pote-1", 1000, 1000, "pote"],
-  ["galeria-1", 1000, 1000, "vitrine"],
-  ["galeria-2", 1000, 1000, "cafe"],
-  ["galeria-3", 1000, 1000, "loja"],
-  ["galeria-4", 1000, 1000, "folha"],
-  ["galeria-5", 1000, 1000, "caixa"],
-  ["galeria-6", 1000, 1000, "bolo"],
+  ["capa", 1600, 900, "loja", "doce"],
+  ["logo", 512, 512, "doce", "doce"],
+  ["bolo-1", 1000, 1000, "bolo", "doce"],
+  ["bolo-2", 1000, 1000, "bolo", "doce"],
+  ["bolo-3", 1000, 1000, "doce", "doce"],
+  ["torta-1", 1000, 1000, "torta", "doce"],
+  ["torta-2", 1000, 1000, "torta", "doce"],
+  ["coxinha-1", 1000, 1000, "salgado", "doce"],
+  ["brigadeiro-1", 1000, 1000, "doce", "doce"],
+  ["brigadeiro-2", 1000, 1000, "caixa", "doce"],
+  ["pote-1", 1000, 1000, "pote", "doce"],
+  ["galeria-1", 1000, 1000, "vitrine", "doce"],
+  ["galeria-2", 1000, 1000, "cafe", "doce"],
+  ["galeria-3", 1000, 1000, "loja", "doce"],
+  ["galeria-4", 1000, 1000, "folha", "doce"],
+  ["galeria-5", 1000, 1000, "caixa", "doce"],
+  ["galeria-6", 1000, 1000, "bolo", "doce"],
 ];
 
 await mkdir(SAIDA, { recursive: true });
 
-for (const [nome, largura, altura, icone] of IMAGENS) {
-  await sharp(svg(nome, largura, altura, icone))
+for (const [nome, largura, altura, icone, familia] of IMAGENS) {
+  await sharp(svg(nome, largura, altura, icone, familia))
     .jpeg({ quality: 78, mozjpeg: true })
     .toFile(`${SAIDA}${nome}.jpg`);
   console.log(`ok ${nome}.jpg ${largura}x${altura}`);
