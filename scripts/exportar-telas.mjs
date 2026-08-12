@@ -115,7 +115,7 @@ const TELAS = [
     grupo: "O produto",
     largura: "celular",
     vitrine: "Estúdio de yoga",
-    nota: "Exemplo no plano pago: botão principal apontando para a agenda e WhatsApp como segundo botão, letra escolhida, e sem o rodapé feito com Banca. A seção do catálogo se chama Aulas e planos.",
+    nota: "Exemplo no plano pago: botão principal apontando para a agenda e WhatsApp como segundo botão, letra escolhida, e sem o rodapé feito com Entrais. A seção do catálogo se chama Aulas e planos.",
   },
   {
     id: "nutri",
@@ -362,7 +362,7 @@ function montarPagina(telas) {
     )
     .join("");
 
-  return `<title>Banca, telas para revisão</title>
+  return `<title>Entrais, telas para revisão</title>
 <style>
   :root {
     --ground: #faf8f5;
@@ -625,7 +625,7 @@ function montarPagina(telas) {
 </style>
 
 <div class="largura abertura">
-  <p class="eyebrow">Banca, revisão de interface</p>
+  <p class="eyebrow">Entrais, revisão de interface</p>
   <h1>Quatro negócios, a mesma página.</h1>
   <p class="intro">
     Uma doceria, um estúdio de yoga, uma nutricionista e uma psicóloga. Toque

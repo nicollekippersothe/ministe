@@ -1,6 +1,5 @@
+import { NOME_PRODUTO } from "@/lib/marca";
 import type { Negocio } from "@/lib/tipos";
-
-export const NOME_PRODUTO = "Banca";
 
 /**
  * O rodape so aparece no plano gratuito. E a assinatura que faz o produto

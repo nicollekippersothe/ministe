@@ -4,6 +4,7 @@ import { SeloHorario } from "@/componentes/SeloHorario";
 import { acoesDoRodape } from "@/lib/acoes";
 import { combinacao } from "@/lib/fontes";
 import { diaCivilDe, estadoAgora, montarJanela } from "@/lib/horarios";
+import { DOMINIO_PUBLICO } from "@/lib/marca";
 import type { Negocio } from "@/lib/tipos";
 
 /**
@@ -109,7 +110,7 @@ export function Fragmentos({ negocio }: { negocio: Negocio }) {
                 </p>
               ) : null}
               <p className="mt-2 text-[0.7rem] tracking-wide text-suave uppercase">
-                banca.app
+                {DOMINIO_PUBLICO}
               </p>
             </div>
           </div>

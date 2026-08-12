@@ -33,11 +33,11 @@ transação e desfaz tudo no fim, então pode ser executado com dados reais.
 ```
 initdb -D /tmp/pg/data -U postgres --auth=trust
 pg_ctl -D /tmp/pg/data -o "-p 5433" start
-createdb -h localhost -p 5433 -U postgres banca
+createdb -h localhost -p 5433 -U postgres entrais
 
-psql -h localhost -p 5433 -U postgres -d banca -f supabase/local/stub.sql
-psql -h localhost -p 5433 -U postgres -d banca -f supabase/schema.sql
-psql -h localhost -p 5433 -U postgres -d banca -f supabase/testes-rls.sql
+psql -h localhost -p 5433 -U postgres -d entrais -f supabase/local/stub.sql
+psql -h localhost -p 5433 -U postgres -d entrais -f supabase/schema.sql
+psql -h localhost -p 5433 -U postgres -d entrais -f supabase/testes-rls.sql
 ```
 
 ## Decisões que ficaram no schema

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
 import { Fragmentos } from "@/componentes/inicial/Fragmentos";
 import { Telefone } from "@/componentes/inicial/Telefone";
-import { NOME_PRODUTO } from "@/componentes/Rodape";
+import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
 import { MODO_VITRINE } from "@/lib/site";

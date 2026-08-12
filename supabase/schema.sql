@@ -1,5 +1,5 @@
 -- =============================================================================
--- Banca, schema inicial
+-- Entrais, schema inicial
 -- =============================================================================
 -- Rodar uma vez, no SQL Editor do Supabase, no projeto vazio.
 --
@@ -29,7 +29,7 @@ insert into public.slugs_reservados (slug) values
   ('admin'), ('conta'), ('assinatura'), ('cobranca'), ('suporte'),
   ('ajuda'), ('sobre'), ('precos'), ('termos'), ('privacidade'),
   ('denunciar'), ('contato'), ('blog'), ('demo'), ('exemplo'),
-  ('banca'), ('app'), ('www'), ('static'), ('assets'), ('public'),
+  ('entrais'), ('app'), ('www'), ('static'), ('assets'), ('public'),
   ('_next'), ('favicon'), ('robots'), ('sitemap'), ('opengraph-image');
 
 -- -----------------------------------------------------------------------------

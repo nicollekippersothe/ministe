@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { NOME_PRODUTO } from "@/lib/marca";
 import { urlBase } from "@/lib/site";
 import "./globals.css";
 
@@ -15,7 +16,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(urlBase),
-  title: "Banca",
+  title: NOME_PRODUTO,
   description:
     "Uma página pronta para o negócio local que hoje só tem Instagram.",
 };

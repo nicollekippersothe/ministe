@@ -44,7 +44,7 @@ await p.fill("input[name=slug]", "Doceria da Ana!!");
 await p.waitForTimeout(800);
 passo(
   "o endereço é limpo e conferido enquanto digita",
-  (await p.textContent("[aria-live]")).includes("banca.app/doceria-da-ana"),
+  (await p.textContent("[aria-live]")).includes("/doceria-da-ana"),
 );
 
 await p.fill("input[name=slug]", "painel");
@@ -170,7 +170,7 @@ passo(
   (await p.textContent("body")).includes("Pedir pelo iFood"),
 );
 passo(
-  "o rodapé feito com Banca some no plano pago",
+  "o rodapé feito com Entrais some no plano pago",
   (await p.textContent("body")).includes("feito com"),
 );
 

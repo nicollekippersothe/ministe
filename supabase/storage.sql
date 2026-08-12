@@ -1,5 +1,5 @@
 -- =============================================================================
--- Banca, Storage das imagens
+-- Entrais, Storage das imagens
 -- =============================================================================
 -- Rodar depois do schema.sql, no SQL Editor do Supabase.
 --

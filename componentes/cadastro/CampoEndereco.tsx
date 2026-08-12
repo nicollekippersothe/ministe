@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { conferirFormato, MOTIVOS, normalizar } from "@/lib/slug";
 
 type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
@@ -101,12 +102,12 @@ export function CampoEndereco({ inicial = "" }: { inicial?: string }) {
         {slug === "" ? (
           <span className="text-suave">
             Vai ficar em{" "}
-            <span className="font-medium text-texto">banca.app/</span>
+            <span className="font-medium text-texto">{DOMINIO_PUBLICO}/</span>
           </span>
         ) : (
           <>
             <span className="font-medium break-all text-texto">
-              banca.app/{slug}
+              {DOMINIO_PUBLICO}/{slug}
             </span>
             {estado === "conferindo" ? (
               <span className="text-suave">conferindo...</span>

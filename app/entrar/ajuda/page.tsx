@@ -20,7 +20,7 @@ const CAUSAS = [
   {
     titulo: "O link não chegou",
     texto:
-      "Procure por Banca na caixa de spam e na aba de promoções. A entrega pode levar até cinco minutos.",
+      "Procure por Entrais na caixa de spam e na aba de promoções. A entrega pode levar até cinco minutos.",
   },
   {
     titulo: "O link expirou",

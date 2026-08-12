@@ -11,7 +11,7 @@ export const RESERVADOS = new Set([
   "admin", "conta", "assinatura", "cobranca", "suporte",
   "ajuda", "sobre", "precos", "termos", "privacidade",
   "denunciar", "contato", "blog", "demo", "exemplo",
-  "banca", "app", "www", "static", "assets", "public",
+  "entrais", "app", "www", "static", "assets", "public",
   "_next", "favicon", "robots", "sitemap", "opengraph-image", "icon",
 ]);
 

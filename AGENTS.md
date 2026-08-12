@@ -1,8 +1,11 @@
-# Banca
+# Entrais
 
-Nome provisório. Micro-SaaS que dá uma página pronta para o negócio local que
-hoje só tem Instagram: endereço, horário, cardápio e um botão de WhatsApp que
-já abre a conversa escrita.
+Micro-SaaS que dá uma página pronta para o negócio local que hoje só tem
+Instagram: endereço, horário, cardápio e um botão de WhatsApp que já abre a
+conversa escrita.
+
+O nome da marca e o domínio ficam em `lib/marca.ts`, um lugar só. Não escrever
+nenhum dos dois direto no meio do texto de tela.
 
 ## Regras de escrita
 

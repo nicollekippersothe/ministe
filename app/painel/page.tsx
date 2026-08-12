@@ -8,6 +8,7 @@ import {
   IconeWhatsapp,
 } from "@/componentes/Icones";
 import { doDono } from "@/lib/dados";
+import { DOMINIO_PUBLICO } from "@/lib/marca";
 
 import { exigirLogin } from "@/app/painel/vitrine";
 
@@ -60,7 +61,8 @@ export default async function Painel() {
         </p>
 
         <p className="mt-3 text-sm break-all text-suave">
-          banca.app/<span className="font-medium text-texto">{negocio.slug}</span>
+          {DOMINIO_PUBLICO}/
+          <span className="font-medium text-texto">{negocio.slug}</span>
         </p>
 
         <div className="mt-4 flex flex-col gap-2.5">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NOME_PRODUTO } from "@/componentes/Rodape";
+import { NOME_PRODUTO } from "@/lib/marca";
 import { MODO_VITRINE } from "@/lib/site";
 
 /**

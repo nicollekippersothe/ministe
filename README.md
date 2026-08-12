@@ -1,6 +1,4 @@
-# Banca
-
-Nome provisório.
+# Entrais
 
 Uma página pronta para o negócio local que hoje só tem Instagram: endereço,
 horário, cardápio ou catálogo, e um botão de WhatsApp que já abre a conversa

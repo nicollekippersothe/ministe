@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NOME_PRODUTO } from "@/lib/marca";
 
 export const metadata: Metadata = {
   title: "Painel",
@@ -19,7 +20,7 @@ export default function LayoutPainel({
           href="/painel"
           className="text-sm font-semibold tracking-[0.16em] text-destaque uppercase"
         >
-          Banca
+          {NOME_PRODUTO}
         </Link>
         {children}
       </div>

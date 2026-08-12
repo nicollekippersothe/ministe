@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { NOME_PRODUTO } from "@/componentes/Rodape";
+import { NOME_PRODUTO } from "@/lib/marca";
 
 /**
  * Moldura das telas de entrada e cadastro. Uma coluna estreita, centralizada,
