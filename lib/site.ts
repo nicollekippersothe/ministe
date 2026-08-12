@@ -18,13 +18,19 @@ export const CONTATO_SUPORTE: string | null =
  * Modo vitrine.
  *
  * Enquanto o login não existe, o painel não pode ir para a internet: quem
- * chegasse no endereço editaria a página dos outros. Com MODO_VITRINE=1 a
- * publicação fica segura: as páginas de exemplo e a tela inicial funcionam,
- * e as rotas de painel e cadastro respondem 404.
+ * chegasse no endereço editaria a página dos outros. Em modo vitrine as
+ * páginas de exemplo e a tela inicial funcionam, e as rotas de painel e
+ * cadastro respondem 404. Os dados também ficam só de leitura, o que resolve
+ * o outro problema: na Vercel o disco é somente leitura.
  *
- * Também deixa os dados só de leitura, o que resolve o outro problema: na
- * Vercel o disco é somente leitura, então gravar em arquivo falharia.
+ * O padrão é ligado na Vercel e desligado na máquina, e é de propósito:
+ * esquecer de definir uma variável não pode ser o que abre o painel para a
+ * internet. O erro possível passa a ser o inofensivo (vitrine demais), e não
+ * o perigoso. Para abrir na Vercel é preciso dizer MODO_VITRINE=0, na mão,
+ * sabendo o que está fazendo.
  *
  * Sai quando o Supabase Auth entrar.
  */
-export const MODO_VITRINE = process.env.MODO_VITRINE === "1";
+export const MODO_VITRINE =
+  process.env.MODO_VITRINE === "1" ||
+  (process.env.MODO_VITRINE !== "0" && process.env.VERCEL === "1");

@@ -1,30 +1,41 @@
 /**
- * Monta os mockups de celular para portfólio.
+ * Monta as peças de portfólio.
  *
  * A tela dentro do aparelho não é desenho: é a página de verdade, aberta num
- * navegador de verdade num iPhone 15 emulado e fotografada em 3x. Então o
- * mockup nunca promete uma interface que o produto não tem, que é o defeito
- * de todo mockup feito à mão.
+ * iPhone 15 emulado e fotografada em 3x. Então a peça nunca promete uma
+ * interface que o produto não tem, que é o defeito de todo mockup feito à mão.
  *
- * A moldura, a barra de status e o fundo são HTML e CSS, montados aqui e
- * fotografados junto. Nada de biblioteca de composição de imagem.
+ * A moldura, o texto e o fundo seguem o guia de marca, não o design system do
+ * app. São duas coisas diferentes e o guia é explícito: dentro do produto vale
+ * a fonte do aparelho, mas em material de marca (site, posts, cartão de
+ * prévia) valem Archivo e IBM Plex Sans. Uma peça de portfólio é material de
+ * marca, então ela usa a letra da marca. Os arquivos ficam versionados em
+ * scripts/fontes-marca e entram embutidos, sem depender de rede.
  *
  * Como rodar:
  *   npm run build && npm start   (num terminal)
  *   npm run mockup               (no outro)
  */
 import { chromium, devices } from "playwright";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { simboloSvg } from "../lib/simbolo.ts";
 
 const BASE = process.env.BASE ?? "http://localhost:3000";
 const EXECUTAVEL = process.env.CHROMIUM;
 const SAIDA = process.env.SAIDA ?? "/tmp/mockup";
+const AQUI = fileURLToPath(new URL(".", import.meta.url));
 
-/* Cores do guia de marca. */
+/*
+ * Paleta do guia, com os nomes dele. A proporção de uso também é do guia:
+ * Areia 44, Branco 28, Tinta 18, Pedra 5, Barro 3, Conversa 2. Por isso o
+ * fundo é Areia, a moldura é Tinta, e Barro aparece uma vez só na peça.
+ */
 const AREIA = "#f4f0e8";
-const TINTA = "#1c1917";
 const BRANCO = "#ffffff";
+const TINTA = "#1c1917";
+const BARRO = "#7a4a2b";
 const PEDRA = "#736c67";
 
 /*
@@ -32,16 +43,21 @@ const PEDRA = "#736c67";
  * mostrariam três vezes a mesma coisa, e o produto tem mais do que capa.
  */
 const TELAS = [
-  { slug: "studio-raiz", rotulo: "Estúdio de yoga" },
-  { slug: "demo", rotulo: "Doceria" },
-  // Ancorar na seção, e não num número de pixel, é o que impede a foto de
-  // sair cortada no meio de um item quando o conteúdo do exemplo mudar.
-  { slug: "marina-nutricao", rotulo: "Nutricionista", ancora: "#catalogo-titulo" },
+  { slug: "studio-raiz", rotulo: "Estúdio de yoga", local: "Florianópolis" },
+  { slug: "demo", rotulo: "Doceria", local: "São Paulo" },
+  {
+    slug: "marina-nutricao",
+    rotulo: "Nutricionista",
+    local: "Curitiba",
+    // Ancorar na seção, e não num número de pixel, é o que impede a foto de
+    // sair cortada no meio de um item quando o conteúdo do exemplo mudar.
+    ancora: "#catalogo-titulo",
+  },
 ];
 
 /*
  * Altura da barra de status. Ela é desenhada por cima do site, então a foto
- * rolada precisa parar com a divisória da seção logo acima dela: assim o que
+ * rolada precisa parar com o respiro da seção encostando no topo: assim o que
  * fica debaixo da barra é espaço em branco, e não meia linha de texto.
  */
 const BARRA = 54;
@@ -49,6 +65,16 @@ const BARRA = 54;
 /* iPhone 15: 393 x 852 de tela. O preset do Playwright traz 659 de altura,
  * que é a área útil do Safari, e no mockup ela deixaria uma faixa branca. */
 const TELA = { largura: 393, altura: 852 };
+
+async function fonteEmbutida(arquivo) {
+  const dados = await readFile(join(AQUI, "fontes-marca", arquivo));
+  return `url(data:font/woff2;base64,${dados.toString("base64")}) format('woff2')`;
+}
+
+const [ARCHIVO, PLEX] = await Promise.all([
+  fonteEmbutida("archivo-700.woff2"),
+  fonteEmbutida("ibm-plex-sans.woff2"),
+]);
 
 const navegador = await chromium.launch(
   EXECUTAVEL ? { executablePath: EXECUTAVEL } : {},
@@ -71,8 +97,6 @@ for (const tela of TELAS) {
       const alvo = document.querySelector(sel);
       if (!alvo) return;
       const secao = alvo.closest("section") ?? alvo;
-      // Para com o respiro de cima da seção encostando no topo: o texto da
-      // seção anterior fica de fora e o título nasce logo abaixo da barra.
       const respiro = parseFloat(getComputedStyle(secao).paddingTop) || 0;
       scrollTo(0, secao.getBoundingClientRect().top + scrollY - respiro);
     }, { sel: tela.ancora });
@@ -85,11 +109,10 @@ for (const tela of TELAS) {
 }
 
 /**
- * A barra de status. O sistema desenha ela por cima do site, então sem ela o
- * mockup parece um navegador, não um telefone.
+ * A barra de status. O sistema desenha ela por cima do site, então sem ela a
+ * peça parece um navegador, não um telefone.
  */
-function barraDeStatus() {
-  return `
+const BARRA_STATUS = `
   <div class="status">
     <span class="hora">9:41</span>
     <span class="sinais">
@@ -111,41 +134,96 @@ function barraDeStatus() {
       </svg>
     </span>
   </div>`;
-}
 
-function aparelho(captura) {
+function aparelho(captura, comRotulo) {
   return `
-  <div class="aparelho">
-    <div class="tela">
-      <img src="data:image/png;base64,${captura.dados}" alt="Página de ${captura.rotulo} aberta no celular">
-      ${barraDeStatus()}
-      <span class="ilha" aria-hidden="true"></span>
-      <span class="indicador" aria-hidden="true"></span>
+  <figure class="coluna">
+    <div class="aparelho">
+      <div class="tela">
+        <img src="data:image/png;base64,${captura.dados}" alt="Página de ${captura.rotulo} aberta no celular">
+        ${BARRA_STATUS}
+        <span class="ilha" aria-hidden="true"></span>
+        <span class="indicador" aria-hidden="true"></span>
+      </div>
     </div>
-  </div>`;
+    ${comRotulo ? `<figcaption class="rotulo">${captura.rotulo} · ${captura.local}</figcaption>` : ""}
+  </figure>`;
 }
 
 const ESTILO = `
-  @page { margin: 0; }
+  @font-face {
+    font-family: 'Archivo';
+    font-weight: 700;
+    font-style: normal;
+    src: ${ARCHIVO};
+  }
+  @font-face {
+    font-family: 'IBM Plex Sans';
+    font-weight: 400 600;
+    font-style: normal;
+    src: ${PLEX};
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     background: ${AREIA};
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: ${TINTA};
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  .peca { display: flex; flex-direction: column; background: ${AREIA}; }
+
+  /* Cabeçalho: a voz da marca, na escala do guia. */
+  .cabeca { padding: 76px 72px 0; }
+
+  /* Rótulo 12/1.4/600 caps. É a única aparição de Barro na peça. */
+  .sobrancelha {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: ${BARRO};
+  }
+  .sobrancelha svg { display: block; }
+
+  /* Display 48/1.1/700, Archivo, sempre com tracking negativo em corpo grande. */
+  .manifesto {
+    margin-top: 20px;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    max-width: 15ch;
+  }
+  .manifesto .segunda { color: ${BARRO}; }
+
+  /* Corpo 16/1.6/400. Concreto antes de aspiracional. */
+  .concreto {
+    margin-top: 16px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: ${PEDRA};
+    max-width: 46ch;
   }
 
   .palco {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: center;
-    background: ${AREIA};
+    padding: 56px 60px 0;
   }
+  .coluna { display: flex; flex-direction: column; align-items: center; }
 
   /*
    * A moldura. Proporção do iPhone 15: tela de 393 x 852 com raio de 55.
-   * A borda preta é fina de propósito, porque moldura grossa data o mockup.
+   * Borda fina de propósito, porque moldura grossa data a peça.
    */
   .aparelho {
     width: ${TELA.largura}px;
@@ -178,6 +256,7 @@ const ESTILO = `
     padding: 0 32px 0 36px;
     color: ${TINTA};
     fill: currentColor;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   }
   .hora { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
   .sinais { display: flex; align-items: center; gap: 7px; }
@@ -205,40 +284,69 @@ const ESTILO = `
     opacity: 0.35;
   }
 
-  /* Um aparelho: respiro igual dos quatro lados. */
-  .solo { padding: 96px 96px 0; }
+  /* Rótulo 12/1.4/600 caps, o mesmo da sobrancelha, em Pedra. */
+  .rotulo {
+    margin-top: 20px;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: ${PEDRA};
+    white-space: nowrap;
+  }
 
   /*
    * Três aparelhos: o do meio na frente e mais alto. Grade de três iguais é
    * uma das armadilhas de layout que a gente evita, então eles se sobrepõem
    * e ficam em alturas diferentes, como telefone largado em cima da mesa.
    */
-  .trio { padding: 96px 60px 58px; gap: 0; }
-  .trio .aparelho { margin-inline: -16px; }
-  .trio .aparelho:nth-child(1) { transform: translateY(52px) scale(0.95); z-index: 1; }
-  .trio .aparelho:nth-child(2) { z-index: 3; }
-  .trio .aparelho:nth-child(3) { transform: translateY(52px) scale(0.95); z-index: 2; }
+  .trio .coluna { margin-inline: -16px; }
+  /*
+   * A transformação é do aparelho, não da coluna. Transformando a coluna, o
+   * rótulo desce junto e os três param em alturas quase iguais, que é o pior
+   * dos mundos: parece desalinhamento, não escolha. Assim os telefones se
+   * escalonam e as legendas ficam numa linha só.
+   */
+  .trio .coluna:nth-child(1) .aparelho { transform: translateY(52px) scale(0.95); }
+  .trio .coluna:nth-child(1) { z-index: 1; }
+  .trio .coluna:nth-child(2) { z-index: 3; }
+  .trio .coluna:nth-child(3) .aparelho { transform: translateY(52px) scale(0.95); }
+  .trio .coluna:nth-child(3) { z-index: 2; }
+  .trio .rotulo { margin-top: 96px; }
 
+  /* Assinatura de etiqueta: o símbolo e a palavra, e mais nada. */
   .assinatura {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
     justify-content: center;
-    gap: 4px 10px;
-    padding: 44px 48px 48px;
-    background: ${AREIA};
+    gap: 11px;
+    padding: 64px 60px 60px;
   }
-  .marca { font-size: 17px; font-weight: 700; letter-spacing: -0.015em; }
-  .dizer { font-size: 15px; color: ${PEDRA}; }
+  .assinatura svg { display: block; }
+  .marca {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.015em;
+    color: ${TINTA};
+  }
 `;
 
 function pagina(corpo, largura) {
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <style>${ESTILO}\nbody { width: ${largura}px; }</style></head><body>
-${corpo}
-<div class="assinatura">
-  <span class="marca">entrais</span>
-  <span class="dizer">Você não é um link. É um endereço.</span>
+<div class="peca">
+  <header class="cabeca">
+    <p class="sobrancelha">${simboloSvg(BARRO, 14)} Vitrine profissional</p>
+    <h1 class="manifesto">Você não é um link.<br><span class="segunda">É um endereço.</span></h1>
+    <p class="concreto">
+      Endereço, horário, catálogo e um botão de WhatsApp que já abre a conversa
+      escrita. O dono preenche do celular e publica em minutos.
+    </p>
+  </header>
+  ${corpo}
+  <p class="assinatura">${simboloSvg(TINTA, 26)}<span class="marca">entrais</span></p>
 </div>
 </body></html>`;
 }
@@ -248,13 +356,15 @@ await mkdir(SAIDA, { recursive: true });
 const pecas = [
   {
     arquivo: "entrais-celular.png",
-    largura: 585,
-    corpo: `<div class="palco solo">${aparelho(capturas[1])}</div>`,
+    largura: 760,
+    corpo: `<div class="palco">${aparelho(capturas[1], false)}</div>`,
   },
   {
     arquivo: "entrais-celular-trio.png",
     largura: 1300,
-    corpo: `<div class="palco trio">${capturas.map(aparelho).join("")}</div>`,
+    corpo: `<div class="palco trio">${capturas
+      .map((c) => aparelho(c, true))
+      .join("")}</div>`,
   },
 ];
 
@@ -264,12 +374,12 @@ for (const peca of pecas) {
   await writeFile(html, pagina(peca.corpo, peca.largura), "utf8");
   await folha.setViewportSize({ width: peca.largura, height: 900 });
   await folha.goto(`file://${html}`, { waitUntil: "load" });
-  await folha.waitForTimeout(300);
-  // 2x: um PNG que aguenta tela retina e recorte sem borrar.
+  // A fonte embutida ainda assim é aplicada depois do primeiro desenho.
+  await folha.evaluate(() => document.fonts.ready);
+  await folha.waitForTimeout(400);
   await folha.screenshot({
     path: join(SAIDA, peca.arquivo),
     fullPage: true,
-    scale: "css",
     type: "png",
   });
   console.log(`  montou ${peca.arquivo}`);
