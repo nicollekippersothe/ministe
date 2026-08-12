@@ -44,7 +44,7 @@ const PEDRA = "#736c67";
  */
 const TELAS = [
   { slug: "studio-raiz", rotulo: "Estúdio de yoga", local: "Florianópolis" },
-  { slug: "demo", rotulo: "Doceria", local: "São Paulo" },
+  { slug: "demo", rotulo: "Confeitaria", local: "São Paulo" },
   {
     slug: "marina-nutricao",
     rotulo: "Nutricionista",

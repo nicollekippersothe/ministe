@@ -78,7 +78,7 @@ await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });
 passo("o painel mostra o estado da página", (await p.textContent("body")).includes("No ar"));
 
 await p.goto(`${BASE}/painel/negocio`, { waitUntil: "networkidle" });
-await p.fill("#nome", "Cantinho da Rô, Doces e Salgados");
+await p.fill("#nome", "Café Alecrim, Confeitaria");
 await p.fill("#frase", "Bolo de pote, torta e salgado de festa, por encomenda.");
 await p.fill("#whatsapp", "(11) 98888-7777");
 await p.click('button[type="submit"]');
@@ -91,7 +91,7 @@ passo(
 
 await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 const publica = await p.textContent("body");
-passo("a página pública mostra o nome novo", publica.includes("Cantinho da Rô, Doces"));
+passo("a página pública mostra o nome novo", publica.includes("Café Alecrim, Confeitaria"));
 passo("a página pública mostra a frase nova", publica.includes("Bolo de pote"));
 passo(
   "o link do WhatsApp sai com o código do país",
@@ -139,15 +139,18 @@ passo(
   (await p.textContent("body")).includes("plano pago"),
 );
 
+// Os quatro exemplos usam a letra padrão de propósito: numa peça com vários
+// negócios lado a lado, quatro letras diferentes fazem parecer quatro
+// produtos. Quem prova que a escolha existe é a tela de aparência, acima.
 await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 passo(
   "a página gratuita usa a letra padrão",
   (await p.getAttribute("[data-fonte]", "data-fonte")) === "moderno",
 );
+await p.goto(`${BASE}/studio-raiz`, { waitUntil: "networkidle" });
 passo(
-  "a página do plano pago usa a letra escolhida",
-  (await (await p.goto(`${BASE}/studio-raiz`)) &&
-    (await p.getAttribute("[data-fonte]", "data-fonte"))) === "editorial",
+  "e a do plano pago usa a mesma, para os exemplos ficarem irmãos",
+  (await p.getAttribute("[data-fonte]", "data-fonte")) === "moderno",
 );
 
 // ---------------------------------------------------------------------------
