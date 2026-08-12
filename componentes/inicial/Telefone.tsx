@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { BotaoAcao } from "@/componentes/BarraAcoes";
-import { Capa } from "@/componentes/Capa";
-import { IconePin } from "@/componentes/Icones";
+import { IconeDoLink, IconePin, IconeSeta } from "@/componentes/Icones";
 import { SeloHorario } from "@/componentes/SeloHorario";
 import { acoesDoRodape } from "@/lib/acoes";
 import { combinacao } from "@/lib/fontes";
+import { preco } from "@/lib/formato";
 import { diaCivilDe, estadoAgora, montarJanela } from "@/lib/horarios";
 import type { Negocio } from "@/lib/tipos";
 
@@ -15,6 +15,12 @@ import type { Negocio } from "@/lib/tipos";
  * dados de verdade, calculados no servidor na hora. Se a página do cliente
  * mudar, isto muda junto, e a tela inicial nunca promete o que o produto
  * não entrega.
+ *
+ * A tela rola sozinha, de cima até o fim e de volta. Uma página parada mostra
+ * a capa e o nome; rolando, mostra que existe catálogo com preço, horário,
+ * endereço e botões embaixo, que é o que a pessoa precisa ver para entender o
+ * que está comprando. A rolagem é uma animação de transform, sem JavaScript, e
+ * para de acontecer para quem pediu menos movimento no sistema.
  */
 export function Telefone({ negocio }: { negocio: Negocio }) {
   const agora = Date.now();
@@ -25,6 +31,8 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
   );
   const fonte = combinacao(negocio.fonte);
   const acoes = acoesDoRodape(negocio).slice(0, 1);
+  const itens = negocio.itens.filter((i) => i.ativo && i.fotos.length > 0);
+  const links = negocio.links.slice(0, 3);
 
   return (
     <div
@@ -34,47 +42,141 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
       <div
         data-tema={negocio.tema}
         data-fonte={fonte.chave}
-        className={`marca relative overflow-hidden rounded-[2rem] bg-superficie ${fonte.classe}`}
+        className={`marca relative h-[33rem] overflow-hidden rounded-[2rem] bg-superficie ${fonte.classe}`}
       >
-        <Capa negocio={negocio} nivel={2} />
+        {/*
+          A altura da janela vai junto na variável porque o keyframe precisa
+          dela para saber onde parar de subir: sobe a altura toda do conteúdo,
+          menos o que cabe na tela.
+        */}
+        <div className="rolagem" style={{ "--janela": "33rem" } as React.CSSProperties}>
+          {negocio.capa ? (
+            <Image
+              src={negocio.capa.url}
+              alt=""
+              width={negocio.capa.largura}
+              height={negocio.capa.altura}
+              priority
+              sizes="304px"
+              className="aspect-[16/9] w-full object-cover"
+            />
+          ) : null}
 
-        <div className="px-4 pt-4 pb-3">
-          <SeloHorario estado={estado} />
-        </div>
-
-        {negocio.endereco ? (
-          <div className="px-4 pb-4">
-            <div className="flex items-start gap-2.5 rounded-xl border border-borda bg-fundo p-3">
-              <IconePin className="mt-0.5 h-4 w-4 shrink-0 text-destaque" />
-              <span className="text-[0.8rem] leading-relaxed text-suave">
-                {negocio.endereco}
-              </span>
-            </div>
-          </div>
-        ) : null}
-
-        {negocio.galeria.length >= 3 ? (
-          <div className="grid grid-cols-3 gap-1 px-4 pb-24">
-            {negocio.galeria.slice(0, 3).map((foto) => (
-              <div key={foto.url} className="overflow-hidden rounded-md bg-borda">
+          <div className="flex flex-col items-center px-4 text-center">
+            {negocio.logo ? (
+              <div className="relative -mt-9 h-18 w-18 overflow-hidden rounded-full border-4 border-superficie bg-superficie">
                 <Image
-                  src={foto.url}
+                  src={negocio.logo.url}
                   alt=""
-                  width={foto.largura}
-                  height={foto.altura}
-                  sizes="96px"
-                  className="aspect-square w-full object-cover"
+                  width={negocio.logo.largura}
+                  height={negocio.logo.altura}
+                  sizes="72px"
+                  className="h-full w-full object-cover"
                 />
               </div>
-            ))}
+            ) : null}
+            <p className="titulo mt-2 text-[1.35rem] leading-tight text-texto">
+              {negocio.nome}
+            </p>
+            {negocio.frase ? (
+              <p className="mt-1.5 text-[0.78rem] leading-relaxed text-suave">
+                {negocio.frase}
+              </p>
+            ) : null}
           </div>
-        ) : (
-          <div className="pb-24" />
-        )}
+
+          <div className="px-4 pt-4">
+            <SeloHorario estado={estado} />
+          </div>
+
+          {negocio.endereco ? (
+            <div className="px-4 pt-3">
+              <div className="flex items-start gap-2.5 rounded-xl border border-borda bg-fundo p-3">
+                <IconePin className="mt-0.5 h-4 w-4 shrink-0 text-destaque" />
+                <span className="text-[0.78rem] leading-relaxed text-suave">
+                  {negocio.endereco}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
+          {itens.length > 0 ? (
+            <div className="px-4 pt-6">
+              <p className="titulo text-[1.05rem] text-texto">
+                {negocio.tituloCatalogo}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-4">
+                {itens.slice(0, 4).map((item) => (
+                  <div key={item.id} className="flex flex-col gap-1.5">
+                    <Image
+                      src={item.fotos[0].url}
+                      alt=""
+                      width={item.fotos[0].largura}
+                      height={item.fotos[0].altura}
+                      sizes="140px"
+                      className="aspect-square w-full rounded-lg object-cover"
+                    />
+                    <p className="text-[0.74rem] leading-snug font-semibold text-texto">
+                      {item.titulo}
+                    </p>
+                    {item.precoCentavos !== null ? (
+                      <p className="text-[0.74rem] font-semibold tabular-nums text-texto">
+                        {preco(item.precoCentavos)}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {negocio.galeria.length >= 3 ? (
+            <div className="px-4 pt-6">
+              <p className="titulo text-[1.05rem] text-texto">Fotos</p>
+              <div className="mt-3 grid grid-cols-3 gap-1.5">
+                {negocio.galeria.slice(0, 6).map((foto) => (
+                  <Image
+                    key={foto.url}
+                    src={foto.url}
+                    alt=""
+                    width={foto.largura}
+                    height={foto.altura}
+                    sizes="92px"
+                    className="aspect-square w-full rounded-md object-cover"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {links.length > 0 ? (
+            <div className="px-4 pt-6">
+              <p className="titulo text-[1.05rem] text-texto">Links</p>
+              <div className="mt-3 flex flex-col gap-2">
+                {links.map((link) => (
+                  <span
+                    key={link.id}
+                    className="flex items-center gap-2.5 rounded-lg border border-borda bg-fundo px-3 py-2.5 text-[0.78rem] font-medium text-texto"
+                  >
+                    <IconeDoLink
+                      icone={link.icone}
+                      className="h-4 w-4 text-destaque"
+                    />
+                    <span className="flex-1">{link.rotulo}</span>
+                    <IconeSeta className="h-3 w-3 text-suave" />
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Espaço para o conteúdo não terminar debaixo da barra fixa. */}
+          <div className="h-20" />
+        </div>
 
         <div className="absolute inset-x-0 bottom-0 border-t border-borda bg-fundo/92 px-3 pt-2.5 pb-4 backdrop-blur-sm">
           {acoes.map((a) => (
-            <BotaoAcao key={a.rotulo} acao={a} principal interativo={false} />
+            <BotaoAcao key={a.rotulo} acao={a} principal compacto interativo={false} />
           ))}
         </div>
       </div>

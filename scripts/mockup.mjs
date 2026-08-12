@@ -53,6 +53,14 @@ const TELAS = [
     // sair cortada no meio de um item quando o conteúdo do exemplo mudar.
     ancora: "#catalogo-titulo",
   },
+  {
+    slug: "demo",
+    rotulo: "Confeitaria",
+    local: "São Paulo",
+    // A pilha de links e a barra de contato, que é a parte que as pessoas
+    // reconhecem de imediato por causa das ferramentas de link na bio.
+    ancora: "#links-titulo",
+  },
 ];
 
 /*
@@ -84,6 +92,9 @@ const contexto = await navegador.newContext({
   ...devices["iPhone 15"],
   viewport: { width: TELA.largura, height: TELA.altura },
   deviceScaleFactor: 3,
+  // Sem isto a prévia de celular da tela inicial é fotografada no meio da
+  // rolagem automática, e cada execução rende uma peça diferente.
+  reducedMotion: "reduce",
 });
 
 const capturas = [];
@@ -112,10 +123,16 @@ for (const tela of TELAS) {
  * A tela inicial num monitor. Duas vezes o tamanho, para o texto aguentar
  * recorte e tela retina sem borrar.
  */
-const MONITOR = { largura: 1440, altura: 900 };
+/*
+ * 1000 e nao 900: a 900 a janela corta o titulo da segunda secao no meio da
+ * palavra, e titulo cortado ao meio le como peca mal montada. A 1000 o corte
+ * cai depois do titulo, em cima de uma imagem, onde ninguem estranha.
+ */
+const MONITOR = { largura: 1440, altura: 1000 };
 const contextoMonitor = await navegador.newContext({
   viewport: { width: MONITOR.largura, height: MONITOR.altura },
   deviceScaleFactor: 2,
+  reducedMotion: "reduce",
 });
 const paginaDesktop = await contextoMonitor.newPage();
 await paginaDesktop.goto(`${BASE}/`, { waitUntil: "load" });
@@ -472,8 +489,8 @@ function pagina(corpo, largura) {
     <p class="sobrancelha">${simboloSvg(BARRO, 14)} Presença profissional</p>
     <h1 class="manifesto">O endereço do seu negócio<br><span class="segunda">na internet.</span></h1>
     <p class="concreto">
-      Um lugar seu, com o seu nome, que aparece no Google e apresenta o
-      trabalho a quem procura. Pronto em minutos, feito do celular.
+      Catálogo, horário, localização e contato reunidos num endereço com o seu
+      nome, que abre no celular e aparece na busca de quem procura.
     </p>
   </header>
   ${corpo}
@@ -493,7 +510,10 @@ const pecas = [
   {
     arquivo: "entrais-celular-trio.png",
     largura: 1300,
+    // Três, não todas: a quarta captura existe para a peça do par, e um
+    // quarto aparelho aqui não caberia na largura da folha.
     corpo: `<div class="palco trio">${capturas
+      .slice(0, 3)
       .map((c) => aparelho(c, true))
       .join("")}</div>`,
   },
@@ -516,16 +536,20 @@ const pecas = [
     )}</div></div>`,
   },
   {
-    arquivo: "entrais-site-e-celular.png",
+    arquivo: "entrais-app-e-celular.png",
     largura: 1400,
-    // O par clássico de portfólio: a tela grande atrás, o celular encostado
-    // no canto. Prova numa imagem só que a mesma página serve os dois.
+    /*
+     * O par clássico de portfólio: a tela grande atrás, o celular encostado
+     * no canto. Prova numa imagem só que a mesma página serve os dois.
+     *
+     * A página do cliente atrás, e não a tela inicial: a tela inicial já tem
+     * um telefone desenhado dentro dela, e encostar outro ali vira telefone
+     * em cima de telefone. Atrás vai a página do Café Alecrim no monitor, e
+     * no celular a pilha de links da mesma página.
+     */
     corpo: `<div class="conjunto">
-      <div class="chao">${janela(DESKTOP, "entrais.app")}</div>
-      <!-- Outro negócio de propósito: a tela inicial já mostra o café dentro
-           dela, e repetir o mesmo cliente nos dois aparelhos parece erro de
-           montagem. Assim a peça prova que o mesmo produto serve os dois. -->
-      <div class="telefone">${aparelho(capturas[0], false)}</div>
+      <div class="chao">${janela(CLIENTE, "entrais.app/demo")}</div>
+      <div class="telefone">${aparelho(capturas[3], false)}</div>
     </div>`,
   },
 ];

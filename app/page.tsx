@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconeSeta } from "@/componentes/Icones";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
-import { Fragmentos } from "@/componentes/inicial/Fragmentos";
+import { Mosaico } from "@/componentes/inicial/Mosaico";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { NOME_PRODUTO } from "@/lib/marca";
@@ -16,81 +15,67 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: `${NOME_PRODUTO}, o endereço do seu negócio na internet`,
   description:
-    "Um lugar seu, com o seu nome, que aparece no Google e apresenta o seu trabalho a quem procura. Pronto em minutos, feito do celular.",
+    "Catálogo, horário, localização e contato reunidos num endereço com o seu nome, que abre no celular e aparece na busca de quem procura o seu serviço.",
 };
+
+/*
+ * Benefícios.
+ *
+ * Nenhum destes é sobre o que a página tem: isso já está no mosaico logo
+ * acima, mostrado com as peças de verdade. Aqui é o que muda para o dono
+ * depois de publicada, que é a parte que não dá para ver na tela.
+ */
+const BENEFICIOS = [
+  {
+    titulo: "O endereço é seu",
+    texto:
+      "As redes sociais mudam de regra e de alcance quando querem. O seu endereço fica onde está, com o mesmo nome.",
+  },
+  {
+    titulo: "Abre em qualquer sinal",
+    texto:
+      "A página chega inteira em menos de dois segundos, e continua abrindo onde a internet é fraca.",
+  },
+  {
+    titulo: "Trocar de nome não quebra o link",
+    texto:
+      "Se o negócio ganhar outro nome, quem guardou o endereço antigo chega no novo.",
+  },
+  {
+    titulo: "Editou, já está no ar",
+    texto:
+      "Mudou o horário na véspera do feriado, ou o preço de um item? Você altera do celular e quem abrir em seguida já vê.",
+  },
+];
 
 const PASSOS = [
   {
-    titulo: "Escolha o seu endereço",
-    texto: "Uma palavra, do jeito que as pessoas conhecem o seu negócio.",
+    titulo: "Escolha o endereço",
+    texto: "Uma palavra, do jeito que as pessoas já chamam o seu negócio.",
   },
   {
     titulo: "Preencha o essencial",
     texto:
-      "Nome, WhatsApp, horário e endereço. O resto entra quando você quiser.",
+      "Nome, contato, horário e localização. O catálogo entra quando você quiser.",
   },
   {
-    titulo: "Publique e compartilhe",
+    titulo: "Publique",
     texto:
-      "Na bio do Instagram, no WhatsApp, no cartão. O mesmo endereço em todo lugar.",
-  },
-];
-
-/*
- * Benefícios em texto, sem ícone dentro de bolinha e sem grade de três
- * colunas iguais. Cada um afirma uma coisa que dá para conferir abrindo o
- * produto, que é o que o guia chama de concreto antes de aspiracional.
- */
-const BENEFICIOS = [
-  {
-    titulo: "Atualizada por você",
-    texto:
-      "Mudou o horário de véspera de feriado? Você edita do celular e a página muda na hora, para todo mundo.",
-  },
-  {
-    titulo: "Abre instantânea",
-    texto:
-      "Feita para a rede do interior. Chega inteira em menos de dois segundos.",
-  },
-  {
-    titulo: "O endereço acompanha você",
-    texto:
-      "Mudou o nome do negócio? O anterior continua levando quem tem o link antigo.",
-  },
-  {
-    titulo: "Preenchida do celular",
-    texto:
-      "Do começo ao fim pela tela do telefone, com uma pergunta por vez.",
-  },
-];
-
-/*
- * Para quem serve, dito por segmento.
- *
- * A dúvida que aparece em dois segundos na cabeça de quem chega é "serve para
- * o meu caso?". Listar tipo de negócio responde isso mais rápido do que
- * qualquer promessa, e cada segmento tem um exemplo aberto logo abaixo.
- */
-const PUBLICOS = [
-  {
-    titulo: "Quem vende",
-    texto:
-      "Restaurante, confeitaria, loja de bairro, ateliê. O catálogo com foto e preço fica à vista, e o pedido começa na hora.",
-  },
-  {
-    titulo: "Quem atende",
-    texto:
-      "Consultório, estúdio, salão, clínica. Horário, endereço e serviços num lugar só, com a agenda a um toque.",
-  },
-  {
-    titulo: "Quem mostra o trabalho",
-    texto:
-      "Portfólio, professor, fotógrafo, profissional autônomo. Um endereço com o seu nome para deixar em qualquer lugar.",
+      "O mesmo endereço na bio do Instagram, no WhatsApp e no cartão impresso.",
   },
 ];
 
 export default async function Home() {
   const negocio = (await porSlug("demo")) ?? doceria;
+
+  /*
+   * O campo de endereço fica na abertura em qualquer situação: é ele que
+   * transforma visita em intenção, porque a pessoa vê o próprio nome no
+   * endereço e passa a querer aquele endereço. Enquanto o cadastro não abre,
+   * muda o rótulo do botão e a tela seguinte diz o que acontece, em vez de
+   * prometer uma criação que ainda não existe.
+   */
+  const rotulo = MODO_VITRINE ? "Continuar" : "Criar meu endereço";
 
   return (
     <div data-tema="areia" className="min-h-dvh bg-fundo">
@@ -113,89 +98,54 @@ export default async function Home() {
             <div className="max-w-xl">
               <h1 className="text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.038em] text-balance text-texto sm:text-[3.4rem]">
                 <span className="block text-destaque">Presença profissional.</span>
-                Crie o endereço do seu negócio na internet.
+                O endereço do seu negócio na internet.
               </h1>
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-suave">
-                Um lugar seu, com o seu nome, que aparece no Google e apresenta
-                o seu trabalho a quem procura. Pronto em minutos, feito do
-                celular.
+                Catálogo, horário, localização e contato reunidos num endereço
+                com o seu nome. Você manda para quem pergunta, e ele aparece na
+                busca para quem ainda não conhece o seu trabalho.
               </p>
 
-              {/*
-                O campo dentro da dobra é o que transforma visita em intenção:
-                a pessoa digita o próprio nome e passa a querer aquele
-                endereço. Enquanto o login não existe, o cadastro responde 404,
-                então em modo vitrine entram os dois botões no lugar dele.
-              */}
               <div className="mt-9 max-w-lg">
-                {MODO_VITRINE ? (
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Link
-                      href={`/${negocio.slug}`}
-                      className="flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
-                    >
-                      Ver um endereço por dentro
-                    </Link>
-                    <Link
-                      href="#tipos"
-                      className="flex h-13 items-center justify-center gap-1.5 rounded-full px-5 text-[1.05rem] font-medium text-destaque"
-                    >
-                      Ver para quem serve
-                      <IconeSeta className="h-4 w-4" />
-                    </Link>
-                  </div>
-                ) : (
-                  <CampoAbertura />
-                )}
+                <CampoAbertura rotulo={rotulo} />
               </div>
-
-              <p className="mt-6 text-sm text-suave">
-                {MODO_VITRINE
-                  ? "Os endereços abaixo estão no ar e funcionam. O cadastro abre quando o login estiver pronto."
-                  : "Funciona direto pelo navegador do celular."}
-              </p>
             </div>
 
             <div className="lg:pl-4">
               <Telefone negocio={negocio} />
-              <p className="mt-5 text-center text-sm text-suave lg:text-left">
-                Publicada de verdade, feita aqui.{" "}
-                <Link
-                  href={`/${negocio.slug}`}
-                  className="text-destaque underline underline-offset-2"
-                >
-                  Ver inteira
-                </Link>
-              </p>
             </div>
           </div>
         </section>
 
-        <section id="tipos" aria-labelledby="tipos-titulo" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-20">
+        <section
+          aria-labelledby="mosaico"
+          className="border-t border-borda bg-superficie"
+        >
+          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
             <h2
-              id="tipos-titulo"
-              className="max-w-xl text-2xl leading-[1.15] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-3xl"
+              id="mosaico"
+              className="max-w-2xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              Do restaurante da esquina ao portfólio de quem trabalha sozinho.
+              Tudo o que o seu negócio precisa mostrar.
+            </h2>
+            <div className="mt-12 sm:mt-14">
+              <Mosaico negocio={negocio} />
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="exemplos" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
+            <h2
+              id="exemplos"
+              className="max-w-xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+            >
+              Quatro endereços no ar agora.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Qualquer trabalho que precise ser encontrado cabe num endereço
-              próprio. Estes quatro estão no ar agora, e podem ser abertos.
+              Todos abrem e funcionam. São de negócios bem diferentes, de
+              propósito.
             </p>
-
-            <dl className="mt-10 grid gap-x-12 gap-y-7 sm:grid-cols-3">
-              {PUBLICOS.map((p) => (
-                <div key={p.titulo} className="surge">
-                  <dt className="text-[1.05rem] font-semibold tracking-[-0.01em] text-texto">
-                    {p.titulo}
-                  </dt>
-                  <dd className="mt-1.5 leading-relaxed text-suave">
-                    {p.texto}
-                  </dd>
-                </div>
-              ))}
-            </dl>
 
             <div className="mt-12">
               <Vitrine />
@@ -203,44 +153,33 @@ export default async function Home() {
           </div>
         </section>
 
+        {/*
+          Benefícios em linhas com fio entre elas, título de um lado e texto do
+          outro. Grade de cartões iguais é o formato em que uma seção de
+          benefício vira decoração, e o mosaico logo acima já usa cartão.
+        */}
         <section
-          aria-labelledby="muda"
+          aria-labelledby="beneficios"
           className="border-t border-borda bg-superficie"
         >
-          <div className="mx-auto w-full max-w-4xl px-6 py-20 sm:py-28">
+          <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
             <h2
-              id="muda"
+              id="beneficios"
               className="max-w-lg text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
               O que muda quando o endereço é seu.
             </h2>
-            <div className="mt-14 sm:mt-20">
-              <Fragmentos negocio={negocio} />
-            </div>
-          </div>
-        </section>
 
-        {/*
-          Benefícios em texto corrido, em duas colunas assimétricas: o título
-          de cada um puxa a linha, e o corpo explica. Sem ícone dentro de
-          bolinha e sem grade de três colunas iguais, que são as duas formas
-          mais rápidas de uma seção de benefício virar decoração.
-        */}
-        <section aria-labelledby="beneficios" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-4xl px-6 py-20 sm:py-24">
-            <h2
-              id="beneficios"
-              className="max-w-md text-2xl leading-[1.15] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-3xl"
-            >
-              O que vem junto.
-            </h2>
-            <dl className="mt-10 grid gap-x-12 gap-y-8 sm:grid-cols-2 sm:mt-12">
+            <dl className="mt-12 sm:mt-14">
               {BENEFICIOS.map((b) => (
-                <div key={b.titulo} className="surge">
-                  <dt className="text-[1.05rem] font-semibold tracking-[-0.01em] text-texto">
+                <div
+                  key={b.titulo}
+                  className="surge grid gap-2 border-t border-borda py-7 last:border-b sm:grid-cols-[16rem_1fr] sm:gap-10 sm:py-8"
+                >
+                  <dt className="text-[1.1rem] font-semibold tracking-[-0.015em] text-balance text-texto">
                     {b.titulo}
                   </dt>
-                  <dd className="mt-1.5 leading-relaxed text-suave">
+                  <dd className="max-w-xl leading-relaxed text-suave text-pretty">
                     {b.texto}
                   </dd>
                 </div>
@@ -250,7 +189,7 @@ export default async function Home() {
         </section>
 
         <section aria-labelledby="passos" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-4xl px-6 py-20 sm:py-28">
+          <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
             <h2
               id="passos"
               className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
@@ -258,36 +197,26 @@ export default async function Home() {
               Três passos até o ar.
             </h2>
 
-            <ol className="mt-12 border-l border-borda">
+            <ol className="mt-12 grid gap-8 sm:grid-cols-3 sm:gap-7">
               {PASSOS.map((passo, i) => (
-                <li key={passo.titulo} className="surge relative pl-7 pb-10 last:pb-0">
-                  <span
-                    className="absolute top-1 -left-px h-6 w-[3px] bg-destaque"
-                    aria-hidden
-                  />
+                <li key={passo.titulo} className="surge border-t-2 border-destaque pt-5">
                   <span className="text-xs font-semibold tracking-[0.14em] text-destaque uppercase">
                     Passo {i + 1}
                   </span>
                   <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-texto">
                     {passo.titulo}
                   </h3>
-                  <p className="mt-1.5 max-w-md leading-relaxed text-suave">
+                  <p className="mt-1.5 leading-relaxed text-suave text-pretty">
                     {passo.texto}
                   </p>
                 </li>
               ))}
             </ol>
 
-            {MODO_VITRINE ? null : (
-              <div className="mt-14">
-                <Link
-                  href="/criar"
-                  className="inline-flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
-                >
-                  Publicar a minha página
-                </Link>
-              </div>
-            )}
+            {/* O mesmo campo da abertura, ao alcance de quem leu até aqui. */}
+            <div className="mt-14 max-w-lg">
+              <CampoAbertura rotulo={rotulo} />
+            </div>
           </div>
         </section>
       </main>

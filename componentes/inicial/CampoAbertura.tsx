@@ -18,7 +18,15 @@ type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
  * Continua sendo o único pedaço do produto que roda no navegador, e ele fica
  * na tela inicial, longe da página do cliente.
  */
-export function CampoAbertura() {
+export function CampoAbertura({
+  rotulo = "Criar meu endereço",
+}: {
+  /**
+   * Enquanto o cadastro não abre, o botão diz "Continuar": prometer criar e
+   * cair numa tela que não cria seria pegar a pessoa de jeito.
+   */
+  rotulo?: string;
+}) {
   const id = useId();
   const [valor, setValor] = useState("");
   const [estado, setEstado] = useState<Estado>("vazio");
@@ -95,7 +103,7 @@ export function CampoAbertura() {
           type="submit"
           className="flex h-13 shrink-0 items-center justify-center rounded-full bg-texto px-7 text-[1.02rem] font-semibold text-superficie"
         >
-          Criar meu endereço
+          {rotulo}
         </button>
       </form>
 

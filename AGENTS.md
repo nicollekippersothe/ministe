@@ -54,7 +54,8 @@ npm run dev       # desenvolvimento
 npm run build     # build de produção
 npm test          # testes de horário e de formatação
 npm run fluxo     # teste de fluxo no navegador, precisa do servidor rodando
-npm run imagens   # regera as imagens de exemplo em public/exemplo
+npm run fotos     # baixa as fotos de exemplo (Openverse, CC0)
+npm run logos     # redesenha os monogramas dos negócios de exemplo
 ```
 
 ## Onde está o quê

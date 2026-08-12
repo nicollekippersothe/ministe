@@ -121,11 +121,17 @@ Abrir http://localhost:3000/demo
 npm test          # 48 testes de horário, formatação, link e endereço
 npm run fluxo     # 38 passos no navegador, com o servidor rodando
 npm run build     # build de produção
-npm run imagens   # regera as imagens de exemplo
+npm run fotos     # baixa as fotos de exemplo (Openverse, CC0)
+npm run logos     # redesenha os monogramas dos exemplos
 ```
 
 Os dados do painel ficam em `.dados/negocios.json`, fora do git. Apagar o
 arquivo devolve tudo para o negócio de exemplo.
+
+As fotos dos exemplos em `public/exemplo` vêm do Openverse, filtradas em CC0,
+que é domínio público: uso comercial liberado e sem exigência de crédito. A
+procedência de cada arquivo fica em `public/exemplo/fotos.json`. Os logotipos
+não são foto: são monogramas desenhados em Archivo por `npm run logos`.
 
 ## Banco
 

@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start",
     "test": "node --test \"lib/**/*.test.ts\"",
-    "imagens": "node scripts/gerar-imagens.mjs",
     "fluxo": "node testes/fluxo.mjs",
     "mockup": "node scripts/mockup.mjs",
-    "revisao": "node scripts/exportar-telas.mjs"
+    "revisao": "node scripts/exportar-telas.mjs",
+    "fotos": "node scripts/baixar-fotos.mjs",
+    "logos": "node scripts/gerar-logos.mjs"
   },
   "dependencies": {
     "next": "16.3.0",

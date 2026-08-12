@@ -15,13 +15,24 @@ export function BotaoAcao({
   acao,
   principal,
   interativo = true,
+  compacto = false,
 }: {
   acao: AcaoPronta;
   principal: boolean;
   interativo?: boolean;
+  /**
+   * Para o botão aparecer dentro da prévia de celular da tela inicial, que
+   * tem 304px de largura contra os 393 de um telefone de verdade. Na medida
+   * cheia ele ocupa a tela inteira ali dentro e o produto parece um aplicativo
+   * de botão gigante.
+   */
+  compacto?: boolean;
 }) {
-  const base =
-    "flex h-13 w-full items-center justify-center gap-2.5 rounded-full px-5 text-[1.02rem] font-semibold tracking-[-0.01em]";
+  const base = `flex w-full items-center justify-center rounded-full font-semibold tracking-[-0.01em] ${
+    compacto
+      ? "h-10 gap-2 px-4 text-[0.85rem]"
+      : "h-12 gap-2.5 px-5 text-[1rem]"
+  }`;
 
   /*
    * Sombra neutra e discreta, nunca colorida.
@@ -37,12 +48,13 @@ export function BotaoAcao({
       ? "bg-zap text-white shadow-[0_1px_2px_rgba(28,25,23,0.16)] hover:bg-zap-forte"
       : "bg-destaque text-white shadow-[0_1px_2px_rgba(28,25,23,0.16)] hover:brightness-95";
 
+  const tamanhoIcone = compacto ? "h-4 w-4" : "h-5 w-5";
   const miolo = (
     <>
       {acao.whatsapp ? (
-        <IconeWhatsapp className="h-5.5 w-5.5" />
+        <IconeWhatsapp className={tamanhoIcone} />
       ) : (
-        <IconeDoLink icone={acao.icone} className="h-5 w-5" />
+        <IconeDoLink icone={acao.icone} className={tamanhoIcone} />
       )}
       {acao.rotulo}
     </>

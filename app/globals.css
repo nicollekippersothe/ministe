@@ -183,3 +183,36 @@ body {
     transform: none;
   }
 }
+
+/*
+ * A previa de celular da tela inicial rola sozinha, de cima ate o fim e de
+ * volta.
+ *
+ * Parada, a previa mostra capa e nome, e nada do que vem depois: o catalogo
+ * com preco, o horario, os botoes. Rolando, a pessoa ve o produto inteiro sem
+ * precisar clicar em nada.
+ *
+ * -100% aqui e a altura do proprio conteudo, entao subir "-100% + a altura da
+ * janela" para exatamente com o fim do conteudo encostando embaixo. A janela
+ * chega pela variavel porque quem sabe a altura da tela e o componente.
+ *
+ * E transform, resolvido na placa de video, sem JavaScript e sem mexer no
+ * layout: nao entra no CLS. Quem pediu menos movimento no sistema nao ve
+ * animacao nenhuma, e a previa fica no topo, legivel.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .rolagem {
+    animation: rolagem 30s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  }
+}
+
+@keyframes rolagem {
+  0%,
+  8% {
+    transform: translateY(0);
+  }
+  92%,
+  100% {
+    transform: translateY(calc(-100% + var(--janela)));
+  }
+}
