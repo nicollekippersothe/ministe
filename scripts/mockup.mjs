@@ -108,6 +108,22 @@ for (const tela of TELAS) {
   console.log(`  capturou /${tela.slug}`);
 }
 
+/*
+ * A tela inicial num monitor. Duas vezes o tamanho, para o texto aguentar
+ * recorte e tela retina sem borrar.
+ */
+const MONITOR = { largura: 1440, altura: 900 };
+const contextoMonitor = await navegador.newContext({
+  viewport: { width: MONITOR.largura, height: MONITOR.altura },
+  deviceScaleFactor: 2,
+});
+const paginaDesktop = await contextoMonitor.newPage();
+await paginaDesktop.goto(`${BASE}/`, { waitUntil: "load" });
+await paginaDesktop.waitForTimeout(1800);
+const DESKTOP = (await paginaDesktop.screenshot()).toString("base64");
+await contextoMonitor.close();
+console.log("  capturou / no monitor");
+
 /**
  * A barra de status. O sistema desenha ela por cima do site, então sem ela a
  * peça parece um navegador, não um telefone.
@@ -135,10 +151,28 @@ const BARRA_STATUS = `
     </span>
   </div>`;
 
+/**
+ * Janela de navegador.
+ *
+ * Sem menu, sem abas, sem botão de voltar: só o suficiente para o olho
+ * entender que aquilo é a internet. Barra de navegador cheia de detalhe rouba
+ * atenção do que interessa, que é a página dentro dela.
+ */
+function janela(dados, endereco) {
+  return `
+  <div class="janela">
+    <div class="cromo">
+      <span class="bolinhas" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="endereco">${endereco}</span>
+    </div>
+    <img src="data:image/png;base64,${dados}" alt="Tela inicial do entrais num monitor">
+  </div>`;
+}
+
 function aparelho(captura, comRotulo) {
   return `
   <figure class="coluna">
-    <div class="aparelho">
+    <div class="aparelho chao">
       <div class="tela">
         <img src="data:image/png;base64,${captura.dados}" alt="Página de ${captura.rotulo} aberta no celular">
         ${BARRA_STATUS}
@@ -284,6 +318,95 @@ const ESTILO = `
     opacity: 0.35;
   }
 
+  /* Janela de navegador. Cantos de 10px, como o guia pede para superfície. */
+  .janela {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: ${BRANCO};
+    border: 1px solid #e0d9cc;
+    box-shadow:
+      0 1px 2px rgba(28, 25, 23, 0.06),
+      0 36px 64px -28px rgba(28, 25, 23, 0.42);
+  }
+  .janela img { display: block; width: 100%; height: auto; }
+
+  .cromo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 14px;
+    background: #efe9df;
+    border-bottom: 1px solid #e0d9cc;
+  }
+  .bolinhas { display: flex; gap: 7px; }
+  .bolinhas i {
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    background: #d3cabb;
+  }
+  .endereco {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    letter-spacing: 0.01em;
+    color: ${PEDRA};
+    background: ${BRANCO};
+    border-radius: 999px;
+    padding: 4px 16px;
+  }
+
+  /* Sombra de chão: o que faz o aparelho pousar em vez de flutuar. */
+  .chao {
+    position: relative;
+  }
+  .chao::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -26px;
+    transform: translateX(-50%);
+    width: 78%;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(28, 25, 23, 0.14);
+    filter: blur(22px);
+    z-index: -1;
+  }
+
+  /*
+   * O site com um celular encostado no canto.
+   *
+   * A tela inicial já mostra um telefone dentro dela, de propósito, então o
+   * nosso precisa sair da janela em vez de pousar em cima do outro. Encostado
+   * na quina, com mais da metade do corpo para fora, ele lê como "e no
+   * celular" em vez de virar telefone sobre telefone.
+   */
+  .conjunto { position: relative; padding: 56px 72px 0; }
+  .conjunto .telefone {
+    position: absolute;
+    right: 16px;
+    bottom: -132px;
+    width: 250px;
+    z-index: 2;
+  }
+  .conjunto .telefone .aparelho {
+    width: 100%;
+    border-radius: 42px;
+    padding: 4px;
+  }
+  .conjunto .telefone .tela {
+    height: 542px;
+    border-radius: 38px;
+  }
+  .conjunto .telefone .status { height: 37px; padding: 0 22px 0 25px; }
+  .conjunto .telefone .hora { font-size: 12px; }
+  .conjunto .telefone .ilha { top: 8px; width: 85px; height: 25px; }
+  .conjunto .telefone .indicador { bottom: 6px; width: 95px; height: 4px; }
+
   /* Rótulo 12/1.4/600 caps, o mesmo da sobrancelha, em Pedra. */
   .rotulo {
     margin-top: 20px;
@@ -316,6 +439,8 @@ const ESTILO = `
   .trio .rotulo { margin-top: 96px; }
 
   /* Assinatura de etiqueta: o símbolo e a palavra, e mais nada. */
+  .conjunto + .assinatura { padding-top: 196px; }
+
   .assinatura {
     display: flex;
     align-items: center;
@@ -365,6 +490,27 @@ const pecas = [
     corpo: `<div class="palco trio">${capturas
       .map((c) => aparelho(c, true))
       .join("")}</div>`,
+  },
+  {
+    arquivo: "entrais-site.png",
+    largura: 1400,
+    corpo: `<div class="palco"><div class="chao" style="width:100%">${janela(
+      DESKTOP,
+      "entrais.app",
+    )}</div></div>`,
+  },
+  {
+    arquivo: "entrais-site-e-celular.png",
+    largura: 1400,
+    // O par clássico de portfólio: a tela grande atrás, o celular encostado
+    // no canto. Prova numa imagem só que a mesma página serve os dois.
+    corpo: `<div class="conjunto">
+      <div class="chao">${janela(DESKTOP, "entrais.app")}</div>
+      <!-- Outro negócio de propósito: a tela inicial já mostra o café dentro
+           dela, e repetir o mesmo cliente nos dois aparelhos parece erro de
+           montagem. Assim a peça prova que o mesmo produto serve os dois. -->
+      <div class="telefone">${aparelho(capturas[0], false)}</div>
+    </div>`,
   },
 ];
 
