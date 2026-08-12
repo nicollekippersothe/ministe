@@ -40,6 +40,18 @@ golpe se ninguém cuidar. As quatro frentes, iguais às das concorrentes:
 4. **Lista de risco automática.** Google Safe Browsing, escrita e desligada.
    Liga com a variável `GOOGLE_SAFE_BROWSING`.
 
+## Vercel
+
+`vercel.json` declara `framework: nextjs`, e isso não é enfeite. O projeto
+subiu uma vez com o preset do painel em "Other", e o resultado foi um deploy
+verde que não servia página nenhuma: a Vercel instalou as dependências, não
+rodou `next build`, e publicou só os arquivos de `public/`. Todo endereço
+respondia 404, com o build marcado como bem-sucedido.
+
+Declarar no arquivo faz a configuração viajar junto com o código, então nem
+depende de alguém lembrar de conferir o painel, nem quebra se o projeto for
+recriado.
+
 ## Publicar como vitrine
 
 Enquanto o login não existe, dá para publicar com segurança em modo vitrine:
