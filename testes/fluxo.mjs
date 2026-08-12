@@ -36,7 +36,7 @@ const p = await contexto.newPage();
 await p.goto(`${BASE}/`, { waitUntil: "networkidle" });
 passo(
   "a tela inicial abre e chama para criar",
-  (await p.textContent("body")).includes("Criar minha página"),
+  (await p.textContent("body")).includes("Garantir meu endereço"),
 );
 
 await p.goto(`${BASE}/criar`, { waitUntil: "networkidle" });

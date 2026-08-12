@@ -28,7 +28,7 @@ function Bloco({
 }) {
   return (
     <li
-      className={`flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-10 ${
+      className={`surge flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-10 ${
         invertido ? "sm:flex-row-reverse" : ""
       }`}
     >
@@ -57,8 +57,8 @@ export function Fragmentos({ negocio }: { negocio: Negocio }) {
   return (
     <ul className="flex flex-col gap-16 sm:gap-20">
       <Bloco
-        titulo="O botão que fecha a venda"
-        texto="Fica preso no rodapé, sempre à vista. Pode abrir o WhatsApp com a mensagem já escrita, ou levar para o iFood, para a sua agenda ou para o link que você quiser."
+        titulo="A conversa começa com um toque"
+        texto="O botão acompanha a rolagem, sempre à vista. Abre o WhatsApp com a mensagem já escrita, leva para o iFood, para a sua agenda, para onde a venda acontece."
         peca={
           <div aria-hidden>
             {acao ? <BotaoAcao acao={acao} principal interativo={false} /> : null}
@@ -68,8 +68,8 @@ export function Fragmentos({ negocio }: { negocio: Negocio }) {
 
       <Bloco
         invertido
-        titulo="Aberto ou fechado, calculado na hora"
-        texto="A página calcula sozinha, no seu fuso, contando quem fecha depois da meia noite e quem fecha para o almoço."
+        titulo="O horário certo, calculado na hora"
+        texto="A página informa se você está atendendo agora, no seu fuso, contando o turno que atravessa a madrugada e a pausa do almoço."
         peca={
           <div
             className="flex justify-center rounded-2xl border border-borda bg-superficie px-5 py-8"
@@ -81,8 +81,8 @@ export function Fragmentos({ negocio }: { negocio: Negocio }) {
       />
 
       <Bloco
-        titulo="O link deixa de parecer quebrado"
-        texto="Quando você manda no WhatsApp ou cola na bio, aparece assim: com foto, nome e o que você faz. É a primeira impressão de quem nunca te viu."
+        titulo="A primeira impressão, cuidada"
+        texto="Compartilhada no WhatsApp e na bio do Instagram, ela chega assim: com foto, nome e o que você faz."
         peca={
           <div
             data-fonte={fonte.chave}

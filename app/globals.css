@@ -148,3 +148,38 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Revelacao na rolagem, sem uma linha de JavaScript.
+ *
+ * animation-timeline: view() e do proprio navegador: ele liga o progresso da
+ * animacao a entrada do elemento na tela, sem observador, sem script e sem
+ * trabalho na thread principal. Onde nao existe, a regra inteira e ignorada e
+ * o elemento nasce no estado final, entao nunca fica conteudo invisivel.
+ *
+ * So opacidade e deslocamento, que o navegador resolve na placa de video e
+ * nao mexem no layout. E por isso que o CLS continua em zero.
+ *
+ * Nao usar na abertura: elemento acima da dobra ja nasce visivel, e animar ele
+ * so produz um piscar na primeira pintura.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .surge {
+      animation: surge linear both;
+      animation-timeline: view();
+      animation-range: entry 8% cover 24%;
+    }
+  }
+}
+
+@keyframes surge {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
