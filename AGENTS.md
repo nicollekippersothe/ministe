@@ -44,6 +44,8 @@ consegue divergir do produto.
    compartilha e o produto perde a única aquisição que tem.
 6. Sem dado inventado. Campo vazio faz a seção sumir, nunca vira "em breve"
    nem exemplo.
+7. Todo link que o dono digita passa por `conferirLink`. Campo novo de URL sem
+   passar por lá é buraco de golpe, não é detalhe de validação.
 
 ## Como rodar
 
@@ -71,7 +73,15 @@ npm run imagens   # regera as imagens de exemplo em public/exemplo
   senão o Next baixa todas em toda rota. Só o CSS aplicado puxa o arquivo.
 - `lib/acoes.ts` resolve os botões do rodapé. O WhatsApp é o padrão, não a
   única opção: dá para apontar o principal para iFood, agenda ou qualquer link.
-- `lib/slug.ts` tem as regras do endereço, espelhando a lista do banco.
+- `lib/slug.ts` tem as regras do endereço, espelhando as duas listas do banco:
+  a de rotas reservadas e a de palavras que fazem o endereço parecer banco ou
+  cobrança, conferida por pedaço separado por hífen.
+- `lib/links.ts` é o portão de todo link digitado. Recusa esquema que não seja
+  http, encurtador, usuário antes do arroba e IP puro, e devolve o endereço
+  normalizado. A conferência na Google Safe Browsing está escrita e desligada,
+  esperando `GOOGLE_SAFE_BROWSING`.
+- `app/denunciar` é a denúncia, sem login e sem identificação, aberta pelo link
+  no rodapé de toda página pública, inclusive as pagas.
 - `lib/tipos.ts` espelha o schema que vai para o Supabase.
 - A imagem de prévia do link não pode embutir arquivo de fonte enquanto rodar
   no mesmo processo que o otimizador de imagem do Next. O motivo e as duas

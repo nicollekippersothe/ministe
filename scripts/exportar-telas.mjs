@@ -144,6 +144,28 @@ const TELAS = [
     nota: "Quem digita um endereço que não existe não leva erro seco: leva um convite. É aquisição de graça.",
   },
   {
+    id: "denunciar",
+    rota: "/denunciar?p=doceria-da-ana",
+    nome: "Denunciar uma página",
+    grupo: "O produto",
+    largura: "celular",
+    nota: "Aberta pelo link discreto no rodapé de toda página pública, inclusive as pagas. Não pede nome nem e-mail: denúncia identificada afasta justamente quem tem medo do denunciado. É a peça que de fato pega golpe, porque quem descobre é quem caiu nele.",
+  },
+  {
+    id: "link-recusado",
+    rota: "/painel/acoes-botoes",
+    nome: "Link recusado",
+    grupo: "Painel do dono",
+    largura: "celular",
+    preparar: async (p) => {
+      await p.selectOption("#secundaria-tipo", "link");
+      await p.fill("#secundaria-url", "bit.ly/promo");
+      await p.click('button:has-text("Salvar")');
+      await p.waitForURL(/erro=link_/);
+    },
+    nota: "Todo link digitado passa por uma conferência antes de virar botão: nada de javascript, de encurtador (que esconde o destino), de usuário antes do arroba nem de IP puro. A recusa diz o motivo em vez de só reprovar.",
+  },
+  {
     id: "painel",
     rota: "/painel",
     nome: "Painel",

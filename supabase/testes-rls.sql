@@ -154,6 +154,64 @@ select testes.ok('nada foi gravado para negócio fora do ar',
    where negocio_id = '22222222-0000-4000-8000-000000000002') = 0);
 
 -- =============================================================================
+-- Denúncia
+-- =============================================================================
+-- Quem denuncia é visitante, sem conta. Então a função aceita anônimo, mas a
+-- tabela não: ninguém lê nem escreve direto, nem o dono do negócio denunciado.
+
+select testes.como(null);
+
+select public.registrar_denuncia('doceria-da-ana', 'golpe', 'O botão leva para um Pix.');
+
+-- Página fora do ar também pode ser denunciada: é justamente o caso de quem
+-- caiu no golpe depois que a página saiu.
+select public.registrar_denuncia('barbearia-do-bruno', 'golpe', null);
+
+-- Endereço que não existe volta calado, senão a denúncia vira sonda para
+-- descobrir quais páginas existem.
+select public.registrar_denuncia('nao-existe', 'golpe', null);
+
+select testes.barrado('motivo inventado é recusado', $q$
+  select public.registrar_denuncia('doceria-da-ana', 'nao-gostei', null)
+$q$);
+
+select testes.barrado('visitante não lê a fila de denúncias', $q$
+  select count(*) from public.denuncias
+$q$);
+
+select testes.barrado('visitante não escreve direto na tabela', $q$
+  insert into public.denuncias (negocio_id, motivo)
+  values ('11111111-0000-4000-8000-000000000001', 'golpe')
+$q$);
+
+select testes.como('aaaaaaaa-0000-4000-8000-000000000001');
+select testes.barrado('nem o dono lê as denúncias contra ele', $q$
+  select count(*) from public.denuncias
+$q$);
+
+reset role;
+select testes.ok('a função gravou as duas denúncias de página existente',
+  (select count(*) from public.denuncias) = 2);
+select testes.ok('e guardou o detalhe de quem escreveu',
+  (select detalhe from public.denuncias
+   where motivo = 'golpe' and detalhe is not null) = 'O botão leva para um Pix.');
+
+-- Teto por página por dia. Sem ele, uma pessoa irritada enche a fila e as
+-- denúncias de verdade somem no meio.
+do $$
+declare i integer;
+begin
+  for i in 1..30 loop
+    perform public.registrar_denuncia('doceria-da-ana', 'outro', null);
+  end loop;
+end;
+$$;
+
+select testes.ok('o teto de vinte por dia segura a enxurrada',
+  (select count(*) from public.denuncias
+   where negocio_id = '11111111-0000-4000-8000-000000000001') = 20);
+
+-- =============================================================================
 -- Dono A
 -- =============================================================================
 
@@ -321,6 +379,32 @@ select testes.barrado('endereço com maiúscula é recusado', $q$
   update public.negocios set slug = 'Doceria'
   where id = '11111111-0000-4000-8000-000000000001'
 $q$);
+
+-- Contra golpe: endereço nosso com cara de banco circula sozinho no WhatsApp.
+-- A conferência é por pedaço, então não adianta grudar numa palavra comum.
+
+select testes.barrado('endereço com palavra restrita é recusado', $q$
+  update public.negocios set slug = 'pix'
+  where id = '11111111-0000-4000-8000-000000000001'
+$q$);
+
+select testes.barrado('e também quando a palavra é só um pedaço', $q$
+  update public.negocios set slug = 'central-pix-caixa'
+  where id = '11111111-0000-4000-8000-000000000001'
+$q$);
+
+select testes.barrado('se passar pela marca é recusado', $q$
+  update public.negocios set slug = 'entrais-suporte'
+  where id = '11111111-0000-4000-8000-000000000001'
+$q$);
+
+-- Mesma conta que o gatilho faz, para garantir que "centralina" não cai por
+-- conter "central" dentro. Negócio de verdade não pode ser barrado por acaso.
+select testes.ok('mas palavra que só contém a restrita passa',
+  not exists (
+    select 1 from public.pedacos_bloqueados
+    where pedaco = any (string_to_array('padaria-centralina', '-'))
+  ));
 
 select testes.barrado('endereço com espaço é recusado', $q$
   update public.negocios set slug = 'doceria da ana'

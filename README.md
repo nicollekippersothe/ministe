@@ -22,6 +22,23 @@ os dados ficam num arquivo local.
 | `/painel/acoes-botoes` | os botões do rodapé, que não são só WhatsApp |
 | `/painel/aparencia` | escolher a combinação de letras da página |
 | `/painel/previa` | a página como vai ficar, antes de publicar |
+| `/denunciar` | denúncia de página, sem login e sem identificação |
+
+## Contra golpe
+
+Um produto que dá página pronta e botão para qualquer um vira ferramenta de
+golpe se ninguém cuidar. As quatro frentes, iguais às das concorrentes:
+
+1. **Link conferido.** Só http e https, sem encurtador, sem usuário antes do
+   arroba e sem IP puro. Está em `lib/links.ts`, com teste.
+2. **Endereço restrito.** Palavra de banco, Pix, cobrança ou atendimento é
+   recusada por pedaço, então `pix-caixa` e `central-pix` caem junto com `pix`.
+   No código e no banco.
+3. **Denúncia.** Link no rodapé de toda página pública, inclusive nas pagas,
+   levando para um formulário que não pede nome nem e-mail. O `status` do
+   negócio já tem `suspenso` para tirar do ar sem apagar nada.
+4. **Lista de risco automática.** Google Safe Browsing, escrita e desligada.
+   Liga com a variável `GOOGLE_SAFE_BROWSING`.
 
 ## Publicar como vitrine
 
@@ -89,8 +106,8 @@ npm run dev
 Abrir http://localhost:3000/demo
 
 ```
-npm test          # 23 testes de horário e de formatação
-npm run fluxo     # 23 passos no navegador, com o servidor rodando
+npm test          # 48 testes de horário, formatação, link e endereço
+npm run fluxo     # 38 passos no navegador, com o servidor rodando
 npm run build     # build de produção
 npm run imagens   # regera as imagens de exemplo
 ```
