@@ -36,7 +36,16 @@ const p = await contexto.newPage();
 await p.goto(`${BASE}/`, { waitUntil: "networkidle" });
 passo(
   "a tela inicial abre e chama para criar",
-  (await p.textContent("body")).includes("Garantir meu endereço"),
+  (await p.textContent("body")).includes("Criar meu endereço"),
+);
+
+// O campo da abertura é o que transforma visita em intenção, então ele precisa
+// conferir de verdade, e não só parecer que confere.
+await p.fill('form[action="/criar"] input[name=slug]', "cafe alecrim novo");
+await p.waitForTimeout(900);
+passo(
+  "o campo da abertura confere o endereço ao vivo",
+  (await p.textContent('form[action="/criar"] ~ p')).includes("disponível"),
 );
 
 await p.goto(`${BASE}/criar`, { waitUntil: "networkidle" });

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
+import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Fragmentos } from "@/componentes/inicial/Fragmentos";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
@@ -13,9 +14,9 @@ import { doceria } from "@/lib/exemplos";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: `${NOME_PRODUTO}, a sua vitrine com endereço próprio`,
+  title: `${NOME_PRODUTO}, o endereço do seu negócio na internet`,
   description:
-    "Endereço, horário, catálogo e um botão de WhatsApp que abre a conversa já escrita. Preencha do celular e publique em minutos.",
+    "Um lugar seu, com o seu nome, que aparece no Google e apresenta o seu trabalho a quem procura. Pronto em minutos, feito do celular.",
 };
 
 const PASSOS = [
@@ -42,9 +43,9 @@ const PASSOS = [
  */
 const BENEFICIOS = [
   {
-    titulo: "Encontrada no Google",
+    titulo: "Atualizada por você",
     texto:
-      "Cada página leva o que a busca lê: nome, endereço, horário e serviços, na marcação que o Google entende.",
+      "Mudou o horário de véspera de feriado? Você edita do celular e a página muda na hora, para todo mundo.",
   },
   {
     titulo: "Abre instantânea",
@@ -60,6 +61,31 @@ const BENEFICIOS = [
     titulo: "Preenchida do celular",
     texto:
       "Do começo ao fim pela tela do telefone, com uma pergunta por vez.",
+  },
+];
+
+/*
+ * Para quem serve, dito por segmento.
+ *
+ * A dúvida que aparece em dois segundos na cabeça de quem chega é "serve para
+ * o meu caso?". Listar tipo de negócio responde isso mais rápido do que
+ * qualquer promessa, e cada segmento tem um exemplo aberto logo abaixo.
+ */
+const PUBLICOS = [
+  {
+    titulo: "Quem vende",
+    texto:
+      "Restaurante, confeitaria, loja de bairro, ateliê. O catálogo com foto e preço fica à vista, e o pedido começa na hora.",
+  },
+  {
+    titulo: "Quem atende",
+    texto:
+      "Consultório, estúdio, salão, clínica. Horário, endereço e serviços num lugar só, com a agenda a um toque.",
+  },
+  {
+    titulo: "Quem mostra o trabalho",
+    texto:
+      "Portfólio, professor, fotógrafo, profissional autônomo. Um endereço com o seu nome para deixar em qualquer lugar.",
   },
 ];
 
@@ -86,36 +112,47 @@ export default async function Home() {
           <div className="grid items-center gap-14 lg:grid-cols-[1fr_auto] lg:gap-20">
             <div className="max-w-xl">
               <h1 className="text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.038em] text-balance text-texto sm:text-[3.4rem]">
-                A sua vitrine, com endereço próprio.
+                <span className="block text-destaque">Presença profissional.</span>
+                Crie o endereço do seu negócio na internet.
               </h1>
-              <p className="mt-6 max-w-md text-lg leading-relaxed text-suave">
-                Endereço, horário, catálogo e um botão de WhatsApp que abre a
-                conversa já escrita. Você preenche do celular e publica em
-                minutos.
+              <p className="mt-6 max-w-lg text-lg leading-relaxed text-suave">
+                Um lugar seu, com o seu nome, que aparece no Google e apresenta
+                o seu trabalho a quem procura. Pronto em minutos, feito do
+                celular.
               </p>
 
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link
-                  href={MODO_VITRINE ? `/${negocio.slug}` : "/criar"}
-                  className="flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
-                >
-                  {MODO_VITRINE ? "Ver uma por dentro" : "Garantir meu endereço"}
-                </Link>
-                {MODO_VITRINE ? null : (
-                  <Link
-                    href={`/${negocio.slug}`}
-                    className="flex h-13 items-center justify-center gap-1.5 rounded-full px-5 text-[1.05rem] font-medium text-destaque"
-                  >
-                    Ver uma por dentro
-                    <IconeSeta className="h-4 w-4" />
-                  </Link>
+              {/*
+                O campo dentro da dobra é o que transforma visita em intenção:
+                a pessoa digita o próprio nome e passa a querer aquele
+                endereço. Enquanto o login não existe, o cadastro responde 404,
+                então em modo vitrine entram os dois botões no lugar dele.
+              */}
+              <div className="mt-9 max-w-lg">
+                {MODO_VITRINE ? (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Link
+                      href={`/${negocio.slug}`}
+                      className="flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
+                    >
+                      Ver um endereço por dentro
+                    </Link>
+                    <Link
+                      href="#tipos"
+                      className="flex h-13 items-center justify-center gap-1.5 rounded-full px-5 text-[1.05rem] font-medium text-destaque"
+                    >
+                      Ver para quem serve
+                      <IconeSeta className="h-4 w-4" />
+                    </Link>
+                  </div>
+                ) : (
+                  <CampoAbertura />
                 )}
               </div>
 
               <p className="mt-6 text-sm text-suave">
                 {MODO_VITRINE
-                  ? "As páginas abaixo estão no ar e funcionam. O cadastro abre quando o login estiver pronto."
-                  : "Direto pelo navegador do celular, com tudo no ar em minutos."}
+                  ? "Os endereços abaixo estão no ar e funcionam. O cadastro abre quando o login estiver pronto."
+                  : "Funciona direto pelo navegador do celular."}
               </p>
             </div>
 
@@ -134,18 +171,33 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-labelledby="vitrine" className="border-t border-borda">
+        <section id="tipos" aria-labelledby="tipos-titulo" className="border-t border-borda">
           <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-20">
             <h2
-              id="vitrine"
-              className="max-w-lg text-2xl leading-[1.15] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-3xl"
+              id="tipos-titulo"
+              className="max-w-xl text-2xl leading-[1.15] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-3xl"
             >
-              Feita para produto, para serviço e para hora marcada.
+              Do restaurante da esquina ao portfólio de quem trabalha sozinho.
             </h2>
-            <p className="mt-3 max-w-xl leading-relaxed text-suave">
-              Quatro negócios diferentes, todos no ar. Abra qualquer um.
+            <p className="mt-3 max-w-2xl leading-relaxed text-suave">
+              Qualquer trabalho que precise ser encontrado cabe num endereço
+              próprio. Estes quatro estão no ar agora, e podem ser abertos.
             </p>
-            <div className="mt-9">
+
+            <dl className="mt-10 grid gap-x-12 gap-y-7 sm:grid-cols-3">
+              {PUBLICOS.map((p) => (
+                <div key={p.titulo} className="surge">
+                  <dt className="text-[1.05rem] font-semibold tracking-[-0.01em] text-texto">
+                    {p.titulo}
+                  </dt>
+                  <dd className="mt-1.5 leading-relaxed text-suave">
+                    {p.texto}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="mt-12">
               <Vitrine />
             </div>
           </div>
@@ -160,7 +212,7 @@ export default async function Home() {
               id="muda"
               className="max-w-lg text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              O que quem procura você encontra.
+              O que muda quando o endereço é seu.
             </h2>
             <div className="mt-14 sm:mt-20">
               <Fragmentos negocio={negocio} />

@@ -1,4 +1,4 @@
-import { BarraAcoes, respiroDaBarra } from "./BarraAcoes";
+import { BarraAcoes, BotaoAcao, respiroDaBarra } from "./BarraAcoes";
 import { Capa } from "./Capa";
 import { Catalogo } from "./Catalogo";
 import { Endereco } from "./Endereco";
@@ -7,6 +7,7 @@ import { Horarios } from "./Horarios";
 import { LinksExtras } from "./LinksExtras";
 import { Rodape } from "./Rodape";
 import { Divisor, Secao } from "./Secao";
+import { acoesDoRodape } from "@/lib/acoes";
 import { combinacao } from "@/lib/fontes";
 import { localBusiness } from "@/lib/jsonld";
 import type { Negocio } from "@/lib/tipos";
@@ -16,6 +17,17 @@ import type { Negocio } from "@/lib/tipos";
  * com o negocio vindo do Supabase, e nada aqui precisa mudar.
  *
  * Nenhuma secao aparece sem conteudo. Se o dono nao preencheu, some.
+ *
+ * Dois desenhos, mesmo HTML. No celular e uma coluna so, com a barra de acao
+ * presa embaixo, no alcance do polegar. A partir de 1024px vira duas colunas:
+ * identidade, horario, endereco e acoes a esquerda, e o que a pessoa veio ver
+ * (catalogo, fotos, links) a direita, com a coluna da esquerda acompanhando a
+ * rolagem. Uma coluna estreita de 34rem centralizada num monitor de 27
+ * polegadas parece celular esquecido no meio da tela, e o produto se vende
+ * como presenca profissional.
+ *
+ * A troca e so de layout: nenhuma secao aparece, some ou muda de conteudo
+ * entre os dois. Assim o que foi testado no celular continua valendo.
  */
 export function PaginaPublica({
   negocio,
@@ -25,8 +37,11 @@ export function PaginaPublica({
   urlBase: string;
 }) {
   const temItens = negocio.itens.some((i) => i.ativo);
+  const temGaleria = negocio.galeria.length > 0;
+  const temLinks = negocio.links.length > 0;
   const fonte = combinacao(negocio.fonte);
   const respiro = respiroDaBarra(negocio);
+  const acoes = acoesDoRodape(negocio);
 
   return (
     <div
@@ -44,31 +59,71 @@ export function PaginaPublica({
         }}
       />
 
-      <main className={`mx-auto w-full max-w-[34rem] overflow-hidden bg-superficie ${respiro} sm:my-8 sm:rounded-3xl sm:border sm:border-borda sm:shadow-[0_1px_3px_rgba(28,25,23,0.06),0_12px_36px_-12px_rgba(28,25,23,0.14)]`}>
-        <Capa negocio={negocio} />
-        <Horarios negocio={negocio} />
-        <Divisor />
-        <Endereco negocio={negocio} />
+      <main
+        className={`mx-auto w-full max-w-[34rem] overflow-hidden bg-superficie ${respiro} sm:my-8 sm:rounded-3xl sm:border sm:border-borda sm:shadow-[0_1px_3px_rgba(28,25,23,0.06),0_12px_36px_-12px_rgba(28,25,23,0.14)] lg:max-w-5xl lg:pb-0`}
+      >
+        <div className="lg:grid lg:grid-cols-[19rem_1fr] lg:items-start lg:gap-0">
+          <div className="lg:col-span-2">
+            <Capa negocio={negocio} apenasCapa />
+          </div>
 
-        {temItens ? <Divisor /> : null}
-        <Secao id="catalogo" titulo={negocio.tituloCatalogo} vazia={!temItens}>
-          <Catalogo negocio={negocio} />
-        </Secao>
+          {/*
+            Coluna da identidade. No celular ela e simplesmente o comeco da
+            pagina; no monitor acompanha a rolagem, entao horario, endereco e
+            o botao de conversa continuam a vista enquanto a pessoa percorre o
+            catalogo, que e onde a decisao acontece.
+          */}
+          <div className="lg:sticky lg:top-8 lg:self-start lg:border-r lg:border-borda lg:pb-8">
+            <Capa negocio={negocio} apenasIdentidade />
+            <Horarios negocio={negocio} />
+            <Divisor />
+            <Endereco negocio={negocio} />
 
-        {negocio.galeria.length > 0 ? <Divisor /> : null}
-        <Secao id="galeria" titulo="Fotos" vazia={negocio.galeria.length === 0}>
-          <Galeria negocio={negocio} />
-        </Secao>
+            {acoes.length > 0 ? (
+              <div className="hidden lg:block">
+                <Divisor />
+                <div className="flex flex-col gap-2.5 px-5 py-7">
+                  {acoes.map((a, i) => (
+                    <BotaoAcao key={a.rotulo} acao={a} principal={i === 0} />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
 
-        {negocio.links.length > 0 ? <Divisor /> : null}
-        <Secao id="links" titulo="Links" vazia={negocio.links.length === 0}>
-          <LinksExtras negocio={negocio} />
-        </Secao>
+          <div className="lg:min-w-0">
+            {temItens ? <Divisor /> : null}
+            <div className={temItens ? "lg:border-t-0" : undefined}>
+              <Secao
+                id="catalogo"
+                titulo={negocio.tituloCatalogo}
+                vazia={!temItens}
+              >
+                <Catalogo negocio={negocio} />
+              </Secao>
+            </div>
 
-        <Rodape negocio={negocio} />
+            {temGaleria ? <Divisor /> : null}
+            <Secao id="galeria" titulo="Fotos" vazia={!temGaleria}>
+              <Galeria negocio={negocio} />
+            </Secao>
+
+            {temLinks ? <Divisor /> : null}
+            <Secao id="links" titulo="Links" vazia={!temLinks}>
+              <LinksExtras negocio={negocio} />
+            </Secao>
+          </div>
+        </div>
+
+        <div className="lg:border-t lg:border-borda">
+          <Rodape negocio={negocio} />
+        </div>
       </main>
 
-      <BarraAcoes negocio={negocio} />
+      {/* No monitor as acoes ja estao na coluna da esquerda, sempre a vista. */}
+      <div className="lg:hidden">
+        <BarraAcoes negocio={negocio} />
+      </div>
     </div>
   );
 }
