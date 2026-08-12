@@ -21,13 +21,21 @@ export function BotaoAcao({
   interativo?: boolean;
 }) {
   const base =
-    "flex h-13 w-full items-center justify-center gap-2.5 rounded-full px-5 text-[1.02rem] font-semibold";
+    "flex h-13 w-full items-center justify-center gap-2.5 rounded-full px-5 text-[1.02rem] font-semibold tracking-[-0.01em]";
 
+  /*
+   * Sombra neutra e discreta, nunca colorida.
+   *
+   * O brilho colorido embaixo do botao e o detalhe que mais data um desenho:
+   * ele imita luz que a cor do botao nao emite, e le como aplicativo de 2016.
+   * Uma sombra de contato, quase preta e curta, faz o botao pousar na
+   * superficie sem anunciar efeito.
+   */
   const cor = !principal
-    ? "border border-borda bg-superficie text-texto"
+    ? "border border-borda bg-superficie text-texto hover:border-texto/25"
     : acao.whatsapp
-      ? "bg-zap text-white shadow-[0_2px_12px_rgba(14,122,85,0.28)] hover:bg-zap-forte"
-      : "bg-destaque text-white shadow-[0_2px_12px_rgba(164,69,42,0.26)]";
+      ? "bg-zap text-white shadow-[0_1px_2px_rgba(28,25,23,0.16)] hover:bg-zap-forte"
+      : "bg-destaque text-white shadow-[0_1px_2px_rgba(28,25,23,0.16)] hover:brightness-95";
 
   const miolo = (
     <>

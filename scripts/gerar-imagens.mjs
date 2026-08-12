@@ -62,41 +62,54 @@ const ICONES = {
   agulha: "M30 70 70 30M62 22l16 16M26 74l-6 6M40 60l8 8M52 48l8 8",
 };
 
-function svg(nome, largura, altura, icone, familia) {
+function svg(nome, largura, altura, _icone, familia) {
   const r = semente(nome);
   const [claro, medio, escuro] = PALETAS[familia] ?? PALETAS.barro;
-  // A capa e 16:9 e ocupa a tela inteira; o icone no meio dela e o que
-  // entrega que a imagem e marcacao. Sem ele, o campo de cor desfocado passa
-  // por foto de pouca profundidade, que e o recorte que a capa vai receber.
-  const capa = largura / altura > 1.5;
-  const borroes = Array.from({ length: 4 }, () => {
+
+  /*
+   * Sem icone, em tamanho nenhum.
+   *
+   * O desenho no meio era o que entregava a imagem como marcacao: foto de
+   * negocio nao tem um bolo vetorial centralizado. Um campo de cor desfocado,
+   * com grao, passa por foto de pouca profundidade no tamanho em que o
+   * produto usa, e some do caminho em vez de chamar atencao para si.
+   */
+  const manchas = Array.from({ length: 5 }, () => {
     const cx = Math.round(r() * largura);
     const cy = Math.round(r() * altura);
-    const rr = Math.round((0.22 + r() * 0.3) * Math.min(largura, altura));
-    const cor = r() > 0.5 ? medio : escuro;
-    return `<circle cx="${cx}" cy="${cy}" r="${rr}" fill="${cor}" opacity="0.55"/>`;
+    const rr = Math.round((0.26 + r() * 0.34) * Math.min(largura, altura));
+    const cor = r() > 0.55 ? escuro : medio;
+    return `<circle cx="${cx}" cy="${cy}" r="${rr}" fill="${cor}" opacity="0.32"/>`;
   }).join("");
 
-  const escala = Math.min(largura, altura) * 0.0042;
-  const desenho = ICONES[icone] ?? ICONES.vitrine;
+  const desfoque = Math.round(Math.min(largura, altura) * 0.16);
+  const lado = Math.min(largura, altura);
 
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${largura}" height="${altura}" viewBox="0 0 ${largura} ${altura}">
   <defs>
-    <linearGradient id="f" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="f" x1="0" y1="0" x2="0.9" y2="1">
       <stop offset="0" stop-color="${claro}"/>
       <stop offset="1" stop-color="${medio}"/>
     </linearGradient>
-    <filter id="b" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="${Math.round(Math.min(largura, altura) * 0.11)}"/>
+    <filter id="b" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="${desfoque}"/>
     </filter>
+    <!-- Grao fino. E ele que tira a cara de degrade de software e aproxima
+         de emulsao de foto. Em opacidade baixa, so se percebe de perto. -->
+    <filter id="g" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="${Math.round(r() * 999)}"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <!-- Canto levemente mais fundo, como lente de verdade faz. -->
+    <radialGradient id="v" cx="0.5" cy="0.45" r="0.78">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="${escuro}" stop-opacity="0.3"/>
+    </radialGradient>
   </defs>
   <rect width="${largura}" height="${altura}" fill="url(#f)"/>
-  <g filter="url(#b)">${borroes}</g>
-  ${capa ? "" : `<g transform="translate(${largura / 2} ${altura / 2}) scale(${escala}) translate(-50 -50)"
-     fill="none" stroke="#fffdf9" stroke-opacity="0.62" stroke-width="3.6"
-     stroke-linecap="round" stroke-linejoin="round">
-    <path d="${desenho}"/>
-  </g>`}
+  <g filter="url(#b)">${manchas}</g>
+  <rect width="${largura}" height="${altura}" fill="url(#v)"/>
+  <rect width="${largura}" height="${altura}" filter="url(#g)" opacity="0.055"/>
 </svg>`);
 }
 

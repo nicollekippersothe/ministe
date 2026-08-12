@@ -121,8 +121,14 @@ const paginaDesktop = await contextoMonitor.newPage();
 await paginaDesktop.goto(`${BASE}/`, { waitUntil: "load" });
 await paginaDesktop.waitForTimeout(1800);
 const DESKTOP = (await paginaDesktop.screenshot()).toString("base64");
+
+/* A página do cliente no monitor: duas colunas, que é o desenho novo. */
+const paginaCliente = await contextoMonitor.newPage();
+await paginaCliente.goto(`${BASE}/demo`, { waitUntil: "load" });
+await paginaCliente.waitForTimeout(1800);
+const CLIENTE = (await paginaCliente.screenshot()).toString("base64");
 await contextoMonitor.close();
-console.log("  capturou / no monitor");
+console.log("  capturou / e /demo no monitor");
 
 /**
  * A barra de status. O sistema desenha ela por cima do site, então sem ela a
@@ -463,11 +469,11 @@ function pagina(corpo, largura) {
 <style>${ESTILO}\nbody { width: ${largura}px; }</style></head><body>
 <div class="peca">
   <header class="cabeca">
-    <p class="sobrancelha">${simboloSvg(BARRO, 14)} Vitrine profissional</p>
-    <h1 class="manifesto">Você não é um link.<br><span class="segunda">É um endereço.</span></h1>
+    <p class="sobrancelha">${simboloSvg(BARRO, 14)} Presença profissional</p>
+    <h1 class="manifesto">O endereço do seu negócio<br><span class="segunda">na internet.</span></h1>
     <p class="concreto">
-      Endereço, horário, catálogo e um botão de WhatsApp que já abre a conversa
-      escrita. O dono preenche do celular e publica em minutos.
+      Um lugar seu, com o seu nome, que aparece no Google e apresenta o
+      trabalho a quem procura. Pronto em minutos, feito do celular.
     </p>
   </header>
   ${corpo}
@@ -497,6 +503,16 @@ const pecas = [
     corpo: `<div class="palco"><div class="chao" style="width:100%">${janela(
       DESKTOP,
       "entrais.app",
+    )}</div></div>`,
+  },
+  {
+    arquivo: "entrais-app-monitor.png",
+    largura: 1400,
+    // A página do cliente no monitor. É a peça que prova que o produto
+    // entrega presença profissional, e não uma coluna de celular esticada.
+    corpo: `<div class="palco"><div class="chao" style="width:100%">${janela(
+      CLIENTE,
+      `${"entrais.app"}/cafealecrim`,
     )}</div></div>`,
   },
   {
