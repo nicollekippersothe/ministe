@@ -7,8 +7,8 @@ aplicar, e o schema já foi rodado e testado num Postgres 16 local.
 
 | arquivo | o que é | testado |
 | --- | --- | --- |
-| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 47 testes |
-| `testes-rls.sql` | a bateria de testes, roda e desfaz tudo no fim | sim |
+| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 58 asserções |
+| `testes-rls.sql` | 58 asserções de RLS e de limite, rodam e desfazem tudo no fim | sim |
 | `storage.sql` | bucket das imagens e permissões | não, precisa do Supabase |
 | `local/stub.sql` | só para rodar local, nunca aplicar no Supabase | sim |
 
@@ -17,7 +17,11 @@ aplicar, e o schema já foi rodado e testado num Postgres 16 local.
 1. Criar o projeto, região São Paulo (`sa-east-1`).
 2. SQL Editor, colar `schema.sql`, executar.
 3. SQL Editor, colar `storage.sql`, executar.
-4. Rodar `testes-rls.sql` para conferir que a RLS ficou de pé:
+4. Rodar `testes-rls.sql` para conferir que a RLS ficou de pé. Colar no SQL
+   Editor e executar serve, e é o caminho mais curto: o arquivo é SQL puro, sem
+   comando de `psql` dentro, então não precisa da senha do banco.
+
+   Pela linha de comando também vale:
 
 ```
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/testes-rls.sql

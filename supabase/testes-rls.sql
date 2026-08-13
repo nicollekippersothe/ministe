@@ -4,13 +4,22 @@
 -- Roda dentro de uma transação e desfaz tudo no fim, então pode ser executado
 -- num projeto com dados sem sujar nada.
 --
---   psql "$URL_DO_BANCO" -v ON_ERROR_STOP=1 -f supabase/testes-rls.sql
+-- Dois jeitos de rodar, e os dois valem:
+--
+--   1. Colar o arquivo inteiro no SQL Editor do Supabase e executar. Não
+--      precisa da senha do banco.
+--
+--   2. psql "$URL_DO_BANCO" -v ON_ERROR_STOP=1 -f supabase/testes-rls.sql
+--
+-- Não tem comando de psql aqui dentro de propósito: é SQL puro, para o SQL
+-- Editor aceitar. Quem falha é testes.ok, que levanta exceção, e exceção já
+-- aborta o script e desfaz a transação nos dois ambientes. O ON_ERROR_STOP da
+-- linha de comando acima é cinto e suspensório, não requisito.
 --
 -- Qualquer linha "FALHOU" interrompe a execução. No fim tem que aparecer
 -- "TODOS OS TESTES PASSARAM".
 -- =============================================================================
 
-\set ON_ERROR_STOP on
 begin;
 
 create schema testes;
