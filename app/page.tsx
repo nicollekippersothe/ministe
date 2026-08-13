@@ -15,7 +15,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: `${NOME_PRODUTO}, o endereço do seu negócio na internet`,
   description:
-    "Catálogo, horário, localização e contato reunidos num endereço com o seu nome, que abre no celular e aparece na busca de quem procura o seu serviço.",
+    "Um espaço para expor o seu trabalho: as fotos, o que você oferece e por onde falar com você. Num endereço com o seu nome, escrito para aparecer na busca.",
 };
 
 /*
@@ -24,44 +24,53 @@ export const metadata: Metadata = {
  * Nenhum destes é sobre o que a página tem: isso já está no mosaico logo
  * acima, mostrado com as peças de verdade. Aqui é o que muda para o dono
  * depois de publicada, que é a parte que não dá para ver na tela.
+ *
+ * Os dois primeiros são a diferença para o que a pessoa já usa hoje, dita
+ * sem citar ninguém: uma lista de links só atende quem já chegou, e catálogo
+ * dentro de aplicativo de mensagem não existe fora dele.
  */
 const BENEFICIOS = [
+  {
+    titulo: "Encontrada por quem ainda não conhece você",
+    texto:
+      "A página sai com a marcação que o Google lê: nome, categoria, cidade, horário e o que você oferece. Uma lista de links atende quem já chegou até você. Esta página aparece também para quem está procurando o serviço agora.",
+  },
+  {
+    titulo: "Um endereço para colocar em tudo",
+    texto:
+      "Bio, anúncio pago, cartão, assinatura de e-mail. Quem clica cai no seu catálogo, que abre em qualquer navegador, sem depender de ter um aplicativo instalado.",
+  },
+  {
+    titulo: "Você preenche, e a página sai pronta",
+    texto:
+      "A página já vem montada. Você responde perguntas em vez de escolher fonte, margem e cor, e o resultado sai no mesmo padrão em qualquer aparelho.",
+  },
+  {
+    titulo: "Editou, já está no ar",
+    texto:
+      "Entrou peça nova, ou o horário do feriado é outro? Você altera do celular e quem abrir em seguida já vê.",
+  },
   {
     titulo: "O endereço é seu",
     texto:
       "As redes sociais mudam de regra e de alcance quando querem. O seu endereço fica onde está, com o mesmo nome.",
   },
-  {
-    titulo: "Abre em qualquer sinal",
-    texto:
-      "A página chega inteira em menos de dois segundos, e continua abrindo onde a internet é fraca.",
-  },
-  {
-    titulo: "Trocar de nome não quebra o link",
-    texto:
-      "Se o negócio ganhar outro nome, quem guardou o endereço antigo chega no novo.",
-  },
-  {
-    titulo: "Editou, já está no ar",
-    texto:
-      "Mudou o horário na véspera do feriado, ou o preço de um item? Você altera do celular e quem abrir em seguida já vê.",
-  },
 ];
 
 const PASSOS = [
   {
-    titulo: "Escolha o endereço",
-    texto: "Uma palavra, do jeito que as pessoas já chamam o seu negócio.",
+    titulo: "Escolha o seu endereço",
+    texto: "Escreva o nome do negócio e veja na hora se ele está livre.",
   },
   {
     titulo: "Preencha o essencial",
     texto:
-      "Nome, contato, horário e localização. O catálogo entra quando você quiser.",
+      "O que o cliente precisa saber antes de chamar você: o serviço ou a peça, o preço quando fizer sentido, o horário e o contato.",
   },
   {
     titulo: "Publique",
     texto:
-      "O mesmo endereço na bio do Instagram, no WhatsApp e no cartão impresso.",
+      "O endereço fica pronto para colar na bio, no anúncio e onde mais alguém perguntar pelo seu trabalho.",
   },
 ];
 
@@ -101,9 +110,9 @@ export default async function Home() {
                 O endereço do seu negócio na internet.
               </h1>
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-suave">
-                Catálogo, horário, localização e contato reunidos num endereço
-                com o seu nome. Você manda para quem pergunta, e ele aparece na
-                busca para quem ainda não conhece o seu trabalho.
+                Um espaço seu para expor o trabalho: as fotos, o que você
+                oferece e por onde falar com você. Num endereço com o seu nome,
+                escrito para aparecer na busca de quem procura o seu serviço.
               </p>
 
               <div className="mt-9 max-w-lg">
@@ -140,11 +149,10 @@ export default async function Home() {
               id="exemplos"
               className="max-w-xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              Quatro endereços no ar agora.
+              Veja como fica a sua.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Todos abrem e funcionam. São de negócios bem diferentes, de
-              propósito.
+              Estas estão no ar. Abra qualquer uma e percorra até o fim.
             </p>
 
             <div className="mt-12">

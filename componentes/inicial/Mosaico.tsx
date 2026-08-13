@@ -233,6 +233,32 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
           </div>
         </div>
       </Cartao>
+
+      {/*
+        A galeria atravessa a largura toda. É a peça que mais se aproxima do
+        que a entrais é para quem faz trabalho manual ou autoral: um lugar para
+        expor, e não só um cartão de contato. Espremida numa coluna de um terço
+        ela viraria seis miniaturas, que é o oposto de expor.
+      */}
+      <Cartao
+        className="lg:col-span-3"
+        titulo="A galeria do seu trabalho"
+        texto="As suas fotos em tamanho grande, na ordem que você escolher. É onde quem chega vê o que você faz de melhor antes de perguntar qualquer preço."
+      >
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 sm:gap-3" aria-hidden>
+          {negocio.galeria.slice(0, 6).map((foto) => (
+            <Image
+              key={foto.url}
+              src={foto.url}
+              alt=""
+              width={foto.largura}
+              height={foto.altura}
+              sizes="(max-width: 640px) 30vw, 170px"
+              className="aspect-square w-full rounded-xl object-cover"
+            />
+          ))}
+        </div>
+      </Cartao>
     </ul>
   );
 }
