@@ -143,6 +143,84 @@ const BUSCAS = [
       ["galeria-4", QUADRADA, 1],
     ],
   },
+
+  // Ateliê Trama, peças de crochê e tricô.
+  {
+    consulta: "yarn",
+    arquivos: [
+      ["trama-capa", CAPA, 1],
+      ["trama-3", QUADRADA, 7],
+      ["trama-g1", QUADRADA, 0],
+      ["trama-g4", QUADRADA, 5],
+    ],
+  },
+  {
+    consulta: "knitting",
+    arquivos: [
+      ["trama-1", QUADRADA, 10],
+      ["trama-2", QUADRADA, 9],
+      ["trama-g3", QUADRADA, 6],
+      ["trama-g5", QUADRADA, 3],
+    ],
+  },
+  {
+    consulta: "handmade",
+    arquivos: [
+      ["trama-g2", QUADRADA, 0],
+      ["trama-g6", QUADRADA, 8],
+    ],
+  },
+
+  // Aurora Massas, massa fresca por encomenda.
+  {
+    consulta: "pasta",
+    arquivos: [
+      ["aurora-capa", CAPA, 0],
+      ["aurora-4", QUADRADA, 5],
+      ["aurora-g1", QUADRADA, 2],
+    ],
+  },
+  {
+    consulta: "dough",
+    arquivos: [
+      ["aurora-1", QUADRADA, 6],
+      ["aurora-3", QUADRADA, 0],
+      ["aurora-g2", QUADRADA, 11],
+    ],
+  },
+  {
+    consulta: "flour",
+    arquivos: [
+      ["aurora-2", QUADRADA, 3],
+      ["aurora-g3", QUADRADA, 1],
+    ],
+  },
+
+  // Rafael Nunes, fotografia. Aqui a galeria é o produto, então ela tem mais
+  // fotos que o catálogo, ao contrário de todos os outros exemplos.
+  {
+    consulta: "portrait",
+    arquivos: [
+      ["foto-capa", CAPA, 0],
+      ["foto-2", QUADRADA, 4],
+      ["foto-g2", QUADRADA, 9],
+    ],
+  },
+  {
+    consulta: "wedding",
+    arquivos: [
+      ["foto-1", QUADRADA, 8],
+      ["foto-g1", QUADRADA, 4],
+    ],
+  },
+  {
+    consulta: "photographer",
+    arquivos: [
+      ["foto-3", QUADRADA, 7],
+      ["foto-g3", QUADRADA, 1],
+      ["foto-g4", QUADRADA, 10],
+    ],
+  },
 ];
 
 /** Quantos candidatos a folha de contato mostra por busca. */
@@ -201,7 +279,18 @@ if (process.argv.includes("--folha")) {
   const rotulo = 20;
   const pecas = [];
 
-  for (const [linha, { consulta }] of BUSCAS.entries()) {
+  /*
+   * Dá para pedir só algumas buscas:
+   *   node scripts/baixar-fotos.mjs --folha yarn knitting
+   * A folha com todas fica grande demais para olhar quando o que mudou foi
+   * um exemplo só.
+   */
+  const pedidas = process.argv.slice(process.argv.indexOf("--folha") + 1);
+  const escolhidas = pedidas.length
+    ? BUSCAS.filter((b) => pedidas.includes(b.consulta))
+    : BUSCAS;
+
+  for (const [linha, { consulta }] of escolhidas.entries()) {
     const achados = (await buscar(consulta)).slice(0, CANDIDATOS);
     const topo = linha * (lado + rotulo);
 
@@ -232,7 +321,7 @@ if (process.argv.includes("--folha")) {
   await sharp({
     create: {
       width: CANDIDATOS * lado,
-      height: BUSCAS.length * (lado + rotulo),
+      height: escolhidas.length * (lado + rotulo),
       channels: 3,
       background: "#ffffff",
     },

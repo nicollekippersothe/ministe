@@ -101,7 +101,7 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
               <p className="text-[0.92rem] leading-snug font-semibold text-texto text-pretty">
                 {item.titulo}
               </p>
-              {item.precoCentavos !== null ? (
+              {negocio.mostrarPrecos && item.precoCentavos !== null ? (
                 <p className="text-[0.92rem] font-semibold tabular-nums text-texto">
                   {preco(item.precoCentavos)}
                 </p>

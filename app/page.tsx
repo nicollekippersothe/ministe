@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
+import { Carrossel } from "@/componentes/inicial/Carrossel";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
-import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
 import { MODO_VITRINE } from "@/lib/site";
-import { doceria } from "@/lib/exemplos";
+import { atelie, VITRINE } from "@/lib/exemplos";
 
 export const revalidate = 3600;
 
@@ -75,7 +75,15 @@ const PASSOS = [
 ];
 
 export default async function Home() {
-  const negocio = (await porSlug("demo")) ?? doceria;
+  /*
+   * O mosaico mostra as peças de um negócio só, com profundidade. O ateliê
+   * serve melhor que os outros aí: tem preço, tem galeria cheia e é o caso
+   * que o produto existe para atender.
+   */
+  const negocio = (await porSlug("atelie-trama")) ?? atelie;
+
+  /* Quatro no carrossel. O quinto ninguém chega a ver. */
+  const naAbertura = VITRINE.slice(0, 4).map((v) => v.negocio);
 
   /*
    * O campo de endereço fica na abertura em qualquer situação: é ele que
@@ -121,7 +129,7 @@ export default async function Home() {
             </div>
 
             <div className="lg:pl-4">
-              <Telefone negocio={negocio} />
+              <Carrossel negocios={naAbertura} />
             </div>
           </div>
         </section>

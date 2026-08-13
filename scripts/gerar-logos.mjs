@@ -35,6 +35,9 @@ const LOGOS = [
   { arquivo: "raiz-logo", iniciais: "SR", fundo: "#2f5d4a" }, // Studio Raiz
   { arquivo: "nutri-logo", iniciais: "MA", fundo: "#5f6b3e" }, // Marina Alcântara
   { arquivo: "psi-logo", iniciais: "CR", fundo: "#3d5566" }, // Camila Reis
+  { arquivo: "trama-logo", iniciais: "AT", fundo: "#8a4a52" }, // Ateliê Trama
+  { arquivo: "aurora-logo", iniciais: "AM", fundo: "#a05a22" }, // Aurora Massas
+  { arquivo: "foto-logo", iniciais: "RN", fundo: "#2a2723" }, // Rafael Nunes
 ];
 
 if (!existsSync(FONTE)) {

@@ -216,3 +216,89 @@ body {
     transform: translateY(calc(-100% + var(--janela)));
   }
 }
+
+/*
+ * O carrossel da abertura: varios negocios no mesmo aparelho.
+ *
+ * Os quadros ficam empilhados na mesma celula da grade, entao o container
+ * tem a altura do mais alto e nada pula quando a troca acontece. Sem
+ * position absolute de proposito: absoluto tiraria os quadros do fluxo e o
+ * container ficaria com altura zero.
+ *
+ * Fora do @media so o primeiro aparece. Assim, para quem pediu menos
+ * movimento no sistema, a abertura mostra um negocio parado e legivel em vez
+ * de quatro sobrepostos.
+ */
+.carrossel {
+  display: grid;
+}
+.carrossel > * {
+  grid-area: 1 / 1;
+  opacity: 0;
+  /*
+   * visibility, e nao so opacidade.
+   *
+   * Com opacity: 0 o quadro continua sendo pintado a cada quadro de
+   * animacao, e sao tres paginas inteiras de trabalho de graca disputando a
+   * thread principal bem na hora em que o texto da abertura precisa
+   * aparecer. Com visibility: hidden o navegador pula a subarvore inteira.
+   *
+   * visibility anima em degrau, entao a troca acontece no ponto exato do
+   * keyframe, sem meio-termo.
+   */
+  visibility: hidden;
+}
+.carrossel > :first-child {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .carrossel > * {
+    animation: passar var(--ciclo) linear var(--atraso) infinite both;
+  }
+
+  /*
+   * A rolagem de dentro anda no mesmo ciclo e no mesmo atraso da troca. Sem
+   * isso cada aparelho rolaria no proprio ritmo, e um quadro poderia
+   * aparecer ja no meio da pagina, que le como erro.
+   *
+   * De 22% em diante ele fica parado no fim e volta ao topo na virada do
+   * ciclo, quando ja esta invisivel. A volta nunca aparece.
+   */
+  .carrossel .rolagem {
+    animation: rolar-quadro var(--ciclo) ease-in-out var(--atraso) infinite both;
+  }
+}
+
+@keyframes passar {
+  0% {
+    opacity: 0;
+    visibility: visible;
+  }
+  3%,
+  22% {
+    opacity: 1;
+    visibility: visible;
+  }
+  25% {
+    opacity: 0;
+    visibility: visible;
+  }
+  26%,
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes rolar-quadro {
+  0%,
+  6% {
+    transform: translateY(0);
+  }
+  22%,
+  100% {
+    transform: translateY(calc(-100% + var(--janela)));
+  }
+}

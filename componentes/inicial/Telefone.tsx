@@ -22,7 +22,26 @@ import type { Negocio } from "@/lib/tipos";
  * que está comprando. A rolagem é uma animação de transform, sem JavaScript, e
  * para de acontecer para quem pediu menos movimento no sistema.
  */
-export function Telefone({ negocio }: { negocio: Negocio }) {
+export function Telefone({
+  negocio,
+  prioridade = true,
+  leve = false,
+}: {
+  negocio: Negocio;
+  /**
+   * Só o primeiro quadro do carrossel carrega a capa com prioridade. Os
+   * outros três nem estão à vista quando a página abre, e marcar os quatro
+   * como prioritários faria a rede brigar consigo mesma bem no momento em
+   * que a primeira pintura acontece.
+   */
+  prioridade?: boolean;
+  /**
+   * Menos itens e menos fotos, para quatro aparelhos empilhados não virarem
+   * cinquenta imagens na abertura. Some catálogo e galeria pela metade, e o
+   * percurso da rolagem encurta junto, o que deixa a leitura mais calma.
+   */
+  leve?: boolean;
+}) {
   const agora = Date.now();
   const estado = estadoAgora(
     montarJanela(negocio.horarios, negocio.fuso, agora),
@@ -31,8 +50,17 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
   );
   const fonte = combinacao(negocio.fonte);
   const acoes = acoesDoRodape(negocio).slice(0, 1);
-  const itens = negocio.itens.filter((i) => i.ativo && i.fotos.length > 0);
-  const links = negocio.links.slice(0, 3);
+  const itens = negocio.itens
+    .filter((i) => i.ativo && i.fotos.length > 0)
+    .slice(0, leve ? 2 : 4);
+  /*
+   * No carrossel a galeria fica de fora. São quatro aparelhos empilhados na
+   * abertura, e três miniaturas em cada um custam doze imagens que ninguém
+   * chega a olhar de perto ali. A galeria grande está no mosaico logo abaixo,
+   * em tamanho que se vê.
+   */
+  const fotos = leve ? [] : negocio.galeria.slice(0, 6);
+  const links = negocio.links.slice(0, leve ? 2 : 3);
 
   return (
     <div
@@ -56,7 +84,8 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
               alt=""
               width={negocio.capa.largura}
               height={negocio.capa.altura}
-              priority
+              priority={prioridade}
+              loading={prioridade ? "eager" : "lazy"}
               sizes="304px"
               className="aspect-[16/9] w-full object-cover"
             />
@@ -106,7 +135,7 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
                 {negocio.tituloCatalogo}
               </p>
               <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-4">
-                {itens.slice(0, 4).map((item) => (
+                {itens.map((item) => (
                   <div key={item.id} className="flex flex-col gap-1.5">
                     <Image
                       src={item.fotos[0].url}
@@ -119,7 +148,7 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
                     <p className="text-[0.74rem] leading-snug font-semibold text-texto">
                       {item.titulo}
                     </p>
-                    {item.precoCentavos !== null ? (
+                    {negocio.mostrarPrecos && item.precoCentavos !== null ? (
                       <p className="text-[0.74rem] font-semibold tabular-nums text-texto">
                         {preco(item.precoCentavos)}
                       </p>
@@ -130,11 +159,11 @@ export function Telefone({ negocio }: { negocio: Negocio }) {
             </div>
           ) : null}
 
-          {negocio.galeria.length >= 3 ? (
+          {fotos.length >= 3 ? (
             <div className="px-4 pt-6">
               <p className="titulo text-[1.05rem] text-texto">Fotos</p>
               <div className="mt-3 grid grid-cols-3 gap-1.5">
-                {negocio.galeria.slice(0, 6).map((foto) => (
+                {fotos.map((foto) => (
                   <Image
                     key={foto.url}
                     src={foto.url}

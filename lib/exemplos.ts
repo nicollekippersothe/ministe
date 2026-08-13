@@ -353,12 +353,252 @@ export const psicologia: Negocio = {
   ],
 };
 
-export const EXEMPLOS: Negocio[] = [doceria, estudio, nutricao, psicologia];
+// ---------------------------------------------------------------------------
 
-/** Como cada exemplo é apresentado na tela inicial. */
+/*
+ * Peça feita à mão, vendida por encomenda.
+ *
+ * Este é o caso que o produto existe para atender: alguém boa no que faz,
+ * sem site, com o trabalho todo dentro de uma rede social. A galeria pesa
+ * mais que o catálogo aqui, porque a peça se vende pela foto.
+ */
+export const atelie: Negocio = {
+  ...base,
+  slug: "atelie-trama",
+  nome: "Ateliê Trama",
+  frase: "Peças de crochê e tricô feitas à mão, sob encomenda.",
+  logo: foto("trama-logo.jpg", "Logotipo do Ateliê Trama", 512),
+  capa: capa("trama-capa.jpg", "Manta de tricô sobre a mesa de trabalho"),
+  fonte: "moderno",
+  whatsapp: "5531988884444",
+  mensagemPadrao: "Olá! Gostaria de encomendar uma peça.",
+  mensagemItem: "Olá! Queria saber sobre a peça: {item}",
+  // Sem endereço de propósito: quem produz em casa quase nunca quer o
+  // endereço público, e a página precisa funcionar sem ele.
+  endereco: null,
+  cidade: "Belo Horizonte",
+  estado: "MG",
+  cep: null,
+  mapsUrl: null,
+  mostrarPrecos: true,
+  tituloCatalogo: "Peças",
+  horarios: [
+    { dia: 1, abre: "09:00", fecha: "18:00" },
+    { dia: 2, abre: "09:00", fecha: "18:00" },
+    { dia: 3, abre: "09:00", fecha: "18:00" },
+    { dia: 4, abre: "09:00", fecha: "18:00" },
+    { dia: 5, abre: "09:00", fecha: "16:00" },
+  ],
+  itens: [
+    item(
+      "manta",
+      "Manta de tricô",
+      "Lã merino, 1,40 por 1,80. Escolha a cor na encomenda. Pronta em três semanas.",
+      42000,
+      [foto("trama-1.jpg", "Manta de tricô em ponto trançado")],
+    ),
+    item(
+      "gorro",
+      "Gorro de lã",
+      "Tamanho único, com barra dobrada. Sete cores disponíveis.",
+      9500,
+      [foto("trama-2.jpg", "Gorro de lã sendo usado")],
+    ),
+    item(
+      "toalha",
+      "Toalha de crochê",
+      "Barbante encerado, feita em ponto alto. Medida sob encomenda.",
+      18000,
+      [foto("trama-3.jpg", "Toalha de crochê em azul")],
+    ),
+  ],
+  galeria: [
+    foto("trama-g1.jpg", "Novelo de lã na cesta de trabalho"),
+    foto("trama-g2.jpg", "Peça em acabamento sobre a bancada"),
+    foto("trama-g3.jpg", "Novelos separados por cor"),
+    foto("trama-g4.jpg", "Ponto trançado visto de perto"),
+    foto("trama-g5.jpg", "Trabalho em andamento no bastidor"),
+    foto("trama-g6.jpg", "Peça pronta embalada para entrega"),
+  ],
+  links: [
+    { id: "insta", rotulo: "Instagram", url: "https://instagram.com/", icone: "instagram" },
+    { id: "loja", rotulo: "Loja completa", url: "https://exemplo.com.br/loja", icone: "site" },
+    {
+      id: "encomenda",
+      rotulo: "Como funciona a encomenda",
+      url: "https://exemplo.com.br/encomenda",
+      icone: "site",
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+
+/*
+ * Produção caseira com retirada marcada. O horário aqui não é de loja aberta,
+ * é de janela de retirada, e a página trata os dois do mesmo jeito.
+ */
+export const massas: Negocio = {
+  ...base,
+  slug: "aurora-massas",
+  nome: "Aurora Massas",
+  frase: "Massa fresca feita no dia, por encomenda. Retirada às quintas e sábados.",
+  logo: foto("aurora-logo.jpg", "Logotipo da Aurora Massas", 512),
+  capa: capa("aurora-capa.jpg", "Massa fresca saindo do cilindro"),
+  fonte: "moderno",
+  whatsapp: "5551988883333",
+  mensagemPadrao: "Olá! Gostaria de fazer uma encomenda para a próxima retirada.",
+  mensagemItem: "Olá! Quero encomendar: {item}",
+  endereco: "Rua Fernandes Vieira, 480, Bom Fim",
+  cidade: "Porto Alegre",
+  estado: "RS",
+  cep: "90035-091",
+  mapsUrl:
+    "https://www.google.com/maps/search/?api=1&query=Rua+Fernandes+Vieira+480+Bom+Fim+Porto+Alegre",
+  mostrarPrecos: true,
+  tituloCatalogo: "Massas da semana",
+  horarios: [
+    { dia: 4, abre: "10:00", fecha: "19:00" },
+    { dia: 6, abre: "09:00", fecha: "14:00" },
+  ],
+  itens: [
+    item(
+      "ravioli",
+      "Ravioli de ricota e espinafre",
+      "Bandeja com 500 g, rende duas porções. Massa fina, recheio feito no dia.",
+      4800,
+      [foto("aurora-1.jpg", "Ravioli recheado antes de cozinhar")],
+    ),
+    item(
+      "talharim",
+      "Talharim fresco",
+      "Sêmola e ovo caipira, cortado na hora. Bandeja com 500 g.",
+      3600,
+      [foto("aurora-2.jpg", "Talharim sendo cortado na máquina")],
+    ),
+    item(
+      "nhoque",
+      "Nhoque de batata",
+      "Batata asada e pouca farinha. Bandeja com 700 g.",
+      3900,
+      [foto("aurora-3.jpg", "Nhoque de batata polvilhado com farinha")],
+    ),
+    item(
+      "molho",
+      "Molho de tomate da casa",
+      "Tomate italiano cozido devagar, sem conservante. Pote de 400 g.",
+      2400,
+      [foto("aurora-4.jpg", "Molho de tomate servido sobre a massa")],
+    ),
+  ],
+  galeria: [
+    foto("aurora-g1.jpg", "Prato de massa montado com legumes"),
+    foto("aurora-g2.jpg", "Massa sendo sovada na bancada"),
+    foto("aurora-g3.jpg", "Ovo quebrado sobre a farinha"),
+  ],
+  links: [
+    { id: "insta", rotulo: "Instagram", url: "https://instagram.com/", icone: "instagram" },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+
+/*
+ * Trabalho autoral, em que a galeria é o produto e não um complemento. É o
+ * exemplo que prova a leitura de galeria da entrais: aqui as fotos vêm antes
+ * do catálogo, e o preço fica fora porque orçamento de ensaio é conversa.
+ */
+export const fotografia: Negocio = {
+  ...base,
+  slug: "rafael-nunes",
+  nome: "Rafael Nunes",
+  frase: "Fotografia de retrato e casamento. Recife e região.",
+  logo: foto("foto-logo.jpg", "Logotipo de Rafael Nunes", 512),
+  capa: capa("foto-capa.jpg", "Retrato feito com luz natural"),
+  fonte: "moderno",
+  plano: "pago" as const,
+  whatsapp: "5581988882222",
+  mensagemPadrao: "Olá! Gostaria de saber sobre disponibilidade e orçamento.",
+  mensagemItem: "Olá! Queria um orçamento para: {item}",
+  endereco: null,
+  cidade: "Recife",
+  estado: "PE",
+  cep: null,
+  mapsUrl: null,
+  // Preço fora do ar de propósito: ensaio se orça por data e por escopo.
+  mostrarPrecos: false,
+  tituloCatalogo: "Ensaios",
+  acaoSecundaria: {
+    tipo: "link" as const,
+    rotulo: "Ver o portfólio completo",
+    url: "https://exemplo.com.br/portfolio",
+    icone: "site" as const,
+  },
+  horarios: [
+    { dia: 1, abre: "09:00", fecha: "18:00" },
+    { dia: 2, abre: "09:00", fecha: "18:00" },
+    { dia: 3, abre: "09:00", fecha: "18:00" },
+    { dia: 4, abre: "09:00", fecha: "18:00" },
+    { dia: 5, abre: "09:00", fecha: "18:00" },
+  ],
+  itens: [
+    item(
+      "casal",
+      "Ensaio de casal",
+      "Duas horas em locação aberta, com trinta fotos tratadas.",
+      null,
+      [foto("foto-1.jpg", "Casal abraçado em ensaio ao ar livre")],
+    ),
+    item(
+      "retrato",
+      "Retrato individual",
+      "Uma hora em estúdio ou em locação, com quinze fotos tratadas.",
+      null,
+      [foto("foto-2.jpg", "Retrato individual com luz de janela")],
+    ),
+    item(
+      "evento",
+      "Cobertura de evento",
+      "Casamento, formatura ou festa. Orçamento por data e por duração.",
+      null,
+      [foto("foto-3.jpg", "Fotógrafo trabalhando durante um evento")],
+    ),
+  ],
+  galeria: [
+    foto("foto-g1.jpg", "Casal ao pôr do sol"),
+    foto("foto-g2.jpg", "Retrato de perfil em luz baixa"),
+    foto("foto-g3.jpg", "Fotógrafo em locação externa"),
+    foto("foto-g4.jpg", "Silhueta contra o fim de tarde"),
+  ],
+  links: [
+    { id: "insta", rotulo: "Instagram", url: "https://instagram.com/", icone: "instagram" },
+    { id: "site", rotulo: "Portfólio completo", url: "https://exemplo.com.br/", icone: "site" },
+  ],
+};
+
+export const EXEMPLOS: Negocio[] = [
+  doceria,
+  estudio,
+  nutricao,
+  psicologia,
+  atelie,
+  massas,
+  fotografia,
+];
+
+/**
+ * Como cada exemplo é apresentado na tela inicial.
+ *
+ * A ordem não é por acaso: os três primeiros são quem o produto existe para
+ * atender, alguém que faz bem e não tem onde mostrar. Quem chega precisa bater
+ * o olho e pensar "é para mim" antes de ler qualquer texto.
+ */
 export const VITRINE = [
-  { negocio: doceria, tipo: "Doceria" },
+  { negocio: atelie, tipo: "Crochê e tricô" },
+  { negocio: fotografia, tipo: "Fotografia" },
+  { negocio: massas, tipo: "Massa fresca" },
+  { negocio: psicologia, tipo: "Psicóloga" },
   { negocio: estudio, tipo: "Estúdio de yoga" },
   { negocio: nutricao, tipo: "Nutricionista" },
-  { negocio: psicologia, tipo: "Psicóloga" },
+  { negocio: doceria, tipo: "Confeitaria" },
 ];
