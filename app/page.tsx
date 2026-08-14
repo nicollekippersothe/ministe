@@ -141,7 +141,7 @@ export default async function Home() {
             </div>
 
             <div className="lg:pl-4">
-              <Carrossel>
+              <Carrossel mostrarSeta={false}>
                 {naAbertura.map((n, i) => (
                   <Telefone key={n.slug} negocio={n} prioridade={i === 0} leve />
                 ))}

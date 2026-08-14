@@ -24,6 +24,7 @@ export function Carrossel({
   largura = "max-w-[19rem]",
   item = "exemplo",
   topoSeta = "top-1/2",
+  mostrarSeta = true,
 }: {
   children: React.ReactNode;
   /** A abertura mostra um aparelho, estreito. Outros usos passam a própria largura. */
@@ -43,6 +44,12 @@ export function Carrossel({
    * passam a própria posição.
    */
   topoSeta?: string;
+  /**
+   * Os pontinhos abaixo já bastam para trocar de quadro, e continuam ali de
+   * qualquer jeito: só a seta é opcional, para quem preferir o carrossel sem
+   * ela.
+   */
+  mostrarSeta?: boolean;
 }) {
   const quadros = Array.isArray(children) ? children : [children];
   const total = quadros.length;
@@ -108,19 +115,21 @@ export function Carrossel({
 
       {total > 1 ? (
         <>
-          <button
-            type="button"
-            onClick={() => setAtual((i) => (i + 1) % total)}
-            aria-label={`Ver o próximo ${item}`}
-            /*
-             * Montado na borda do aparelho, metade dentro e metade fora. É a
-             * posição que diz "isto avança aquilo ali", em vez de parecer um
-             * botão qualquer perdido ao lado.
-             */
-            className={`absolute ${topoSeta} right-0 z-10 flex h-12 w-12 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-borda bg-superficie text-texto shadow-[0_1px_2px_rgba(28,25,23,0.12),0_10px_24px_-10px_rgba(28,25,23,0.45)] transition-colors hover:border-texto/30 hover:bg-fundo`}
-          >
-            <IconeAvancar className="h-5 w-5" />
-          </button>
+          {mostrarSeta ? (
+            <button
+              type="button"
+              onClick={() => setAtual((i) => (i + 1) % total)}
+              aria-label={`Ver o próximo ${item}`}
+              /*
+               * Montado na borda do aparelho, metade dentro e metade fora. É a
+               * posição que diz "isto avança aquilo ali", em vez de parecer um
+               * botão qualquer perdido ao lado.
+               */
+              className={`absolute ${topoSeta} right-0 z-10 flex h-12 w-12 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-borda bg-superficie text-texto shadow-[0_1px_2px_rgba(28,25,23,0.12),0_10px_24px_-10px_rgba(28,25,23,0.45)] transition-colors hover:border-texto/30 hover:bg-fundo`}
+            >
+              <IconeAvancar className="h-5 w-5" />
+            </button>
+          ) : null}
 
           {/* Onde estou e quantos faltam, sem precisar esperar para descobrir. */}
           <div className="-mt-2 flex justify-center gap-2">

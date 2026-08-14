@@ -180,7 +180,7 @@ export function Mosaico({
         pessoa tem na cabeça quando pensa em montar um site.
       */}
       <Cartao
-        titulo="Pronta numa sentada"
+        titulo="Pronta em poucos minutos"
         texto="São perguntas, uma de cada vez, respondidas pelo celular. Publique com o essencial hoje e complete o resto quando sobrar tempo."
       >
         <div className="flex flex-col gap-2.5" aria-hidden>
