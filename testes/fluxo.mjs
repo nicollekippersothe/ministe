@@ -11,6 +11,7 @@
  *
  * Apaga .dados antes de rodar, porque ele mexe nos dados.
  */
+import { readFile } from "node:fs/promises";
 import { chromium, devices } from "playwright";
 
 const BASE = process.env.BASE ?? "http://localhost:3000";
@@ -21,6 +22,16 @@ let falhas = 0;
 function passo(nome, ok) {
   console.log(`${ok ? "  ok  " : "FALHOU"} ${nome}`);
   if (!ok) falhas++;
+}
+
+/** Espera o elemento aparecer e devolve se apareceu, em vez de estourar. */
+async function esperar(seletor, tempo = 5000) {
+  try {
+    await p.waitForSelector(seletor, { timeout: tempo });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 const navegador = await chromium.launch(
@@ -302,6 +313,54 @@ await p.waitForTimeout(800);
 passo(
   "endereço com cara de banco é barrado no cadastro",
   (await p.textContent("[aria-live]")).includes("palavra restrita"),
+);
+
+// ---------------------------------------------------------------------------
+// A categoria monta a página antes de o dono preencher qualquer coisa
+// ---------------------------------------------------------------------------
+
+await p.goto(`${BASE}/criar`, { waitUntil: "load" });
+const opcoes = "input[name=categoria]";
+const todasAsCategorias = await p.locator(opcoes).count();
+
+// A busca só filtra depois que o React assume a tela, e a rolagem some antes
+// disso. Esperar o resultado, em vez de esperar um tempo fixo, é o que faz o
+// teste valer a mesma coisa numa máquina rápida e numa lenta.
+await p.fill("input[type=search]", "ensaio");
+passo(
+  "a busca acha a categoria por como a pessoa fala, e não pelo nome que demos",
+  todasAsCategorias > 30 &&
+    (await esperar(`${opcoes}[value=fotografia]`)) &&
+    (await p.locator(opcoes).count()) < 5,
+);
+
+await p.click(`${opcoes}[value=fotografia]`);
+passo(
+  "a escolha mostra na hora o que ela muda na página",
+  await esperar('fieldset [aria-live]:has-text("Começa com Ensaios")'),
+);
+
+await p.fill("input[name=nome]", "Camila Reis");
+await p.fill("input[name=slug]", "camila reis ensaios");
+await p.waitForTimeout(800);
+await p.click('button:has-text("Criar página")');
+await p.waitForURL(/criado=1/);
+
+const criada = JSON.parse(await readFile(".dados/negocios.json", "utf8")).find(
+  (n) => n.slug === "camila-reis-ensaios",
+);
+passo(
+  "a página nova nasce com a receita da categoria",
+  criada?.categoria === "fotografia" &&
+    criada.tituloCatalogo === "Ensaios" &&
+    criada.mostrarPrecos === false,
+);
+passo(
+  "e nasce vazia, sem herdar nada da página de exemplo",
+  criada?.frase === null &&
+    criada.whatsapp === null &&
+    criada.itens.length === 0 &&
+    criada.publicado === false,
 );
 
 await p.goto(`${BASE}/demo`, { waitUntil: "load" });

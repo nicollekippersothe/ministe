@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { doceria, EXEMPLOS } from "./exemplos";
+import { montar } from "./novo";
 import { MODO_VITRINE } from "./site";
 import type { Negocio } from "./tipos";
 
@@ -53,32 +54,14 @@ export async function enderecoLivre(slug: string): Promise<boolean> {
   return !todos.some((n) => n.slug === slug || n.slugAnterior === slug);
 }
 
-export async function criar(slug: string, nome: string): Promise<Negocio> {
-  const novo: Negocio = {
-    ...doceria,
-    slug,
-    nome,
-    slugAnterior: null,
-    acaoPrincipal: null,
-    acaoSecundaria: null,
-    frase: null,
-    logo: null,
-    capa: null,
-    publicado: false,
-    whatsapp: null,
-    mensagemPadrao: null,
-    mensagemItem: null,
-    telefone: null,
-    endereco: null,
-    cidade: null,
-    estado: null,
-    cep: null,
-    mapsUrl: null,
-    horarios: [],
-    itens: [],
-    galeria: [],
-    links: [],
-  };
+/** A página nova nasce montada pela categoria. Ver lib/novo.ts. */
+export async function criar(
+  slug: string,
+  nome: string,
+  categoria: string | null = null,
+  categoriaLivre: string | null = null,
+): Promise<Negocio> {
+  const novo = montar(slug, nome, categoria, categoriaLivre);
 
   const todos = await ler();
   todos.push(novo);

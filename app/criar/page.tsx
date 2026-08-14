@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { criarPagina } from "./acoes";
+import { CampoCategoria } from "@/componentes/cadastro/CampoCategoria";
 import { CampoEndereco } from "@/componentes/cadastro/CampoEndereco";
 import { exigirLogin } from "@/app/painel/vitrine";
 import { BotaoPrincipal, Moldura } from "@/componentes/cadastro/Moldura";
@@ -87,7 +88,7 @@ export default async function Criar({
   return (
     <Moldura
       titulo="Criar sua página"
-      subtitulo="Duas informações agora. O resto pode ser preenchido depois."
+      subtitulo="Três respostas agora. O resto pode ser preenchido depois."
       rodape={
         <p className="text-center text-[0.95rem] text-suave">
           Já tem uma página?{" "}
@@ -117,6 +118,8 @@ export default async function Criar({
         </div>
 
         <CampoEndereco />
+
+        <CampoCategoria />
 
         {mensagem ? (
           <p

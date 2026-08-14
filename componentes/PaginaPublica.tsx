@@ -8,6 +8,7 @@ import { LinksExtras } from "./LinksExtras";
 import { Rodape } from "./Rodape";
 import { Divisor, Secao } from "./Secao";
 import { acoesDoRodape } from "@/lib/acoes";
+import { receitaDe } from "@/lib/categorias";
 import { combinacao } from "@/lib/fontes";
 import { localBusiness } from "@/lib/jsonld";
 import type { Negocio } from "@/lib/tipos";
@@ -42,6 +43,33 @@ export function PaginaPublica({
   const fonte = combinacao(negocio.fonte);
   const respiro = respiroDaBarra(negocio);
   const acoes = acoesDoRodape(negocio);
+
+  /*
+   * Quem vende pelo olho mostra o trabalho antes da lista de serviços: no
+   * fotógrafo, na tatuagem e no crochê, a foto é o argumento e o catálogo vem
+   * depois de a pessoa gostar do que viu. Quem vende por item mantém o
+   * catálogo na frente. A ordem sai da categoria, e a página é a mesma nos
+   * dois casos: só a sequência das duas seções muda.
+   */
+  const galeriaNaFrente = receitaDe(negocio.categoria).galeriaPrimeiro;
+
+  const catalogo = (
+    <>
+      {temItens ? <Divisor /> : null}
+      <Secao id="catalogo" titulo={negocio.tituloCatalogo} vazia={!temItens}>
+        <Catalogo negocio={negocio} />
+      </Secao>
+    </>
+  );
+
+  const galeria = (
+    <>
+      {temGaleria ? <Divisor /> : null}
+      <Secao id="galeria" titulo="Fotos" vazia={!temGaleria}>
+        <Galeria negocio={negocio} />
+      </Secao>
+    </>
+  );
 
   return (
     <div
@@ -92,21 +120,17 @@ export function PaginaPublica({
           </div>
 
           <div className="lg:min-w-0">
-            {temItens ? <Divisor /> : null}
-            <div className={temItens ? "lg:border-t-0" : undefined}>
-              <Secao
-                id="catalogo"
-                titulo={negocio.tituloCatalogo}
-                vazia={!temItens}
-              >
-                <Catalogo negocio={negocio} />
-              </Secao>
-            </div>
-
-            {temGaleria ? <Divisor /> : null}
-            <Secao id="galeria" titulo="Fotos" vazia={!temGaleria}>
-              <Galeria negocio={negocio} />
-            </Secao>
+            {galeriaNaFrente ? (
+              <>
+                {galeria}
+                {catalogo}
+              </>
+            ) : (
+              <>
+                {catalogo}
+                {galeria}
+              </>
+            )}
 
             {temLinks ? <Divisor /> : null}
             <Secao id="links" titulo="Links" vazia={!temLinks}>
