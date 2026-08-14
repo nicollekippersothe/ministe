@@ -103,6 +103,15 @@ psql -h localhost -p 5433 -U postgres -d entrais -f supabase/testes-rls.sql
 
 Estão todos numa função só, `limite_do_plano`. Mudar número é mudar uma linha.
 
+Contagem de visitas e cliques fica no plano gratuito, no básico: quantas
+visitas e quantos cliques no período. Histórico longo e comparação com o
+período anterior ficam para o pago. O raciocínio é que o número básico é o
+único jeito de o dono ver que a página está trabalhando, e esconder isso
+atrás de assinatura tira justamente a prova que faria ele assinar.
+
+A tabela `eventos` já guarda os três tipos (`visita`, `clique_whatsapp`,
+`clique_acao`) e a página pública já tem os ganchos. Falta a tela do painel.
+
 ## Ainda em aberto
 
 - Apagar o arquivo do Storage quando o registro sai do banco, senão o 1 GB
