@@ -7,8 +7,9 @@ aplicar, e o schema já foi rodado e testado num Postgres 16 local.
 
 | arquivo | o que é | testado |
 | --- | --- | --- |
-| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 58 asserções |
-| `testes-rls.sql` | 58 asserções de RLS e de limite, rodam e desfazem tudo no fim | sim |
+| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 69 asserções |
+| `testes-rls.sql` | 69 asserções de RLS, de limite e de permissão de função | sim |
+| `correcoes/` | remendos para projeto que já rodou uma versão anterior do schema | sim |
 | `storage.sql` | bucket das imagens e permissões | não, precisa do Supabase |
 | `local/stub.sql` | só para rodar local, nunca aplicar no Supabase | sim |
 
@@ -31,6 +32,16 @@ Tem que terminar com `TODOS OS TESTES PASSARAM`. O script roda dentro de uma
 transação e desfaz tudo no fim, então pode ser executado com dados reais.
 
 5. Conferir na mão a lista que está no fim de `storage.sql`.
+
+## Projeto que já rodou uma versão anterior
+
+Os arquivos em `correcoes/` são remendos para quem já aplicou o schema antes de
+uma correção existir. Rodar na ordem do número, no SQL Editor. Em projeto novo
+não precisa de nenhum: o `schema.sql` já sai correto.
+
+| arquivo | o que conserta |
+| --- | --- |
+| `001-fechar-execute-de-public.sql` | EXECUTE que PUBLIC recebia por padrão em toda função, o que deixava `limpar_eventos_antigos()` chamável por qualquer pessoa em `/rest/v1/rpc` |
 
 ## Rodar local, sem Supabase
 
@@ -63,6 +74,11 @@ psql -h localhost -p 5433 -U postgres -d entrais -f supabase/testes-rls.sql
 - **`itens_fotos` repete `negocio_id`** de propósito, com chave composta, para
   a política de RLS não precisar de join e para foto nenhuma conseguir apontar
   para item de outro negócio.
+- **Permissão de função se fecha em PUBLIC, não em `anon`.** O Postgres dá
+  EXECUTE a PUBLIC em toda função nova, e `anon` herda por ali, então
+  `revoke ... from anon` sozinho não fecha nada. O schema revoga de PUBLIC e
+  devolve nominalmente para as três que a página pública precisa. Tem asserção
+  para isso, inclusive uma que pega qualquer função futura que nasça aberta.
 
 ## Limites do plano gratuito
 

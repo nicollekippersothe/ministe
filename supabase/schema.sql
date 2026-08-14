@@ -351,6 +351,9 @@ create or replace function public.limite_do_plano(p_plano text, p_recurso text)
 returns integer
 language sql
 immutable
+-- search_path fixo em toda função, mesmo nas que não são security definer:
+-- é grátis, e evita depender de quem chamou ter deixado o caminho limpo.
+set search_path = public, pg_temp
 as $$
   select case when p_plano = 'pago' then
     case p_recurso
@@ -396,6 +399,7 @@ $$;
 create or replace function public.marca_atualizacao()
 returns trigger
 language plpgsql
+set search_path = public, pg_temp
 as $$
 begin
   new.atualizado_em := now();
@@ -459,6 +463,7 @@ create trigger negocios_checa_slug
 create or replace function public.protege_cobranca()
 returns trigger
 language plpgsql
+set search_path = public, pg_temp
 as $$
 begin
   if current_user in ('service_role', 'postgres') then
@@ -878,11 +883,52 @@ revoke insert, update, delete on public.eventos from anon, authenticated;
 -- Ninguém escreve em denúncias direto. Só a função, que tem teto por dia.
 revoke all on public.denuncias from anon, authenticated;
 
+-- -----------------------------------------------------------------------------
+-- Funções internas não ficam expostas
+-- -----------------------------------------------------------------------------
+-- Revogar de anon e de authenticated NÃO basta, e essa é a pegadinha.
+--
+-- O Postgres dá EXECUTE a PUBLIC em toda função nova, e anon herda por ali.
+-- Numa ACL isso aparece como "=X/postgres": grantee vazio quer dizer PUBLIC.
+-- Então `revoke ... from anon` tira o direito nominal e deixa o herdado de pé,
+-- e a função continua chamável em /rest/v1/rpc/nome_da_funcao por qualquer
+-- pessoa que tenha a chave pública, que é pública por definição.
+--
+-- O que isso deixava aberto: limpar_eventos_antigos() apaga todo evento com
+-- mais de 400 dias, e é security definer, então roda como dono do banco.
+--
+-- Tira de PUBLIC primeiro, devolve nominalmente depois.
+revoke execute on all functions in schema public from public;
+
+-- E para as próximas, senão a próxima função criada nasce aberta de novo.
+alter default privileges in schema public revoke execute on functions from public;
+
+/*
+ * O que precisa voltar, e por quê:
+ *
+ * registrar_evento e registrar_denuncia são chamadas pela página pública, por
+ * visitante sem login. São a razão de existirem.
+ *
+ * negocio_publico aparece dentro de cinco políticas de RLS. Expressão de
+ * política roda com o privilégio de quem consulta, então sem EXECUTE o
+ * visitante deixa de enxergar catálogo, foto, horário e link.
+ *
+ * plano_de precisa voltar para authenticated, e só para ele. Quem chama é o
+ * gatilho protege_cobranca, que é security INVOKER de propósito: ele decide
+ * pelo current_user se quem está escrevendo é a chave de serviço. Virar
+ * definer resolveria a permissão e arrebentaria a proteção, porque aí
+ * current_user seria sempre o dono do banco e todo mundo passaria direto.
+ * O que vaza com isso é saber se um negócio é pago, para quem já tem o uuid
+ * dele. Troca aceitável.
+ *
+ * limite_do_plano fica de fora: só é chamada de dentro das checa_limite_*,
+ * que são definer e rodam como dono.
+ */
 grant execute on function public.registrar_evento(text, text) to anon, authenticated;
 grant execute on function public.registrar_denuncia(text, text, text)
   to anon, authenticated;
 grant execute on function public.negocio_publico(uuid) to anon, authenticated;
+grant execute on function public.plano_de(uuid) to authenticated;
 
--- Funções internas não ficam expostas.
-revoke execute on function public.limpar_eventos_antigos() from anon, authenticated;
-revoke execute on function public.plano_de(uuid) from anon, authenticated;
+-- A chave de serviço continua podendo tudo: é ela que roda manutenção.
+grant execute on all functions in schema public to service_role;

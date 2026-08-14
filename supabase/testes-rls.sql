@@ -495,6 +495,84 @@ select testes.ok('mas o dono continua enxergando a própria página suspensa',
 
 reset role;
 
+-- -----------------------------------------------------------------------------
+-- Permissão de função
+-- -----------------------------------------------------------------------------
+-- Esta parte nasceu de um furo que passou por aqui sem ninguém ver.
+--
+-- A bateria testava RLS de tabela e nada de função. E o Postgres dá EXECUTE a
+-- PUBLIC em toda função nova, então `revoke execute ... from anon` tirava o
+-- direito nominal e deixava o herdado por PUBLIC de pé. Resultado: qualquer
+-- pessoa com a chave pública podia chamar limpar_eventos_antigos() em
+-- /rest/v1/rpc e apagar a tabela de eventos.
+--
+-- A primeira asserção é a que vale a longo prazo: ela pega qualquer função
+-- futura que nasça aberta, sem precisar lembrar de escrever um teste nova.
+
+select testes.ok('nenhuma função de public fica aberta para PUBLIC',
+  not exists (
+    select 1
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and (
+        -- proacl nulo quer dizer permissão padrão, e a padrão inclui PUBLIC.
+        p.proacl is null
+        or exists (
+          select 1 from aclexplode(p.proacl) a
+          where a.grantee = 0 and a.privilege_type = 'EXECUTE'
+        )
+      )
+  ));
+
+select testes.ok('toda função de public tem search_path fixo',
+  not exists (
+    select 1
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and not exists (
+        select 1 from unnest(coalesce(p.proconfig, '{}')) c
+        where c like 'search_path=%'
+      )
+  ));
+
+select testes.ok('visitante registra evento',
+  has_function_privilege('anon', 'public.registrar_evento(text, text)', 'EXECUTE'));
+
+select testes.ok('visitante registra denúncia',
+  has_function_privilege('anon',
+    'public.registrar_denuncia(text, text, text)', 'EXECUTE'));
+
+-- Sem esta, as políticas de catálogo, foto, horário e link param de deixar o
+-- visitante ler, porque expressão de política roda como quem consulta.
+select testes.ok('visitante avalia negocio_publico, que mora nas políticas',
+  has_function_privilege('anon', 'public.negocio_publico(uuid)', 'EXECUTE'));
+
+select testes.ok('visitante NÃO apaga os eventos antigos',
+  not has_function_privilege('anon',
+    'public.limpar_eventos_antigos()', 'EXECUTE'));
+
+select testes.ok('dono logado NÃO apaga os eventos antigos',
+  not has_function_privilege('authenticated',
+    'public.limpar_eventos_antigos()', 'EXECUTE'));
+
+select testes.ok('a chave de serviço apaga, que é quem roda manutenção',
+  has_function_privilege('service_role',
+    'public.limpar_eventos_antigos()', 'EXECUTE'));
+
+select testes.ok('visitante NÃO descobre o plano de um negócio',
+  not has_function_privilege('anon', 'public.plano_de(uuid)', 'EXECUTE'));
+
+-- O gatilho protege_cobranca é security invoker de propósito, para enxergar
+-- pelo current_user quem está escrevendo. Então quem edita precisa poder
+-- chamar plano_de, senão salvar o próprio negócio passa a dar erro.
+select testes.ok('dono logado consulta plano_de, que o gatilho de cobrança usa',
+  has_function_privilege('authenticated', 'public.plano_de(uuid)', 'EXECUTE'));
+
+select testes.ok('visitante NÃO chama gatilho de limite direto',
+  not has_function_privilege('anon', 'public.checa_limite_itens()', 'EXECUTE'));
+
 do $$
 begin
   raise notice '';
