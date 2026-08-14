@@ -55,7 +55,23 @@ function Cartao({
   );
 }
 
-export function Mosaico({ negocio }: { negocio: Negocio }) {
+export function Mosaico({
+  negocio,
+  paraCatalogo,
+  paraBotoes,
+  paraGaleria,
+}: {
+  /** O dono do cartão de horário, da busca e da prévia de link. */
+  negocio: Negocio;
+  /*
+   * Cada cartão mostra um negócio diferente de propósito. Um exemplo só
+   * repetido em seis cartões responde "que bonito"; seis negócios diferentes
+   * respondem "serve para o meu caso", que é a pergunta que importa.
+   */
+  paraCatalogo: Negocio;
+  paraBotoes: Negocio;
+  paraGaleria: Negocio;
+}) {
   const agora = Date.now();
   const estado = estadoAgora(
     montarJanela(negocio.horarios, negocio.fuso, agora),
@@ -64,10 +80,11 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
   );
   const fonte = combinacao(negocio.fonte);
   const local = [negocio.cidade, negocio.estado].filter(Boolean).join(", ");
-  const acoes = acoesDoRodape(negocio);
-  const itens = negocio.itens.filter((i) => i.ativo && i.fotos.length > 0);
-  const vitrine = itens.slice(0, 2);
-  const links = negocio.links.slice(0, 3);
+  const acoes = acoesDoRodape(paraBotoes);
+  const vitrine = paraCatalogo.itens
+    .filter((i) => i.ativo && i.fotos.length > 0)
+    .slice(0, 2);
+  const links = paraBotoes.links.slice(0, 3);
 
   /*
    * Só os dias com hora marcada, e no máximo quatro linhas. A semana inteira
@@ -85,7 +102,7 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
       <Cartao
         className="lg:col-span-2"
         titulo="Catálogo com foto e preço"
-        texto="Produto, serviço, plano ou sessão. Quem chega vê o que você vende e quanto custa, e pede pelo WhatsApp sem sair da página."
+        texto="Peça, prato, plano ou sessão. Quem chega vê o que você vende, por quanto, e chama no WhatsApp ali mesmo."
       >
         <div className="grid grid-cols-2 gap-4 sm:gap-5" aria-hidden>
           {vitrine.map((item) => (
@@ -101,7 +118,7 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
               <p className="text-[0.92rem] leading-snug font-semibold text-texto text-pretty">
                 {item.titulo}
               </p>
-              {negocio.mostrarPrecos && item.precoCentavos !== null ? (
+              {paraCatalogo.mostrarPrecos && item.precoCentavos !== null ? (
                 <p className="text-[0.92rem] font-semibold tabular-nums text-texto">
                   {preco(item.precoCentavos)}
                 </p>
@@ -116,8 +133,8 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
       </Cartao>
 
       <Cartao
-        titulo="Os botões que o seu negócio usa"
-        texto="WhatsApp, iFood, agenda, Instagram, site. Você escolhe quais aparecem e em que ordem."
+        titulo="Botões que levam para onde você vende"
+        texto="WhatsApp, agenda, loja, iFood, Instagram. Você monta os botões do seu jeito, e cada um leva para onde o pedido acontece."
       >
         <div className="flex flex-col gap-2.5" aria-hidden>
           {acoes.map((acao) => (
@@ -150,6 +167,42 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
         </div>
       </Cartao>
 
+      {/*
+        O cadastro é o que separa quem publica de quem desiste no meio, então
+        ele merece um cartão. Mostrado como perguntas respondidas, e não como
+        formulário vazio: formulário em branco é justamente a imagem que a
+        pessoa tem na cabeça quando pensa em montar um site.
+      */}
+      <Cartao
+        titulo="Pronta numa sentada"
+        texto="São perguntas, uma de cada vez, respondidas pelo celular. Publique com o essencial hoje e complete o resto quando sobrar tempo."
+      >
+        <div className="flex flex-col gap-2.5" aria-hidden>
+          <div className="flex items-center gap-2 rounded-full border border-borda bg-fundo px-4 py-2.5 text-[0.92rem]">
+            <span className="text-suave">{DOMINIO_PUBLICO}/</span>
+            <span className="font-semibold text-texto">{paraCatalogo.slug}</span>
+            <span className="ml-auto text-[0.8rem] font-medium text-aberto-texto">
+              livre
+            </span>
+          </div>
+          {[
+            ["Nome", paraCatalogo.nome],
+            ["O que você vende", paraCatalogo.tituloCatalogo],
+            ["Onde falam com você", "WhatsApp"],
+          ].map(([campo, valor]) => (
+            <div
+              key={campo}
+              className="flex items-baseline justify-between gap-3 rounded-xl border border-borda bg-fundo px-3.5 py-2.5"
+            >
+              <span className="text-[0.8rem] text-suave">{campo}</span>
+              <span className="truncate text-[0.92rem] font-medium text-texto">
+                {valor}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Cartao>
+
       <Cartao
         titulo="Aberto agora, no seu fuso"
         texto="A página calcula pelo horário que você cadastrou, no seu fuso, e mostra quando você volta a abrir."
@@ -173,8 +226,8 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
       </Cartao>
 
       <Cartao
-        titulo="Pronta para a busca do Google"
-        texto="Nome, cidade, horário e serviços saem na marcação que o buscador lê. Você não precisa saber o que é SEO."
+        titulo="Escrita para o Google entender"
+        texto="Nome, categoria, cidade, horário e serviços saem na marcação que o buscador lê. A parte técnica já vem pronta."
       >
         <div
           className="rounded-2xl border border-borda bg-fundo px-4 py-4"
@@ -199,8 +252,8 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
       </Cartao>
 
       <Cartao
-        titulo="O link chega com foto e nome"
-        texto="Colado no WhatsApp ou na bio do Instagram, ele abre com a sua capa e a sua frase no lugar de um endereço solto."
+        titulo="O link já chega mostrando quem é você"
+        texto="Colado no WhatsApp ou na bio, ele abre com a sua capa, o seu nome e a sua frase, antes de alguém tocar nele."
       >
         <div
           data-fonte={fonte.chave}
@@ -241,12 +294,12 @@ export function Mosaico({ negocio }: { negocio: Negocio }) {
         ela viraria seis miniaturas, que é o oposto de expor.
       */}
       <Cartao
-        className="lg:col-span-3"
+        className="lg:col-span-2"
         titulo="A galeria do seu trabalho"
-        texto="As suas fotos em tamanho grande, na ordem que você escolher. É onde quem chega vê o que você faz de melhor antes de perguntar qualquer preço."
+        texto="As suas fotos em tamanho grande, na ordem que você escolher. É aqui que quem chega se convence, antes de perguntar preço."
       >
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 sm:gap-3" aria-hidden>
-          {negocio.galeria.slice(0, 6).map((foto) => (
+        <div className="grid grid-cols-3 gap-2 sm:gap-3" aria-hidden>
+          {paraGaleria.galeria.slice(0, 6).map((foto) => (
             <Image
               key={foto.url}
               src={foto.url}

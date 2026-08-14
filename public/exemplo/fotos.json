@@ -398,6 +398,20 @@
     "fonte": "stocksnap",
     "pagina": "https://stocksnap.io/photo/girl-portrait-OWJB5WGPME"
   },
+  "foto-logo.jpg": {
+    "url": "https://cdn.stocksnap.io/img-thumbs/960w/MYVSKSRBTC.jpg",
+    "titulo": "Emotionalboy Portrait",
+    "licenca": "cc0",
+    "fonte": "stocksnap",
+    "pagina": "https://stocksnap.io/photo/emotionalboy-portrait-MYVSKSRBTC"
+  },
+  "psi-logo.jpg": {
+    "url": "https://cdn.stocksnap.io/img-thumbs/960w/LGWI9MW3KR.jpg",
+    "titulo": "Portrait Girl",
+    "licenca": "cc0",
+    "fonte": "stocksnap",
+    "pagina": "https://stocksnap.io/photo/portrait-girl-LGWI9MW3KR"
+  },
   "foto-1.jpg": {
     "url": "https://cdn.stocksnap.io/img-thumbs/960w/JB4CPU0LCU.jpg",
     "titulo": "Marriage Wedding",
@@ -432,5 +446,12 @@
     "licenca": "cc0",
     "fonte": "stocksnap",
     "pagina": "https://stocksnap.io/photo/photographer-photo-QG8J3FKYVF"
+  },
+  "nutri-logo.jpg": {
+    "url": "https://cdn.stocksnap.io/img-thumbs/960w/4D181PL4BO.jpg",
+    "titulo": "Girl Woman",
+    "licenca": "cc0",
+    "fonte": "stocksnap",
+    "pagina": "https://stocksnap.io/photo/girl-woman-4D181PL4BO"
   }
 }

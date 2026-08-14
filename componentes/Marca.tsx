@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NOME_PRODUTO } from "@/lib/marca";
+import { SIMBOLO_CAIXA, SIMBOLO_CAMINHO } from "@/lib/simbolo";
 
 /**
  * O logotipo, num lugar só.
@@ -23,11 +24,35 @@ export function Marca({
   href?: string | null;
   className?: string;
 }) {
-  const estilo = `text-[0.95rem] font-bold tracking-[-0.015em] text-texto ${className}`;
-  if (href === null) return <span className={estilo}>{NOME_PRODUTO}</span>;
+  const estilo = `inline-flex items-center gap-2 text-[0.95rem] font-bold tracking-[-0.015em] text-texto ${className}`;
+
+  /*
+   * O símbolo vem de lib/simbolo, o mesmo caminho que o favicon e as peças de
+   * portfólio usam. Desenho só existe num lugar, senão a marca diverge entre a
+   * tela e o material impresso sem ninguém perceber.
+   *
+   * fillRule evenodd é o que mantém o vão do arco vazio. Sem ele o miolo
+   * fecha e o símbolo vira um bloco.
+   */
+  const miolo = (
+    <>
+      <svg
+        viewBox={SIMBOLO_CAIXA}
+        fill="currentColor"
+        fillRule="evenodd"
+        aria-hidden
+        className="h-[1.15rem] w-[1.15rem]"
+      >
+        <path d={SIMBOLO_CAMINHO} />
+      </svg>
+      {NOME_PRODUTO}
+    </>
+  );
+
+  if (href === null) return <span className={estilo}>{miolo}</span>;
   return (
     <Link href={href} className={estilo}>
-      {NOME_PRODUTO}
+      {miolo}
     </Link>
   );
 }

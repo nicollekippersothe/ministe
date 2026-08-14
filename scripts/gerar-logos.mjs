@@ -33,12 +33,16 @@ const LADO = 512;
 const LOGOS = [
   { arquivo: "logo", iniciais: "CA", fundo: "#7a4a2b" }, // Café Alecrim
   { arquivo: "raiz-logo", iniciais: "SR", fundo: "#2f5d4a" }, // Studio Raiz
-  { arquivo: "nutri-logo", iniciais: "MA", fundo: "#5f6b3e" }, // Marina Alcântara
-  { arquivo: "psi-logo", iniciais: "CR", fundo: "#3d5566" }, // Camila Reis
   { arquivo: "trama-logo", iniciais: "AT", fundo: "#8a4a52" }, // Ateliê Trama
   { arquivo: "aurora-logo", iniciais: "AM", fundo: "#a05a22" }, // Aurora Massas
-  { arquivo: "foto-logo", iniciais: "RN", fundo: "#2a2723" }, // Rafael Nunes
 ];
+
+/*
+ * Marina Alcântara, Camila Reis e Rafael Nunes ficaram de fora de propósito.
+ * Quem vende o próprio nome põe o próprio rosto ali, e monograma no lugar do
+ * retrato soa a papelada. Os avatares deles vêm de scripts/baixar-fotos.mjs,
+ * na busca de retrato.
+ */
 
 if (!existsSync(FONTE)) {
   await mkdir("/tmp/fontes-entrais", { recursive: true });

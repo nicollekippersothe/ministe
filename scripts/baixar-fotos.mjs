@@ -36,6 +36,7 @@ const API = "https://api.openverse.org/v1/images/";
  */
 const CAPA = [1200, 675];
 const QUADRADA = [800, 800];
+const AVATAR = [400, 400];
 
 const BUSCAS = [
   {
@@ -204,6 +205,8 @@ const BUSCAS = [
       ["foto-capa", CAPA, 0],
       ["foto-2", QUADRADA, 4],
       ["foto-g2", QUADRADA, 9],
+      ["foto-logo", AVATAR, 5],
+      ["psi-logo", AVATAR, 10],
     ],
   },
   {
@@ -220,6 +223,20 @@ const BUSCAS = [
       ["foto-g3", QUADRADA, 1],
       ["foto-g4", QUADRADA, 10],
     ],
+  },
+
+  /*
+   * Retratos para os avatares.
+   *
+   * Quem vende o próprio nome coloca o próprio rosto no lugar do logotipo, e
+   * monograma ali soa a papelada. Quem tem nome de casa (ateliê, café, estúdio)
+   * continua com monograma, que é o que uma marca pequena costuma ter.
+   *
+   * Os quadrados aqui são menores porque avatar aparece com 88px de lado.
+   */
+  {
+    consulta: "woman",
+    arquivos: [["nutri-logo", AVATAR, 7]],
   },
 ];
 

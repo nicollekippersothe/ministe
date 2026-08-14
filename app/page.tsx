@@ -9,14 +9,14 @@ import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
 import { MODO_VITRINE } from "@/lib/site";
-import { atelie, VITRINE } from "@/lib/exemplos";
+import { atelie, doceria, massas, VITRINE } from "@/lib/exemplos";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: `${NOME_PRODUTO}, o endereço do seu negócio na internet`,
   description:
-    "Um espaço para expor o seu trabalho: as fotos, o que você oferece e por onde falar com você. Num endereço com o seu nome, escrito para aparecer na busca.",
+    "O seu trabalho numa página só: as fotos, o que você vende, o horário e o caminho para falar com você. Com o seu nome no endereço, escrita para aparecer na busca.",
 };
 
 /*
@@ -32,19 +32,19 @@ export const metadata: Metadata = {
  */
 const BENEFICIOS = [
   {
-    titulo: "Encontrada por quem ainda não conhece você",
+    titulo: "Encontrada por quem está procurando agora",
     texto:
-      "A página sai com a marcação que o Google lê: nome, categoria, cidade, horário e o que você oferece. Uma lista de links atende quem já chegou até você. Esta página aparece também para quem está procurando o serviço agora.",
+      "A página sai com a marcação que o Google lê: nome, categoria, cidade, horário e o que você oferece. Uma lista de links atende quem já chegou até você. Esta atende também quem ainda está atrás do serviço.",
   },
   {
     titulo: "Um endereço para colocar em tudo",
     texto:
-      "Bio, anúncio pago, cartão, assinatura de e-mail. Quem clica cai no seu catálogo, que abre em qualquer navegador, sem depender de ter um aplicativo instalado.",
+      "Bio, anúncio pago, cartão, assinatura de e-mail. Quem clica cai direto no seu catálogo, que abre em qualquer navegador do celular.",
   },
   {
-    titulo: "Você preenche, e a página sai pronta",
+    titulo: "Você responde, e a página se monta",
     texto:
-      "A página já vem montada. Você responde perguntas em vez de escolher fonte, margem e cor, e o resultado sai no mesmo padrão em qualquer aparelho.",
+      "A página já vem desenhada. Você responde perguntas em vez de escolher fonte, margem e cor, e o resultado sai no mesmo padrão em qualquer aparelho.",
   },
   {
     titulo: "Editou, já está no ar",
@@ -54,24 +54,25 @@ const BENEFICIOS = [
   {
     titulo: "O endereço é seu",
     texto:
-      "As redes sociais mudam de regra e de alcance quando querem. O seu endereço fica onde está, com o mesmo nome.",
+      "As redes sociais mudam de regra e de alcance quando querem. O seu endereço fica onde está, com o mesmo nome, e continua abrindo.",
   },
 ];
 
 const PASSOS = [
   {
     titulo: "Escolha o seu endereço",
-    texto: "Escreva o nome do negócio e veja na hora se ele está livre.",
+    texto:
+      "Escreva o nome do negócio. Se o endereço estiver livre, ele passa a ser seu.",
   },
   {
-    titulo: "Preencha o essencial",
+    titulo: "Responda o essencial",
     texto:
-      "O que o cliente precisa saber antes de chamar você: o serviço ou a peça, o preço quando fizer sentido, o horário e o contato.",
+      "O que o cliente precisa saber antes de chamar você: o que você vende, por quanto, quando atende e por onde falam com você.",
   },
   {
-    titulo: "Publique",
+    titulo: "Publique e compartilhe",
     texto:
-      "O endereço fica pronto para colar na bio, no anúncio e onde mais alguém perguntar pelo seu trabalho.",
+      "O endereço fica pronto para colar na bio, no anúncio, no cartão e em toda conversa que termina com alguém pedindo o seu contato.",
   },
 ];
 
@@ -119,12 +120,21 @@ export default async function Home() {
                 O endereço do seu negócio na internet.
               </h1>
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-suave">
-                Um espaço seu para expor o trabalho: as fotos, o que você
-                oferece e por onde falar com você. Num endereço com o seu nome,
-                escrito para aparecer na busca de quem procura o seu serviço.
+                O seu trabalho numa página só: as fotos, o que você vende, o
+                horário e o caminho para falar com você. Com o seu nome no
+                endereço, e escrita para aparecer na busca de quem procura o
+                seu serviço na cidade.
               </p>
 
+              {/*
+                Uma linha de comando antes do campo. Sem ela o campo fica
+                parecendo caixa de busca, e a pessoa lê tudo de novo tentando
+                entender o que digitar ali.
+              */}
               <div className="mt-9 max-w-lg">
+                <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
+                  Comece agora: escolha o seu endereço.
+                </p>
                 <CampoAbertura rotulo={rotulo} />
               </div>
             </div>
@@ -151,7 +161,12 @@ export default async function Home() {
               Tudo o que o seu negócio precisa mostrar.
             </h2>
             <div className="mt-12 sm:mt-14">
-              <Mosaico negocio={negocio} />
+              <Mosaico
+                negocio={negocio}
+                paraCatalogo={massas}
+                paraBotoes={atelie}
+                paraGaleria={doceria}
+              />
             </div>
           </div>
         </section>
@@ -162,10 +177,11 @@ export default async function Home() {
               id="exemplos"
               className="max-w-xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              Veja como fica a sua.
+              Confira um exemplo de verdade.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Estas estão no ar. Abra qualquer uma e percorra até o fim.
+              Todas estas estão no ar. Abra a que mais parece com o seu e
+              percorra até o fim.
             </p>
 
             <div className="mt-12">
@@ -175,37 +191,50 @@ export default async function Home() {
         </section>
 
         {/*
-          Benefícios em linhas com fio entre elas, título de um lado e texto do
-          outro. Grade de cartões iguais é o formato em que uma seção de
-          benefício vira decoração, e o mosaico logo acima já usa cartão.
+          Editorial: o título fica preso na coluna da esquerda enquanto a lista
+          corre na direita. É o desenho de revista, e serve a um propósito
+          prático: o "o que muda" continua à vista enquanto a pessoa lê os
+          cinco itens, então cada um se lê como resposta à pergunta do título.
         */}
         <section
           aria-labelledby="beneficios"
           className="border-t border-borda bg-superficie"
         >
-          <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
-            <h2
-              id="beneficios"
-              className="max-w-lg text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
-            >
-              O que muda quando o endereço é seu.
-            </h2>
-
-            <dl className="mt-12 sm:mt-14">
-              {BENEFICIOS.map((b) => (
-                <div
-                  key={b.titulo}
-                  className="surge grid gap-2 border-t border-borda py-7 last:border-b sm:grid-cols-[16rem_1fr] sm:gap-10 sm:py-8"
+          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
+            <div className="lg:grid lg:grid-cols-[20rem_1fr] lg:gap-16">
+              <div className="lg:sticky lg:top-16 lg:self-start">
+                <h2
+                  id="beneficios"
+                  className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
                 >
-                  <dt className="text-[1.1rem] font-semibold tracking-[-0.015em] text-balance text-texto">
-                    {b.titulo}
-                  </dt>
-                  <dd className="max-w-xl leading-relaxed text-suave text-pretty">
-                    {b.texto}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+                  O que muda quando o endereço é seu.
+                </h2>
+                <p className="mt-4 max-w-sm leading-relaxed text-suave">
+                  Cinco coisas que só aparecem depois de publicar.
+                </p>
+              </div>
+
+              <dl className="mt-12 lg:mt-0">
+                {BENEFICIOS.map((b, i) => (
+                  <div
+                    key={b.titulo}
+                    className="surge grid gap-2 border-t border-borda py-7 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[2.5rem_1fr] sm:gap-6 lg:py-8"
+                  >
+                    <dt className="text-[0.95rem] font-semibold tabular-nums text-destaque sm:pt-1">
+                      {String(i + 1).padStart(2, "0")}
+                    </dt>
+                    <dd>
+                      <h3 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-balance text-texto">
+                        {b.titulo}
+                      </h3>
+                      <p className="mt-2 max-w-xl leading-relaxed text-suave text-pretty">
+                        {b.texto}
+                      </p>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </section>
 
@@ -213,21 +242,29 @@ export default async function Home() {
           <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
             <h2
               id="passos"
-              className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+              className="max-w-lg text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              Três passos até o ar.
+              Do nome ao endereço no ar, em três passos.
             </h2>
 
-            <ol className="mt-12 grid gap-8 sm:grid-cols-3 sm:gap-7">
+            {/*
+              Numeral grande em Barro, fio em cima, texto embaixo. O número
+              carrega a ordem sozinho, então o rótulo "passo 1" some e sobra
+              espaço para o que interessa.
+            */}
+            <ol className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
               {PASSOS.map((passo, i) => (
-                <li key={passo.titulo} className="surge border-t-2 border-destaque pt-5">
-                  <span className="text-xs font-semibold tracking-[0.14em] text-destaque uppercase">
-                    Passo {i + 1}
+                <li key={passo.titulo} className="surge border-t border-borda pt-6">
+                  <span
+                    className="titulo block text-[2.6rem] leading-none text-destaque tabular-nums"
+                    aria-hidden
+                  >
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-texto">
+                  <h3 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-balance text-texto">
                     {passo.titulo}
                   </h3>
-                  <p className="mt-1.5 leading-relaxed text-suave text-pretty">
+                  <p className="mt-2 leading-relaxed text-suave text-pretty">
                     {passo.texto}
                   </p>
                 </li>
@@ -235,7 +272,10 @@ export default async function Home() {
             </ol>
 
             {/* O mesmo campo da abertura, ao alcance de quem leu até aqui. */}
-            <div className="mt-14 max-w-lg">
+            <div className="mt-16 max-w-lg">
+              <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
+                Comece agora: escolha o seu endereço.
+              </p>
               <CampoAbertura rotulo={rotulo} />
             </div>
           </div>

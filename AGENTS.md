@@ -12,6 +12,19 @@ nenhum dos dois direto no meio do texto de tela.
 Nunca usar travessão, nem no produto nem em resposta nem em commit. Usar
 vírgula, dois pontos, parênteses ou ponto final.
 
+Nada de palavra negativa no texto de tela. Nem "não", nem "sem", nem "nunca",
+nem verbo de falta. Cada frase diz o que existe, não o que falta.
+
+| em vez de | escrever |
+| --- | --- |
+| Você não precisa saber o que é SEO | A marcação sai pronta, escrita para o buscador |
+| Sem instalar nada | Abre no navegador do celular |
+| Não perde o link antigo | O link antigo continua levando para a página |
+| Sem tela em branco | A página já vem montada |
+
+Vale para a tela inicial, para o produto e para a tela de erro. Comentário de
+código e commit ficam de fora: ali explicar o que não acontece é informação.
+
 ## Regras de layout
 
 Seis armadilhas que deixam qualquer interface com cara de gerada por máquina.
