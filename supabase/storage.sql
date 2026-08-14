@@ -30,9 +30,30 @@ on conflict (id) do nothing;
 
 -- Leitura ---------------------------------------------------------------------
 
-create policy "imagens leitura publica" on storage.objects
-  for select to anon, authenticated
-  using (bucket_id = 'imagens');
+-- O bucket é público, então o arquivo abre por
+-- /storage/v1/object/public/imagens/... sem passar por RLS. Esta política
+-- governa o caminho autenticado e a LISTAGEM, e é por isso que ela não pode
+-- valer para visitante: SELECT amplo aqui liga
+-- /storage/v1/object/list/imagens, e aí qualquer pessoa com a chave publicável
+-- enumera todos os arquivos do bucket.
+--
+-- O caminho é {negocio_id}/{pasta}/{arquivo}, então a listagem entregaria os
+-- ids de negócio e os nomes de arquivo inclusive de página não publicada, o
+-- que contradiz o "ninguém vê até você publicar" que a tela de cadastro
+-- promete.
+--
+-- O dono continua enxergando o que é dele, que é o que o painel usa para
+-- mostrar as fotos já enviadas.
+create policy "imagens leitura do dono" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'imagens'
+    and exists (
+      select 1 from public.negocios n
+      where n.id::text = (storage.foldername(name))[1]
+        and n.dono_id = auth.uid()
+    )
+  );
 
 -- Escrita ---------------------------------------------------------------------
 -- Só na pasta de um negócio que é seu.
@@ -75,7 +96,9 @@ create policy "imagens apagar do dono" on storage.objects
 -- =============================================================================
 -- 1. Logado como o dono A, subir uma imagem em {id_do_A}/capa/teste.webp. Passa.
 -- 2. Logado como A, tentar subir em {id_do_B}/capa/teste.webp. Tem que falhar.
--- 3. Deslogado, abrir a URL pública da imagem de A. Tem que abrir.
+-- 3. Deslogado, abrir a URL pública da imagem de A. Tem que abrir, mesmo com
+--    a política de leitura fechada, porque bucket público não passa por RLS.
+-- 3b. Deslogado, chamar /storage/v1/object/list/imagens. Tem que vir vazio.
 -- 4. Deslogado, tentar subir qualquer coisa. Tem que falhar.
 -- 5. Logado como A, tentar subir um PDF renomeado para .webp. Tem que falhar
 --    pelo allowed_mime_types.

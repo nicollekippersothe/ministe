@@ -509,6 +509,10 @@ reset role;
 -- A primeira asserção é a que vale a longo prazo: ela pega qualquer função
 -- futura que nasça aberta, sem precisar lembrar de escrever um teste nova.
 
+-- Duas asserções, porque são dois caminhos diferentes de permissão e fechar um
+-- não fecha o outro. A primeira versão desta parte só olhava PUBLIC, passava, e
+-- deixava treze funções abertas por grant nominal.
+
 select testes.ok('nenhuma função de public fica aberta para PUBLIC',
   not exists (
     select 1
@@ -524,6 +528,26 @@ select testes.ok('nenhuma função de public fica aberta para PUBLIC',
         )
       )
   ));
+
+-- Esta é a que vale a longo prazo: lista exata, e não "não existe nenhuma".
+-- Função nova que nasça chamável cai aqui, sem ninguém precisar lembrar de
+-- escrever teste para ela.
+select testes.ok('visitante chama exatamente as três funções da página pública',
+  (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
+     from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and has_function_privilege('anon', p.oid, 'EXECUTE'))
+  = array['negocio_publico', 'registrar_denuncia', 'registrar_evento']::name[]);
+
+select testes.ok('quem está logado chama essas três, mais plano_de',
+  (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
+     from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and has_function_privilege('authenticated', p.oid, 'EXECUTE'))
+  = array['negocio_publico', 'plano_de', 'registrar_denuncia',
+          'registrar_evento']::name[]);
 
 select testes.ok('toda função de public tem search_path fixo',
   not exists (

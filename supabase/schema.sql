@@ -897,11 +897,22 @@ revoke all on public.denuncias from anon, authenticated;
 -- O que isso deixava aberto: limpar_eventos_antigos() apaga todo evento com
 -- mais de 400 dias, e é security definer, então roda como dono do banco.
 --
--- Tira de PUBLIC primeiro, devolve nominalmente depois.
+-- São DOIS caminhos, e fechar um deixa o outro de pé.
+--
+-- 1. O herdado de PUBLIC, que o Postgres dá em toda função nova.
+-- 2. O nominal para anon e para authenticated, que o Supabase dá por um
+--    default privilege próprio, para publicar as funções em /rest/v1/rpc.
+--
+-- Na ACL o primeiro aparece como "=X/postgres", com o grantee vazio, e o
+-- segundo como "anon=X/postgres". Revogar só de PUBLIC fecha o primeiro e
+-- deixa a função chamável pelo segundo.
 revoke execute on all functions in schema public from public;
+revoke execute on all functions in schema public from anon, authenticated;
 
 -- E para as próximas, senão a próxima função criada nasce aberta de novo.
 alter default privileges in schema public revoke execute on functions from public;
+alter default privileges in schema public
+  revoke execute on functions from anon, authenticated;
 
 /*
  * O que precisa voltar, e por quê:

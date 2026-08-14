@@ -7,8 +7,8 @@ aplicar, e o schema já foi rodado e testado num Postgres 16 local.
 
 | arquivo | o que é | testado |
 | --- | --- | --- |
-| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 69 asserções |
-| `testes-rls.sql` | 69 asserções de RLS, de limite e de permissão de função | sim |
+| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 71 asserções |
+| `testes-rls.sql` | 71 asserções de RLS, de limite e de permissão de função | sim |
 | `correcoes/` | remendos para projeto que já rodou uma versão anterior do schema | sim |
 | `storage.sql` | bucket das imagens e permissões | não, precisa do Supabase |
 | `local/stub.sql` | só para rodar local, nunca aplicar no Supabase | sim |
@@ -41,7 +41,9 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 
 | arquivo | o que conserta |
 | --- | --- |
-| `001-fechar-execute-de-public.sql` | EXECUTE que PUBLIC recebia por padrão em toda função, o que deixava `limpar_eventos_antigos()` chamável por qualquer pessoa em `/rest/v1/rpc` |
+| `001-fechar-execute-de-public.sql` | EXECUTE herdado de PUBLIC em toda função, o que deixava `limpar_eventos_antigos()` chamável por qualquer pessoa em `/rest/v1/rpc` |
+| `002-fechar-execute-de-anon.sql` | EXECUTE nominal que o Supabase dá a `anon`, que a 001 não alcançava e mantinha treze funções abertas |
+| `003-fechar-listagem-do-bucket.sql` | listagem do bucket de imagens, que entregava os arquivos de página ainda não publicada |
 
 ## Rodar local, sem Supabase
 
@@ -74,11 +76,19 @@ psql -h localhost -p 5433 -U postgres -d entrais -f supabase/testes-rls.sql
 - **`itens_fotos` repete `negocio_id`** de propósito, com chave composta, para
   a política de RLS não precisar de join e para foto nenhuma conseguir apontar
   para item de outro negócio.
-- **Permissão de função se fecha em PUBLIC, não em `anon`.** O Postgres dá
-  EXECUTE a PUBLIC em toda função nova, e `anon` herda por ali, então
-  `revoke ... from anon` sozinho não fecha nada. O schema revoga de PUBLIC e
-  devolve nominalmente para as três que a página pública precisa. Tem asserção
-  para isso, inclusive uma que pega qualquer função futura que nasça aberta.
+- **Permissão de função tem dois caminhos, e fechar um deixa o outro.** O
+  Postgres dá EXECUTE a PUBLIC em toda função nova (`=X/postgres` na ACL) e o
+  Supabase dá um grant nominal a `anon` para publicar a função na API
+  (`anon=X/postgres`). O schema revoga dos dois e devolve nominalmente só para
+  as três que a página pública chama. A asserção do teste lista quem pode
+  chamar o quê, então função nova que nasça aberta cai lá.
+- **O stub local reproduz o default privilege do Supabase.** Sem isso o
+  Postgres local nasce mais fechado que o projeto de verdade, o teste passa e o
+  furo só aparece em produção. Foi o que aconteceu uma vez.
+- **A listagem do bucket fica fechada.** Bucket público serve o arquivo sem
+  passar por RLS, então a política de SELECT só governa o caminho autenticado e
+  a listagem. Aberta, ela entrega os arquivos de página não publicada, o que
+  contradiz o "ninguém vê até você publicar" da tela de cadastro.
 
 ## Limites do plano gratuito
 
