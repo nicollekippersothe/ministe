@@ -32,6 +32,16 @@ Tem que terminar com `TODOS OS TESTES PASSARAM`. O script roda dentro de uma
 transação e desfaz tudo no fim, então pode ser executado com dados reais.
 
 5. Conferir na mão a lista que está no fim de `storage.sql`.
+6. Rodar a conferência pela API, que testa do lado de fora:
+
+```
+CHAVE=sb_publishable_... ./supabase/conferir-api.sh
+```
+
+   A bateria em `testes-rls.sql` roda dentro do banco, como o banco. Esta roda
+   como visitante, pela mesma porta que qualquer pessoa da internet usa. São
+   coisas diferentes, e já aconteceu de a permissão estar certa no banco e a
+   função continuar exposta na API.
 
 ## Projeto que já rodou uma versão anterior
 
