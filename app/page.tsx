@@ -177,7 +177,7 @@ export default async function Home() {
               id="exemplos"
               className="max-w-xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              Confira um exemplo de verdade.
+              Confira exemplos de verdade.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
               Todas estas estão no ar. Abra a que mais parece com o seu e
