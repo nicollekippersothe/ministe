@@ -1,14 +1,16 @@
 # Banco
 
-Nada aqui foi executado num projeto Supabase. Os arquivos estão prontos para
-aplicar, e o schema já foi rodado e testado num Postgres 16 local.
+O schema e as correções 001 e 002 já estão aplicados no projeto de verdade. As
+correções 004 e 005 estão na fila. Tudo aqui roda e é testado num Postgres 16
+local antes de ir, e o passo a passo do que falta no painel do Supabase está em
+`PROMPT-SUPABASE.md`.
 
 ## Arquivos
 
 | arquivo | o que é | testado |
 | --- | --- | --- |
-| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 71 asserções |
-| `testes-rls.sql` | 71 asserções de RLS, de limite e de permissão de função | sim |
+| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 82 asserções |
+| `testes-rls.sql` | 82 asserções de RLS, de limite e de permissão de função | sim |
 | `correcoes/` | remendos para projeto que já rodou uma versão anterior do schema | sim |
 | `storage.sql` | bucket das imagens e permissões | não, precisa do Supabase |
 | `local/stub.sql` | só para rodar local, nunca aplicar no Supabase | sim |
@@ -55,6 +57,7 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `002-fechar-execute-de-anon.sql` | EXECUTE nominal que o Supabase dá a `anon`, que a 001 não alcançava e mantinha treze funções abertas |
 | `003-fechar-listagem-do-bucket.sql` | listagem do bucket de imagens, que entregava os arquivos de página ainda não publicada |
 | `004-categoria.sql` | acrescenta a coluna da categoria, que vira o tipo do schema.org e monta a página |
+| `005-rascunho-anonimo.sql` | deixa a página começar numa conta provisória, exige conta confirmada para publicar e acrescenta a faxina do rascunho parado |
 
 ## Rodar local, sem Supabase
 
@@ -96,6 +99,29 @@ psql -h localhost -p 5433 -U postgres -d entrais -f supabase/testes-rls.sql
 - **O stub local reproduz o default privilege do Supabase.** Sem isso o
   Postgres local nasce mais fechado que o projeto de verdade, o teste passa e o
   furo só aparece em produção. Foi o que aconteceu uma vez.
+- **`alter default privileges ... revoke execute on functions from public` não
+  fecha nada.** Medido no Postgres 16: a linha roda, não guarda linha em
+  `pg_default_acl`, e a função criada depois nasce com PUBLIC podendo executar.
+  Quem fecha é o `revoke execute on all functions`, que passa por cima do que
+  já existe e por isso roda no fim do `schema.sql`. Arquivo de correção roda
+  sozinho, sem essa varredura: **função nova em correção pede revoke escrito na
+  mão**. O revoke de `anon` e `authenticated` no mesmo trecho funciona, porque
+  desfaz um default privilege que o Supabase guardou de verdade.
+- **A primeira página começa antes da conta.** A pessoa monta o rascunho numa
+  conta provisória (anonymous sign-in) e entra com o Google na hora de
+  publicar, quando a identidade é ligada na mesma conta e o `dono_id` continua
+  o mesmo. Login na frente de tudo é onde a maioria desiste, e página no ar é
+  onde a identidade passa a importar: é o endereço do produto e a reputação
+  dele que vão junto. Conta provisória é usuário como qualquer outro em
+  `auth.users`, então nenhuma política precisou afrouxar.
+- **Publicar é conferido no banco, não na tela.** O gatilho
+  `protege_publicacao` recusa `publicado = true` vindo de token com
+  `is_anonymous`. A tela leva para o Google antes disso, mas tela é conforto:
+  quem manda um PATCH direto no PostgREST passa longe dela.
+- **Rascunho provisório parado é apagado.** `limpar_rascunhos_abandonados(dias)`
+  remove a conta provisória com mais de trinta dias e nenhuma página no ar, e a
+  chave estrangeira leva o negócio junto, devolvendo o endereço. Conta que
+  entrou com o Google deixa de ser provisória e some da faxina.
 - **A listagem do bucket fica fechada.** Bucket público serve o arquivo sem
   passar por RLS, então a política de SELECT só governa o caminho autenticado e
   a listagem. Aberta, ela entrega os arquivos de página não publicada, o que

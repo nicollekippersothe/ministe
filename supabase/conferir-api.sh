@@ -88,14 +88,28 @@ confere 'itens' 200 "$(codigo_get '/rest/v1/itens?select=id&limit=1')"
 
 echo
 echo 'Login'
-provedores=$(curl -s --max-time 30 -H "apikey: $CHAVE" "$BASE/auth/v1/settings" \
+# A pessoa monta a página numa conta provisória e entra com o Google na hora de
+# publicar. Então são duas chaves ligadas, e a do e-mail desligada.
+ligados=$(curl -s --max-time 30 -H "apikey: $CHAVE" "$BASE/auth/v1/settings" \
   | python3 -c "import json,sys; e=json.load(sys.stdin).get('external',{}); print(','.join(sorted(k for k,v in e.items() if v)) or 'nenhum')")
-if [ "$provedores" = "google" ]; then
-  printf '  ok    %-46s %s\n' 'provedores ligados' "$provedores"
-else
-  printf '  FALHOU %-45s %s, esperado google\n' 'provedores ligados' "$provedores"
-  falhas=$((falhas + 1))
-fi
+
+quer() {
+  local rotulo="$1" chave="$2"
+  case ",$ligados," in
+    *",$chave,"*) printf '  ok    %-46s %s\n' "$rotulo" 'ligado' ;;
+    *) printf '  FALHOU %-45s ligados: %s\n' "$rotulo" "$ligados"
+       falhas=$((falhas + 1)) ;;
+  esac
+}
+
+quer 'conta provisória, para montar antes de entrar' anonymous_users
+quer 'Google, para publicar' google
+
+case ",$ligados," in
+  *,email,*) printf '  FALHOU %-45s %s\n' 'e-mail desligado' "$ligados"
+             falhas=$((falhas + 1)) ;;
+  *) printf '  ok    %-46s %s\n' 'e-mail desligado' 'desligado' ;;
+esac
 
 echo
 echo 'Storage'

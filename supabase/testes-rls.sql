@@ -25,14 +25,23 @@ begin;
 create schema testes;
 
 -- Vira o papel e o usuário logado. Passar null vira visitante anônimo.
-create function testes.como(p_uid uuid) returns void language plpgsql as $$
+--
+-- Monta o token inteiro, e não só o sub, porque é assim que o Supabase manda:
+-- o auth.jwt() lê o JSON completo, e é por ele que o banco sabe se a conta é
+-- provisória. Token pela metade aqui deixaria a regra de publicação sem teste.
+create function testes.como(p_uid uuid, p_provisorio boolean default false)
+returns void language plpgsql as $$
 begin
   execute 'reset role';
   if p_uid is null then
     perform set_config('request.jwt.claim.sub', '', true);
+    perform set_config('request.jwt.claims', '{"role":"anon"}', true);
     execute 'set local role anon';
   else
     perform set_config('request.jwt.claim.sub', p_uid::text, true);
+    perform set_config('request.jwt.claims', json_build_object(
+      'sub', p_uid, 'role', 'authenticated', 'is_anonymous', p_provisorio
+    )::text, true);
     execute 'set local role authenticated';
   end if;
 end;
@@ -49,11 +58,21 @@ end;
 $$;
 
 -- Para o que TEM que dar erro. Se passar, o teste falha.
-create function testes.barrado(p_nome text, p_sql text) returns void language plpgsql as $$
+--
+-- O p_trecho existe porque "deu erro" é fácil demais de conseguir: um teste
+-- desta bateria já passou verde apanhando do limite de páginas por conta,
+-- enquanto a regra que ele dizia estar conferindo nem tinha sido alcançada.
+-- Quando o motivo importa, escreva um pedaço da mensagem esperada.
+create function testes.barrado(p_nome text, p_sql text, p_trecho text default null)
+returns void language plpgsql as $$
 begin
   begin
     execute p_sql;
   exception when others then
+    if p_trecho is not null and position(p_trecho in sqlerrm) = 0 then
+      raise exception 'FALHOU: % foi barrado por outro motivo (%)',
+        p_nome, replace(sqlerrm, E'\n', ' ');
+    end if;
     raise notice 'ok      % (%)', p_nome, replace(sqlerrm, E'\n', ' ');
     return;
   end;
@@ -272,6 +291,101 @@ select testes.barrado('A NÃO escreve em eventos, nem os próprios', $q$
   insert into public.eventos (negocio_id, tipo)
   values ('11111111-0000-4000-8000-000000000001', 'visita')
 $q$);
+
+-- =============================================================================
+-- Conta provisória: monta o rascunho, e o Google é que põe no ar
+-- =============================================================================
+-- A pessoa começa a página antes de ter conta, numa conta provisória, e entra
+-- com o Google na hora de publicar. Para o banco ela é usuário como qualquer
+-- outro, e o que separa uma coisa da outra é o is_anonymous do token.
+--
+-- Estes testes existem porque a tela vai levar para o Google antes de deixar
+-- publicar, e tela é conforto: quem manda um PATCH direto no PostgREST passa
+-- longe dela.
+
+reset role;
+insert into auth.users (id, email, is_anonymous, created_at) values
+  ('cccccccc-0000-4000-8000-000000000003', null, true, now()),
+  ('dddddddd-0000-4000-8000-000000000004', null, true, now() - interval '90 days'),
+  ('eeeeeeee-0000-4000-8000-000000000005', null, true, now() - interval '90 days'),
+  ('ffffffff-0000-4000-8000-000000000006', null, true, now());
+
+select testes.como('cccccccc-0000-4000-8000-000000000003', true);
+
+insert into public.negocios (id, dono_id, slug, nome)
+values ('33333333-0000-4000-8000-000000000003',
+        'cccccccc-0000-4000-8000-000000000003', 'quitanda-da-cida', 'Quitanda da Cida');
+
+select testes.ok('conta provisória monta o rascunho, que é o ponto da mudança',
+  (select count(*) from public.negocios where slug = 'quitanda-da-cida') = 1);
+
+select testes.barrado('conta provisória NÃO põe a página no ar', $q$
+  update public.negocios set publicado = true
+   where id = '33333333-0000-4000-8000-000000000003'
+$q$, 'conta confirmada');
+
+select testes.ok('e o rascunho continua rascunho depois da tentativa',
+  (select publicado from public.negocios
+    where id = '33333333-0000-4000-8000-000000000003') = false);
+
+-- O outro caminho: nascer publicada de uma vez, sem passar por update. Vai numa
+-- conta provisória ainda sem página, senão quem barra é o limite de uma página
+-- por conta e o teste passa sem nunca chegar na regra que ele diz conferir.
+select testes.como('ffffffff-0000-4000-8000-000000000006', true);
+select testes.barrado('conta provisória NÃO cria página já no ar', $q$
+  insert into public.negocios (dono_id, slug, nome, publicado)
+  values ('ffffffff-0000-4000-8000-000000000006', 'atalho', 'Atalho', true)
+$q$, 'conta confirmada');
+
+-- Entrar com o Google liga a identidade na mesma conta: o id continua o mesmo,
+-- o is_anonymous vira falso, e o rascunho vira página no ar sem mudar de dono.
+reset role;
+update auth.users set is_anonymous = false, email = 'cida@exemplo.com'
+  where id = 'cccccccc-0000-4000-8000-000000000003';
+select testes.como('cccccccc-0000-4000-8000-000000000003');
+
+update public.negocios set publicado = true
+  where id = '33333333-0000-4000-8000-000000000003';
+
+select testes.ok('depois do Google, a mesma conta publica o mesmo rascunho',
+  (select publicado from public.negocios
+    where id = '33333333-0000-4000-8000-000000000003') = true);
+
+select testes.ok('e o dono continua sendo quem começou',
+  (select dono_id from public.negocios
+    where id = '33333333-0000-4000-8000-000000000003')
+  = 'cccccccc-0000-4000-8000-000000000003');
+
+-- -----------------------------------------------------------------------------
+-- A faxina do que ficou parado
+-- -----------------------------------------------------------------------------
+reset role;
+
+insert into public.negocios (id, dono_id, slug, nome)
+values ('44444444-0000-4000-8000-000000000004',
+        'dddddddd-0000-4000-8000-000000000004', 'parada-ha-tempo', 'Parada há tempo');
+
+select testes.ok('a faxina fica fora do alcance do visitante',
+  not has_function_privilege('anon',
+    'public.limpar_rascunhos_abandonados(integer)', 'EXECUTE'));
+
+select testes.ok('e fora do alcance de quem está logado',
+  not has_function_privilege('authenticated',
+    'public.limpar_rascunhos_abandonados(integer)', 'EXECUTE'));
+
+select public.limpar_rascunhos_abandonados(30);
+
+select testes.ok('a faxina leva o rascunho provisório parado, e o endereço volta',
+  (select count(*) from public.negocios where slug = 'parada-ha-tempo') = 0);
+
+select testes.ok('e leva junto a conta provisória que ficou sem nada',
+  (select count(*) from auth.users
+    where id = 'eeeeeeee-0000-4000-8000-000000000005') = 0);
+
+select testes.ok('mas poupa a conta que entrou com o Google, por mais antiga que seja',
+  (select count(*) from public.negocios where slug = 'quitanda-da-cida') = 1);
+
+select testes.como('aaaaaaaa-0000-4000-8000-000000000001');
 
 -- =============================================================================
 -- Campos de cobrança

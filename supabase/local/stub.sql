@@ -4,9 +4,15 @@
 
 create schema if not exists auth;
 
+-- is_anonymous e created_at existem no Supabase de verdade, e o produto conta
+-- com os dois: o rascunho começa numa conta provisória, e a faxina apaga a
+-- conta provisória que ficou parada. Coluna que falta aqui vira teste que
+-- passa local e regra que some em produção.
 create table if not exists auth.users (
   id uuid primary key default gen_random_uuid(),
-  email text unique
+  email text unique,
+  is_anonymous boolean not null default false,
+  created_at timestamptz not null default now()
 );
 
 -- Mesma implementação que o Supabase usa: lê o sub do JWT da requisição.
@@ -19,6 +25,18 @@ as $$
     nullif(current_setting('request.jwt.claim.sub', true), ''),
     (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')
   )::uuid;
+$$;
+
+-- O JWT inteiro. É por ele que dá para saber se a conta é provisória.
+create or replace function auth.jwt()
+returns jsonb
+language sql
+stable
+as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim', true), ''),
+    nullif(current_setting('request.jwt.claims', true), '')
+  )::jsonb;
 $$;
 
 do $$

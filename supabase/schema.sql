@@ -546,6 +546,49 @@ create trigger negocios_limite
   before insert on public.negocios
   for each row execute function public.checa_limite_negocios();
 
+-- Publicar pede conta confirmada.
+--
+-- A pessoa monta a primeira página numa conta provisória (o anonymous sign-in
+-- do Supabase), porque login na frente de tudo é onde a maioria desiste. Ela
+-- entra com o Google na hora de publicar, e a identidade é ligada na mesma
+-- conta: o dono_id continua o mesmo e nada muda de lugar.
+--
+-- A tela leva para o Google antes de deixar publicar, mas tela é conforto. Quem
+-- manda um PATCH direto no PostgREST passa longe da tela, e é por isso que a
+-- regra mora aqui. Vale para a página no ar, que é o que carrega o endereço do
+-- produto e a reputação dele junto: golpista com conta provisória e descartável
+-- é exatamente o que a gente evita deixando o Google no caminho.
+--
+-- Gatilho próprio, separado do protege_cobranca, porque os dois guardam coisas
+-- diferentes: aquele guarda dinheiro, este guarda quem aparece na internet.
+-- security invoker (o padrão) pelo mesmo motivo dele: é o que deixa current_user
+-- valer o papel de quem chamou, e abre passagem para a chave de serviço.
+create or replace function public.protege_publicacao()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  if current_user in ('service_role', 'postgres') then
+    return new;
+  end if;
+
+  -- Sem token (conexão direta ao banco) auth.jwt() vem nulo, e aí não é conta
+  -- provisória. O coalesce é o que garante isso.
+  if new.publicado
+     and coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) then
+    raise exception 'publicar pede uma conta confirmada'
+      using errcode = 'insufficient_privilege';
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger negocios_protege_publicacao
+  before insert or update on public.negocios
+  for each row execute function public.protege_publicacao();
+
 create or replace function public.checa_limite_itens()
 returns trigger
 language plpgsql
@@ -747,6 +790,40 @@ begin
 end;
 $$;
 
+-- Faxina do rascunho provisório parado.
+--
+-- Conta provisória é barata de criar, então ela acumula: cada pessoa que abre o
+-- cadastro por curiosidade deixa uma para trás, com um endereço reservado
+-- junto. Trinta dias parada é tempo de sobra, e apagar a conta leva o negócio
+-- pela chave estrangeira, devolvendo o endereço para quem quiser.
+--
+-- Conta que entrou com o Google deixa de ser provisória e some desta faxina.
+-- Página no ar também fica de fora, mesmo em conta provisória, que é uma
+-- situação que o protege_publicacao já impede de existir e ainda assim é
+-- conferida aqui: faxina só apaga o que ela tem certeza.
+create or replace function public.limpar_rascunhos_abandonados(
+  p_dias integer default 30
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public, pg_temp, auth
+as $$
+declare
+  v_apagados integer;
+begin
+  delete from auth.users u
+   where u.is_anonymous
+     and u.created_at < now() - make_interval(days => p_dias)
+     and not exists (
+       select 1 from public.negocios n
+        where n.dono_id = u.id and n.publicado
+     );
+  get diagnostics v_apagados = row_count;
+  return v_apagados;
+end;
+$$;
+
 -- =============================================================================
 -- Row Level Security
 -- =============================================================================
@@ -927,7 +1004,18 @@ revoke all on public.denuncias from anon, authenticated;
 revoke execute on all functions in schema public from public;
 revoke execute on all functions in schema public from anon, authenticated;
 
--- E para as próximas, senão a próxima função criada nasce aberta de novo.
+-- E para as próximas. Com uma ressalva medida no Postgres 16, que vale escrever
+-- porque a linha de cima parece resolver mais do que resolve:
+--
+-- o revoke de anon e authenticated funciona, porque desfaz um default privilege
+-- que o Supabase guardou de verdade. Já o revoke de PUBLIC não guarda linha
+-- nenhuma em pg_default_acl, e a função criada depois continua nascendo com
+-- PUBLIC podendo executar.
+--
+-- Quem fecha PUBLIC é o "revoke execute on all functions" logo acima, e por
+-- isso ele roda depois de todas as funções existirem. Em arquivo de correção,
+-- que roda sozinho e sem essa varredura, cada função nova precisa do seu revoke
+-- escrito na mão. A bateria em testes-rls.sql confere.
 alter default privileges in schema public revoke execute on functions from public;
 alter default privileges in schema public
   revoke execute on functions from anon, authenticated;
