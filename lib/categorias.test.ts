@@ -4,6 +4,7 @@ import {
   CATEGORIAS,
   categoriaPorId,
   GRUPOS,
+  procurar,
   RECEITA_PADRAO,
   receitaDe,
 } from "./categorias.ts";
@@ -58,4 +59,58 @@ test("quem produz em casa não tem endereço como esperado", () => {
 test("os grupos saem na ordem da lista, sem repetir", () => {
   strictEqual(new Set(GRUPOS).size, GRUPOS.length);
   strictEqual(GRUPOS[0], "Comida e bebida");
+});
+
+test("acha pelo jeito que a pessoa fala, e não pelo nome que a gente deu", () => {
+  const casos: [string, string][] = [
+    ["inglês", "aulas"],
+    ["ingles", "aulas"],
+    ["violão", "aulas"],
+    ["reforço escolar", "aulas"],
+    ["marmita", "comida-caseira"],
+    ["bolo", "confeitaria"],
+    ["crochê", "artesanato"],
+    ["diarista", "limpeza"],
+    ["pedreiro", "reformas"],
+    ["imposto de renda", "contabilidade"],
+    ["banho e tosa", "pet"],
+    ["personal", "personal"],
+    ["investimentos", "consultoria"],
+    ["brechó", "loja-roupas"],
+    ["newborn", "fotografia"],
+  ];
+  for (const [digitado, esperado] of casos) {
+    const achados = procurar(digitado);
+    ok(
+      achados.some((c) => c.id === esperado),
+      `"${digitado}" tinha que achar ${esperado}, achou ${achados.map((c) => c.id).join(", ") || "nada"}`,
+    );
+  }
+});
+
+test("quem começa com o termo vem antes de quem só contém", () => {
+  strictEqual(procurar("caf")[0].id, "cafeteria");
+});
+
+test("busca vazia devolve a lista inteira", () => {
+  strictEqual(procurar("").length, CATEGORIAS.length);
+  strictEqual(procurar("   ").length, CATEGORIAS.length);
+});
+
+test("termo em dois ramos devolve os dois, para a pessoa escolher", () => {
+  // Casamento é dos dois mesmo: fotógrafo cobre casamento, cerimonialista
+  // organiza casamento. Devolver os dois e deixar a pessoa escolher é melhor
+  // que decidir por ela.
+  const achados = procurar("casamento").map((c) => c.id);
+  ok(achados.includes("fotografia"), achados.join(", "));
+  ok(achados.includes("eventos"), achados.join(", "));
+});
+
+test("uma letra só devolve tudo, em vez de fingir que filtrou", () => {
+  strictEqual(procurar("a").length, CATEGORIAS.length);
+});
+
+test("a partir de duas letras a lista encolhe de verdade", () => {
+  ok(procurar("ta").length < CATEGORIAS.length);
+  ok(procurar("bolo").length < 5);
 });
