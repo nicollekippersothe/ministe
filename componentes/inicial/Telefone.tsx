@@ -203,7 +203,7 @@ export function Telefone({
           <div className="h-20" />
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 border-t border-borda bg-fundo/92 px-3 pt-2.5 pb-4 backdrop-blur-sm">
+        <div className="absolute inset-x-0 bottom-0 border-t border-borda bg-fundo px-3 pt-2.5 pb-4">
           {acoes.map((a) => (
             <BotaoAcao key={a.rotulo} acao={a} principal compacto interativo={false} />
           ))}

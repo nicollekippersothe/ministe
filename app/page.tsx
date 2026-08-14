@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
+import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
@@ -129,7 +130,11 @@ export default async function Home() {
             </div>
 
             <div className="lg:pl-4">
-              <Carrossel negocios={naAbertura} />
+              <Carrossel>
+                {naAbertura.map((n, i) => (
+                  <Telefone key={n.slug} negocio={n} prioridade={i === 0} leve />
+                ))}
+              </Carrossel>
             </div>
           </div>
         </section>

@@ -46,6 +46,27 @@ export function IconePin({ className }: Props) {
   );
 }
 
+/**
+ * Seta de avançar. Diferente da IconeSeta, que é a diagonal de "abre em outra
+ * aba": esta aponta para o lado e quer dizer "próximo", que é outra coisa.
+ */
+export function IconeAvancar({ className }: Props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <path d="m9 5 7 7-7 7" />
+    </svg>
+  );
+}
+
 export function IconeSeta({ className }: Props) {
   return (
     <svg
