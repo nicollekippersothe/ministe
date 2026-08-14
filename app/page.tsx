@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
+import { CarrosselExemplos } from "@/componentes/inicial/CarrosselExemplos";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
@@ -160,7 +161,16 @@ export default async function Home() {
             >
               Tudo o que o seu negócio precisa mostrar.
             </h2>
-            <div className="mt-12 sm:mt-14">
+            <p className="mt-3 max-w-2xl leading-relaxed text-suave">
+              A mesma página serve ofícios bem diferentes. Troque de exemplo e
+              veja o que muda.
+            </p>
+
+            <div className="mt-10 sm:mt-12">
+              <CarrosselExemplos />
+            </div>
+
+            <div className="mt-16 sm:mt-20">
               <Mosaico
                 negocio={negocio}
                 paraCatalogo={massas}

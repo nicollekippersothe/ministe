@@ -592,13 +592,54 @@ export const EXEMPLOS: Negocio[] = [
  * A ordem não é por acaso: os três primeiros são quem o produto existe para
  * atender, alguém que faz bem e não tem onde mostrar. Quem chega precisa bater
  * o olho e pensar "é para mim" antes de ler qualquer texto.
+ *
+ * O `resolve` é o que a página faz por aquele tipo de negócio, e cada frase
+ * fala só do que está mesmo na página do exemplo: preço só onde
+ * `mostrarPrecos` está ligado, mapa só onde existe `mapsUrl`. Nenhuma cita
+ * quantidade, para a frase continuar verdadeira quando alguém acrescentar uma
+ * peça ao exemplo.
  */
 export const VITRINE = [
-  { negocio: atelie, tipo: "Crochê e tricô" },
-  { negocio: fotografia, tipo: "Fotografia" },
-  { negocio: massas, tipo: "Massa fresca" },
-  { negocio: psicologia, tipo: "Psicóloga" },
-  { negocio: estudio, tipo: "Estúdio de yoga" },
-  { negocio: nutricao, tipo: "Nutricionista" },
-  { negocio: doceria, tipo: "Confeitaria" },
+  {
+    negocio: atelie,
+    tipo: "Crochê e tricô",
+    resolve:
+      "Trabalho feito à mão vive de foto: cada peça aparece com a própria imagem e o próprio preço, com o pedido saindo pelo WhatsApp ali mesmo.",
+  },
+  {
+    negocio: fotografia,
+    tipo: "Fotografia",
+    resolve:
+      "Quem vende ensaio mostra ensaio: cada um com as suas fotos, e o orçamento combinado na conversa.",
+  },
+  {
+    negocio: massas,
+    tipo: "Massa fresca",
+    resolve:
+      "Encomenda com dia certo: o cardápio da semana com preço, o horário de retirada e o endereço no mapa.",
+  },
+  {
+    negocio: psicologia,
+    tipo: "Psicóloga",
+    resolve:
+      "Hora marcada, com os tipos de sessão, o registro no conselho e o caminho para marcar a primeira.",
+  },
+  {
+    negocio: estudio,
+    tipo: "Estúdio de yoga",
+    resolve:
+      "Turma pequena pede horário à vista: as aulas, os planos com valor e o endereço da sala no mapa.",
+  },
+  {
+    negocio: nutricao,
+    tipo: "Nutricionista",
+    resolve:
+      "Presencial e online na mesma página, com os atendimentos, o valor de cada um e o consultório no mapa.",
+  },
+  {
+    negocio: doceria,
+    tipo: "Confeitaria",
+    resolve:
+      "Cardápio com foto e preço, o selo de aberto agora calculado na hora, e o pedido pelo WhatsApp.",
+  },
 ];

@@ -19,7 +19,31 @@ import { IconeAvancar } from "@/componentes/Icones";
  * Os aparelhos são montados no servidor e chegam aqui como children, então o
  * JavaScript que desce é só o controle: índice, temporizador e botão.
  */
-export function Carrossel({ children }: { children: React.ReactNode }) {
+export function Carrossel({
+  children,
+  largura = "max-w-[19rem]",
+  item = "exemplo",
+  topoSeta = "top-1/2",
+}: {
+  children: React.ReactNode;
+  /** A abertura mostra um aparelho, estreito. Outros usos passam a própria largura. */
+  largura?: string;
+  /**
+   * O substantivo do rótulo dos controles: "Ver o próximo {item}". Existe
+   * porque a página passou a ter dois carrosséis, e o rótulo padrão sozinho
+   * deixava o botão de um igual ao do outro para quem navega por leitor de
+   * tela, sem pista de qual é qual.
+   */
+  item?: string;
+  /**
+   * Onde a seta fica, na altura. O padrão centraliza na altura do quadro
+   * inteiro, que é o aparelho sozinho na abertura, então cai bem na borda
+   * dele. Um quadro com aparelho e texto empilhados é bem mais alto, e o
+   * centro do quadro cai dentro do aparelho, sem se ligar a nada. Outros usos
+   * passam a própria posição.
+   */
+  topoSeta?: string;
+}) {
   const quadros = Array.isArray(children) ? children : [children];
   const total = quadros.length;
   const [atual, setAtual] = useState(0);
@@ -49,7 +73,7 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
      * o aparelho seguinte não espia pela direita.
      */
     <div
-      className="relative mx-auto w-full max-w-[19rem]"
+      className={`relative mx-auto w-full ${largura}`}
       onMouseEnter={() => setParado(true)}
       onMouseLeave={() => setParado(false)}
     >
@@ -87,13 +111,13 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => setAtual((i) => (i + 1) % total)}
-            aria-label="Ver o próximo exemplo"
+            aria-label={`Ver o próximo ${item}`}
             /*
              * Montado na borda do aparelho, metade dentro e metade fora. É a
              * posição que diz "isto avança aquilo ali", em vez de parecer um
              * botão qualquer perdido ao lado.
              */
-            className="absolute top-1/2 right-0 z-10 flex h-12 w-12 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-borda bg-superficie text-texto shadow-[0_1px_2px_rgba(28,25,23,0.12),0_10px_24px_-10px_rgba(28,25,23,0.45)] transition-colors hover:border-texto/30 hover:bg-fundo"
+            className={`absolute ${topoSeta} right-0 z-10 flex h-12 w-12 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-borda bg-superficie text-texto shadow-[0_1px_2px_rgba(28,25,23,0.12),0_10px_24px_-10px_rgba(28,25,23,0.45)] transition-colors hover:border-texto/30 hover:bg-fundo`}
           >
             <IconeAvancar className="h-5 w-5" />
           </button>
@@ -105,7 +129,7 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
                 key={i}
                 type="button"
                 onClick={() => setAtual(i)}
-                aria-label={`Ver o exemplo ${i + 1} de ${total}`}
+                aria-label={`Ver o ${item} ${i + 1} de ${total}`}
                 aria-current={i === atual}
                 className={`h-1.5 rounded-full transition-all ${
                   i === atual ? "w-5 bg-texto" : "w-1.5 bg-texto/25"
