@@ -304,7 +304,18 @@ export const CATEGORIAS: Categoria[] = [
     "música", "violão", "piano", "canto", "informática",
     "concurso"
   ], {
-    schema: "EducationalOrganization",
+    /*
+     * ProfessionalService, e não EducationalOrganization, que era o palpite
+     * óbvio e está errado.
+     *
+     * Conferido no vocabulário do schema.org: EducationalOrganization desce de
+     * CivicStructure e Organization, e NÃO é subclasse de LocalBusiness. É o
+     * tipo de uma escola como instituição. Quem dá aula particular é negócio
+     * local, e o resultado de busca local do Google se apoia em LocalBusiness
+     * e nas subclasses dele. Usar o tipo de fora dessa árvore entrega horário,
+     * endereço e faixa de preço numa forma que o buscador não espera ali.
+     */
+    schema: "ProfessionalService",
     tituloCatalogo: "Aulas",
   }),
   cat("assistencia", "Assistência técnica", "Serviços", [

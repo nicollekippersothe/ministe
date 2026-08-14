@@ -114,3 +114,35 @@ test("a partir de duas letras a lista encolhe de verdade", () => {
   ok(procurar("ta").length < CATEGORIAS.length);
   ok(procurar("bolo").length < 5);
 });
+
+/*
+ * Tipos do schema.org conferidos um a um contra o vocabulário oficial
+ * (schemaorg-current-https.jsonld), todos subclasses de LocalBusiness.
+ *
+ * A lista fica escrita aqui, e não é baixada, porque teste que depende de rede
+ * falha por motivo errado. Para acrescentar um tipo novo: confira a árvore dele
+ * em schema.org, veja que chega em LocalBusiness, e só então escreva aqui.
+ *
+ * Esta trava nasceu de um erro real: "Aulas particulares" estava com
+ * EducationalOrganization, que desce de CivicStructure e Organization e não é
+ * negócio local. Palpite óbvio, e errado.
+ */
+const TIPOS_CONFERIDOS = new Set([
+  "AccountingService", "Bakery", "BarOrPub", "BeautySalon", "CafeOrCoffeeShop",
+  "ClothingStore", "Dentist", "ExerciseGym", "FastFoodRestaurant", "Florist",
+  "FoodEstablishment", "GroceryStore", "HairSalon", "HealthAndBeautyBusiness",
+  "HomeAndConstructionBusiness", "LegalService", "LocalBusiness",
+  "MedicalBusiness", "NailSalon", "PetStore", "Physiotherapy",
+  "ProfessionalService", "Restaurant", "SportsActivityLocation", "Store",
+  "TattooParlor",
+]);
+
+test("todo tipo de schema é uma subclasse de LocalBusiness conferida", () => {
+  for (const c of CATEGORIAS) {
+    ok(
+      TIPOS_CONFERIDOS.has(c.schema),
+      `${c.id} usa ${c.schema}, que não está na lista conferida. Confira a árvore em schema.org antes de acrescentar.`,
+    );
+  }
+  ok(TIPOS_CONFERIDOS.has(RECEITA_PADRAO.schema));
+});
