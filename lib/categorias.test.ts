@@ -146,3 +146,11 @@ test("todo tipo de schema é uma subclasse de LocalBusiness conferida", () => {
   }
   ok(TIPOS_CONFERIDOS.has(RECEITA_PADRAO.schema));
 });
+
+test("todo id de categoria passa na restrição de formato do banco", () => {
+  // A coluna tem check: categoria ~ '^[a-z][a-z0-9-]{1,40}$'
+  const doBanco = /^[a-z][a-z0-9-]{1,40}$/;
+  for (const c of CATEGORIAS) {
+    ok(doBanco.test(c.id), `${c.id} seria recusado pelo banco`);
+  }
+});

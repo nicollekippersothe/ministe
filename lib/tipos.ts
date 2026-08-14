@@ -85,6 +85,21 @@ export type Negocio = {
   tema: Tema;
   /** Combinação de fontes da página pública. Ver lib/fontes.ts. */
   fonte: ChaveFonte;
+
+  /**
+   * O ramo, escolhido no cadastro. Ver lib/categorias.ts.
+   *
+   * Faz duas coisas: vira o tipo do schema.org no JSON-LD, e monta a página
+   * antes de o dono preencher qualquer coisa. Nulo quando a pessoa escolheu
+   * "outro" ou quando o negócio foi criado antes de a categoria existir, e aí
+   * vale a receita padrão.
+   */
+  categoria: string | null;
+  /**
+   * O que a pessoa escreveu ao escolher "outro". Entra na descrição e nunca
+   * muda a montagem, porque só dá para montar o que a gente conhece.
+   */
+  categoriaLivre: string | null;
   plano: Plano;
   publicado: boolean;
 

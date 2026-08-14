@@ -1,5 +1,8 @@
-import { telefoneE164 } from "./formato";
-import { porDiaSemana } from "./horarios";
+// A extensão explícita permite que o teste rode direto no Node, que não
+// resolve extensão sozinho. O Next aceita das duas formas.
+import { receitaDe } from "./categorias.ts";
+import { telefoneE164 } from "./formato.ts";
+import { porDiaSemana } from "./horarios.ts";
 import type { Negocio } from "./tipos";
 
 const DIAS_SCHEMA = [
@@ -13,7 +16,13 @@ const DIAS_SCHEMA = [
 ];
 
 /**
- * LocalBusiness do schema.org.
+ * O negocio no schema.org.
+ *
+ * O @type sai da categoria, e nao e enfeite: LocalBusiness generico diz pouco,
+ * enquanto Bakery, Dentist ou Florist dizem o bastante para o buscador casar a
+ * pagina com "confeitaria perto de mim". Todo tipo da tabela e subclasse de
+ * LocalBusiness, conferido contra o vocabulario oficial, porque tipo de fora
+ * dessa arvore entrega horario e endereco numa forma que o buscador nao espera.
  *
  * Regra do projeto: campo vazio nao entra. Nada de string vazia nem de
  * placeholder, porque dado inventado no JSON-LD e pior que JSON-LD ausente.
@@ -48,7 +57,7 @@ export function localBusiness(negocio: Negocio, urlBase: string) {
 
   return {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": receitaDe(negocio.categoria).schema,
     name: negocio.nome,
     url,
     ...(negocio.frase ? { description: negocio.frase } : {}),

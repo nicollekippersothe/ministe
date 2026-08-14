@@ -54,6 +54,7 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `001-fechar-execute-de-public.sql` | EXECUTE herdado de PUBLIC em toda função, o que deixava `limpar_eventos_antigos()` chamável por qualquer pessoa em `/rest/v1/rpc` |
 | `002-fechar-execute-de-anon.sql` | EXECUTE nominal que o Supabase dá a `anon`, que a 001 não alcançava e mantinha treze funções abertas |
 | `003-fechar-listagem-do-bucket.sql` | listagem do bucket de imagens, que entregava os arquivos de página ainda não publicada |
+| `004-categoria.sql` | acrescenta a coluna da categoria, que vira o tipo do schema.org e monta a página |
 
 ## Rodar local, sem Supabase
 

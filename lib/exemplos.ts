@@ -37,6 +37,8 @@ function item(
 
 const base = {
   slugAnterior: null,
+  categoria: null as string | null,
+  categoriaLivre: null as string | null,
   acaoPrincipal: null,
   acaoSecundaria: null,
   tema: "areia" as const,
@@ -52,6 +54,7 @@ const base = {
 export const doceria: Negocio = {
   ...base,
   slug: "demo",
+  categoria: "confeitaria",
   nome: "Café Alecrim",
   frase: "Confeitaria e café. Bolos, tortas e salgados feitos na hora.",
   logo: foto("logo.jpg", "Logotipo do Café Alecrim", 512),
@@ -161,6 +164,7 @@ export const doceria: Negocio = {
 export const estudio: Negocio = {
   ...base,
   slug: "studio-raiz",
+  categoria: "yoga-pilates",
   nome: "Studio Raiz",
   frase: "Yoga e pilates em turmas de até seis alunos, em Florianópolis.",
   logo: foto("raiz-logo.jpg", "Logotipo do Studio Raiz", 512),
@@ -244,6 +248,7 @@ export const estudio: Negocio = {
 export const nutricao: Negocio = {
   ...base,
   slug: "marina-nutricao",
+  categoria: "nutricao",
   nome: "Marina Alcântara",
   frase: "Nutrição clínica e esportiva. Atendimento presencial e online.",
   logo: foto("nutri-logo.jpg", "Retrato de Marina Alcântara", 400),
@@ -303,6 +308,7 @@ export const nutricao: Negocio = {
 export const psicologia: Negocio = {
   ...base,
   slug: "camila-psicologia",
+  categoria: "psicologia",
   nome: "Camila Reis",
   frase: "Psicologia clínica, abordagem cognitivo comportamental. CRP 08/12345.",
   logo: foto("psi-logo.jpg", "Retrato de Camila Reis", 400),
@@ -365,6 +371,7 @@ export const psicologia: Negocio = {
 export const atelie: Negocio = {
   ...base,
   slug: "atelie-trama",
+  categoria: "artesanato",
   nome: "Ateliê Trama",
   frase: "Peças de crochê e tricô feitas à mão, sob encomenda.",
   logo: foto("trama-logo.jpg", "Logotipo do Ateliê Trama", 512),
@@ -441,6 +448,7 @@ export const atelie: Negocio = {
 export const massas: Negocio = {
   ...base,
   slug: "aurora-massas",
+  categoria: "comida-caseira",
   nome: "Aurora Massas",
   frase: "Massa fresca feita no dia, por encomenda. Retirada às quintas e sábados.",
   logo: foto("aurora-logo.jpg", "Logotipo da Aurora Massas", 512),
@@ -511,6 +519,7 @@ export const massas: Negocio = {
 export const fotografia: Negocio = {
   ...base,
   slug: "rafael-nunes",
+  categoria: "fotografia",
   nome: "Rafael Nunes",
   frase: "Fotografia de retrato e casamento. Recife e região.",
   logo: foto("foto-logo.jpg", "Retrato de Rafael Nunes", 400),

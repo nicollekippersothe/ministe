@@ -76,6 +76,18 @@ create table public.negocios (
   logo_url text,
   capa_url text,
 
+  -- O ramo, escolhido no cadastro. Espelha lib/categorias.ts.
+  --
+  -- Vira o @type do JSON-LD e monta a página antes de o dono preencher nada.
+  -- Fica sem chave estrangeira de propósito: a lista mora no código, muda com
+  -- deploy e não com migração, e categoria que sai da lista não pode derrubar
+  -- a página de quem já tinha escolhido ela. Desconhecida cai na receita
+  -- padrão, que é o comportamento de lib/categorias.ts.
+  categoria text,
+  -- O que a pessoa escreveu ao escolher "outro". Entra na descrição, e nunca
+  -- muda a montagem: só dá para montar o que a gente conhece.
+  categoria_livre text,
+
   tema text not null default 'areia',
   -- Combinacao de letras. Trocar e recurso do plano pago, conferido no gatilho
   -- protege_cobranca mais abaixo.
@@ -127,6 +139,12 @@ create table public.negocios (
   constraint slug_diferente_do_anterior check (slug is distinct from slug_anterior),
   constraint nome_preenchido check (length(btrim(nome)) between 1 and 80),
   constraint frase_tamanho check (frase is null or length(frase) <= 160),
+  constraint categoria_formato check (
+    categoria is null or categoria ~ '^[a-z][a-z0-9-]{1,40}$'
+  ),
+  constraint categoria_livre_tamanho check (
+    categoria_livre is null or length(btrim(categoria_livre)) between 2 and 40
+  ),
   constraint tema_conhecido check (tema in ('areia', 'noite', 'menta')),
   constraint fonte_conhecida check (
     fonte in ('editorial', 'artesanal', 'moderno', 'marcante', 'direto')
