@@ -87,6 +87,32 @@ confere 'negocios' 200 "$(codigo_get '/rest/v1/negocios?select=slug&limit=1')"
 confere 'itens' 200 "$(codigo_get '/rest/v1/itens?select=id&limit=1')"
 
 echo
+echo 'Correções aplicadas no banco'
+# A coluna existe? O PostgREST responde 42703 para coluna que falta, e uma lista
+# (vazia ou não) para coluna que existe. Então dá para saber sem escrever nada.
+resposta=$(curl -s --max-time 30 -H "apikey: $CHAVE" \
+  "$BASE/rest/v1/negocios?select=categoria,categoria_livre&limit=1")
+case "$resposta" in
+  \[*) printf '  ok    %-46s %s\n' '004, a coluna da categoria' 'aplicada' ;;
+  *)   printf '  FALHOU %-45s %s\n' '004, a coluna da categoria' "$resposta"
+       falhas=$((falhas + 1)) ;;
+esac
+
+# A função existe? Duas respostas diferentes, e é essa diferença que responde:
+# 42501 "permission denied" é função que existe e está fechada, que é o que a
+# gente quer. PGRST202 "no matches were found" é função que nem existe.
+resposta=$(curl -s --max-time 30 -X POST -H "apikey: $CHAVE" \
+  -H 'Content-Type: application/json' -d '{"p_dias":30}' \
+  "$BASE/rest/v1/rpc/limpar_rascunhos_abandonados")
+case "$resposta" in
+  *42501*) printf '  ok    %-46s %s\n' '005, a faxina do rascunho parado' 'aplicada e fechada' ;;
+  *PGRST202*) printf '  FALHOU %-45s %s\n' '005, a faxina do rascunho parado' 'a função ainda não existe'
+              falhas=$((falhas + 1)) ;;
+  *) printf '  FALHOU %-45s %s\n' '005, a faxina do rascunho parado' "$resposta"
+     falhas=$((falhas + 1)) ;;
+esac
+
+echo
 echo 'Login'
 # A pessoa monta a página numa conta provisória e entra com o Google na hora de
 # publicar. Então são duas chaves ligadas, e a do e-mail desligada.
