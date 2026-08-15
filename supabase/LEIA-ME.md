@@ -122,6 +122,40 @@ atrás de assinatura tira justamente a prova que faria ele assinar.
 A tabela `eventos` já guarda os três tipos (`visita`, `clique_whatsapp`,
 `clique_acao`) e a página pública já tem os ganchos. Falta a tela do painel.
 
+## Preço do plano pago
+
+R$ 29,90 por mês, ou R$ 19,90 por mês pagando o ano (R$ 238,80). Mostrado na
+tela inicial, em `componentes/inicial/Planos.tsx`, junto da tabela de limites
+acima. Nenhum outro lugar do código tinha esse número, então a pesquisa e o
+raciocínio ficam registrados aqui, para não precisar refazer a conta na
+próxima vez que alguém perguntar de onde ele saiu.
+
+Pesquisa feita em agosto de 2026:
+
+| produto | preço | o que é |
+| --- | --- | --- |
+| linkme.bio | a partir de R$ 6,90/mês (anual) | link na bio, sem catálogo nem endereço |
+| Linktree | US$ 8 a US$ 35/mês | link na bio, mercado americano |
+| Beacons.ai | US$ 10 a US$ 90/mês | link na bio com loja, mercado americano |
+| "site pronto" (SitesProntos.com.br) | R$ 559,99 de ativação + R$ 19,99/mês | site editável, com taxa de entrada |
+| Anota AI | a partir de R$ 299,99/mês | cardápio com robô de WhatsApp e PDV, categoria bem mais cara |
+
+O `entrais` fica acima do link.bio mais barato porque entrega mais que uma
+lista de links (catálogo com preço, horário, endereço no mapa, SEO). Fica bem
+abaixo de Linktree e Beacons, que cobram em dólar para um público diferente.
+E fica abaixo do "site pronto" mais próximo, que cobra R$ 19,99 por mês só
+depois de uma ativação de quase R$ 560: o `entrais` não tem taxa de entrada,
+então o mensal absorve um pouco do que lá vira ativação. Anota AI não é
+comparável de verdade, é outra categoria de produto (automação de pedido),
+por isso custa dez vezes mais.
+
+O desconto do plano anual (33%) segue o padrão do setor: Linktree dá de 30 a
+37% no anual, Beacons de 20 a 25%.
+
+Continua valendo o que já estava demarcado no roadmap: a cobrança em si
+começa manual, o campo `plano` é virado na mão. Este preço é o que a tela
+promete, não o que já está automatizado no banco.
+
 ## Ainda em aberto
 
 - Apagar o arquivo do Storage quando o registro sai do banco, senão o 1 GB

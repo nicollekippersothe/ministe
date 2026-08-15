@@ -4,6 +4,7 @@ import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
 import { CarrosselExemplos } from "@/componentes/inicial/CarrosselExemplos";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
+import { Planos } from "@/componentes/inicial/Planos";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { NOME_PRODUTO } from "@/lib/marca";
@@ -244,6 +245,33 @@ export default async function Home() {
                   </div>
                 ))}
               </dl>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="planos" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
+            <div className="lg:grid lg:grid-cols-[20rem_1fr] lg:gap-16">
+              <div className="lg:sticky lg:top-16 lg:self-start">
+                <h2
+                  id="planos"
+                  className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+                >
+                  Comece de graça, cresça quando fizer sentido.
+                </h2>
+                <p className="mt-4 max-w-sm leading-relaxed text-suave">
+                  Um plano para publicar hoje, outro para quando o negócio
+                  pedir mais espaço.
+                </p>
+              </div>
+
+              <div className="mt-12 lg:mt-0">
+                <Planos />
+                <p className="mt-6 text-[0.95rem] leading-relaxed text-suave">
+                  O plano gratuito começa só com nome e endereço, e a página
+                  fica no ar em minutos.
+                </p>
+              </div>
             </div>
           </div>
         </section>
