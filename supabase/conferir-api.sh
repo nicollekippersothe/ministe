@@ -112,6 +112,32 @@ case "$resposta" in
      falhas=$((falhas + 1)) ;;
 esac
 
+# A 006 trouxe endereco_livre, e é ela que responde as duas linhas abaixo. Sem
+# ela as duas falham juntas, o que já diz onde olhar.
+livre() {
+  curl -s --max-time 30 -X POST -H "apikey: $CHAVE" -H 'Content-Type: application/json' \
+    -d "{\"p_slug\":\"$1\"}" "$BASE/rest/v1/rpc/endereco_livre"
+}
+resposta=$(livre 'nome-que-ninguem-usou')
+case "$resposta" in
+  true) printf '  ok    %-46s %s\n' '006, a conferência de endereço' 'aplicada' ;;
+  *)    printf '  FALHOU %-45s %s\n' '006, a conferência de endereço' "$resposta"
+        falhas=$((falhas + 1)) ;;
+esac
+
+# Os endereços das páginas de exemplo. Soltos, alguém cadastra um deles e a
+# página cadastrada nunca abre, porque o exemplo vem antes na lib/dados.ts.
+soltos=""
+for s in demo studio-raiz marina-nutricao camila-psicologia atelie-trama aurora-massas rafael-nunes; do
+  [ "$(livre "$s")" = "true" ] && soltos="$soltos $s"
+done
+if [ -z "$soltos" ]; then
+  printf '  ok    %-46s %s\n' '007, os endereços dos exemplos' 'todos reservados'
+else
+  printf '  FALHOU %-45s soltos:%s\n' '007, os endereços dos exemplos' "$soltos"
+  falhas=$((falhas + 1))
+fi
+
 echo
 echo 'Login'
 # A pessoa monta a página numa conta provisória e entra com o Google na hora de
