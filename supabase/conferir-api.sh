@@ -126,9 +126,16 @@ case "$resposta" in
 esac
 
 # Os endereços das páginas de exemplo. Soltos, alguém cadastra um deles e a
-# página cadastrada nunca abre, porque o exemplo vem antes na lib/dados.ts.
+# página cadastrada nunca abre, porque o exemplo vem antes em lib/dados.ts.
+#
+# A lista sai de lib/exemplos.ts, e não escrita aqui: exemplo novo passa a ser
+# cobrado sozinho, sem depender de alguém lembrar de vir atualizar este script.
+# Um teste de unidade já casa lib/exemplos.ts com lib/slug.ts; esta linha é o
+# terceiro lugar, o banco, que teste de unidade nenhum alcança.
+exemplos=$(grep -oE 'slug: "[^"]+"' "$(dirname "$0")/../lib/exemplos.ts" \
+  | cut -d'"' -f2)
 soltos=""
-for s in demo studio-raiz marina-nutricao camila-psicologia atelie-trama aurora-massas rafael-nunes; do
+for s in $exemplos; do
   [ "$(livre "$s")" = "true" ] && soltos="$soltos $s"
 done
 if [ -z "$soltos" ]; then
