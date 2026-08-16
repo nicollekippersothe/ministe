@@ -1,16 +1,19 @@
 # Banco
 
-O schema e as correções 001, 002, 004 e 005 já estão aplicados no projeto de
-verdade. As 006 e 007 estão na fila. Tudo aqui roda e é testado num Postgres 16
-local antes de ir, e o passo a passo do que falta no painel do Supabase está em
-`PROMPT-SUPABASE.md`.
+O schema e as correções 001, 002 e 004 a 007 já estão aplicados no projeto de
+verdade. A 008 fica guardada até o envio de imagem existir no produto: ela muda
+o que as colunas de imagem guardam, e aplicar antes do código que grava desse
+jeito deixaria o painel salvando num formato que o banco recusa.
+
+Tudo aqui roda e é testado num Postgres 16 local antes de ir, e o passo a passo
+do que falta no painel do Supabase está em `PROMPT-SUPABASE.md`.
 
 ## Arquivos
 
 | arquivo | o que é | testado |
 | --- | --- | --- |
-| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 82 asserções |
-| `testes-rls.sql` | 82 asserções de RLS, de limite e de permissão de função | sim |
+| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 87 asserções |
+| `testes-rls.sql` | 87 asserções de RLS, de limite e de permissão de função | sim |
 | `correcoes/` | remendos para projeto que já rodou uma versão anterior do schema | sim |
 | `storage.sql` | bucket das imagens e permissões | não, precisa do Supabase |
 | `local/stub.sql` | só para rodar local, nunca aplicar no Supabase | sim |
@@ -60,6 +63,7 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `005-rascunho-anonimo.sql` | deixa a página começar numa conta provisória, exige conta confirmada para publicar e acrescenta a faxina do rascunho parado |
 | `006-endereco-livre.sql` | a conferência de endereço do cadastro, que a RLS deixava responder "livre" para endereço já guardado no rascunho de outra pessoa |
 | `007-enderecos-dos-exemplos.sql` | reserva os seis endereços das páginas de exemplo que estavam soltos, e que alguém poderia cadastrar para nunca abrir |
+| `008-envio-de-imagem.sql` | prepara o banco para imagem enviada pelo dono. **Guardada**, ver a nota no topo |
 
 ## Rodar local, sem Supabase
 
@@ -129,6 +133,15 @@ psql -h localhost -p 5433 -U postgres -d entrais -f supabase/testes-rls.sql
   remove a conta provisória com mais de trinta dias e nenhuma página no ar, e a
   chave estrangeira leva o negócio junto, devolvendo o endereço. Conta que
   entrou com o Google deixa de ser provisória e some da faxina.
+- **Coluna de imagem guarda caminho, e nunca URL inteira.** O dono tem UPDATE
+  na própria linha, com razão, e com isso ele conseguiria gravar ali o endereço
+  de uma imagem hospedada em qualquer lugar. A página pública passaria a
+  carregar imagem de terceiro, e o servidor desse terceiro ficaria sabendo o IP
+  de cada visitante, que nunca escolheu isso. Guardando só o caminho de dentro
+  do bucket, e montando o endereço no código, a coluna por construção aponta
+  para dentro de casa. A restrição ainda compara a primeira pasta com o id da
+  própria linha, então logo de um negócio jamais aponta para o arquivo de outro.
+  Vem na correção 008.
 - **A listagem do bucket fica fechada.** Bucket público serve o arquivo sem
   passar por RLS, então a política de SELECT só governa o caminho autenticado e
   a listagem. Aberta, ela entrega os arquivos de página não publicada, o que
