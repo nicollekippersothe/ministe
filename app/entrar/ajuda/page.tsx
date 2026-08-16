@@ -5,32 +5,32 @@ import { Moldura } from "@/componentes/cadastro/Moldura";
 import { CONTATO_SUPORTE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Não consigo entrar",
+  title: "Ajuda para entrar",
   robots: { index: false, follow: false },
 };
 
 /**
  * Recuperação de acesso.
  *
- * Como a entrada é por link no e-mail, não existe senha para recuperar: o que
- * pode dar errado é o e-mail não chegar, ou a pessoa ter perdido o acesso à
- * caixa. São dois problemas diferentes e a tela separa os dois.
+ * A entrada é pelo Google, então senha esquecida sai da lista. O que sobra são
+ * três situações reais, e cada uma tem uma saída própria: outra conta do
+ * Google, a página começada em outro aparelho, e o acesso ao Google perdido.
  */
 const CAUSAS = [
   {
-    titulo: "O link não chegou",
+    titulo: "Você tem mais de uma conta do Google",
     texto:
-      "Procure por Entrais na caixa de spam e na aba de promoções. A entrega pode levar até cinco minutos.",
+      "A página fica na conta usada para publicar. Na tela do Google, escolha a outra conta e tente de novo.",
   },
   {
-    titulo: "O link expirou",
+    titulo: "Você começou a página em outro aparelho",
     texto:
-      "Cada link vale por uma hora e só pode ser usado uma vez. Peça um novo, é gratuito e sem limite.",
+      "Enquanto a página está em rascunho, ela fica guardada no aparelho onde você começou. Publicar com o Google é o que a leva para todos os seus aparelhos.",
   },
   {
-    titulo: "Você digitou outro e-mail no cadastro",
+    titulo: "O Google recusou a entrada",
     texto:
-      "Tente entrar com os outros endereços que você usa. A página fica na conta do e-mail usado no cadastro.",
+      "Costuma passar sozinho em alguns minutos. Se aparecer uma mensagem na tela, guarde o texto dela, que é o que diz o motivo.",
   },
 ];
 
@@ -38,14 +38,14 @@ export default function Ajuda() {
   exigirLogin();
   return (
     <Moldura
-      titulo="Não consigo entrar"
-      subtitulo="Sua conta não tem senha. O acesso é sempre por um link enviado ao seu e-mail."
+      titulo="Ajuda para entrar"
+      subtitulo="A entrada é pela sua conta do Google, então existe uma senha a menos para lembrar."
       rodape={
         <Link
           href="/entrar"
           className="flex h-13 w-full items-center justify-center rounded-full bg-texto px-6 text-[1.05rem] font-semibold text-superficie"
         >
-          Pedir um novo link
+          Voltar e entrar
         </Link>
       }
     >
@@ -63,7 +63,7 @@ export default function Ajuda() {
 
       {CONTATO_SUPORTE ? (
         <p className="mt-6 text-center text-[0.95rem] leading-relaxed text-suave">
-          Perdeu o acesso ao e-mail do cadastro?{" "}
+          Perdeu o acesso à conta do Google usada para publicar?{" "}
           <a
             href={`mailto:${CONTATO_SUPORTE}`}
             className="font-medium text-destaque underline-offset-4 hover:underline"

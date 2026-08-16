@@ -81,13 +81,17 @@ passo(
   (await p.textContent("[aria-live]")).length > 0,
 );
 
-await p.goto(`${BASE}/entrar`, { waitUntil: "networkidle" });
-await p.fill("#email", "ana@exemplo.com");
-await p.click('button[type="submit"]');
-await p.waitForURL(/enviado/);
+await p.goto(`${BASE}/entrar`, { waitUntil: "load" });
 passo(
-  "entrar leva para a tela de confira seu e-mail",
-  (await p.textContent("body")).includes("Confira seu e-mail"),
+  "entrar oferece uma porta só, o Google",
+  (await p.isVisible('button:has-text("Entrar com o Google")')) &&
+    (await p.locator("input[type=password], #email").count()) === 0,
+);
+
+await p.goto(`${BASE}/entrar?motivo=publicar`, { waitUntil: "load" });
+passo(
+  "e quem chega para publicar é avisado de que a página continua sendo dele",
+  (await p.textContent("body")).includes("continua sendo sua"),
 );
 
 // ---------------------------------------------------------------------------

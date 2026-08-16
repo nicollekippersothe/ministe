@@ -135,6 +135,26 @@ select testes.ok('anônimo lê horário, galeria e links de quem está no ar',
 select testes.ok('anônimo lê a lista de endereços reservados',
   (select count(*) from public.slugs_reservados) > 0);
 
+-- A conferência de endereço do cadastro. Ela existe porque a RLS esconde o
+-- rascunho dos outros, e sem ela um endereço já escolhido apareceria como
+-- livre até a hora de gravar.
+select testes.ok('endereço que ninguém pegou está livre',
+  public.endereco_livre('nome-que-ninguem-usou') = true);
+
+select testes.ok('endereço de página no ar está ocupado',
+  public.endereco_livre('doceria-da-ana') = false);
+
+select testes.ok('e o rascunho dos outros também segura o endereço',
+  public.endereco_livre('barbearia-do-bruno') = false);
+
+select testes.ok('endereço reservado pelo sistema está ocupado',
+  public.endereco_livre('painel') = false);
+
+-- Responde sim ou não, e nada além disso: o visitante continua sem enxergar a
+-- linha do rascunho que ele acabou de descobrir estar ocupada.
+select testes.ok('e continua sem enxergar de quem é o rascunho',
+  (select count(*) from public.negocios where slug = 'barbearia-do-bruno') = 0);
+
 select testes.barrado('anônimo NÃO cria negócio', $q$
   insert into public.negocios (dono_id, slug, nome)
   values ('aaaaaaaa-0000-4000-8000-000000000001', 'invasao', 'Invasão')
@@ -646,22 +666,23 @@ select testes.ok('nenhuma função de public fica aberta para PUBLIC',
 -- Esta é a que vale a longo prazo: lista exata, e não "não existe nenhuma".
 -- Função nova que nasça chamável cai aqui, sem ninguém precisar lembrar de
 -- escrever teste para ela.
-select testes.ok('visitante chama exatamente as três funções da página pública',
+select testes.ok('visitante chama exatamente as quatro funções que ele precisa',
   (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('anon', p.oid, 'EXECUTE'))
-  = array['negocio_publico', 'registrar_denuncia', 'registrar_evento']::name[]);
+  = array['endereco_livre', 'negocio_publico',
+          'registrar_denuncia', 'registrar_evento']::name[]);
 
-select testes.ok('quem está logado chama essas três, mais plano_de',
+select testes.ok('quem está logado chama essas quatro, mais plano_de',
   (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('authenticated', p.oid, 'EXECUTE'))
-  = array['negocio_publico', 'plano_de', 'registrar_denuncia',
-          'registrar_evento']::name[]);
+  = array['endereco_livre', 'negocio_publico', 'plano_de',
+          'registrar_denuncia', 'registrar_evento']::name[]);
 
 select testes.ok('toda função de public tem search_path fixo',
   not exists (

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { doDono, salvar } from "@/lib/dados";
+import { doDono, publicar, salvar } from "@/lib/dados";
+import { contaProvisoria } from "@/lib/supabase/servidor";
 import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
 import { normalizarWhatsapp } from "@/lib/formato";
 import { conferirLink, type RecusaLink } from "@/lib/links";
@@ -205,8 +206,23 @@ export async function salvarAcoes(formData: FormData) {
   redirect("/painel/acoes-botoes?salvo=1");
 }
 
+/**
+ * Põe a página no ar, ou tira.
+ *
+ * Publicar de conta provisória é recusado pelo banco. A tela manda a pessoa
+ * entrar com o Google antes de chegar aqui, e este desvio é para quem apertar
+ * o botão com a sessão em outro estado do que a tela mostrava.
+ */
 export async function alternarPublicacao() {
   const negocio = await doDono();
-  await guardar({ ...negocio, publicado: !negocio.publicado });
+  const noArAgora = !negocio.publicado;
+
+  if (noArAgora && (await contaProvisoria())) {
+    redirect("/entrar?motivo=publicar");
+  }
+
+  await publicar(noArAgora);
+  revalidatePath(`/${negocio.slug}`);
+  revalidatePath("/painel");
   redirect("/painel");
 }

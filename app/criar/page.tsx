@@ -8,6 +8,7 @@ import { BotaoPrincipal, Moldura } from "@/componentes/cadastro/Moldura";
 import { enderecoLivre } from "@/lib/dados";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { MODO_VITRINE } from "@/lib/site";
+import { configurado } from "@/lib/supabase/config";
 import { conferirFormato, MOTIVOS, normalizar, type Recusa } from "@/lib/slug";
 
 export const metadata: Metadata = {
@@ -78,7 +79,9 @@ export default async function Criar({
 }) {
   const { erro, nome, slug } = await searchParams;
 
-  if (MODO_VITRINE) return <EnderecoConferido slug={slug ?? ""} />;
+  if (!configurado && MODO_VITRINE) {
+    return <EnderecoConferido slug={slug ?? ""} />;
+  }
   exigirLogin();
   const mensagem =
     erro === "nome"

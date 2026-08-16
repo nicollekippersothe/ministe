@@ -467,6 +467,30 @@ begin
 end;
 $$;
 
+-- Uma resposta para "este endereço está livre?", sem contar nada além disso.
+--
+-- O cadastro confere enquanto a pessoa digita, e essa conferência precisa
+-- enxergar o que a RLS esconde: endereço guardado num rascunho de outra pessoa
+-- apareceria como livre, e a colisão só surgiria na hora de gravar. Devolve
+-- booleano de propósito, então não conta de quem é, nem quando, nem se está no
+-- ar. Formato e palavra restrita continuam em lib/slug.ts, e quem decide de
+-- verdade na hora de gravar é o gatilho aqui embaixo.
+create or replace function public.endereco_livre(p_slug text)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+  select not exists (
+    select 1 from public.negocios
+     where slug = p_slug or slug_anterior = p_slug
+  )
+  and not exists (
+    select 1 from public.slugs_reservados where slug = p_slug
+  );
+$$;
+
 create trigger negocios_checa_slug
   before insert or update on public.negocios
   for each row execute function public.checa_slug();
@@ -1045,6 +1069,7 @@ grant execute on function public.registrar_evento(text, text) to anon, authentic
 grant execute on function public.registrar_denuncia(text, text, text)
   to anon, authenticated;
 grant execute on function public.negocio_publico(uuid) to anon, authenticated;
+grant execute on function public.endereco_livre(text) to anon, authenticated;
 grant execute on function public.plano_de(uuid) to authenticated;
 
 -- A chave de serviço continua podendo tudo: é ela que roda manutenção.

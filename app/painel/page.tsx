@@ -8,6 +8,7 @@ import {
   IconeWhatsapp,
 } from "@/componentes/Icones";
 import { doDono } from "@/lib/dados";
+import { contaProvisoria } from "@/lib/supabase/servidor";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 
 import { exigirLogin } from "@/app/painel/vitrine";
@@ -41,6 +42,9 @@ export default async function Painel() {
   exigirLogin();
   const negocio = await doDono();
   const noAr = negocio.publicado;
+  // Conta provisória monta e guarda, e o Google é que põe no ar. A tela diz
+  // isso antes do clique, em vez de deixar a pessoa descobrir no erro.
+  const provisoria = await contaProvisoria();
 
   return (
     <main className="mt-6">
@@ -82,14 +86,16 @@ export default async function Painel() {
                   : "bg-texto text-superficie"
               }`}
             >
-              {noAr ? "Tirar do ar" : "Publicar"}
+              {noAr ? "Tirar do ar" : provisoria ? "Entrar e publicar" : "Publicar"}
             </button>
           </form>
         </div>
 
         {!noAr ? (
           <p className="mt-3 text-xs leading-relaxed text-suave">
-            Em rascunho, a página não abre para ninguém, nem pelo endereço.
+            {provisoria
+              ? "Em rascunho, a página fica só para você. Publicar pede uma entrada com o Google, e aí ela passa a ser sua em qualquer aparelho."
+              : "Em rascunho, a página fica só para você, mesmo para quem tem o endereço."}
           </p>
         ) : null}
       </div>

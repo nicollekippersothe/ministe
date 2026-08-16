@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { exigirLogin } from "@/app/painel/vitrine";
-import { BotaoPrincipal, Moldura } from "@/componentes/cadastro/Moldura";
+import { BotaoGoogle } from "@/componentes/cadastro/BotaoGoogle";
+import { Moldura } from "@/componentes/cadastro/Moldura";
 
 export const metadata: Metadata = {
   title: "Entrar",
@@ -10,69 +10,66 @@ export const metadata: Metadata = {
 };
 
 /**
- * Sem senha, de propósito: senha é atrito na entrada e suporte depois.
+ * Uma porta só, e sem senha.
  *
- * O envio do link ainda não está ligado. Falta o Supabase Auth e um provedor
- * de e-mail, que é a etapa 4. A tela e a validação já estão prontas.
+ * Chega aqui quem vai publicar (a página está montada e falta pôr no ar) e
+ * quem está voltando de outro aparelho. Nos dois casos o Google resolve, e por
+ * isso a tela muda de texto conforme o motivo em vez de existir duas vezes.
  */
-async function enviarLink(formData: FormData) {
-  "use server";
-  const email = String(formData.get("email") ?? "").trim();
-  if (!email.includes("@")) redirect("/entrar?erro=email");
-  redirect(`/entrar/enviado?para=${encodeURIComponent(email)}`);
-}
-
 export default async function Entrar({
   searchParams,
 }: {
-  searchParams: Promise<{ erro?: string }>;
+  searchParams: Promise<{ erro?: string; motivo?: string }>;
 }) {
   exigirLogin();
-  const { erro } = await searchParams;
+  const { erro, motivo } = await searchParams;
+  const publicando = motivo === "publicar";
 
   return (
     <Moldura
-      titulo="Entrar"
-      subtitulo="Enviamos um link de acesso para o seu e-mail. Sem senha para criar nem lembrar."
+      titulo={publicando ? "Falta uma etapa" : "Entrar"}
+      subtitulo={
+        publicando
+          ? "Entre com o Google para pôr sua página no ar. A página que você montou continua sendo sua, com o mesmo endereço."
+          : "Uma conta do Google, e sua página abre do jeito que você deixou."
+      }
       rodape={
         <p className="text-center text-[0.95rem] text-suave">
-          Ainda não tem página?{" "}
-          <Link href="/criar" className="font-medium text-destaque underline-offset-4 hover:underline">
+          Quer começar uma página?{" "}
+          <Link
+            href="/criar"
+            className="font-medium text-destaque underline-offset-4 hover:underline"
+          >
             Criar agora
           </Link>
         </p>
       }
     >
-      <form action={enviarLink} className="flex flex-col gap-5">
-        <div>
-          <label htmlFor="email" className="text-[0.95rem] font-medium text-texto">
-            Seu e-mail
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            inputMode="email"
-            autoCapitalize="none"
-            className="mt-3 w-full rounded-2xl border border-borda bg-superficie px-4 py-3.5 text-[1.05rem] text-texto focus:border-destaque focus:outline-none"
-          />
-          {erro ? (
-            <p role="alert" className="mt-2 text-sm text-destaque">
-              Confira o e-mail digitado.
-            </p>
-          ) : null}
-        </div>
+      <div className="flex flex-col gap-6">
+        <BotaoGoogle
+          rotulo={publicando ? "Entrar e publicar" : "Entrar com o Google"}
+        />
 
-        <BotaoPrincipal type="submit">Receber link de acesso</BotaoPrincipal>
+        {erro ? (
+          <p
+            role="alert"
+            className="rounded-2xl border border-destaque/30 bg-destaque/8 px-4 py-3 text-sm leading-relaxed text-destaque"
+          >
+            O Google respondeu: {erro}. Tente de novo, e se continuar assim me
+            conte o que apareceu aqui.
+          </p>
+        ) : null}
+
+        <p className="text-center text-sm leading-relaxed text-suave">
+          Usamos seu nome e seu e-mail para guardar a página no seu nome.
+        </p>
 
         <p className="text-center text-sm text-suave">
           <Link href="/entrar/ajuda" className="underline underline-offset-2">
-            Não consigo entrar
+            Preciso de ajuda para entrar
           </Link>
         </p>
-      </form>
+      </div>
     </Moldura>
   );
 }

@@ -1,7 +1,7 @@
 # Banco
 
-O schema e as correções 001 e 002 já estão aplicados no projeto de verdade. As
-correções 004 e 005 estão na fila. Tudo aqui roda e é testado num Postgres 16
+O schema e as correções 001, 002, 004 e 005 já estão aplicados no projeto de
+verdade. A 006 está na fila. Tudo aqui roda e é testado num Postgres 16
 local antes de ir, e o passo a passo do que falta no painel do Supabase está em
 `PROMPT-SUPABASE.md`.
 
@@ -58,6 +58,7 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `003-fechar-listagem-do-bucket.sql` | listagem do bucket de imagens, que entregava os arquivos de página ainda não publicada |
 | `004-categoria.sql` | acrescenta a coluna da categoria, que vira o tipo do schema.org e monta a página |
 | `005-rascunho-anonimo.sql` | deixa a página começar numa conta provisória, exige conta confirmada para publicar e acrescenta a faxina do rascunho parado |
+| `006-endereco-livre.sql` | a conferência de endereço do cadastro, que a RLS deixava responder "livre" para endereço já guardado no rascunho de outra pessoa |
 
 ## Rodar local, sem Supabase
 
@@ -107,6 +108,11 @@ psql -h localhost -p 5433 -U postgres -d entrais -f supabase/testes-rls.sql
   sozinho, sem essa varredura: **função nova em correção pede revoke escrito na
   mão**. O revoke de `anon` e `authenticated` no mesmo trecho funciona, porque
   desfaz um default privilege que o Supabase guardou de verdade.
+- **Conferir se um endereço está livre é função, e não consulta.** A RLS
+  esconde o rascunho dos outros, com razão, e por isso uma consulta comum
+  responderia "livre" para endereço que já tem dono, com a colisão aparecendo
+  só na gravação. `endereco_livre(slug)` é security definer e devolve booleano:
+  enxerga o que precisa e conta só o sim ou o não.
 - **A primeira página começa antes da conta.** A pessoa monta o rascunho numa
   conta provisória (anonymous sign-in) e entra com o Google na hora de
   publicar, quando a identidade é ligada na mesma conta e o `dono_id` continua
