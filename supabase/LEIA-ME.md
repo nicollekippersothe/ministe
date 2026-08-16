@@ -124,9 +124,14 @@ A tabela `eventos` já guarda os três tipos (`visita`, `clique_whatsapp`,
 
 ## Preço do plano pago
 
-R$ 29,90 por mês, ou R$ 19,90 por mês pagando o ano (R$ 238,80). Mostrado na
-tela inicial, em `componentes/inicial/Planos.tsx`, junto da tabela de limites
-acima. Nenhum outro lugar do código tinha esse número, então a pesquisa e o
+Em teste: R$ 19,90 por mês, ou R$ 13,90 por mês pagando o ano (R$ 166,80). É o
+número mostrado hoje na tela inicial, em `componentes/inicial/Planos.tsx`,
+junto dos benefícios de cada plano. Decisão de agosto de 2026: começar abaixo
+do preço pesquisado (R$ 29,90, a pesquisa completa está logo abaixo) para
+testar conversão num valor de entrada mais fácil de aceitar, e subir depois
+com dado de gente pagando de verdade, não só de pesquisa de mercado.
+
+Nenhum outro lugar do código tinha esse número, então a pesquisa e o
 raciocínio ficam registrados aqui, para não precisar refazer a conta na
 próxima vez que alguém perguntar de onde ele saiu.
 

@@ -249,30 +249,39 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-labelledby="planos" className="border-t border-borda">
+        {/*
+          Fundo com uma pitada da cor de destaque, nem branco puro (igual ao
+          "beneficios" logo acima) nem a areia padrão (igual ao "passos" logo
+          abaixo): a seção precisa da própria identidade para não ler como
+          continuação de nenhuma das duas vizinhas.
+        */}
+        <section
+          aria-labelledby="planos"
+          className="border-t border-borda bg-[color-mix(in_srgb,var(--c-destaque)_4%,var(--c-fundo))]"
+        >
           <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
-            <div className="lg:grid lg:grid-cols-[20rem_1fr] lg:gap-16">
-              <div className="lg:sticky lg:top-16 lg:self-start">
-                <h2
-                  id="planos"
-                  className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
-                >
-                  Comece de graça, cresça quando fizer sentido.
-                </h2>
-                <p className="mt-4 max-w-sm leading-relaxed text-suave">
-                  Um plano para publicar hoje, outro para quando o negócio
-                  pedir mais espaço.
-                </p>
-              </div>
+            <span className="text-xs font-semibold tracking-[0.12em] text-destaque uppercase">
+              Planos e valores
+            </span>
+            <h2
+              id="planos"
+              className="mt-3 max-w-2xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+            >
+              Comece de graça, cresça quando fizer sentido.
+            </h2>
+            <p className="mt-4 max-w-lg leading-relaxed text-suave">
+              Um plano para publicar hoje, outro para quando o negócio pedir
+              mais espaço.
+            </p>
 
-              <div className="mt-12 lg:mt-0">
-                <Planos />
-                <p className="mt-6 text-[0.95rem] leading-relaxed text-suave">
-                  O plano gratuito começa só com nome e endereço, e a página
-                  fica no ar em minutos.
-                </p>
-              </div>
+            <div className="mt-12 sm:mt-14">
+              <Planos />
             </div>
+
+            <p className="mt-8 text-[0.95rem] leading-relaxed text-suave">
+              O plano gratuito começa só com nome e endereço, e a página fica
+              no ar em minutos.
+            </p>
           </div>
         </section>
 
