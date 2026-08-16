@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
+import { CarrosselExemplos } from "@/componentes/inicial/CarrosselExemplos";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
+import { Planos } from "@/componentes/inicial/Planos";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { NOME_PRODUTO } from "@/lib/marca";
@@ -140,7 +142,7 @@ export default async function Home() {
             </div>
 
             <div className="lg:pl-4">
-              <Carrossel>
+              <Carrossel mostrarSeta={false}>
                 {naAbertura.map((n, i) => (
                   <Telefone key={n.slug} negocio={n} prioridade={i === 0} leve />
                 ))}
@@ -160,7 +162,16 @@ export default async function Home() {
             >
               Tudo o que o seu negócio precisa mostrar.
             </h2>
-            <div className="mt-12 sm:mt-14">
+            <p className="mt-3 max-w-2xl leading-relaxed text-suave">
+              A mesma página serve ofícios bem diferentes. Troque de exemplo e
+              veja o que muda.
+            </p>
+
+            <div className="mt-10 sm:mt-12">
+              <CarrosselExemplos />
+            </div>
+
+            <div className="mt-16 sm:mt-20">
               <Mosaico
                 negocio={negocio}
                 paraCatalogo={massas}
@@ -177,7 +188,7 @@ export default async function Home() {
               id="exemplos"
               className="max-w-xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              Confira um exemplo de verdade.
+              Confira exemplos de verdade.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
               Todas estas estão no ar. Abra a que mais parece com o seu e
@@ -235,6 +246,42 @@ export default async function Home() {
                 ))}
               </dl>
             </div>
+          </div>
+        </section>
+
+        {/*
+          Fundo com uma pitada da cor de destaque, nem branco puro (igual ao
+          "beneficios" logo acima) nem a areia padrão (igual ao "passos" logo
+          abaixo): a seção precisa da própria identidade para não ler como
+          continuação de nenhuma das duas vizinhas.
+        */}
+        <section
+          aria-labelledby="planos"
+          className="border-t border-borda bg-[color-mix(in_srgb,var(--c-destaque)_4%,var(--c-fundo))]"
+        >
+          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
+            <span className="text-xs font-semibold tracking-[0.12em] text-destaque uppercase">
+              Planos e valores
+            </span>
+            <h2
+              id="planos"
+              className="mt-3 max-w-2xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+            >
+              Comece de graça, cresça quando fizer sentido.
+            </h2>
+            <p className="mt-4 max-w-lg leading-relaxed text-suave">
+              Um plano para publicar hoje, outro para quando o negócio pedir
+              mais espaço.
+            </p>
+
+            <div className="mt-12 sm:mt-14">
+              <Planos />
+            </div>
+
+            <p className="mt-8 text-[0.95rem] leading-relaxed text-suave">
+              O plano gratuito começa só com nome e endereço, e a página fica
+              no ar em minutos.
+            </p>
           </div>
         </section>
 

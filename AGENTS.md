@@ -22,6 +22,9 @@ nem verbo de falta. Cada frase diz o que existe, não o que falta.
 | Não perde o link antigo | O link antigo continua levando para a página |
 | Sem tela em branco | A página já vem montada |
 
+Nunca usar "numa sentada". Descrever o tempo do jeito literal, como "Pronta
+em poucos minutos".
+
 Vale para a tela inicial, para o produto e para a tela de erro. Comentário de
 código e commit ficam de fora: ali explicar o que não acontece é informação.
 

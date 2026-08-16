@@ -99,8 +99,14 @@ export function Mosaico({
 
   return (
     <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/*
+        Duas colunas desde sm, e é o que fecha a conta nas duas larguras. Em
+        duas colunas os sete cartões ocupam oito células com este aqui inteiro,
+        então a galeria deixa de terminar sozinha com um vão do lado. Em três
+        colunas dá nove, que é a grade cheia.
+      */}
       <Cartao
-        className="lg:col-span-2"
+        className="sm:col-span-2"
         titulo="Catálogo com foto e preço"
         texto="Peça, prato, plano ou sessão. Quem chega vê o que você vende, por quanto, e chama no WhatsApp ali mesmo."
       >
@@ -174,7 +180,7 @@ export function Mosaico({
         pessoa tem na cabeça quando pensa em montar um site.
       */}
       <Cartao
-        titulo="Pronta numa sentada"
+        titulo="Pronta em poucos minutos"
         texto="São perguntas, uma de cada vez, respondidas pelo celular. Publique com o essencial hoje e complete o resto quando sobrar tempo."
       >
         <div className="flex flex-col gap-2.5" aria-hidden>
@@ -298,7 +304,26 @@ export function Mosaico({
         titulo="A galeria do seu trabalho"
         texto="As suas fotos em tamanho grande, na ordem que você escolher. É aqui que quem chega se convence, antes de perguntar preço."
       >
-        <div className="grid grid-cols-3 gap-2 sm:gap-3" aria-hidden>
+        {/*
+          Seis fotos no celular, três no monitor. A foto tem os mesmos 216px
+          nos dois casos, porque a grade continua de três colunas: o que muda é
+          serem duas fileiras ou uma.
+
+          E é a conta de altura que decide. No monitor este cartão divide a
+          fileira da grade com a prévia de link, e fileira de grade tem altura
+          única, a do cartão mais alto. Com seis fotos em duas fileiras este
+          cartão passava dos 700px e puxava o vizinho junto, e a prévia, que
+          pede 440px, ficava no meio de um vazio de uns 250px. Com uma fileira
+          os dois fecham em 493px.
+
+          O sizes também estava pedindo menos do que a tela usa: dizia 170px
+          para um espaço de 216px, então em tela de dois pontos por pixel o
+          navegador escolhia um arquivo abaixo do que ia mostrar.
+        */}
+        <div
+          className="grid grid-cols-3 gap-2 sm:gap-3 lg:[&>*:nth-child(n+4)]:hidden"
+          aria-hidden
+        >
           {paraGaleria.galeria.slice(0, 6).map((foto) => (
             <Image
               key={foto.url}
@@ -306,7 +331,7 @@ export function Mosaico({
               alt=""
               width={foto.largura}
               height={foto.altura}
-              sizes="(max-width: 640px) 30vw, 170px"
+              sizes="(max-width: 640px) 30vw, (max-width: 1024px) 16vw, 230px"
               className="aspect-square w-full rounded-xl object-cover"
             />
           ))}
