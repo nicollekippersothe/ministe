@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { NOME_PRODUTO } from "@/lib/marca";
-import { MODO_VITRINE } from "@/lib/site";
+import { CADASTRO_ABERTO } from "@/lib/site";
 
 /**
  * Endereço que não existe é oportunidade, não erro. Em vez de um 404 seco,
@@ -18,23 +18,23 @@ export default function NaoEncontrado() {
           Este endereço está disponível
         </h1>
         <p className="mt-3 leading-relaxed text-balance text-suave">
-          Não existe página neste endereço. Se o negócio é seu, você pode
-          registrá-lo agora.
+          Se o negócio é seu, dá para registrar agora e deixar a sua página
+          pronta hoje.
         </p>
 
         <Link
-          href={MODO_VITRINE ? "/" : "/criar"}
+          href={CADASTRO_ABERTO ? "/criar" : "/"}
           className="mt-7 inline-flex h-13 items-center justify-center rounded-full bg-texto px-8 text-[1.05rem] font-semibold text-superficie"
         >
-          {MODO_VITRINE ? `Conhecer o ${NOME_PRODUTO}` : "Pegar esse endereço"}
+          {CADASTRO_ABERTO ? "Pegar esse endereço" : `Conhecer o ${NOME_PRODUTO}`}
         </Link>
-        {MODO_VITRINE ? null : (
+        {CADASTRO_ABERTO ? (
           <p className="mt-4 text-sm text-suave">
             <Link href="/" className="underline underline-offset-2">
               Conhecer o {NOME_PRODUTO}
             </Link>
           </p>
-        )}
+        ) : null}
       </main>
     </div>
   );

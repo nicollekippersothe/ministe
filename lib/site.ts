@@ -1,3 +1,5 @@
+import { configurado } from "./supabase/config";
+
 /** Endereço base do site, usado no JSON-LD, no canonical e no Open Graph. */
 export const urlBase = (
   process.env.NEXT_PUBLIC_URL_BASE ??
@@ -34,3 +36,22 @@ export const CONTATO_SUPORTE: string | null =
 export const MODO_VITRINE =
   process.env.MODO_VITRINE === "1" ||
   (process.env.MODO_VITRINE !== "0" && process.env.VERCEL === "1");
+
+/**
+ * Se dá para criar uma página agora.
+ *
+ * Existe como conceito próprio porque a pergunta apareceu escrita à mão em oito
+ * lugares, e metade deles ficou para trás quando o Supabase entrou: a tela
+ * inicial continuou dizendo "Continuar" no botão, e escondendo o link de
+ * entrar, semanas depois de o cadastro estar funcionando. Quem lê `MODO_VITRINE`
+ * numa tela está quase sempre querendo saber isto aqui.
+ *
+ * Com Supabase, o cadastro abre: cada pessoa tem a própria conta e a RLS separa
+ * uma da outra. Sem Supabase, o único destino é um arquivo no disco do
+ * servidor, que seria o mesmo arquivo para todo mundo, e aí o modo vitrine
+ * decide.
+ *
+ * `lib/dados.ts` continua olhando `MODO_VITRINE` direto, e é de propósito: lá a
+ * pergunta é outra, se dá para escrever no disco.
+ */
+export const CADASTRO_ABERTO = configurado || !MODO_VITRINE;

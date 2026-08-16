@@ -8,7 +8,7 @@ import { Marca } from "@/componentes/Marca";
 import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
-import { MODO_VITRINE } from "@/lib/site";
+import { CADASTRO_ABERTO } from "@/lib/site";
 import { atelie, doceria, massas, VITRINE } from "@/lib/exemplos";
 
 export const revalidate = 3600;
@@ -90,24 +90,24 @@ export default async function Home() {
   /*
    * O campo de endereço fica na abertura em qualquer situação: é ele que
    * transforma visita em intenção, porque a pessoa vê o próprio nome no
-   * endereço e passa a querer aquele endereço. Enquanto o cadastro não abre,
-   * muda o rótulo do botão e a tela seguinte diz o que acontece, em vez de
-   * prometer uma criação que ainda não existe.
+   * endereço e passa a querer aquele endereço. Enquanto o cadastro está
+   * fechado, muda o rótulo do botão e a tela seguinte diz o que acontece, em
+   * vez de prometer uma criação que ainda não existe.
    */
-  const rotulo = MODO_VITRINE ? "Continuar" : "Criar meu endereço";
+  const rotulo = CADASTRO_ABERTO ? "Criar meu endereço" : "Continuar";
 
   return (
     <div data-tema="areia" className="min-h-dvh bg-fundo">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
         <Marca href={null} />
-        {MODO_VITRINE ? null : (
+        {CADASTRO_ABERTO ? (
           <Link
             href="/entrar"
             className="text-[0.95rem] font-medium text-texto underline-offset-4 hover:underline"
           >
             Entrar
           </Link>
-        )}
+        ) : null}
       </header>
 
       <main>
@@ -285,11 +285,11 @@ export default async function Home() {
       <footer className="border-t border-borda">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-suave">
           <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
-          {MODO_VITRINE ? null : (
+          {CADASTRO_ABERTO ? (
             <Link href="/entrar" className="underline underline-offset-2">
               Entrar
             </Link>
-          )}
+          ) : null}
         </div>
       </footer>
     </div>

@@ -6,6 +6,7 @@ import { montar } from "./novo";
 import { MODO_VITRINE } from "./site";
 import { configurado } from "./supabase/config";
 import { paraLinha, paraNegocio, TUDO } from "./supabase/mapa";
+import { publico } from "./supabase/publico";
 import { garantirConta, servidor, usuarioAtual } from "./supabase/servidor";
 import type { Negocio } from "./tipos";
 
@@ -14,15 +15,24 @@ import type { Negocio } from "./tipos";
  *
  * Dois destinos, escolhidos por configuração e não por código espalhado:
  *
- * - Com o Supabase configurado, fala com o banco pelo cookie de sessão de quem
- *   está pedindo, então cada consulta roda como aquela pessoa e a RLS decide o
- *   que ela enxerga.
- * - Sem configuração, guarda num arquivo local. É o que deixa `npm run dev` e
- *   o teste de fluxo rodarem inteiros sem depender de rede, e é também o que
- *   segura a tela inicial com os exemplos.
+ * - Com o Supabase configurado, fala com o banco. Sem configuração, guarda num
+ *   arquivo local, que é o que deixa `npm run dev` e o teste de fluxo rodarem
+ *   inteiros sem depender de rede.
  *
  * Quem chama não sabe a diferença, o que é o ponto: a troca de destino nunca
  * precisou mexer em página nenhuma.
+ *
+ * Do lado do Supabase são dois clientes, e a escolha entre eles tem regra:
+ *
+ * - `servidor()`, pelo cookie de sessão, para o que é de alguém. Painel,
+ *   cadastro, publicação. A consulta roda como a pessoa e a RLS decide.
+ * - `publico()`, sem sessão, para o que é igual para todo mundo. A página de um
+ *   negócio, a conferência de endereço e a denúncia, que é anônima por desenho.
+ *
+ * A regra tem consequência prática, e não é preferência: ler cookie e guardar
+ * em cache são incompatíveis no Next. A página pública declara uma hora de
+ * cache, e enquanto ela falava pelo cliente de sessão, endereço desconhecido
+ * respondia 500 em vez da tela de "este endereço está disponível".
  */
 
 const ARQUIVO = join(process.cwd(), ".dados", "negocios.json");
@@ -46,24 +56,28 @@ async function gravar(negocios: Negocio[]): Promise<void> {
 
 export async function porSlug(slug: string): Promise<Negocio | null> {
   /*
-   * As sete páginas de exemplo são do produto, e não de ninguém.
-   *
-   * Elas são o "veja como fica" que a tela inicial mostra e para onde ela
-   * manda, então precisam abrir sempre, com banco ou sem. Vêm antes da consulta
-   * de propósito: os endereços delas ficam em slugs_reservados, então linha
-   * nenhuma do banco pode disputar esses nomes, e a página do exemplo sai sem
-   * nem ir até o banco.
+   * Sem banco, quem responde é o arquivo local, mesmo para os exemplos: ele
+   * nasce como cópia deles e é o que o painel edita. Deixar o exemplo passar na
+   * frente aqui faria o painel salvar e a página pública mostrar o valor
+   * antigo, que é exatamente o que aconteceu quando eu inverti estas duas
+   * partes e deixei de rodar o teste de fluxo.
    */
-  const exemplo = EXEMPLOS.find((n) => n.slug === slug);
-  if (exemplo) return exemplo;
-
   if (!configurado) {
     const todos = await ler();
     return todos.find((n) => n.slug === slug) ?? null;
   }
 
-  const sb = await servidor();
-  const { data } = await sb
+  /*
+   * Com banco, as sete páginas de exemplo são do produto e não de ninguém.
+   * Elas são o "veja como fica" que a tela inicial mostra e para onde ela
+   * manda, e existem só em lib/exemplos.ts, então precisam responder antes da
+   * consulta. Os endereços delas ficam em slugs_reservados, então linha nenhuma
+   * do banco pode disputar esses nomes.
+   */
+  const exemplo = EXEMPLOS.find((n) => n.slug === slug);
+  if (exemplo) return exemplo;
+
+  const { data } = await publico()
     .from("negocios")
     .select(TUDO)
     .eq("slug", slug)
@@ -116,8 +130,9 @@ export async function enderecoLivre(slug: string): Promise<boolean> {
     return !todos.some((n) => n.slug === slug || n.slugAnterior === slug);
   }
 
-  const sb = await servidor();
-  const { data, error } = await sb.rpc("endereco_livre", { p_slug: slug });
+  const { data, error } = await publico().rpc("endereco_livre", {
+    p_slug: slug,
+  });
   // Sem resposta, o cadastro segue e quem decide é a chave única na gravação.
   // Dizer "ocupado" por causa de uma falha de rede seria mentir sobre o motivo.
   return error ? true : data === true;
@@ -223,8 +238,7 @@ export async function registrarDenuncia(denuncia: {
   detalhe: string | null;
 }): Promise<void> {
   if (configurado) {
-    const sb = await servidor();
-    const { error } = await sb.rpc("registrar_denuncia", {
+    const { error } = await publico().rpc("registrar_denuncia", {
       p_slug: denuncia.slug,
       p_motivo: denuncia.motivo,
       p_detalhe: denuncia.detalhe,

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { MODO_VITRINE } from "@/lib/site";
-import { configurado } from "@/lib/supabase/config";
+import { CADASTRO_ABERTO } from "@/lib/site";
 
 /**
  * Fecha as rotas que dependem de conta enquanto ainda não há para onde guardar
@@ -16,5 +15,5 @@ import { configurado } from "@/lib/supabase/config";
  * editar a página alheia.
  */
 export function exigirLogin() {
-  if (!configurado && MODO_VITRINE) notFound();
+  if (!CADASTRO_ABERTO) notFound();
 }
