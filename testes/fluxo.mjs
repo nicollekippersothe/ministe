@@ -359,6 +359,61 @@ passo(
     criada.tituloCatalogo === "Ensaios" &&
     criada.mostrarPrecos === false,
 );
+// ---------------------------------------------------------------------------
+// A prévia do cadastro, que só existe no computador
+// ---------------------------------------------------------------------------
+// Ela mostra o esqueleto que a categoria monta. É a mesma receita que monta a
+// página de verdade, então ela precisa mudar quando a escolha muda, senão vira
+// desenho decorativo que promete uma coisa e entrega outra.
+
+const monitor = await navegador.newContext({ viewport: { width: 1440, height: 900 } });
+const g = await monitor.newPage();
+await g.goto(`${BASE}/criar`, { waitUntil: "load" });
+await g.waitForSelector("[data-previa]");
+
+await g.fill("input[name=nome]", "Rafael Nunes");
+await g.click(`${opcoes}[value=fotografia]`);
+let previa = await g.textContent("[data-previa]");
+passo(
+  "a prévia monta a página com o nome digitado, na ordem da categoria",
+  previa.includes("Rafael Nunes") &&
+    previa.indexOf("Fotos") < previa.indexOf("Ensaios"),
+);
+
+await g.click(`${opcoes}[value=confeitaria]`);
+previa = await g.textContent("[data-previa]");
+passo(
+  "e trocar de ramo remonta a prévia, com o catálogo na frente",
+  previa.includes("Cardápio") &&
+    previa.indexOf("Cardápio") < previa.indexOf("Fotos"),
+);
+await monitor.close();
+
+// Sem JavaScript a prévia some, e o cadastro continua funcionando. É o que
+// separa enfeite de muleta: quem entra por uma rede ruim ou com o JavaScript
+// bloqueado ainda consegue criar a página.
+const seco = await navegador.newContext({
+  ...devices["iPhone 13"],
+  javaScriptEnabled: false,
+});
+const h = await seco.newPage();
+await h.goto(`${BASE}/criar`, { waitUntil: "load" });
+await h.fill("input[name=nome]", "Lanchonete sem script");
+await h.fill("input[name=slug]", "lanche-sem-script");
+await h.check(`${opcoes}[value=lanchonete]`);
+await h.click('button:has-text("Criar página")');
+await h.waitForURL(/painel/, { timeout: 20000 });
+await seco.close();
+
+const semScript = JSON.parse(
+  await readFile(".dados/negocios.json", "utf8"),
+).find((n) => n.slug === "lanche-sem-script");
+passo(
+  "o cadastro envia com o JavaScript desligado, e a receita vale igual",
+  semScript?.categoria === "lanchonete" &&
+    semScript.tituloCatalogo === "Cardápio",
+);
+
 passo(
   "e nasce vazia, sem herdar nada da página de exemplo",
   criada?.frase === null &&

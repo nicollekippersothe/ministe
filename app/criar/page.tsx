@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { criarPagina } from "./acoes";
-import { CampoCategoria } from "@/componentes/cadastro/CampoCategoria";
-import { CampoEndereco } from "@/componentes/cadastro/CampoEndereco";
 import { exigirLogin } from "@/app/painel/vitrine";
-import { BotaoPrincipal, Moldura } from "@/componentes/cadastro/Moldura";
+import { FormularioCriar } from "@/componentes/cadastro/FormularioCriar";
+import { Moldura } from "@/componentes/cadastro/Moldura";
 import { enderecoLivre } from "@/lib/dados";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { CADASTRO_ABERTO } from "@/lib/site";
@@ -86,56 +85,10 @@ export default async function Criar({
       : (MOTIVOS[erro as Recusa] ?? null);
 
   return (
-    <Moldura
-      titulo="Criar sua página"
-      subtitulo="Três respostas agora. O resto pode ser preenchido depois."
-      rodape={
-        <p className="text-center text-[0.95rem] text-suave">
-          Já tem uma página?{" "}
-          <Link
-            href="/entrar"
-            className="font-medium text-destaque underline-offset-4 hover:underline"
-          >
-            Entrar
-          </Link>
-        </p>
-      }
-    >
-      <form action={criarPagina} className="flex flex-col gap-7">
-        <div>
-          <label htmlFor="nome" className="text-[0.95rem] font-medium text-texto">
-            Nome do negócio
-          </label>
-          <input
-            id="nome"
-            name="nome"
-            required
-            maxLength={80}
-            defaultValue={nome ?? ""}
-            autoComplete="organization"
-            className="mt-3 w-full rounded-2xl border border-borda bg-superficie px-4 py-3.5 text-[1.05rem] text-texto focus:border-destaque focus:outline-none"
-          />
-        </div>
-
-        <CampoEndereco />
-
-        <CampoCategoria />
-
-        {mensagem ? (
-          <p
-            role="alert"
-            className="rounded-2xl border border-destaque/30 bg-destaque/8 px-4 py-3 text-sm text-destaque"
-          >
-            {mensagem}
-          </p>
-        ) : null}
-
-        <BotaoPrincipal type="submit">Criar página</BotaoPrincipal>
-
-        <p className="text-center text-sm leading-relaxed text-suave">
-          A página começa como rascunho. Ninguém vê até você publicar.
-        </p>
-      </form>
-    </Moldura>
+    <FormularioCriar
+      acao={criarPagina}
+      nomeInicial={nome ?? ""}
+      mensagem={mensagem}
+    />
   );
 }

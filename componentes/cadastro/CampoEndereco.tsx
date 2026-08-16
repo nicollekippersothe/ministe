@@ -17,13 +17,27 @@ type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
  * no celular o prefixo dentro do campo come metade do espaço de digitação e
  * o texto acaba cortado no meio.
  */
-export function CampoEndereco({ inicial = "" }: { inicial?: string }) {
+export function CampoEndereco({
+  inicial = "",
+  aoMudar,
+}: {
+  inicial?: string;
+  /** O endereço já limpo, para a prévia do cadastro acompanhar. */
+  aoMudar?: (slug: string) => void;
+}) {
   const id = useId();
   const [valor, setValor] = useState(inicial);
   const [estado, setEstado] = useState<Estado>("vazio");
   const [motivo, setMotivo] = useState<string | null>(null);
 
   const slug = normalizar(valor);
+
+  useEffect(() => {
+    aoMudar?.(slug);
+    // aoMudar fica de fora: quem chama define a função no corpo do componente,
+    // então ela é nova a cada render e entraria em laço.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
 
   useEffect(() => {
     if (slug === "") {

@@ -97,7 +97,14 @@ function Opcao({
  * Funciona sem JavaScript: os rádios têm name e value próprios, então o
  * formulário envia a escolha do mesmo jeito. A busca é conforto por cima.
  */
-export function CampoCategoria({ inicial = "" }: { inicial?: string }) {
+export function CampoCategoria({
+  inicial = "",
+  aoMudar,
+}: {
+  inicial?: string;
+  /** O id escolhido, ou nulo em "outro" e enquanto ninguém escolheu. */
+  aoMudar?: (categoria: string | null) => void;
+}) {
   const id = useId();
   const [termo, setTermo] = useState("");
   const [selecionada, setSelecionada] = useState(inicial);
@@ -126,7 +133,10 @@ export function CampoCategoria({ inicial = "" }: { inicial?: string }) {
     ? []
     : GRUPOS.map((g) => [g, CATEGORIAS.filter((c) => c.grupo === g)]);
 
-  const escolher = (valor: string) => setSelecionada(valor);
+  const escolher = (valor: string) => {
+    setSelecionada(valor);
+    aoMudar?.(valor === OUTRO ? null : valor);
+  };
 
   return (
     <fieldset>
