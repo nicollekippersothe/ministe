@@ -1,7 +1,7 @@
 import { MOTIVOS_LINK, type RecusaLink } from "@/lib/links";
 
 const MENSAGENS: Record<string, string> = {
-  nome: "O nome do negócio não pode ficar em branco.",
+  nome: "Escreva o nome do negócio para salvar.",
   whatsapp: "Confira o WhatsApp. Informe o DDD e o número completo.",
   estado: "O estado é a sigla de duas letras, por exemplo SP.",
   cep: "O CEP tem oito dígitos, por exemplo 04113-000.",

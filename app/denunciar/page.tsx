@@ -41,7 +41,7 @@ const MOTIVOS = [
   {
     valor: "fora_do_ar",
     rotulo: "Informação errada",
-    dica: "O negócio fechou, mudou de endereço ou o horário não confere.",
+    dica: "O negócio fechou, mudou de endereço ou o horário está diferente.",
   },
   { valor: "outro", rotulo: "Outro motivo", dica: null },
 ];

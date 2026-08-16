@@ -45,7 +45,12 @@ export default async function Informacoes({
 
   return (
     <main className="mt-6">
-      <Link href="/painel" className="text-sm text-suave">
+      {/*
+        No computador a coluna da esquerda fica sempre à vista, com as quatro
+        seções e o estado da página, então o Voltar seria um segundo caminho
+        para onde já dá para ir com um clique.
+      */}
+      <Link href="/painel" className="text-sm text-suave lg:hidden">
         Voltar
       </Link>
 
@@ -68,13 +73,13 @@ export default async function Informacoes({
           <AreaTexto
             id="frase"
             rotulo="Uma frase curta"
-            dica="Aparece abaixo do nome. Se ficar em branco, não é exibida."
+            dica="Aparece abaixo do nome. Em branco, a linha some da página."
             valor={negocio.frase}
             maxLength={160}
           />
         </Grupo>
 
-        <Grupo titulo="WhatsApp e catálogo">
+        <Grupo titulo="WhatsApp e catálogo" duplo>
           <Texto
             id="whatsapp"
             rotulo="Número do WhatsApp"
@@ -108,19 +113,23 @@ export default async function Informacoes({
           <Marcar
             id="mostrarPrecos"
             rotulo="Mostrar preços na página"
-            dica="Desmarcado, nenhum preço aparece, mesmo nos itens que têm preço preenchido."
+            dica="Desmarcado, o preço fica guardado, mesmo nos itens que já têm preço preenchido."
             marcado={negocio.mostrarPrecos}
           />
         </Grupo>
 
-        <Grupo titulo="Endereço">
-          <Texto
-            id="endereco"
-            rotulo="Rua, número e bairro"
-            valor={negocio.endereco}
-            maxLength={120}
-            autoComplete="street-address"
-          />
+        <Grupo titulo="Endereço" duplo>
+          {/* A rua é a linha mais comprida do grupo, então fica com a largura
+              toda e deixa cidade, UF e CEP dividirem a linha de baixo. */}
+          <div className="lg:col-span-2">
+            <Texto
+              id="endereco"
+              rotulo="Rua, número e bairro"
+              valor={negocio.endereco}
+              maxLength={120}
+              autoComplete="street-address"
+            />
+          </div>
           <div className="flex gap-3">
             <div className="flex-1">
               <Texto

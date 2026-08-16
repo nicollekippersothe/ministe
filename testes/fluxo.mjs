@@ -252,9 +252,13 @@ passo(
 // Publicar e tirar do ar
 // ---------------------------------------------------------------------------
 
+// O estado da página existe duas vezes no HTML de /painel: uma na coluna
+// lateral, que só aparece no computador, e outra no meio da tela, que só
+// aparece no celular. Sem dizer "main", o seletor pega a primeira das duas, que
+// neste tamanho está escondida, e o clique espera para sempre por ela.
 await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });
-await p.click('button:has-text("Tirar do ar")');
-await p.waitForSelector('button:has-text("Publicar")');
+await p.click('main button:has-text("Tirar do ar")');
+await p.waitForSelector('main button:has-text("Publicar")');
 passo("tirar do ar vira rascunho", (await p.textContent("body")).includes("Rascunho"));
 
 const fora = await p.goto(`${BASE}/demo`);
@@ -271,8 +275,8 @@ passo(
 );
 
 await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });
-await p.click('button:has-text("Publicar")');
-await p.waitForSelector('button:has-text("Tirar do ar")');
+await p.click('main button:has-text("Publicar")');
+await p.waitForSelector('main button:has-text("Tirar do ar")');
 const dentro = await p.goto(`${BASE}/demo`);
 passo("publicar coloca de volta no ar", dentro.status() === 200);
 

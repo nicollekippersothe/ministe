@@ -69,21 +69,37 @@ export default async function Horarios({
 
   return (
     <main className="mt-6">
-      <Link href="/painel" className="text-sm text-suave">
+      {/*
+        No computador a coluna da esquerda fica sempre à vista, com as quatro
+        seções e o estado da página, então o Voltar seria um segundo caminho
+        para onde já dá para ir com um clique.
+      */}
+      <Link href="/painel" className="text-sm text-suave lg:hidden">
         Voltar
       </Link>
 
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-texto">
         Horários
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-suave">
+      <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
         Dia sem horário preenchido aparece como fechado. Para turnos que passam
         da meia noite, use 19:00 às 00:30.
       </p>
 
       <Aviso salvo={params.salvo === "1"} copiado={params.copiado === "1"} />
 
-      <form action={salvarHorarios} className="mt-6 flex flex-col gap-3">
+      {/*
+        A semana continua empilhada no computador, e o formulário para de
+        crescer junto com a tela. Duas colunas de dias foi a primeira tentativa,
+        e sobrava 125 pixels para cada campo de hora: o navegador que escreve
+        "09:00 AM" cortava o AM dentro do campo. Sete dias em fila é a leitura
+        natural de uma semana, e a largura travada deixa cada par de horas do
+        tamanho do que se digita nele.
+      */}
+      <form
+        action={salvarHorarios}
+        className="mt-6 flex flex-col gap-3 lg:max-w-md"
+      >
         {ORDEM.map((dia) => {
           const intervalos = semana[dia];
           const extras = intervalos.slice(1);
@@ -127,7 +143,7 @@ export default async function Horarios({
 
         <button
           formAction={copiarSegundaParaSemana}
-          className="mt-1 h-12 w-full rounded-full border border-borda bg-superficie px-5 font-semibold text-texto"
+          className="mt-1 h-12 w-full rounded-full border border-borda bg-superficie px-5 font-semibold text-texto lg:w-auto lg:self-start lg:px-8"
         >
           Copiar segunda para terça a sexta
         </button>

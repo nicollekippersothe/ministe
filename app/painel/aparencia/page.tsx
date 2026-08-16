@@ -21,14 +21,19 @@ export default async function Aparencia({
 
   return (
     <main className="mt-6">
-      <Link href="/painel" className="text-sm text-suave">
+      {/*
+        No computador a coluna da esquerda fica sempre à vista, com as quatro
+        seções e o estado da página, então o Voltar seria um segundo caminho
+        para onde já dá para ir com um clique.
+      */}
+      <Link href="/painel" className="text-sm text-suave lg:hidden">
         Voltar
       </Link>
 
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-texto">
         Letras da sua página
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-suave">
+      <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
         Cada opção aparece escrita com a própria letra e com o nome do seu
         negócio. Apenas a escolhida é carregada por quem visita a página.
       </p>

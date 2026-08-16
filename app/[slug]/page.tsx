@@ -31,7 +31,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const negocio = await porSlug(slug);
-  if (!negocio || !negocio.publicado) return { title: "Página não encontrada" };
+  if (!negocio || !negocio.publicado) return { title: "Endereço disponível" };
 
   const local = [negocio.cidade, negocio.estado].filter(Boolean).join(", ");
   const titulo = local ? `${negocio.nome} em ${local}` : negocio.nome;

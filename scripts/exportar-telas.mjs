@@ -1,9 +1,11 @@
 /**
  * Monta uma página de revisão com as telas do produto.
  *
- * Captura cada tela no navegador, num celular emulado, e junta tudo num
- * arquivo HTML que se basta: as imagens vão embutidas, então dá para abrir
- * offline, mandar por link ou olhar no celular.
+ * Captura cada tela duas vezes, num celular emulado e num monitor, e junta
+ * tudo num arquivo HTML que se basta: as imagens vão embutidas, então dá para
+ * abrir offline, mandar por link ou olhar no celular. Na página de revisão um
+ * botão troca a largura, e a moldura acompanha: aparelho preto no celular,
+ * janela discreta no computador.
  *
  * Precisa do servidor de produção rodando:
  *   npm run build && npm start
@@ -17,10 +19,19 @@ const BASE = process.env.BASE ?? "http://localhost:3000";
 const SAIDA = process.env.SAIDA ?? "/tmp/revisao";
 const EXECUTAVEL = process.env.CHROMIUM;
 
+/** As duas larguras em que toda tela é capturada. */
+const TAMANHOS = ["celular", "monitor"];
+
 /**
- * O que cada tela é, o que já funciona e o que ainda não está ligado.
+ * O que cada tela é, o que já funciona e o que ainda está por vir.
  * A nota é tão importante quanto a imagem: sem ela dá para reclamar de algo
  * que ainda nem foi construído.
+ *
+ * Campos que enquadram a captura:
+ *   focar   rola até um elemento e fotografa só o que cabe na tela ali;
+ *   rolar   mesma coisa, com a altura de rolagem escrita na mão (um número,
+ *           ou um número por tamanho);
+ *   nada    a página inteira, de cima a baixo.
  */
 const TELAS = [
   {
@@ -28,158 +39,192 @@ const TELAS = [
     rota: "/",
     nome: "Tela inicial",
     grupo: "Entrada",
-    largura: "celular",
-    nota: "O telefone da abertura e as três peças da segunda seção não são desenho: são os componentes de verdade da página publicada, montados no servidor. Se o botão mudar no produto, muda aqui junto.",
-  },
-  {
-    id: "inicial-desktop",
-    rota: "/",
-    nome: "Tela inicial no computador",
-    grupo: "Entrada",
-    largura: "desktop",
-    nota: "A mesma tela num monitor. A abertura vira duas colunas, com o texto de um lado e o aparelho do outro.",
+    nota: "O telefone da abertura e as três peças da segunda seção são os componentes de verdade da página publicada, montados no servidor com os dados dos exemplos. Se o botão mudar no produto, ele muda aqui junto, e a propaganda continua igual ao que a pessoa recebe. No computador a abertura vira duas colunas, com o texto de um lado e o aparelho do outro.",
   },
   {
     id: "criar",
     rota: "/criar",
     nome: "Criar página",
     grupo: "Entrada",
-    largura: "celular",
-    nota: "Funciona de verdade: o endereço é limpo enquanto você digita, e a página é criada mesmo. Acento e espaço viram hífen sozinhos.",
+    nota: "Três respostas: nome, endereço e ramo. O endereço vai sendo limpo enquanto a pessoa digita, com acento e espaço virando hífen sozinhos, e a página é criada de verdade. No computador a coluna da direita mostra o esqueleto da página nascendo conforme as respostas chegam.",
+  },
+  {
+    id: "criar-ramo",
+    rota: "/criar",
+    nome: "Escolher o ramo",
+    grupo: "Entrada",
+    focar: "fieldset",
+    nota: "Trinta e cinco ramos em sete grupos, numa lista rolável dentro do formulário. A escolha faz duas coisas que valem dinheiro: vira o tipo que o Google entende (Bakery, Dentist, Florist) e monta a página antes de o dono preencher qualquer campo. Cada opção é um rádio com name e value próprios, então a resposta chega ao servidor até num navegador que só interpreta HTML.",
+  },
+  {
+    id: "criar-busca",
+    rota: "/criar",
+    nome: "Procurar o ramo",
+    grupo: "Entrada",
+    preparar: async (p) => {
+      await p
+        .locator("input[type=search]")
+        .pressSequentially("ensaio", { delay: 40 });
+      await p.waitForTimeout(500);
+    },
+    focar: "fieldset",
+    nota: "Digitar ensaio deixa Fotografia e vídeo de pé na lista. A procura casa pelo jeito que a pessoa fala, e cada categoria carrega os termos de quem procura: bolo acha Confeitaria, inglês acha Aulas particulares, marmita acha Comida caseira. Quem começa com o que foi digitado aparece primeiro, então caf traz Cafeteria antes de Comida caseira.",
+  },
+  {
+    id: "criar-escolhida",
+    rota: "/criar",
+    nome: "Ramo escolhido",
+    grupo: "Entrada",
+    preparar: async (p) => {
+      await p.check("input[name=categoria][value=fotografia]");
+      await p.waitForTimeout(500);
+    },
+    focar: { sel: "fieldset", ancora: "fim" },
+    nota: "Marcada a opção Fotografia e vídeo, a linha embaixo da lista conta o efeito: começa com Ensaios, preço combinado na conversa, e a galeria vem na frente. É a mesma receita que monta a página de verdade, lida de lib/categorias.ts, então a promessa do cadastro e o resultado combinam. Todo campo continua editável depois, no painel.",
   },
   {
     id: "criar-ocupado",
     rota: "/criar",
     nome: "Endereço indisponível",
     grupo: "Entrada",
-    largura: "celular",
     preparar: async (p) => {
       await p.fill("#nome", "Doceria da Ana");
       await p.fill("input[name=slug]", "painel");
       await p.waitForTimeout(900);
     },
-    nota: "O aviso aparece enquanto a pessoa digita, sem precisar mandar o formulário. É o momento de maior atrito do cadastro, então vale o único pedaço de código que roda no navegador.",
+    focar: "input[name=slug]",
+    nota: "O aviso aparece enquanto a pessoa digita, antes de o formulário ir embora. É o momento de maior atrito do cadastro, e por isso vale o único pedaço de código que roda no navegador. Aqui o endereço pedido é painel, que está na lista de rotas reservadas do produto.",
   },
   {
     id: "entrar",
     rota: "/entrar",
     nome: "Entrar",
     grupo: "Entrada",
-    largura: "celular",
-    nota: "A tela está pronta, mas o e-mail ainda NÃO é enviado. Falta o Supabase Auth e um provedor de e-mail. Dá para julgar o desenho e o texto, não o funcionamento.",
-    aviso: true,
+    nota: "Uma porta só, e o Google resolve as duas chegadas: quem volta de outro aparelho e quem já montou a própria página. O login está ligado pelo Supabase Auth, e a volta do Google passa por /auth/retorno, que troca o código por sessão e grava o cookie ali mesmo, numa rota de servidor. Nome e e-mail servem para guardar a página no nome da pessoa.",
   },
   {
-    id: "enviado",
-    rota: "/entrar/enviado?para=ana@exemplo.com",
-    nome: "Confira seu e-mail",
+    id: "entrar-publicar",
+    rota: "/entrar?motivo=publicar",
+    nome: "Entrar para publicar",
     grupo: "Entrada",
-    largura: "celular",
-    nota: "O que a pessoa vê depois de pedir o link. Também não está ligado ainda.",
-    aviso: true,
+    nota: "A mesma tela, com o texto trocado pelo motivo que vem na URL. Quem monta a página antes de ter conta chega aqui na hora de publicar, e o botão vira Entrar e publicar. Por dentro a diferença é grande: a conta provisória continua a mesma e o Google é ligado nela por linkIdentity, então o auth.uid() se mantém e o rascunho segue sendo de quem o montou.",
   },
   {
     id: "publica",
     rota: "/demo",
     nome: "Página do negócio",
     grupo: "O produto",
-    largura: "celular",
     vitrine: "Doceria",
-    nota: "É o produto de verdade. Tudo aqui funciona: o selo de aberto agora se atualiza sozinho, o botão de WhatsApp abre a conversa escrita, o endereço abre o mapa. As fotos são marcações geradas por script, não fotos de negócio real.",
+    nota: "É o produto de verdade. Tudo aqui funciona: o selo de aberto se atualiza sozinho, o botão de WhatsApp abre a conversa já escrita, o endereço abre o mapa. As fotos também são de verdade, em domínio público, baixadas do Openverse por scripts/baixar-fotos.mjs, e a procedência de cada arquivo fica registrada em public/exemplo/fotos.json.",
   },
   {
     id: "publica-horarios",
     rota: "/demo",
     nome: "Horários abertos",
     grupo: "O produto",
-    largura: "celular",
-    recorte: 900,
     preparar: async (p) => {
       await p.click("summary");
       await p.waitForTimeout(400);
     },
-    nota: "A tabela da semana abre com um toque, sem carregar JavaScript para isso. O dia de hoje aparece destacado.",
+    focar: "summary",
+    nota: "A tabela da semana abre com um toque, em HTML puro, e o dia de hoje aparece em destaque. A conta de fuso fica no servidor, que manda uma linha do tempo em epoch, e o navegador só compara número: assim a página pode ficar em cache com o selo de aberto agora continuando certo.",
   },
   {
     id: "og",
     imagem: "/demo/opengraph-image",
     nome: "Prévia do link",
     grupo: "O produto",
-    largura: "cartao",
-    nota: "O que aparece quando o dono cola o link no WhatsApp ou na bio do Instagram. É a primeira impressão de quem nunca viu o negócio.",
+    nota: "O que aparece quando o dono cola o link no WhatsApp ou na bio do Instagram, e a primeira impressão de quem chega antes de abrir a página. É gerada pelo servidor num tamanho só, 1200 por 630, então esta é a única tela da revisão com uma largura em vez de duas.",
   },
   {
     id: "raiz",
     rota: "/studio-raiz",
     nome: "Estúdio de yoga",
     grupo: "O produto",
-    largura: "celular",
     vitrine: "Estúdio de yoga",
-    nota: "Exemplo no plano pago: botão principal apontando para a agenda e WhatsApp como segundo botão, letra escolhida, e sem o rodapé feito com Entrais. A seção do catálogo se chama Aulas e planos.",
+    nota: "Exemplo no plano pago: botão principal apontando para a agenda, WhatsApp como segundo botão, letra escolhida e rodapé limpo. A seção do catálogo se chama Aulas e planos, nome que vem da categoria Yoga e pilates.",
   },
   {
     id: "nutri",
     rota: "/marina-nutricao",
     nome: "Nutricionista",
     grupo: "O produto",
-    largura: "celular",
     vitrine: "Nutricionista",
-    nota: "Profissional autônoma que vende hora, não produto. Consulta, retorno e atendimento online aparecem como itens, com preço.",
+    nota: "Profissional autônoma que vende hora, e a página trata disso: consulta, retorno e atendimento online entram como itens, com preço à vista. Os horários mostram dois intervalos no mesmo dia, com a pausa do almoço no meio.",
   },
   {
     id: "psi",
     rota: "/camila-psicologia",
     nome: "Psicóloga",
     grupo: "O produto",
-    largura: "celular",
     vitrine: "Psicóloga",
-    nota: "Sem endereço público e sem preço à mostra, que é o caso de muita gente da saúde. As duas seções somem sozinhas, sem deixar buraco no layout.",
+    nota: "Endereço guardado e preço combinado na conversa, que é o caso de boa parte da saúde. As duas seções somem sozinhas e o layout se fecha em volta, que é a regra de campo vazio valendo para o produto inteiro.",
+  },
+  {
+    id: "atelie",
+    rota: "/atelie-trama",
+    nome: "Ateliê de crochê",
+    grupo: "O produto",
+    vitrine: "Ateliê de crochê",
+    nota: "Crochê e tricô por encomenda, o caso que o produto existe para atender: alguém boa no que faz, com o trabalho todo dentro de uma rede social. A categoria Artesanato põe a galeria antes do catálogo, porque peça feita à mão se vende pela foto. O endereço fica guardado, como costuma ser para quem produz em casa.",
+  },
+  {
+    id: "massas",
+    rota: "/aurora-massas",
+    nome: "Massas artesanais",
+    grupo: "O produto",
+    vitrine: "Massas artesanais",
+    nota: "Produção caseira com retirada marcada, quinta e sábado. O horário aqui é janela de retirada, e a página trata isso do mesmo jeito que trata horário de loja aberta. A categoria Comida caseira e encomendas mantém o catálogo na frente, com preço à vista, e a seção se chama Massas da semana.",
+  },
+  {
+    id: "foto",
+    rota: "/rafael-nunes",
+    nome: "Fotógrafo",
+    grupo: "O produto",
+    vitrine: "Fotógrafo",
+    nota: "Trabalho autoral em que a galeria é o produto. Repare na ordem das seções: aqui e no ateliê as fotos vêm antes do catálogo, e na doceria e na casa de massas o catálogo vem primeiro. Quem decide isso é a categoria escolhida no cadastro, pela mesma receita que a prévia do cadastro mostra. O preço fica para a conversa, porque ensaio se orça por data e por escopo.",
   },
   {
     id: "nao-existe",
     rota: "/endereco-que-nao-existe",
     nome: "Endereço livre",
     grupo: "O produto",
-    largura: "celular",
-    nota: "Quem digita um endereço que não existe não leva erro seco: leva um convite. É aquisição de graça.",
+    nota: "Endereço livre responde com convite no lugar de erro seco: quem digitou vê que aquele endereço está disponível e começa a página dele ali mesmo. É aquisição de graça, no caminho de quem errou uma letra.",
   },
   {
     id: "denunciar",
     rota: "/denunciar?p=doceria-da-ana",
     nome: "Denunciar uma página",
     grupo: "O produto",
-    largura: "celular",
-    nota: "Aberta pelo link discreto no rodapé de toda página pública, inclusive as pagas. Não pede nome nem e-mail: denúncia identificada afasta justamente quem tem medo do denunciado. É a peça que de fato pega golpe, porque quem descobre é quem caiu nele.",
+    nota: "Aberta pelo link discreto no rodapé de toda página pública, inclusive as pagas. O formulário pede o endereço, o motivo e um detalhe, e a denúncia segue anônima: pedir identificação afastaria justamente quem tem medo do denunciado. É a peça que de fato pega golpe, porque quem descobre é quem caiu nele.",
   },
   {
     id: "link-recusado",
     rota: "/painel/acoes-botoes",
     nome: "Link recusado",
     grupo: "Painel do dono",
-    largura: "celular",
     preparar: async (p) => {
       await p.selectOption("#secundaria-tipo", "link");
       await p.fill("#secundaria-url", "bit.ly/promo");
       await p.click('button:has-text("Salvar")');
       await p.waitForURL(/erro=link_/);
     },
-    nota: "Todo link digitado passa por uma conferência antes de virar botão: nada de javascript, de encurtador (que esconde o destino), de usuário antes do arroba nem de IP puro. A recusa diz o motivo em vez de só reprovar.",
+    nota: "Todo link digitado passa por lib/links.ts antes de virar botão. Seguem em frente http e https com o domínio à vista; encurtador (que esconde o destino), usuário antes do arroba e IP puro ficam de fora, cada um com o motivo escrito na tela. A conferência na Google Safe Browsing está escrita e espera a chave.",
   },
   {
     id: "painel",
     rota: "/painel",
     nome: "Painel",
     grupo: "Painel do dono",
-    largura: "celular",
-    nota: "Funciona de verdade, mas ainda SEM LOGIN: quem chegar no endereço edita. Por isso nada disso pode ir para a internet antes da etapa 4.",
-    aviso: true,
+    nota: "Funciona de verdade, e agora com login: cada pessoa entra com o Google e enxerga a própria página. A separação mora na RLS do banco, um andar abaixo da tela, então ela vale igual para quem chamar a API direto com a chave pública. O cartão de cima mostra o endereço, o estado (rascunho ou no ar) e o botão que troca um pelo outro.",
+    aviso:
+      "Editar catálogo, fotos e links entra nas próximas etapas. Hoje o painel cobre informações do negócio, horários, botões e letras.",
   },
   {
     id: "negocio",
     rota: "/painel/negocio",
     nome: "Informações do negócio",
     grupo: "Painel do dono",
-    largura: "celular",
     semFixos: true,
     nota: "Salva de verdade e a página pública muda na hora. O WhatsApp é arrumado sozinho: digite (11) 98888-7777 e ele guarda com o código do país.",
   },
@@ -188,87 +233,88 @@ const TELAS = [
     rota: "/painel/horarios",
     nome: "Horários",
     grupo: "Painel do dono",
-    largura: "celular",
     semFixos: true,
-    nota: "Três intervalos por dia, e turno que vira a madrugada (19:00 às 02:00) é aceito. Dia em branco aparece marcado como fechado.",
+    nota: "Três intervalos por dia, e turno que vira a madrugada (19:00 às 02:00) é aceito. Dia em branco aparece marcado como fechado, que é como o banco guarda: dia com horário está aberto, e o resto se conclui daí.",
   },
   {
     id: "horarios-barra",
     rota: "/painel/horarios",
     nome: "Barra de salvar",
     grupo: "Painel do dono",
-    largura: "celular",
-    recorte: 844,
-    rolar: 700,
-    nota: "O botão Salvar fica preso no rodapé enquanto a pessoa rola. Num formulário longo, no celular, isso evita rolar até o fim para salvar.",
+    rolar: { celular: 700, monitor: 500 },
+    nota: "O botão Salvar fica preso no rodapé enquanto a pessoa rola. Num formulário longo, no celular, isso poupa a viagem até o fim da página só para salvar.",
   },
   {
     id: "acoes",
     rota: "/painel/acoes-botoes",
     nome: "Botões da página",
     grupo: "Painel do dono",
-    largura: "celular",
     semFixos: true,
-    nota: "O botão do rodapé deixou de ser só WhatsApp. Pode virar iFood, agenda, link de parceiro ou uma ligação, e ainda cabe um segundo botão embaixo.",
+    nota: "O botão do rodapé vai além do WhatsApp: pode virar iFood, agenda, link de parceiro ou uma ligação, e ainda cabe um segundo botão embaixo.",
   },
   {
     id: "aparencia",
     rota: "/painel/aparencia",
     nome: "Letras da página",
     grupo: "Painel do dono",
-    largura: "celular",
     semFixos: true,
-    nota: "Escolher a letra é do plano pago, então no gratuito as opções aparecem travadas, com a padrão marcada. Só a escolhida é baixada por quem visita.",
+    nota: "Escolher a letra é do plano pago, então no gratuito as opções aparecem travadas, com a padrão marcada. Só a combinação aplicada é baixada por quem visita a página.",
+    aviso:
+      "O tema de cor é um só por enquanto, o areia. Os outros dois entram na etapa 8.",
   },
   {
     id: "previa",
     rota: "/painel/previa",
     nome: "Prévia do rascunho",
     grupo: "Painel do dono",
-    largura: "celular",
-    nota: "Como o dono vê a própria página antes de publicar. A rota pública não entrega rascunho nem para quem souber o endereço, por isso esta tela existe.",
+    nota: "Como o dono vê a própria página antes de publicar. A rota pública entrega só negócio publicado, mesmo para quem tem o endereço na mão, e é por isso que esta tela existe.",
   },
 ];
 
-async function capturar() {
-  const navegador = await chromium.launch(
-    EXECUTAVEL ? { executablePath: EXECUTAVEL } : {},
-  );
-  const celular = await navegador.newContext({
-    ...devices["iPhone 13"],
-    deviceScaleFactor: 2,
-  });
-  const monitor = await navegador.newContext({
-    viewport: { width: 1440, height: 940 },
-    deviceScaleFactor: 2,
-  });
+// ---------------------------------------------------------------------------
+// Captura
+// ---------------------------------------------------------------------------
 
-  const capturadas = [];
-
-  for (const tela of TELAS) {
-    const contexto = tela.largura === "desktop" ? monitor : celular;
-    const p = await contexto.newPage();
-
-    // Imagem gerada pelo servidor, tipo a prévia do link: busca direto,
-    // sem passar pelo navegador.
-    if (tela.imagem) {
-      await p.close();
-      let bruto = null;
-      for (let tentativa = 0; tentativa < 4 && !bruto; tentativa++) {
-        try {
-          const r = await fetch(BASE + tela.imagem);
-          if (!r.ok) throw new Error(`status ${r.status}`);
-          bruto = Buffer.from(await r.arrayBuffer());
-        } catch (erro) {
-          if (tentativa === 3) throw erro;
-          await new Promise((r) => setTimeout(r, 1200));
-        }
-      }
-      capturadas.push({ ...tela, bruto });
-      console.log(`ok ${tela.id}`);
-      continue;
+/** Imagem que o servidor devolve pronta, tipo a prévia do link. */
+async function buscarImagem(caminho) {
+  for (let tentativa = 0; ; tentativa++) {
+    try {
+      const r = await fetch(BASE + caminho);
+      if (!r.ok) throw new Error(`status ${r.status}`);
+      return Buffer.from(await r.arrayBuffer());
+    } catch (erro) {
+      if (tentativa === 3) throw erro;
+      await new Promise((r) => setTimeout(r, 1200));
     }
+  }
+}
 
+/** Rola até o elemento e devolve o que cabe na tela a partir dali. */
+async function enquadrar(p, focar) {
+  const { sel, ancora } =
+    typeof focar === "string" ? { sel: focar, ancora: "topo" } : focar;
+
+  await p.evaluate(
+    ([sel, ancora, folga]) => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const caixa = el.getBoundingClientRect();
+      const topo = caixa.top + window.scrollY;
+      const alvo =
+        ancora === "fim"
+          ? topo + caixa.height + folga - window.innerHeight
+          : ancora === "meio"
+            ? topo - (window.innerHeight - caixa.height) / 2
+            : topo - folga;
+      window.scrollTo(0, Math.max(0, alvo));
+    },
+    [sel, ancora, 28],
+  );
+}
+
+async function retratar(contexto, tela, tamanho) {
+  const p = await contexto.newPage();
+  try {
     // "load" e não "networkidle": o Next fica buscando as rotas dos links
     // que aparecem na tela, então a rede nunca fica parada de verdade.
     await p.goto(BASE + tela.rota, { waitUntil: "load" });
@@ -277,12 +323,11 @@ async function capturar() {
     // Solta as barras presas, senão o retrato inteiro mostra elas no meio.
     if (tela.semFixos) {
       await p.addStyleTag({
-        content:
-          ".sticky, [class*='sticky'] { position: static !important; }",
+        content: ".sticky, [class*='sticky'] { position: static !important; }",
       });
     }
 
-    if (tela.preparar) await tela.preparar(p);
+    if (tela.preparar) await tela.preparar(p, tamanho);
 
     // Rola até o fim para acordar as imagens que carregam sob demanda.
     await p.evaluate(async () => {
@@ -294,53 +339,128 @@ async function capturar() {
     });
     await p.waitForTimeout(900);
 
-    if (tela.rolar) {
-      await p.evaluate((y) => window.scrollTo(0, y), tela.rolar);
-      await p.waitForTimeout(400);
-    }
+    const recortado = tela.focar !== undefined || tela.rolar !== undefined;
 
-    const bruto = await p.screenshot({
-      fullPage: !tela.recorte,
-      ...(tela.recorte
-        ? { clip: { x: 0, y: 0, width: 390, height: tela.recorte } }
-        : {}),
-    });
+    if (tela.focar !== undefined) {
+      await enquadrar(p, tela.focar);
+    } else if (tela.rolar !== undefined) {
+      const y =
+        typeof tela.rolar === "number" ? tela.rolar : tela.rolar[tamanho];
+      await p.evaluate((y) => window.scrollTo(0, y), y);
+    }
+    if (recortado) await p.waitForTimeout(400);
+
+    // Sem fullPage, o retrato é exatamente o que cabe na tela naquele ponto da
+    // rolagem, que é o que estas telas querem mostrar.
+    return await p.screenshot(recortado ? {} : { fullPage: true });
+  } finally {
     await p.close();
-    capturadas.push({ ...tela, bruto });
+  }
+}
+
+async function capturar() {
+  const navegador = await chromium.launch(
+    EXECUTAVEL ? { executablePath: EXECUTAVEL } : {},
+  );
+  const contextos = {
+    celular: await navegador.newContext({
+      ...devices["iPhone 13"],
+      deviceScaleFactor: 2,
+    }),
+    monitor: await navegador.newContext({
+      viewport: { width: 1440, height: 940 },
+      deviceScaleFactor: 2,
+    }),
+  };
+
+  const brutas = new Map();
+
+  /*
+   * As imagens geradas pelo servidor vêm primeiro, e é de propósito. A rota de
+   * Open Graph para de responder depois que o otimizador de imagem do Next
+   * serve qualquer foto grande no mesmo processo: a geração morre com "Input
+   * buffer contains unsupported image format", que não tem relação com a causa.
+   * Buscar antes de o navegador abrir a primeira página mantém o processo
+   * limpo. O motivo inteiro está em app/[slug]/opengraph-image.tsx.
+   */
+  for (const tela of TELAS.filter((t) => t.imagem)) {
+    brutas.set(tela.id, {
+      unico: { largura: "cartao", bruto: await buscarImagem(tela.imagem) },
+    });
+    console.log(`ok ${tela.id}`);
+  }
+
+  for (const tela of TELAS.filter((t) => !t.imagem)) {
+    const imagens = {};
+    for (const tamanho of TAMANHOS) {
+      imagens[tamanho] = {
+        largura: tamanho,
+        bruto: await retratar(contextos[tamanho], tela, tamanho),
+      };
+    }
+    brutas.set(tela.id, imagens);
     console.log(`ok ${tela.id}`);
   }
 
   await navegador.close();
-  return capturadas;
+  return TELAS.map((t) => ({ ...t, brutas: brutas.get(t.id) }));
 }
 
-const LARGURAS = { celular: 780, desktop: 1440, cartao: 1200 };
+// ---------------------------------------------------------------------------
+// Compressão
+// ---------------------------------------------------------------------------
+
+/*
+ * O arquivo é uma página web, e agora carrega duas imagens por tela. Largura e
+ * qualidade abaixo foram escolhidas mirando uns 12 MB no total: o retrato do
+ * celular já sai na medida, e o do monitor desce de 2880 para caber.
+ */
+const LARGURA_SAIDA = { celular: 720, monitor: 1180, cartao: 1100 };
+const QUALIDADE = { celular: 74, monitor: 71, cartao: 80 };
 
 async function comprimir(capturadas) {
   const prontas = [];
+  let total = 0;
+
   for (const t of capturadas) {
-    const img = sharp(t.bruto).resize({
-      width: LARGURAS[t.largura] ?? 780,
-      withoutEnlargement: true,
-    });
-    const dados = await img.jpeg({ quality: 76, mozjpeg: true }).toBuffer();
-    const meta = await sharp(dados).metadata();
+    const imagens = {};
+    for (const [chave, crua] of Object.entries(t.brutas)) {
+      const dados = await sharp(crua.bruto)
+        .resize({
+          width: LARGURA_SAIDA[crua.largura],
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality: QUALIDADE[crua.largura], mozjpeg: true })
+        .toBuffer();
+      const meta = await sharp(dados).metadata();
+      imagens[chave] = {
+        w: meta.width,
+        h: meta.height,
+        src: `data:image/jpeg;base64,${dados.toString("base64")}`,
+      };
+      total += dados.length;
+    }
+
     prontas.push({
       id: t.id,
       nome: t.nome,
       grupo: t.grupo,
       rota: t.rota ?? t.imagem,
-      largura: t.largura,
       vitrine: t.vitrine ?? null,
       nota: t.nota,
-      aviso: Boolean(t.aviso),
-      w: meta.width,
-      h: meta.height,
-      src: `data:image/jpeg;base64,${dados.toString("base64")}`,
+      aviso: t.aviso ?? null,
+      imagens,
     });
-    console.log(`  ${t.id} ${Math.round(dados.length / 1024)} KB`);
+    console.log(`  ${t.id} ${Math.round(pesar(imagens) / 1024)} KB`);
   }
+
+  console.log(`\nimagens: ${Math.round(total / 1024 / 1024)} MB`);
   return prontas;
+}
+
+/** Quanto uma tela ocupa somando os tamanhos dela, já em base64. */
+function pesar(imagens) {
+  return Object.values(imagens).reduce((soma, i) => soma + i.src.length, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -357,7 +477,7 @@ function montarPagina(telas) {
       (t) => `
       <li class="mini">
         <button class="mini-toque" type="button" data-id="${t.id}">
-          <span class="mini-tela"><img src="${t.src}" alt="Página de ${t.nome}" loading="lazy" /></span>
+          <span class="mini-tela"><img src="${t.imagens.celular.src}" alt="Página de ${t.vitrine}" loading="lazy" /></span>
           <span class="mini-rotulo">${t.vitrine}</span>
         </button>
       </li>`,
@@ -437,6 +557,10 @@ function montarPagina(telas) {
   }
 
   * { box-sizing: border-box; min-width: 0; }
+
+  /* Vale para o botão de tamanho e para o alerta, que têm display próprio e
+     passariam por cima do hidden do navegador. */
+  [hidden] { display: none !important; }
 
   body {
     margin: 0;
@@ -568,7 +692,33 @@ function montarPagina(telas) {
   .aba-rota { font-family: var(--mono); font-size: 0.66rem; color: var(--muted); white-space: nowrap; }
   .aba[aria-current="true"] .aba-rota { color: var(--accent); }
 
-  .palco-col { display: flex; flex-direction: column; gap: 18px; }
+  .palco-col { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Celular ou computador, com a moldura acompanhando a escolha. */
+  .tamanhos {
+    align-self: flex-start;
+    display: inline-flex;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+  .tamanhos button {
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    padding: 5px 14px;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .tamanhos button[aria-pressed="true"] {
+    background: var(--accent-fraco);
+    color: var(--accent);
+    font-weight: 600;
+  }
 
   .palco {
     background: var(--palco-solido);
@@ -586,7 +736,7 @@ function montarPagina(telas) {
     padding: 9px;
     box-shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.9);
   }
-  .aparelho .janela {
+  .janela {
     height: 620px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -594,17 +744,47 @@ function montarPagina(telas) {
     background: #fff;
     -webkit-overflow-scrolling: touch;
   }
-  .palco[data-largura="desktop"] .aparelho,
+  .janela img { display: block; width: 100%; height: auto; }
+  .barra { display: none; }
+
+  /* Computador: janela discreta, com a barrinha de cima e mais nada. */
+  .palco[data-largura="monitor"] { padding: 26px 20px; }
+  .palco[data-largura="monitor"] .aparelho {
+    max-width: 100%;
+    border-radius: 13px;
+    background: var(--palco-linha);
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 26px 50px -30px rgba(0, 0, 0, 0.85);
+  }
+  .palco[data-largura="monitor"] .barra {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding-inline: 14px;
+  }
+  .palco[data-largura="monitor"] .barra span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--palco-muted);
+    opacity: 0.4;
+  }
+  .palco[data-largura="monitor"] .janela {
+    height: 560px;
+    border-radius: 0;
+  }
+
+  /* Prévia do link: cabe inteira, então fica parada. */
   .palco[data-largura="cartao"] .aparelho {
     max-width: 100%;
     border-radius: 10px;
     padding: 5px;
   }
-  .palco[data-largura="desktop"] .janela,
   .palco[data-largura="cartao"] .janela { height: auto; border-radius: 6px; }
-  .janela img { display: block; width: 100%; height: auto; }
 
-  .ficha { display: flex; flex-direction: column; gap: 9px; }
+  .ficha { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
   .ficha h3 { margin: 0; font-size: 1.2rem; letter-spacing: -0.02em; }
   .ficha p { margin: 0; color: var(--muted); max-width: 66ch; }
   .marca-rota { font-family: var(--mono); font-size: 0.76rem; color: var(--accent); margin: 0; }
@@ -648,10 +828,11 @@ function montarPagina(telas) {
 
 <div class="largura abertura">
   <p class="eyebrow">Entrais, revisão de interface</p>
-  <h1>Quatro negócios, a mesma página.</h1>
+  <h1>Sete negócios, a mesma página.</h1>
   <p class="intro">
-    Uma doceria, um estúdio de yoga, uma nutricionista e uma psicóloga. Toque
-    em qualquer uma para abrir a tela inteira e conferir o acabamento.
+    Uma doceria, um estúdio de yoga, uma nutricionista, uma psicóloga, um
+    ateliê de crochê, uma casa de massas e um fotógrafo. Toque em qualquer um
+    para abrir a tela inteira e conferir o acabamento.
   </p>
   <ul class="familia">${familia}</ul>
 </div>
@@ -666,8 +847,14 @@ function montarPagina(telas) {
     <nav class="navegador" aria-label="Telas">${menu}</nav>
 
     <div class="palco-col">
+      <div class="tamanhos" id="tamanhos" role="group" aria-label="Tamanho da tela">
+        <button type="button" data-tamanho="celular" aria-pressed="true">Celular</button>
+        <button type="button" data-tamanho="monitor" aria-pressed="false">Computador</button>
+      </div>
+
       <div class="palco" id="palco" data-largura="celular">
         <div class="aparelho">
+          <div class="barra" aria-hidden="true"><span></span><span></span><span></span></div>
           <div class="janela" id="janela"><img id="retrato" alt="" /></div>
         </div>
       </div>
@@ -685,9 +872,14 @@ function montarPagina(telas) {
 
   <div class="rodape">
     <p>
-      São retratos do build de produção, não o produto rodando: não dá para
-      digitar nem tocar nos botões. O que dá para julgar é layout, espaçamento,
-      hierarquia, tamanho de toque e texto.
+      São retratos do build de produção, e servem para julgar layout,
+      espaçamento, hierarquia, tamanho de toque e texto. Cada tela foi
+      fotografada duas vezes, num iPhone 13 emulado e num monitor de 1440 por
+      940, e o botão Celular / Computador troca uma pela outra.
+    </p>
+    <p>
+      O painel e o cadastro aparecem com os dados de exemplo do arquivo local,
+      que é a fonte que o servidor de revisão usa.
     </p>
     <p>Regerado com <code>npm run revisao</code> a cada mudança.</p>
   </div>
@@ -701,27 +893,38 @@ function montarPagina(telas) {
   const janela = document.getElementById("janela");
   const palco = document.getElementById("palco");
   const alerta = document.getElementById("alerta");
-  document.getElementById("contagem").textContent = TELAS.length + " telas";
+  const tamanhos = document.getElementById("tamanhos");
+  document.getElementById("contagem").textContent =
+    TELAS.length + " telas, dois tamanhos";
+
+  let tamanho = "celular";
+  let atual = TELAS[0].id;
 
   function mostrar(id, rolar) {
     const t = porId[id];
     if (!t) return;
+    atual = id;
 
-    retrato.src = t.src;
+    // A prévia do link vem do servidor num tamanho só, então ali o botão sai
+    // da frente e a moldura vira o cartão.
+    const unico = t.imagens.unico;
+    const img = unico || t.imagens[tamanho];
+
+    tamanhos.hidden = Boolean(unico);
+    palco.dataset.largura = unico ? "cartao" : tamanho;
+
+    retrato.src = img.src;
     retrato.alt = "Tela: " + t.nome;
-    retrato.width = t.w;
-    retrato.height = t.h;
+    retrato.width = img.w;
+    retrato.height = img.h;
     janela.scrollTop = 0;
-    palco.dataset.largura = t.largura;
 
     document.getElementById("rota").textContent = t.rota;
     document.getElementById("nome").textContent = t.nome;
     document.getElementById("nota").textContent = t.nota;
 
     alerta.hidden = !t.aviso;
-    document.getElementById("alerta-texto").textContent = t.aviso
-      ? "Ainda não está ligado. Dá para avaliar o desenho e o texto, mas o funcionamento depende do login, que ainda não existe."
-      : "";
+    document.getElementById("alerta-texto").textContent = t.aviso || "";
 
     for (const b of document.querySelectorAll(".aba")) {
       b.setAttribute("aria-current", String(b.dataset.id === id));
@@ -735,6 +938,18 @@ function montarPagina(telas) {
   }
   for (const b of document.querySelectorAll(".mini-toque")) {
     b.addEventListener("click", () => mostrar(b.dataset.id, true));
+  }
+  for (const b of tamanhos.querySelectorAll("button")) {
+    b.addEventListener("click", () => {
+      tamanho = b.dataset.tamanho;
+      for (const outro of tamanhos.querySelectorAll("button")) {
+        outro.setAttribute(
+          "aria-pressed",
+          String(outro.dataset.tamanho === tamanho),
+        );
+      }
+      mostrar(atual, false);
+    });
   }
 
   mostrar(porId[location.hash.slice(1)] ? location.hash.slice(1) : TELAS[0].id, false);
@@ -752,5 +967,5 @@ await mkdir(SAIDA, { recursive: true });
 await writeFile(`${SAIDA}/revisao.html`, html, "utf8");
 
 console.log(
-  `\n${prontas.length} telas, ${Math.round(Buffer.byteLength(html) / 1024)} KB em ${SAIDA}/revisao.html`,
+  `\n${prontas.length} telas, ${Math.round(Buffer.byteLength(html) / 1024 / 1024)} MB em ${SAIDA}/revisao.html`,
 );

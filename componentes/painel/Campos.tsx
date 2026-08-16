@@ -76,7 +76,10 @@ export function AreaTexto({
   valor: string | null;
 } & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "id" | "defaultValue">) {
   return (
-    <div>
+    // Num grupo de duas colunas, o texto longo pega a linha inteira: meia
+    // largura transforma duas frases em seis linhas e engorda a coluna do lado
+    // com espaço vazio. Fora da grade a classe fica sem efeito.
+    <div className="lg:col-span-2">
       <Rotulo htmlFor={id} dica={dica}>
         {rotulo}
       </Rotulo>
@@ -163,9 +166,33 @@ export function Marcar({
   );
 }
 
-export function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
+/**
+ * Um bloco de campos com título.
+ *
+ * `duplo` põe os campos lado a lado no computador. Vale para grupo de campo
+ * curto, tipo cidade e UF: numa coluna só eles viram uma fita de mil pixels
+ * com três letras dentro, e a pessoa rola a tela para preencher o que caberia
+ * de uma vez. Onde o campo é longo, ou onde a ordem de leitura é a instrução,
+ * o grupo continua em coluna.
+ *
+ * O legend fica de fora da grade sozinho: pelo HTML ele é a legenda da caixa,
+ * e não filho da área de conteúdo, então continua ocupando a linha inteira.
+ */
+export function Grupo({
+  titulo,
+  duplo,
+  children,
+}: {
+  titulo: string;
+  duplo?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <fieldset className="flex flex-col gap-4">
+    <fieldset
+      className={`flex flex-col gap-4 ${
+        duplo ? "lg:grid lg:grid-cols-2 lg:items-start lg:gap-4" : ""
+      }`}
+    >
       <legend className="mb-1 text-lg font-semibold tracking-tight text-texto">
         {titulo}
       </legend>
@@ -174,11 +201,21 @@ export function Grupo({ titulo, children }: { titulo: string; children: ReactNod
   );
 }
 
+/**
+ * O Salvar do rodapé.
+ *
+ * No celular ele fica preso na base da tela, porque o formulário tem sempre
+ * mais campos do que cabe e o botão precisa estar a um toque. No computador o
+ * formulário inteiro cabe de uma vez, e aí a barra presa vira uma tarja parada
+ * no meio da tela: ela volta a ser o fim do formulário, na largura do botão.
+ */
 export function BarraSalvar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky inset-x-0 bottom-0 -mx-5 mt-2 border-t border-borda bg-fundo/95 px-5 pt-3 backdrop-blur-sm"
-      style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
-      {children}
+    <div
+      className="sticky inset-x-0 bottom-0 -mx-5 mt-2 border-t border-borda bg-fundo/95 px-5 pt-3 backdrop-blur-sm lg:static lg:col-span-2 lg:mx-0 lg:px-0"
+      style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+    >
+      <div className="lg:max-w-56">{children}</div>
     </div>
   );
 }
