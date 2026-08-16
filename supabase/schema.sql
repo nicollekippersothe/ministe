@@ -30,7 +30,12 @@ insert into public.slugs_reservados (slug) values
   ('ajuda'), ('sobre'), ('precos'), ('termos'), ('privacidade'),
   ('denunciar'), ('contato'), ('blog'), ('demo'), ('exemplo'),
   ('entrais'), ('app'), ('www'), ('static'), ('assets'), ('public'),
-  ('_next'), ('favicon'), ('robots'), ('sitemap'), ('opengraph-image');
+  ('_next'), ('favicon'), ('robots'), ('sitemap'), ('opengraph-image'),
+  -- Os endereços das páginas de exemplo. Elas são o portfólio do produto,
+  -- moram em lib/exemplos.ts e o site serve direto de lá, então o nome delas
+  -- fica fora do sorteio. A mesma lista existe em lib/slug.ts.
+  ('studio-raiz'), ('marina-nutricao'), ('camila-psicologia'),
+  ('atelie-trama'), ('aurora-massas'), ('rafael-nunes');
 
 -- -----------------------------------------------------------------------------
 -- Palavras que fazem o endereço parecer oficial.

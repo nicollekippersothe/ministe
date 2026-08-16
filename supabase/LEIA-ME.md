@@ -1,7 +1,7 @@
 # Banco
 
 O schema e as correções 001, 002, 004 e 005 já estão aplicados no projeto de
-verdade. A 006 está na fila. Tudo aqui roda e é testado num Postgres 16
+verdade. As 006 e 007 estão na fila. Tudo aqui roda e é testado num Postgres 16
 local antes de ir, e o passo a passo do que falta no painel do Supabase está em
 `PROMPT-SUPABASE.md`.
 
@@ -59,6 +59,7 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `004-categoria.sql` | acrescenta a coluna da categoria, que vira o tipo do schema.org e monta a página |
 | `005-rascunho-anonimo.sql` | deixa a página começar numa conta provisória, exige conta confirmada para publicar e acrescenta a faxina do rascunho parado |
 | `006-endereco-livre.sql` | a conferência de endereço do cadastro, que a RLS deixava responder "livre" para endereço já guardado no rascunho de outra pessoa |
+| `007-enderecos-dos-exemplos.sql` | reserva os seis endereços das páginas de exemplo que estavam soltos, e que alguém poderia cadastrar para nunca abrir |
 
 ## Rodar local, sem Supabase
 

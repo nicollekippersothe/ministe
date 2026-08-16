@@ -45,6 +45,18 @@ async function gravar(negocios: Negocio[]): Promise<void> {
 }
 
 export async function porSlug(slug: string): Promise<Negocio | null> {
+  /*
+   * As sete páginas de exemplo são do produto, e não de ninguém.
+   *
+   * Elas são o "veja como fica" que a tela inicial mostra e para onde ela
+   * manda, então precisam abrir sempre, com banco ou sem. Vêm antes da consulta
+   * de propósito: os endereços delas ficam em slugs_reservados, então linha
+   * nenhuma do banco pode disputar esses nomes, e a página do exemplo sai sem
+   * nem ir até o banco.
+   */
+  const exemplo = EXEMPLOS.find((n) => n.slug === slug);
+  if (exemplo) return exemplo;
+
   if (!configurado) {
     const todos = await ler();
     return todos.find((n) => n.slug === slug) ?? null;

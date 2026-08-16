@@ -13,6 +13,10 @@ export const RESERVADOS = new Set([
   "denunciar", "contato", "blog", "demo", "exemplo",
   "entrais", "app", "www", "static", "assets", "public",
   "_next", "favicon", "robots", "sitemap", "opengraph-image", "icon",
+  // Os endereços das páginas de exemplo. Elas são o portfólio do produto e
+  // abrem direto de lib/exemplos.ts, então o nome delas fica fora do sorteio.
+  "studio-raiz", "marina-nutricao", "camila-psicologia",
+  "atelie-trama", "aurora-massas", "rafael-nunes",
 ]);
 
 /**
