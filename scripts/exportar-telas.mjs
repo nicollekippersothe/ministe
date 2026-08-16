@@ -504,7 +504,10 @@ function montarPagina(telas) {
     )
     .join("");
 
-  return `<title>Entrais, telas para revisão</title>
+  // O título vira o nome da página na aba e na galeria de quem recebe o link.
+  // Nome, e não descrição: "telas para revisão" explicaria o que ela é e
+  // serviria igual para qualquer página de qualquer produto.
+  return `<title>Telas do Entrais</title>
 <style>
   :root {
     --ground: #faf8f5;
