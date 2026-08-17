@@ -9,7 +9,7 @@ import { Rodape } from "./Rodape";
 import { Divisor, Secao } from "./Secao";
 import { acoesDoRodape } from "@/lib/acoes";
 import { receitaDe } from "@/lib/categorias";
-import { combinacao } from "@/lib/fontes";
+import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
 import { localBusiness } from "@/lib/jsonld";
 import type { Negocio } from "@/lib/tipos";
 
@@ -40,7 +40,21 @@ export function PaginaPublica({
   const temItens = negocio.itens.some((i) => i.ativo);
   const temGaleria = negocio.galeria.length > 0;
   const temLinks = negocio.links.length > 0;
-  const fonte = combinacao(negocio.fonte);
+  /*
+   * A letra e conferida no render, e nao so na hora de salvar.
+   *
+   * O gatilho protege_cobranca devolve a fonte antiga num UPDATE de quem esta
+   * no gratuito, mas o que ja esta gravado continua gravado. Entao quem
+   * assinou, escolheu outra letra e deixou o plano vencer seguiria com ela
+   * para sempre, porque ninguem mais toca na coluna. Com sete dias de teste
+   * gratis, seriam sete dias comprando uma letra vitalicia.
+   *
+   * Conferir aqui nao apaga a escolha: a coluna guarda o que a pessoa
+   * escolheu, e volta a valer no dia em que ela assinar de novo.
+   */
+  const fonte = combinacao(
+    podeEscolherFonte(negocio.plano) ? negocio.fonte : FONTE_PADRAO,
+  );
   const respiro = respiroDaBarra(negocio);
   const acoes = acoesDoRodape(negocio);
 

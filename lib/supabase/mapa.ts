@@ -1,3 +1,4 @@
+import { planoValido } from "@/lib/plano";
 import type {
   Acao,
   Foto,
@@ -104,7 +105,18 @@ export function paraNegocio(linha: Linha): Negocio {
     fonte: (linha.fonte as Negocio["fonte"]) ?? "moderno",
     categoria: texto(linha.categoria),
     categoriaLivre: texto(linha.categoria_livre),
-    plano: (linha.plano as Negocio["plano"]) ?? "gratuito",
+    /*
+     * O plano efetivo, e nunca a coluna crua.
+     *
+     * A leitura pública entrega `plano` do jeito que está gravado, e ele pode
+     * dizer "pago" com `plano_expira_em` no passado. Quem rebaixa no banco é a
+     * `plano_de()`, e quem consulta a coluna direto passa longe dela. Ver
+     * lib/plano.ts, que é o espelho dessa função.
+     */
+    plano: planoValido(
+      String(linha.plano ?? "gratuito"),
+      typeof linha.plano_expira_em === "string" ? linha.plano_expira_em : null,
+    ),
     publicado: linha.publicado === true,
     acaoPrincipal: acao(linha.acao_principal),
     acaoSecundaria: acao(linha.acao_secundaria),
