@@ -1112,6 +1112,122 @@ end;
 $$;
 
 -- -----------------------------------------------------------------------------
+-- A assinatura nasce, e o teste grátis vira plano pago sem cobrar nada
+-- -----------------------------------------------------------------------------
+-- Correção 011. É o caso que as quatro funções da 009 não cobriam: elas todas
+-- tratam dinheiro que já entrou, e o teste de sete dias entrega o plano pago
+-- justamente antes do primeiro centavo.
+--
+-- Roda na Quitanda da Cida, que é o terceiro negócio do cenário, porque os dois
+-- primeiros já têm assinatura viva e o índice assinaturas_viva_idx é
+-- exatamente o que impede a segunda.
+
+reset role;
+
+do $$
+declare
+  v_teste timestamptz := now() + interval '7 days';
+  v_ciclo timestamptz := now() + interval '37 days';
+  v_id uuid;
+  v_de_novo uuid;
+begin
+  v_id := public.abrir_assinatura(
+    '33333333-0000-4000-8000-000000000003', 'preapproval-c',
+    'mensal', 'credito', 1990, v_teste, null);
+
+  perform testes.ok('o teste grátis põe o negócio no plano pago',
+    public.plano_de('33333333-0000-4000-8000-000000000003') = 'pago');
+
+  perform testes.ok('e o vencimento é o fim do teste, sem cobrança nenhuma',
+    (select plano_expira_em from public.negocios
+      where id = '33333333-0000-4000-8000-000000000003') = v_teste
+    and (select count(*) from public.cobrancas
+      where negocio_id = '33333333-0000-4000-8000-000000000003') = 0);
+
+  perform testes.ok('a assinatura fica em teste enquanto o dinheiro não entra',
+    (select status = 'teste' and teste_termina_em = v_teste
+       from public.assinaturas where id = v_id));
+
+  -- O Mercado Pago reenvia o aviso do preapproval quando a resposta demora.
+  v_de_novo := public.abrir_assinatura(
+    '33333333-0000-4000-8000-000000000003', 'preapproval-c',
+    'mensal', 'credito', 1990, v_teste, null);
+
+  perform testes.ok('o mesmo preapproval entregue duas vezes é uma linha só',
+    v_de_novo = v_id
+    and (select count(*) from public.assinaturas
+      where negocio_id = '33333333-0000-4000-8000-000000000003') = 1);
+
+  -- Oitavo dia: a primeira cobrança entrou, e a mesma função agora recebe a
+  -- data do ciclo. É o caminho normal do crédito, e não um caso de exceção.
+  perform public.abrir_assinatura(
+    '33333333-0000-4000-8000-000000000003', 'preapproval-c',
+    'mensal', 'credito', 1990, v_teste, v_ciclo);
+
+  perform testes.ok('a primeira cobrança tira a assinatura do teste',
+    (select status from public.assinaturas where id = v_id) = 'ativa');
+
+  perform testes.ok('e o vencimento anda para o fim do ciclo pago',
+    (select plano_expira_em from public.negocios
+      where id = '33333333-0000-4000-8000-000000000003') = v_ciclo);
+
+  -- Mesma regra do resto do arquivo: aviso fora de ordem nunca encurta.
+  perform public.abrir_assinatura(
+    '33333333-0000-4000-8000-000000000003', 'preapproval-c',
+    'mensal', 'credito', 1990, v_teste, now() + interval '2 days');
+
+  perform testes.ok('o aviso atrasado da assinatura mantém o vencimento maior',
+    (select plano_expira_em from public.negocios
+      where id = '33333333-0000-4000-8000-000000000003') = v_ciclo);
+end;
+$$;
+
+-- Cancelar e receber um aviso atrasado é o caminho que devolveria plano pago a
+-- quem já saiu, e é por isso que a função sai cedo quando a linha está
+-- encerrada.
+do $$
+declare
+  v_antes timestamptz;
+begin
+  perform public.encerrar_assinatura('33333333-0000-4000-8000-000000000003');
+
+  update public.negocios set plano_expira_em = now() - interval '1 day'
+   where id = '33333333-0000-4000-8000-000000000003';
+
+  select plano_expira_em into v_antes
+    from public.negocios where id = '33333333-0000-4000-8000-000000000003';
+
+  perform public.abrir_assinatura(
+    '33333333-0000-4000-8000-000000000003', 'preapproval-c',
+    'mensal', 'credito', 1990, now() + interval '7 days', null);
+
+  perform testes.ok('aviso atrasado NÃO ressuscita assinatura já encerrada',
+    (select status from public.assinaturas
+      where id_externo = 'preapproval-c') = 'encerrada');
+
+  perform testes.ok('e quem cancelou continua no gratuito depois do vencimento',
+    (select plano_expira_em from public.negocios
+      where id = '33333333-0000-4000-8000-000000000003') = v_antes
+    and public.plano_de('33333333-0000-4000-8000-000000000003') = 'gratuito');
+end;
+$$;
+
+select testes.ok('abrir_assinatura fica fora do alcance do visitante',
+  not has_function_privilege('anon',
+    'public.abrir_assinatura(uuid, text, text, text, integer, timestamptz, timestamptz)',
+    'EXECUTE'));
+
+select testes.ok('e fora do alcance de quem está logado, que assinaria de graça',
+  not has_function_privilege('authenticated',
+    'public.abrir_assinatura(uuid, text, text, text, integer, timestamptz, timestamptz)',
+    'EXECUTE'));
+
+select testes.ok('a chave de serviço alcança, que é quem recebe o webhook',
+  has_function_privilege('service_role',
+    'public.abrir_assinatura(uuid, text, text, text, integer, timestamptz, timestamptz)',
+    'EXECUTE'));
+
+-- -----------------------------------------------------------------------------
 -- Os números do painel herdam a RLS de eventos
 -- -----------------------------------------------------------------------------
 -- security invoker de propósito: a regra de quem vê o quê já mora na política

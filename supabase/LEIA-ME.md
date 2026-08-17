@@ -12,8 +12,8 @@ do que falta no painel do Supabase está em `PROMPT-SUPABASE.md`.
 
 | arquivo | o que é | testado |
 | --- | --- | --- |
-| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 151 asserções |
-| `testes-rls.sql` | 151 asserções de RLS, de limite, de cobrança, de migração de rascunho e de permissão de função | sim |
+| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 163 asserções |
+| `testes-rls.sql` | 163 asserções de RLS, de limite, de cobrança, de migração de rascunho e de permissão de função | sim |
 | `correcoes/` | remendos para projeto que já rodou uma versão anterior do schema | sim |
 | `storage.sql` | bucket das imagens e permissões | não, precisa do Supabase |
 | `local/stub.sql` | só para rodar local, nunca aplicar no Supabase | sim |
@@ -35,7 +35,7 @@ psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/testes-rls.sql
 
    O resultado vem como tabela, e não como mensagem: a última consulta do
    arquivo devolve uma linha por asserção, com a primeira dizendo
-   `TODOS OS TESTES PASSARAM` e a contagem, que hoje é 151. Falha aparece como
+   `TODOS OS TESTES PASSARAM` e a contagem, que hoje é 163. Falha aparece como
    erro começando em `FALHOU:`, e nesse caso tabela nenhuma volta.
 
    Sai como tabela porque o SQL Editor descarta `raise notice`. Enquanto a
@@ -75,6 +75,7 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `008-envio-de-imagem.sql` | prepara o banco para imagem enviada pelo dono. **Guardada**, ver a nota no topo |
 | `009-cobranca.sql` | assinatura, cobrança e a trava de idempotência do webhook, as quatro funções da chave de serviço, os números do painel e o endereço `/assinar` |
 | `010-migrar-rascunho.sql` | move o rascunho da conta provisória para a conta que já existe, quando o Google recusa ligar a identidade |
+| `011-abrir-assinatura.sql` | a assinatura recorrente passa a existir, e o teste de sete dias vira plano pago sem nenhuma cobrança, que é o caso que as quatro funções da 009 não cobriam |
 
 ## Rodar local, sem Supabase
 

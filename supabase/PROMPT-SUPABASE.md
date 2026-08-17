@@ -168,7 +168,7 @@ Login
 
 # Prompt 3, para a extensão do Supabase: a cobrança
 
-Vai depois do Prompt 2. **Os dois arquivos estão na branch
+Vai depois do Prompt 2. **Os três arquivos estão na branch
 `claude/app-checkout-logic-rkij8d`, e não na `main`.** Nenhum segredo do Mercado
 Pago entra aqui: o token de acesso e a chave do webhook ficam nas variáveis de
 ambiente do servidor, e nunca no banco nem neste arquivo.
@@ -184,21 +184,26 @@ claude/app-checkout-logic-rkij8d:
 
   a) supabase/correcoes/009-cobranca.sql
   b) supabase/correcoes/010-migrar-rascunho.sql
-  c) supabase/testes-rls.sql
+  c) supabase/correcoes/011-abrir-assinatura.sql
+  d) supabase/testes-rls.sql
 
-Atenção à branch: na main esses dois arquivos não existem, e a testes-rls.sql
+Os três primeiros são idempotentes: rodar de novo um que já foi aplicado não
+muda nada e não dá erro. Se você já aplicou a 009 e a 010 numa passada
+anterior, pode rodar só a 011 e a bateria.
+
+Atenção à branch: na main esses três arquivos não existem, e a testes-rls.sql
 de lá é a versão sem cobrança. Ela passaria verde sem testar nada disto, que é
 o pior tipo de erro.
 
-O terceiro é a bateria de testes. Roda dentro de uma transação e termina em
+O quarto é a bateria de testes. Roda dentro de uma transação e termina em
 rollback, então não deixa nada gravado. O resultado vem como tabela, uma linha
-por asserção, e a primeira linha diz TODOS OS TESTES PASSARAM, 151 asserções.
+por asserção, e a primeira linha diz TODOS OS TESTES PASSARAM, 163 asserções.
 Me mande essa primeira linha como ela aparecer na tela. Se parar antes, o
 resultado é um erro começando em FALHOU: me mande essa linha inteira, sem
 resumir e sem tentar consertar por conta própria.
 
 A contagem sai do próprio banco, e não de uma constante escrita no arquivo.
-Número diferente de 151 quer dizer asserção a mais ou a menos, e vale me
+Número diferente de 163 quer dizer asserção a mais ou a menos, e vale me
 avisar mesmo com tudo verde.
 
 O que a 009 traz: três tabelas novas (assinaturas, cobrancas,
@@ -206,6 +211,11 @@ avisos_pagamento), cinco funções novas, e o endereço `assinar` entrando na
 lista de reservados. Quem escreve o plano pago é o webhook, com a chave de
 serviço, e é por isso que as funções do dinheiro precisam terminar fechadas
 para o navegador.
+
+O que a 011 traz: uma função só, abrir_assinatura. As quatro da 009 tratam
+dinheiro que já entrou, e faltava o começo: a assinatura recorrente passando a
+existir, com o teste de sete dias virando plano pago antes do primeiro
+centavo. Ela também escreve plano, então termina fechada igual às outras.
 
 O que a 010 traz: uma função só, migrar_rascunho. O login com Google recusa
 ligar uma identidade que já pertence a outra conta, e nesse caso o rascunho
@@ -228,11 +238,13 @@ Tem que trazer as três, as três com relrowsecurity = true.
    where n.nspname = 'public'
      and p.proname in ('registrar_cobranca_paga', 'encerrar_assinatura',
                        'marcar_atraso', 'desfazer_cobranca',
-                       'numeros_do_negocio', 'migrar_rascunho')
+                       'numeros_do_negocio', 'migrar_rascunho',
+                       'abrir_assinatura')
    order by p.proname;
 
 O esperado, linha por linha:
 
+  abrir_assinatura          false  false
   desfazer_cobranca         false  false
   encerrar_assinatura       false  false
   marcar_atraso             false  false
@@ -240,10 +252,10 @@ O esperado, linha por linha:
   numeros_do_negocio        false  true
   registrar_cobranca_paga   false  false
 
-Se registrar_cobranca_paga ou migrar_rascunho vierem true em qualquer uma das
-duas colunas, PARE e me avise antes de qualquer outra coisa. A primeira é a
-única coisa no banco que consegue escrever plano pago, e a segunda move a
-página de qualquer conta provisória. Abertas ao navegador, viram plano de graça
+Se registrar_cobranca_paga, abrir_assinatura ou migrar_rascunho vierem true em
+qualquer uma das duas colunas, PARE e me avise antes de qualquer outra coisa.
+As duas primeiras são as únicas coisas no banco que conseguem escrever plano
+pago, e a terceira move a página de qualquer conta provisória. Abertas ao navegador, viram plano de graça
 e página roubada para quem souber mandar um POST em /rest/v1/rpc.
 
   select indexname from pg_indexes
@@ -259,9 +271,10 @@ Tem que trazer uma linha.
   select p.proname, pg_get_userbyid(p.proowner) as dono
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public'
-     and p.proname in ('registrar_cobranca_paga', 'migrar_rascunho');
+     and p.proname in ('registrar_cobranca_paga', 'abrir_assinatura',
+                       'migrar_rascunho');
 
-O esperado é postgres nas duas. As duas são security definer, e o gatilho
+O esperado é postgres nas três. As duas são security definer, e o gatilho
 protege_cobranca só deixa passar quem é 'postgres' ou 'service_role'. Com
 outro dono, o gatilho devolve o valor anterior em silêncio: o cliente pagaria
 sem receber o plano, e o rascunho não mudaria de dono.
@@ -270,7 +283,7 @@ O QUE EU PRECISO DE VOLTA
 
   1. A última linha do testes-rls.sql, com a contagem.
   2. As três tabelas, com o relrowsecurity de cada uma.
-  3. A tabela inteira das seis funções, com as duas colunas.
+  3. A tabela inteira das sete funções, com as duas colunas.
   4. Os índices e o slug 'assinar'.
-  5. O dono das duas funções.
+  5. O dono das três funções.
 ```
