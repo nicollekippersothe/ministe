@@ -1,0 +1,468 @@
+# Cobrança
+
+Como o Entrais recebe dinheiro, do clique até `plano_expira_em` mudar.
+
+Este arquivo é a fonte de verdade de duas coisas ao mesmo tempo: o que o código
+faz, e o que os termos de uso prometem. Quando o preço, o ciclo ou a regra de
+devolução mudar, muda aqui, em `lib/pagamento/precos.ts` e em `app/termos`, no
+mesmo commit. Termo que promete uma coisa e código que faz outra é o único bug
+deste produto que vira problema jurídico.
+
+## Os dois planos
+
+| | gratuito | pago |
+| --- | --- | --- |
+| páginas por conta | 1 | 5 |
+| itens no cardápio | 20 | 500 |
+| fotos por item | 3 | 10 |
+| fotos na galeria | 12 | 100 |
+| links | 8 | 30 |
+| intervalos por dia | 3 | 4 |
+| escolher a letra | | sim |
+| assinatura do entrais no rodapé | fica | sai |
+| números | dois, dos últimos 7 dias | histórico, por dia, por botão |
+
+Os limites moram numa função só no banco, `limite_do_plano`, e são conferidos
+por gatilho `BEFORE INSERT`. Mudar um número é mudar uma linha. Limite que
+morasse só na tela seria decoração: o painel escreve direto no banco pelo
+navegador.
+
+**Rebaixar nunca apaga conteúdo.** Quem tinha 400 itens continua com 400, porque
+os gatilhos só barram o próximo. Apagar o trabalho de alguém porque o cartão
+venceu é o pior comportamento possível, e o schema foi escrito para permitir a
+versão boa.
+
+## Preços
+
+| ciclo | centavos | na tela |
+| --- | --- | --- |
+| mensal | `1990` | R$ 19,90 por mês |
+| anual | `17900` | R$ 179 por ano |
+
+Dinheiro é sempre inteiro em centavos, em todo o produto. O decimal que a API
+do Mercado Pago pede nasce em `emReais()`, dentro de `lib/pagamento/mercadopago.ts`,
+e morre no `JSON.stringify` da mesma chamada. Nenhum float atravessa a fronteira
+do módulo.
+
+O anual economiza `12 × 1990 − 17900 = 5980` centavos, o equivalente a três
+meses (`3 × 1990 = 5970`). É por isso que a peça de venda pode dizer "três meses
+por conta nossa" com número que fecha, e `precos.test.ts` guarda a frase: mexeu
+no preço e a conta ficou menor que a promessa, o teste cai antes de a tela
+mentir.
+
+## Os três meios, e por que só um renova sozinho
+
+| meio | teste grátis | renovação | o que cria no Mercado Pago |
+| --- | --- | --- | --- |
+| crédito | 7 dias | automática | `POST /preapproval` |
+| Pix | | a pessoa refaz | `POST /v1/payments` |
+| débito | | a pessoa refaz | `POST /v1/payments`, com desafio 3DS |
+
+O crédito é o único meio em que o banco autoriza a cobrança futura junto com a
+autorização de hoje. É por isso que ele é o único com teste grátis e o único com
+recorrência: no Pix e no débito, cada ciclo é uma decisão nova da pessoa, e um
+teste ali seria uma semana de graça seguida de silêncio.
+
+Recorrência em débito não existe no Brasil. **Toda renovação em débito e em Pix é
+uma compra nova, feita pela pessoa**, e o painel precisa avisar antes de vencer.
+A perda de assinante por esquecimento é maior que no crédito, e isso é custo
+assumido, não descuido.
+
+## Interface própria, e o que isso custou
+
+O Mercado Pago tem três níveis de integração. O Checkout Pro manda a pessoa para
+o site deles. O Bricks põe componentes deles dentro da nossa página. O Checkout
+Transparente com Secure Fields deixa a tela inteiramente nossa.
+
+Escolhido o terceiro: nosso HTML, nossos tokens de cor de `app/globals.css`,
+nosso texto. O que é deles são três iframes do tamanho de um input, injetados
+dentro das nossas `div`, para número do cartão, validade e código de segurança.
+
+Esses três iframes são a razão de o número do cartão nunca tocar nosso servidor,
+o que mantém o projeto em PCI DSS SAQ-A, um formulário de autoavaliação. Aceitar
+o número num input nosso jogaria o projeto em SAQ-D, com pentest e varredura
+trimestral: custo que um produto de R$ 19,90 por mês não paga.
+
+O Pix não tem nem iframe. O servidor chama `POST /v1/payments`, recebe `qr_code`
+e `qr_code_base64`, e o QR é desenhado no nosso próprio modal.
+
+## O caminho de cada compra
+
+### Crédito
+
+1. A pessoa escolhe o ciclo em `/painel/plano`. Os campos do cartão são os
+   Secure Fields, e o navegador dela troca o número por um token direto com o
+   Mercado Pago.
+2. A Server Action chama `assinarComCartao`, que faz `POST /preapproval` com
+   `status: "authorized"`, `free_trial` de 7 dias, e `external_reference` com o
+   id do negócio. O `X-Idempotency-Key` é um uuid gerado antes da chamada, e é
+   ele que faz clique duplo e retry de rede cobrarem uma vez só.
+3. **A Server Action não escreve plano nenhum.** Ela termina ali.
+4. O Mercado Pago manda o aviso `subscription_preapproval`. O webhook consulta o
+   preapproval, lê `external_reference`, e chama `abrir_assinatura` com o fim do
+   teste. O negócio vira `plano = 'pago'` com `plano_expira_em` em 7 dias.
+5. No oitavo dia o Mercado Pago cobra sozinho e manda
+   `subscription_authorized_payment`. O webhook consulta a fatura e a
+   assinatura, e chama `registrar_cobranca_paga` com a próxima data de cobrança.
+   **É este aviso que estende o plano todo mês.**
+
+### Pix
+
+1. A Server Action chama `cobrarUmaVez` com `payment_method_id: "pix"`.
+2. A resposta traz o código para colar e o QR em PNG base64, que a tela desenha.
+   O código **não é guardado no banco**: é segredo em repouso, com ganho pequeno,
+   e expira em trinta minutos de qualquer jeito.
+3. A tela espera com `<meta http-equiv="refresh" content="5">`, e não com
+   polling em JavaScript: o QR é estático, o recarregamento é barato, funciona
+   sem JS, e mantém a página pública enxuta.
+4. O aviso chega no tópico `payment`. O webhook consulta, confirma
+   `status: approved`, e chama `registrar_cobranca_paga` com o fim do ciclo
+   contado do instante da aprovação.
+
+### Débito, e o desafio 3DS
+
+No Brasil o débito autentica por 3DS praticamente sempre. `POST /v1/payments`
+com o token do débito volta assim quando o banco quer desafiar:
+
+```json
+{ "status": "pending",
+  "status_detail": "pending_challenge",
+  "three_ds_info": { "external_resource_url": "https://acs...", "creq": "eyJ0..." } }
+```
+
+Isso é resposta de sucesso, e não recusa: `pending_challenge` significa que o
+banco vai perguntar alguma coisa para a pessoa. A tela monta um formulário com
+`method="POST"`, `action` no `external_resource_url`, um campo escondido `creq`,
+e `target` num iframe nosso, e envia sozinho. Quem desenha o que aparece dentro
+do iframe é o banco (código por SMS, aprovação no aplicativo).
+
+O resultado **não volta pelo iframe**. Ele chega pelo webhook, no tópico
+`payment`, quando o pagamento sai de `pending` para `approved` ou `rejected`. A
+tela de espera é a mesma do Pix, porque o problema é idêntico.
+
+O Mercado Pago sugere resolver isso com o Status Screen Brick, que é componente
+deles. Não usamos: o formulário e o iframe são umas quinze linhas, e o Brick
+traria layout de terceiro para dentro do checkout.
+
+## O webhook
+
+`app/api/pagamento/webhook/route.ts`, `runtime = "nodejs"` porque a conferência
+da assinatura usa `node:crypto`.
+
+A ordem dos passos é a parte mais importante do arquivo, e cada um fecha um
+jeito conhecido de o dinheiro sair errado:
+
+1. **Ler o corpo como texto cru**, antes de qualquer `JSON.parse`. O HMAC é
+   sobre bytes, e reserializar o objeto muda os bytes.
+2. **Conferir a assinatura.** Este endereço é público: sem esta linha, qualquer
+   pessoa manda um POST e ganha plano pago. Recusa devolve 401 sem corpo,
+   porque mensagem de erro num endereço público é manual de como acertar o HMAC.
+3. **Travar a idempotência**, com um insert em `avisos_pagamento`. Chave repetida
+   significa aviso já tratado: 200 e para.
+4. **Buscar o recurso na API do Mercado Pago.** O corpo do aviso é um cutucão, e
+   nada dele vira dado.
+5. **Aplicar por tópico**, sempre por função do banco.
+6. **`revalidatePath`** na página pública e no painel.
+
+### O manifesto do HMAC
+
+Causa número um de "a assinatura nunca bate":
+
+```
+id:<data.id em minúsculas>;request-id:<x-request-id>;ts:<ts>;
+```
+
+Três detalhes que a documentação diz e que somem quando alguém escreve de
+memória: o ponto e vírgula final existe, inclusive depois do `ts`; o `data.id`
+vai em minúsculas, porque os ids novos em formato ULID chegam maiúsculos; e
+pedaço com valor vazio sai fora inteiro, junto com o rótulo e o ponto e vírgula
+dele.
+
+A comparação usa `timingSafeEqual`. Comparar hash com `===` vaza, pelo tempo de
+resposta, quantos caracteres iniciais o palpite acertou, e num endereço público
+isso é um oráculo que responde a noite inteira.
+
+Avisos com carimbo de tempo fora de uma janela de cinco minutos são recusados.
+Sem isso, quem grampeasse um aviso legítimo uma vez poderia reenviar o mesmo
+pacote, com a mesma assinatura, para sempre.
+
+### A chave da trava é o id do aviso, e não o do objeto
+
+O mesmo pagamento gera vários avisos ao longo da vida: aprovado hoje, estornado
+em outubro. Os dois carregam o mesmo `data.id`. Travar por ele faria o estorno
+ser engolido como repetição do aprovado, deixando no ar quem pediu o dinheiro de
+volta. A chave é o `id` do topo do aviso, e dois testes em
+`lib/pagamento/aviso.test.ts` ficam vermelhos quando a distinção some.
+
+### Falha passageira solta a trava
+
+Provedor fora do ar e banco recusando a escrita devolvem 500, para o Mercado
+Pago reentregar. Antes disso, a linha de `avisos_pagamento` é apagada: sem isso a
+reentrega bateria na trava, devolveria 200 sem nunca ter aplicado nada, e o
+cliente ficaria pago sem plano.
+
+Falha definitiva (o id não existe lá, o aviso é de um tópico que não usamos)
+devolve 200, porque reentregar daria o mesmo resultado.
+
+### Por tópico
+
+| tópico | o que faz |
+| --- | --- |
+| `subscription_preapproval` | `authorized` chama `abrir_assinatura`, com o fim do teste enquanto nenhuma cobrança saiu e com o fim do ciclo depois da primeira. `cancelled` e `paused` chamam `encerrar_assinatura`. |
+| `subscription_authorized_payment` | a fatura da recorrência. Aprovada chama `registrar_cobranca_paga`, recusada chama `marcar_atraso`. **É este que estende o plano todo mês.** |
+| `payment` | Pix, débito e estorno. `approved` registra, `refunded` e `charged_back` chamam `desfazer_cobranca`. |
+
+A cobrança que a assinatura gerou **também** chega no tópico `payment`, e ali ela
+é ignorada de propósito na aprovação: quem estende o ciclo do crédito é o tópico
+da fatura, que sabe a data certa. Tratar os dois somaria um ciclo a mais. O
+desempate sai de `operation_type: "recurring_payment"`, que o Mercado Pago
+escreve na resposta. O estorno vale para os dois, porque é o único caminho que
+traz de volta o dinheiro devolvido de uma cobrança recorrente.
+
+### O `revalidatePath` não é acabamento
+
+`app/[slug]/page.tsx` tem `revalidate = 3600`, e o rodapé e a letra da página
+mudam conforme o plano. Sem o `revalidatePath`, a pessoa paga e continua vendo
+"feito com entrais" por até uma hora. É o passo mais fácil de esquecer e o mais
+visível para quem acabou de pagar.
+
+Falha na revalidação **não** derruba o webhook: o dinheiro já entrou e o plano já
+mudou, e pedir reentrega por causa de cache faria a cobrança ser aplicada de
+novo.
+
+## As tabelas
+
+Vêm da correção `supabase/correcoes/009-cobranca.sql`.
+
+### `assinaturas`
+
+Uma linha por assinatura do negócio, viva ou morta.
+
+| coluna | o que é |
+| --- | --- |
+| `negocio_id` | de quem é |
+| `provedor` | `mercadopago` |
+| `id_externo` | o preapproval. Nulo enquanto o gateway ainda não respondeu |
+| `ciclo` | `mensal` ou `anual` |
+| `meio` | `credito`, `debito` ou `pix` |
+| `status` | `teste`, `ativa`, `em_atraso` ou `encerrada` |
+| `valor_centavos` | inteiro, positivo |
+| `teste_termina_em` | fim dos 7 dias |
+| `ciclo_termina_em` | fim do período pago |
+| `cancelada_em` | quando encerrou |
+
+Dois índices valem mais que a tabela:
+
+- `unique (provedor, id_externo) where id_externo is not null`, que segura o
+  webhook que reenvia.
+- `unique (negocio_id) where status in ('teste','ativa','em_atraso')`, que
+  garante **uma assinatura viva por negócio no banco, e não na tela**. Sem ele,
+  dois cliques no botão de assinar viram duas cobranças recorrentes, e quem
+  descobre é o cliente na fatura.
+
+### `cobrancas`
+
+Uma linha por tentativa de pagamento.
+
+| coluna | o que é |
+| --- | --- |
+| `id` | uuid gerado por nós **antes** de falar com o gateway |
+| `id_externo` | o pagamento no Mercado Pago |
+| `meio`, `valor_centavos` | |
+| `status` | `aguardando`, `paga`, `recusada` ou `devolvida` |
+| `pix_expira_em`, `pago_em` | |
+
+O `id` fica sem default de propósito: id que o banco inventa depois já chegou
+tarde para o que ele serve, que é ser a chave de idempotência mandada ao
+gateway.
+
+**O copia e cola do Pix não é guardado.** Segredo em repouso, com ganho pequeno,
+e morto em trinta minutos.
+
+### `avisos_pagamento`
+
+`(provedor, id_evento)` como chave primária, e nada mais. É a trava de
+idempotência. Não guarda corpo de requisição nem assinatura do gateway: são
+dados de outro sistema, e a tabela existe para responder uma pergunta só, que é
+"já vi este evento?".
+
+## As funções, e por que o dono não alcança nenhuma
+
+O gatilho `protege_cobranca` devolve o valor anterior de `plano`,
+`plano_expira_em`, `status` e `dono_id` em toda escrita que não venha de
+`service_role` ou de `postgres`. É o que impede o dono de se dar plano pago
+sozinho, e o painel escreve direto no banco pelo navegador, então essa proteção é
+a única que existe.
+
+O preço disso é que precisa existir exatamente uma porta aberta. Essas funções
+são a porta, todas `security definer`, todas com `revoke ... from public, anon,
+authenticated` escrito na mão e `grant` só para `service_role`.
+
+| função | correção | o que faz |
+| --- | --- | --- |
+| `abrir_assinatura` | 011 | a assinatura passa a existir, e o teste vira plano pago sem cobrar nada |
+| `registrar_cobranca_paga` | 009 | grava a cobrança, deixa a assinatura ativa e empurra o vencimento |
+| `encerrar_assinatura` | 009 | cancela. **Não toca em `plano_expira_em`** |
+| `marcar_atraso` | 009 | carência de 5 dias depois de uma recusa |
+| `desfazer_cobranca` | 009 | estorno e chargeback. O único lugar onde a data anda para trás |
+| `numeros_do_negocio` | 009 | os números do painel. `security invoker`, para herdar a RLS de `eventos` |
+
+`numeros_do_negocio` é a única com `grant to authenticated`, e é a única que não
+mexe em dinheiro.
+
+Em `assinaturas` e `cobrancas` a RLS tem **só política de select para o dono**,
+nenhuma de escrita, que é o desenho de `eventos`. `avisos_pagamento` fica sem
+política nenhuma, que é o desenho de `denuncias`: ninguém lê nem escreve pelo
+navegador.
+
+### A regra que evita cobrar o mesmo mês duas vezes
+
+Em lugar nenhum aparece `plano_expira_em = plano_expira_em + interval`. O
+vencimento é sempre um instante absoluto que veio do pagamento, aplicado assim:
+
+```sql
+plano_expira_em = greatest(coalesce(plano_expira_em, now()), p_ate)
+```
+
+A tabela `avisos_pagamento` é o cinto: o mesmo evento entra uma vez só. O
+`greatest` é o suspensório, e é ele que continua valendo no caso que a tabela não
+cobre: **dois eventos diferentes, os dois legítimos, chegando na ordem trocada.**
+Somar intervalo nessa hora cobraria um mês que o cliente já tinha.
+
+## Fim de assinatura
+
+O teste de 7 dias **reusa a máquina que já existe**: durante o teste o negócio
+fica `plano = 'pago'` com `plano_expira_em` em 7 dias. Ganha letra, números e
+cotas, que é o sentido de um teste. Se a pessoa sumir, o vencimento rebaixa
+sozinho. Se o dia 8 cobrar, o webhook empurra a data. Zero mecanismo novo, e
+nenhum cron precisa existir.
+
+| situação | `plano_expira_em` | assinatura |
+| --- | --- | --- |
+| cancela no teste | fica, expira no dia 7 | encerrada |
+| cancela pago | **fica**, até o fim do ciclo pago | encerrada |
+| cobrança recusada | `greatest(atual, agora + 5 dias)` | em atraso |
+| retry deu certo | empurrado para o fim do ciclo | ativa |
+| data passou | intacto, e `plano_de()` devolve gratuito | encerrada |
+| estorno ou chargeback | **puxado para `now()`** | encerrada |
+
+A carência de cinco dias existe porque tirar a página do ar na tarde em que o
+cartão falhou é o pior momento possível. O cartão falha por limite, por troca de
+número, por banco fora do ar, e quase sempre o cliente resolve em um ou dois
+dias.
+
+**Plano vencido volta a valer como gratuito sozinho**, por `plano_de()` no banco
+e por `planoValido()` em `lib/plano.ts`. Os dois precisam existir: a política de
+leitura pública entrega a coluna `plano` crua, que pode dizer `pago` com
+`plano_expira_em` no passado, e quem monta a página é o TypeScript.
+
+## Arrependimento, e o que a lei pede
+
+O artigo 49 do Código de Defesa do Consumidor dá sete dias corridos para desistir
+de uma compra pela internet, com devolução integral.
+
+No mensal, o teste de 7 dias já cobre por construção, porque a primeira cobrança
+cai no dia 8. No anual, que paga adiantado sem teste, a regra é explícita:
+cancelamento em até 7 dias do pagamento devolve tudo, executado à mão pelo painel
+do Mercado Pago na versão 1, com o webhook de `refunded` cuidando do
+rebaixamento. Depois desse prazo, o plano segue valendo até o fim do período
+pago.
+
+O decreto do SAC pede que cancelar seja tão fácil quanto assinar, e o botão
+dentro do painel resolve, sem precisar falar com ninguém.
+
+O Decreto 7.962 pede o fornecedor identificado por "CNPJ ou CPF", nessa ordem e
+com o CPF previsto para quem ainda é pessoa física. Isso sai de
+`NEXT_PUBLIC_RESPONSAVEL` e `NEXT_PUBLIC_DOCUMENTO`, em `lib/marca.ts`, e o bloco
+de identificação some enquanto as duas não existirem: documento legal com
+identificação inventada é pior que documento sem ela. **Preencher antes de cobrar
+o primeiro real.**
+
+## Como testar
+
+### Sem rede nenhuma
+
+```
+npm test
+```
+
+`aviso.test.ts` cobre a leitura do webhook, `assinatura.test.ts` o manifesto byte
+a byte, `ciclo.test.ts` as três armadilhas de data (31 de janeiro mais um mês,
+ano bissexto, fuso de São Paulo), `erros.test.ts` a regex que recusa palavra
+negativa nas mensagens, e `precos.test.ts` a conta que sustenta a frase de venda.
+
+### No banco
+
+```
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/testes-rls.sql
+```
+
+Ou colando no SQL Editor do Supabase, que é o caminho mais curto. O resultado sai
+como tabela, com a primeira linha dizendo `TODOS OS TESTES PASSARAM` e a
+contagem. Entre as asserções: o mesmo pagamento aplicado duas vezes deixa a data
+igual, o aviso fora de ordem mantém o vencimento maior, e aviso atrasado não
+ressuscita assinatura encerrada.
+
+### O webhook, sem cartão e sem túnel
+
+```
+npm run dev
+MERCADOPAGO_WEBHOOK_SECRET=... npm run aviso -- payment 123456
+```
+
+O script calcula o HMAC por fora, com `node:crypto` direto, sem importar nada de
+`lib/pagamento`. Então ele testa o manifesto de verdade, em vez de comparar o
+código com ele mesmo. Rodar duas vezes com o mesmo id de evento tem que dar
+"aviso repetido"; com `--novo` o id muda e o webhook processa de novo, que é o
+caminho para conferir o `greatest`.
+
+Os tópicos aceitos são `payment`, `assinatura` e `recorrente`.
+
+### No sandbox do Mercado Pago
+
+Usuários de teste por `POST /users/test_user`. **O desfecho do cartão é decidido
+pelo nome do portador**: `APRO`, `OTHE`, `FUND`, `SECU`, `EXPI`, `CALL`, o que
+exercita cada ramo de `erros.ts`. Conferir a lista na documentação viva, porque
+esses valores mudam.
+
+No débito, conferir os três desfechos do 3DS, e não só o feliz: desafio aprovado,
+desafio recusado, e **desafio abandonado**, que é a pessoa fechar a janela do
+banco no meio. O abandonado é o que fica preso em `aguardando` para sempre se
+ninguém tratar, então a tela precisa de saída depois de alguns minutos.
+
+## As chaves
+
+| variável | onde vive | o que é |
+| --- | --- | --- |
+| `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` | navegador e servidor | pública por definição, vai no JavaScript dos Secure Fields |
+| `MERCADOPAGO_ACCESS_TOKEN` | só servidor | cria assinatura e cobrança |
+| `MERCADOPAGO_WEBHOOK_SECRET` | só servidor | confere o HMAC do aviso |
+| `SUPABASE_SERVICE_ROLE_KEY` | só servidor | passa por cima da RLS inteira |
+
+Virar para produção é trocar as duas primeiras pelas de produção e regravar o
+segredo do webhook no painel do Mercado Pago. Nenhuma delas entra no banco, no
+repositório ou numa conversa.
+
+**A chave de serviço merece um parágrafo próprio.** Com ela, uma consulta lê e
+escreve a página de qualquer pessoa e chama as funções que dão plano pago de
+graça. O guarda no topo de `lib/supabase/servico.ts` é literalmente a única coisa
+entre ela e um bundle de navegador: se o módulo for carregado no cliente, ele
+quebra a página em vez de publicar a chave no HTML. Barulhento é o comportamento
+certo, porque chave vazada só se recupera trocando a chave, e ninguém troca o que
+não sabe que vazou.
+
+Nenhuma tela, Server Action ou rota que a pessoa alcança importa esse arquivo. Se
+um dia for mais fácil resolver um problema de RLS com a chave de serviço, o
+problema é a política, e não a chave.
+
+## O que fica de fora
+
+- **Pix Automático**, o débito recorrente do Banco Central. Taxa bem menor que
+  cartão, e é o motivo de a camada ficar atrás da interface `Gateway`: trocar de
+  provedor, ou acrescentar um, é trocar um arquivo.
+- **Cupom de desconto.**
+- **Nota fiscal de serviço**, que é por município e fica fora do código.
+- **Devolução automática no anual.** Na versão 1 o estorno é feito à mão no
+  painel do Mercado Pago, e o webhook cuida do rebaixamento.
+- **CAPTCHA na conta provisória.** Já registrado como adiado em
+  `supabase/PROMPT-SUPABASE.md`, e dinheiro em jogo torna o abuso mais atraente.

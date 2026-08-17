@@ -138,6 +138,13 @@ não são foto: são monogramas desenhados em Archivo por `npm run logos`.
 O schema com RLS está escrito e testado num Postgres local, em `supabase/`.
 Falta aplicar num projeto Supabase de verdade. Ver `supabase/LEIA-ME.md`.
 
+## Cobrança
+
+Checkout próprio, com o Mercado Pago por trás: crédito com sete dias de teste e
+renovação automática, Pix e débito comprando um ciclo à vista. Os preços, o
+caminho de cada compra, o desenho do webhook e as regras de vencimento estão em
+`COBRANCA.md`.
+
 ## Stack
 
 Next.js (App Router) com TypeScript, Tailwind CSS. Supabase e Vercel entram nas
