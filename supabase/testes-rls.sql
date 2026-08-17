@@ -675,14 +675,14 @@ select testes.ok('visitante chama exatamente as quatro funções que ele precisa
   = array['endereco_livre', 'negocio_publico',
           'registrar_denuncia', 'registrar_evento']::name[]);
 
-select testes.ok('quem está logado chama essas quatro, mais plano_de',
+select testes.ok('quem está logado chama essas quatro, mais plano_de e os números',
   (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('authenticated', p.oid, 'EXECUTE'))
-  = array['endereco_livre', 'negocio_publico', 'plano_de',
-          'registrar_denuncia', 'registrar_evento']::name[]);
+  = array['endereco_livre', 'negocio_publico', 'numeros_do_negocio',
+          'plano_de', 'registrar_denuncia', 'registrar_evento']::name[]);
 
 select testes.ok('toda função de public tem search_path fixo',
   not exists (
@@ -731,6 +731,571 @@ select testes.ok('dono logado consulta plano_de, que o gatilho de cobrança usa'
 
 select testes.ok('visitante NÃO chama gatilho de limite direto',
   not has_function_privilege('anon', 'public.checa_limite_itens()', 'EXECUTE'));
+
+-- =============================================================================
+-- Assinatura e cobrança
+-- =============================================================================
+-- Duas metades, e as duas importam.
+--
+-- A primeira é a de sempre: quem lê o quê. Assinatura e cobrança são do dono e
+-- de mais ninguém, e o dono só lê, porque quem escreve é o webhook com a chave
+-- de serviço.
+--
+-- A segunda é a do dinheiro, e é a razão de esta parte existir. O webhook
+-- reenvia, e reenvia fora de ordem. Os testes de idempotência abaixo são os que
+-- dizem que o mesmo pagamento aplicado duas vezes cobra um mês só, e que o
+-- aviso atrasado de setembro não come o mês de outubro que já estava pago.
+--
+-- testes.como só sabe virar anon e authenticated. O que roda como serviço roda
+-- depois de reset role, porque protege_cobranca trata postgres igual a
+-- service_role, que é justamente a porta que a função usa.
+
+insert into public.assinaturas
+  (id, negocio_id, provedor, id_externo, ciclo, meio, status, valor_centavos)
+values
+  ('a5510000-0000-4000-8000-000000000001', '11111111-0000-4000-8000-000000000001',
+   'mercadopago', 'preapproval-a', 'mensal', 'credito', 'ativa', 1990),
+  ('a5510000-0000-4000-8000-000000000002', '22222222-0000-4000-8000-000000000002',
+   'mercadopago', 'preapproval-b', 'anual', 'pix', 'ativa', 19900);
+
+insert into public.cobrancas
+  (id, negocio_id, assinatura_id, id_externo, meio, valor_centavos, status, pago_em)
+values
+  ('c0b40000-0000-4000-8000-000000000001', '11111111-0000-4000-8000-000000000001',
+   'a5510000-0000-4000-8000-000000000001', 'pagamento-a-antigo', 'credito', 1990,
+   'paga', now()),
+  ('c0b40000-0000-4000-8000-000000000002', '22222222-0000-4000-8000-000000000002',
+   'a5510000-0000-4000-8000-000000000002', 'pagamento-b', 'pix', 19900,
+   'paga', now());
+
+insert into public.avisos_pagamento (provedor, id_evento, topico)
+values ('mercadopago', 'evento-1', 'payment');
+
+-- Um evento para B, que é o que dá o que esconder no teste dos números.
+insert into public.eventos (negocio_id, tipo)
+values ('22222222-0000-4000-8000-000000000002', 'visita');
+
+-- -----------------------------------------------------------------------------
+-- Os dois índices que valem mais que a tabela
+-- -----------------------------------------------------------------------------
+
+-- Dois cliques no botão de assinar viram duas cobranças recorrentes, e quem
+-- descobre é o cliente na fatura. Por isso a regra é do banco.
+select testes.barrado('duas assinaturas vivas no mesmo negócio é barrado', $q$
+  insert into public.assinaturas (negocio_id, valor_centavos, status)
+  values ('11111111-0000-4000-8000-000000000001', 1990, 'teste')
+$q$);
+
+-- Encerrada não conta como viva, senão trocar de plano ficaria impossível.
+insert into public.assinaturas (negocio_id, valor_centavos, status, cancelada_em)
+values ('11111111-0000-4000-8000-000000000001', 990, 'encerrada', now());
+
+select testes.ok('mas a encerrada convive com a viva, senão trocar de plano travava',
+  (select count(*) from public.assinaturas
+    where negocio_id = '11111111-0000-4000-8000-000000000001') = 2);
+
+select testes.barrado('o mesmo preapproval não entra duas vezes', $q$
+  insert into public.assinaturas (negocio_id, id_externo, valor_centavos, status)
+  values ('33333333-0000-4000-8000-000000000003', 'preapproval-a', 1990, 'encerrada')
+$q$);
+
+select testes.barrado('o mesmo aviso do gateway não entra duas vezes', $q$
+  insert into public.avisos_pagamento (provedor, id_evento, topico)
+  values ('mercadopago', 'evento-1', 'payment')
+$q$);
+
+-- -----------------------------------------------------------------------------
+-- O que o dono enxerga
+-- -----------------------------------------------------------------------------
+
+select testes.como('aaaaaaaa-0000-4000-8000-000000000001');
+
+select testes.ok('o dono lê a própria assinatura',
+  (select count(*) from public.assinaturas
+    where negocio_id = '11111111-0000-4000-8000-000000000001') = 2);
+
+select testes.ok('o dono NÃO lê a assinatura de outro',
+  (select count(*) from public.assinaturas
+    where negocio_id = '22222222-0000-4000-8000-000000000002') = 0);
+
+select testes.ok('o dono lê a própria cobrança, que é o histórico dele',
+  (select count(*) from public.cobrancas
+    where negocio_id = '11111111-0000-4000-8000-000000000001') = 1);
+
+select testes.ok('o dono NÃO lê a cobrança de outro',
+  (select count(*) from public.cobrancas
+    where negocio_id = '22222222-0000-4000-8000-000000000002') = 0);
+
+-- Sem política de insert, update nem delete, e sem privilégio de tabela. Quem
+-- escreve é o webhook, e o webhook é do servidor.
+select testes.barrado('o dono NÃO cria assinatura para si', $q$
+  insert into public.assinaturas (negocio_id, valor_centavos, status)
+  values ('11111111-0000-4000-8000-000000000001', 100, 'ativa')
+$q$);
+
+select testes.barrado('o dono NÃO vira a própria assinatura para ativa', $q$
+  update public.assinaturas set status = 'ativa'
+   where negocio_id = '11111111-0000-4000-8000-000000000001'
+$q$);
+
+select testes.barrado('o dono NÃO apaga a própria cobrança', $q$
+  delete from public.cobrancas
+   where negocio_id = '11111111-0000-4000-8000-000000000001'
+$q$);
+
+select testes.barrado('nem o dono lê os avisos do gateway', $q$
+  select count(*) from public.avisos_pagamento
+$q$);
+
+-- -----------------------------------------------------------------------------
+-- O que o visitante enxerga
+-- -----------------------------------------------------------------------------
+
+select testes.como(null);
+
+select testes.barrado('visitante NÃO lê assinatura', $q$
+  select count(*) from public.assinaturas
+$q$);
+
+select testes.barrado('visitante NÃO lê cobrança', $q$
+  select count(*) from public.cobrancas
+$q$);
+
+select testes.barrado('visitante NÃO lê os avisos do gateway', $q$
+  select count(*) from public.avisos_pagamento
+$q$);
+
+-- -----------------------------------------------------------------------------
+-- O endereço da rota de assinar
+-- -----------------------------------------------------------------------------
+-- A 009 acrescenta `assinar` em slugs_reservados, porque a rota /assinar vai
+-- existir e o endereço estava solto. `precos`, `assinatura` e `cobranca` já
+-- estavam reservados; este ficou de fora.
+
+select testes.ok('o endereço da rota de assinar está reservado',
+  not public.endereco_livre('assinar'));
+
+-- -----------------------------------------------------------------------------
+-- Quem alcança as funções do dinheiro
+-- -----------------------------------------------------------------------------
+
+reset role;
+
+select testes.ok('registrar_cobranca_paga fica fora do alcance do visitante',
+  not has_function_privilege('anon',
+    'public.registrar_cobranca_paga(uuid, uuid, text, text, integer, timestamptz)',
+    'EXECUTE'));
+
+select testes.ok('e fora do alcance de quem está logado, que é o dono da página',
+  not has_function_privilege('authenticated',
+    'public.registrar_cobranca_paga(uuid, uuid, text, text, integer, timestamptz)',
+    'EXECUTE'));
+
+select testes.ok('a chave de serviço alcança, que é quem recebe o webhook',
+  has_function_privilege('service_role',
+    'public.registrar_cobranca_paga(uuid, uuid, text, text, integer, timestamptz)',
+    'EXECUTE'));
+
+select testes.ok('o estorno também é só da chave de serviço',
+  not has_function_privilege('anon', 'public.desfazer_cobranca(text)', 'EXECUTE')
+  and not has_function_privilege('authenticated',
+        'public.desfazer_cobranca(text)', 'EXECUTE'));
+
+select testes.ok('os números do painel são de quem tem painel',
+  not has_function_privilege('anon',
+    'public.numeros_do_negocio(uuid, integer)', 'EXECUTE')
+  and has_function_privilege('authenticated',
+        'public.numeros_do_negocio(uuid, integer)', 'EXECUTE'));
+
+-- -----------------------------------------------------------------------------
+-- O mesmo pagamento aplicado duas vezes, e o aviso fora de ordem
+-- -----------------------------------------------------------------------------
+-- É aqui que o greatest ganha o lugar dele. A tabela avisos_pagamento já
+-- segura o reenvio do mesmo evento, mas ela não cobre dois eventos diferentes
+-- chegando trocados: os dois são legítimos, os dois entram, e somar intervalo
+-- daria um mês a mais para quem pagou um.
+
+do $$
+declare
+  v_ate timestamptz := now() + interval '30 days';
+  v_primeira timestamptz;
+  v_segunda timestamptz;
+  v_terceira timestamptz;
+begin
+  perform public.registrar_cobranca_paga(
+    '11111111-0000-4000-8000-000000000001',
+    'a5510000-0000-4000-8000-000000000001',
+    'pagamento-a-1', 'credito', 1990, v_ate);
+
+  select plano_expira_em into v_primeira
+    from public.negocios where id = '11111111-0000-4000-8000-000000000001';
+
+  perform testes.ok('a cobrança paga põe o negócio no plano pago',
+    (select plano from public.negocios
+      where id = '11111111-0000-4000-8000-000000000001') = 'pago');
+
+  perform testes.ok('e o vencimento vira o instante que veio do pagamento',
+    v_primeira = v_ate);
+
+  perform testes.ok('a assinatura fica ativa, valendo até a mesma data',
+    (select status = 'ativa' and ciclo_termina_em = v_ate
+       from public.assinaturas
+      where id = 'a5510000-0000-4000-8000-000000000001'));
+
+  -- O gateway reenviou o mesmo aviso.
+  perform public.registrar_cobranca_paga(
+    '11111111-0000-4000-8000-000000000001',
+    'a5510000-0000-4000-8000-000000000001',
+    'pagamento-a-1', 'credito', 1990, v_ate);
+
+  select plano_expira_em into v_segunda
+    from public.negocios where id = '11111111-0000-4000-8000-000000000001';
+
+  perform testes.ok('o mesmo pagamento aplicado duas vezes deixa o vencimento igual',
+    v_segunda = v_primeira);
+
+  perform testes.ok('e a cobrança continua sendo uma linha só',
+    (select count(*) from public.cobrancas
+      where id_externo = 'pagamento-a-1') = 1);
+
+  -- O aviso do mês anterior chegando atrasado, depois do mês seguinte.
+  perform public.registrar_cobranca_paga(
+    '11111111-0000-4000-8000-000000000001',
+    'a5510000-0000-4000-8000-000000000001',
+    'pagamento-a-0', 'credito', 1990, now() + interval '2 days');
+
+  select plano_expira_em into v_terceira
+    from public.negocios where id = '11111111-0000-4000-8000-000000000001';
+
+  perform testes.ok('e o aviso fora de ordem mantém o vencimento maior',
+    v_terceira = v_primeira);
+
+  perform testes.ok('o ciclo da assinatura também segura, e as duas datas concordam',
+    (select ciclo_termina_em from public.assinaturas
+      where id = 'a5510000-0000-4000-8000-000000000001') = v_primeira);
+
+  perform testes.ok('mas a cobrança atrasada fica registrada do mesmo jeito',
+    (select count(*) from public.cobrancas
+      where id_externo = 'pagamento-a-0' and status = 'paga') = 1);
+end;
+$$;
+
+-- -----------------------------------------------------------------------------
+-- Cancelar não tira do ar, o vencimento é que tira
+-- -----------------------------------------------------------------------------
+
+do $$
+declare
+  v_antes timestamptz;
+  v_depois timestamptz;
+begin
+  select plano_expira_em into v_antes
+    from public.negocios where id = '11111111-0000-4000-8000-000000000001';
+
+  perform public.encerrar_assinatura('11111111-0000-4000-8000-000000000001');
+
+  select plano_expira_em into v_depois
+    from public.negocios where id = '11111111-0000-4000-8000-000000000001';
+
+  perform testes.ok('encerrar a assinatura mantém o vencimento intacto',
+    v_depois = v_antes);
+
+  perform testes.ok('quem cancelou hoje continua pago até o fim do ciclo',
+    public.plano_de('11111111-0000-4000-8000-000000000001') = 'pago');
+
+  perform testes.ok('e a assinatura fica encerrada, com a data do cancelamento',
+    (select status = 'encerrada' and cancelada_em is not null
+       from public.assinaturas
+      where id = 'a5510000-0000-4000-8000-000000000001'));
+end;
+$$;
+
+-- -----------------------------------------------------------------------------
+-- Cartão recusado ganha carência
+-- -----------------------------------------------------------------------------
+-- Tirar a página do ar na tarde em que o cartão falhou é o pior momento
+-- possível, e quase sempre o cliente resolve em um ou dois dias.
+
+do $$
+declare
+  v_depois timestamptz;
+  v_a_antes timestamptz;
+  v_a_depois timestamptz;
+begin
+  update public.negocios
+     set plano = 'pago', plano_expira_em = now() + interval '1 day'
+   where id = '22222222-0000-4000-8000-000000000002';
+
+  perform public.marcar_atraso('22222222-0000-4000-8000-000000000002', 5);
+
+  select plano_expira_em into v_depois
+    from public.negocios where id = '22222222-0000-4000-8000-000000000002';
+
+  perform testes.ok('o pagamento recusado marca a assinatura como em atraso',
+    (select status from public.assinaturas
+      where id = 'a5510000-0000-4000-8000-000000000002') = 'em_atraso');
+
+  perform testes.ok('e a carência empurra o vencimento, para a página seguir no ar',
+    v_depois = now() + interval '5 days');
+
+  -- Em A o vencimento já está a trinta dias daqui. A carência é piso, então
+  -- ela não pode encurtar o que já estava pago.
+  select plano_expira_em into v_a_antes
+    from public.negocios where id = '11111111-0000-4000-8000-000000000001';
+
+  perform public.marcar_atraso('11111111-0000-4000-8000-000000000001', 5);
+
+  select plano_expira_em into v_a_depois
+    from public.negocios where id = '11111111-0000-4000-8000-000000000001';
+
+  perform testes.ok('a carência é piso, e não encurta o que já estava pago',
+    v_a_depois = v_a_antes);
+
+  -- A assinatura de A já tinha sido encerrada logo acima, e atraso não
+  -- ressuscita assinatura encerrada.
+  perform testes.ok('e o atraso não ressuscita uma assinatura já encerrada',
+    (select status from public.assinaturas
+      where id = 'a5510000-0000-4000-8000-000000000001') = 'encerrada');
+end;
+$$;
+
+-- -----------------------------------------------------------------------------
+-- Estorno, o único lugar onde a data anda para trás
+-- -----------------------------------------------------------------------------
+
+do $$
+begin
+  perform public.desfazer_cobranca('pagamento-b');
+
+  perform testes.ok('o estorno marca a cobrança como devolvida',
+    (select status from public.cobrancas where id_externo = 'pagamento-b')
+    = 'devolvida');
+
+  perform testes.ok('e puxa o vencimento para agora, que é o único caso disso',
+    (select plano_expira_em from public.negocios
+      where id = '22222222-0000-4000-8000-000000000002') <= now());
+
+  perform testes.ok('então o negócio volta a valer como gratuito na hora',
+    public.plano_de('22222222-0000-4000-8000-000000000002') = 'gratuito');
+
+  perform testes.ok('e o estorno de um negócio deixa o outro em paz',
+    public.plano_de('11111111-0000-4000-8000-000000000001') = 'pago');
+end;
+$$;
+
+-- -----------------------------------------------------------------------------
+-- Os números do painel herdam a RLS de eventos
+-- -----------------------------------------------------------------------------
+-- security invoker de propósito: a regra de quem vê o quê já mora na política
+-- de eventos, e repetir aqui seria criar um segundo lugar para ela envelhecer.
+
+select testes.ok('a chave de serviço enxerga o evento de B, que existe mesmo',
+  (select count(*) from public.numeros_do_negocio(
+    '22222222-0000-4000-8000-000000000002', 7)) = 1);
+
+select testes.como('aaaaaaaa-0000-4000-8000-000000000001');
+
+select testes.ok('o dono soma os próprios números',
+  (select coalesce(sum(total), 0) from public.numeros_do_negocio(
+    '11111111-0000-4000-8000-000000000001', 7)) = 2);
+
+select testes.ok('e o número de outro negócio vem vazio, sem a função repetir a regra',
+  (select count(*) from public.numeros_do_negocio(
+    '22222222-0000-4000-8000-000000000002', 7)) = 0);
+
+-- -----------------------------------------------------------------------------
+-- Os ícones de link que o código já declarava
+-- -----------------------------------------------------------------------------
+-- IconeLink em lib/tipos.ts tem nove valores, e a constraint tinha cinco. A
+-- correção 006 igualou os dois. Quem manda no conjunto é o código, e a
+-- constraint está aqui só para barrar lixo.
+
+reset role;
+
+insert into public.links (negocio_id, rotulo, url, icone)
+values ('33333333-0000-4000-8000-000000000003', 'Agenda',
+        'https://exemplo.com/agenda', 'agenda');
+
+select testes.ok('o ícone de agenda, que o código já declarava, entra na tabela',
+  (select icone from public.links
+    where negocio_id = '33333333-0000-4000-8000-000000000003') = 'agenda');
+
+select testes.barrado('e um ícone que o código não conhece continua barrado', $q$
+  insert into public.links (negocio_id, rotulo, url, icone)
+  values ('33333333-0000-4000-8000-000000000003', 'Lixo',
+          'https://exemplo.com/lixo', 'foguete')
+$q$);
+
+reset role;
+
+-- -----------------------------------------------------------------------------
+-- Permissão de função
+-- -----------------------------------------------------------------------------
+-- Esta parte nasceu de um furo que passou por aqui sem ninguém ver.
+--
+-- A bateria testava RLS de tabela e nada de função. E o Postgres dá EXECUTE a
+-- PUBLIC em toda função nova, então `revoke execute ... from anon` tirava o
+-- direito nominal e deixava o herdado por PUBLIC de pé. Resultado: qualquer
+-- pessoa com a chave pública podia chamar limpar_eventos_antigos() em
+-- /rest/v1/rpc e apagar a tabela de eventos.
+--
+-- A primeira asserção é a que vale a longo prazo: ela pega qualquer função
+-- futura que nasça aberta, sem precisar lembrar de escrever um teste nova.
+
+-- Duas asserções, porque são dois caminhos diferentes de permissão e fechar um
+-- não fecha o outro. A primeira versão desta parte só olhava PUBLIC, passava, e
+-- deixava treze funções abertas por grant nominal.
+
+select testes.ok('nenhuma função de public fica aberta para PUBLIC',
+  not exists (
+    select 1
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and (
+        -- proacl nulo quer dizer permissão padrão, e a padrão inclui PUBLIC.
+        p.proacl is null
+        or exists (
+          select 1 from aclexplode(p.proacl) a
+          where a.grantee = 0 and a.privilege_type = 'EXECUTE'
+        )
+      )
+  ));
+
+select testes.ok('toda função de public tem search_path fixo',
+  not exists (
+    select 1
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and not exists (
+        select 1 from unnest(coalesce(p.proconfig, '{}')) c
+        where c like 'search_path=%'
+      )
+  ));
+
+select testes.ok('visitante registra evento',
+  has_function_privilege('anon', 'public.registrar_evento(text, text)', 'EXECUTE'));
+
+select testes.ok('visitante registra denúncia',
+  has_function_privilege('anon',
+    'public.registrar_denuncia(text, text, text)', 'EXECUTE'));
+
+-- Sem esta, as políticas de catálogo, foto, horário e link param de deixar o
+-- visitante ler, porque expressão de política roda como quem consulta.
+select testes.ok('visitante avalia negocio_publico, que mora nas políticas',
+  has_function_privilege('anon', 'public.negocio_publico(uuid)', 'EXECUTE'));
+
+select testes.ok('visitante NÃO apaga os eventos antigos',
+  not has_function_privilege('anon',
+    'public.limpar_eventos_antigos()', 'EXECUTE'));
+
+select testes.ok('dono logado NÃO apaga os eventos antigos',
+  not has_function_privilege('authenticated',
+    'public.limpar_eventos_antigos()', 'EXECUTE'));
+
+select testes.ok('a chave de serviço apaga, que é quem roda manutenção',
+  has_function_privilege('service_role',
+    'public.limpar_eventos_antigos()', 'EXECUTE'));
+
+select testes.ok('visitante NÃO descobre o plano de um negócio',
+  not has_function_privilege('anon', 'public.plano_de(uuid)', 'EXECUTE'));
+
+-- O gatilho protege_cobranca é security invoker de propósito, para enxergar
+-- pelo current_user quem está escrevendo. Então quem edita precisa poder
+-- chamar plano_de, senão salvar o próprio negócio passa a dar erro.
+select testes.ok('dono logado consulta plano_de, que o gatilho de cobrança usa',
+  has_function_privilege('authenticated', 'public.plano_de(uuid)', 'EXECUTE'));
+
+select testes.ok('visitante NÃO chama gatilho de limite direto',
+  not has_function_privilege('anon', 'public.checa_limite_itens()', 'EXECUTE'));
+
+-- =============================================================================
+-- Migrar rascunho, da correção 007
+-- =============================================================================
+-- Quando a conta do Google já existe aqui, o manual linking recusa, e o
+-- rascunho ficaria preso na conta provisória. migrar_rascunho move a página
+-- para a conta que já existe.
+--
+-- Ela escreve dono_id, que é campo que o protege_cobranca devolve ao valor
+-- anterior para todo mundo que não seja o serviço. Ou seja: é uma porta lateral
+-- na proteção que impede alguém de apontar a página dos outros para si, e por
+-- isso cada guarda dela tem teste, e o teste diz qual guarda espera.
+--
+-- A ordem importa. Os dois casos que têm que ser recusados vêm antes do que dá
+-- certo, porque depois da migração o destino fica com a vaga do plano ocupada, e
+-- aí os dois passariam verde pelo motivo errado.
+
+reset role;
+insert into auth.users (id, email, is_anonymous, created_at) values
+  ('a1a1a1a1-0000-4000-8000-000000000011', null, true, now()),
+  ('a2a2a2a2-0000-4000-8000-000000000012', 'ja-tem@exemplo.com', false, now()),
+  ('a3a3a3a3-0000-4000-8000-000000000013', 'cheia@exemplo.com', false, now()),
+  ('a4a4a4a4-0000-4000-8000-000000000014', null, true, now()),
+  ('a5a5a5a5-0000-4000-8000-000000000015', null, true, now());
+
+insert into public.negocios (id, dono_id, slug, nome, publicado) values
+  ('a1000000-0000-4000-8000-000000000011',
+   'a1a1a1a1-0000-4000-8000-000000000011', 'rascunho-da-ana', 'Ana', false),
+  ('a3000000-0000-4000-8000-000000000013',
+   'a3a3a3a3-0000-4000-8000-000000000013', 'pagina-cheia', 'Cheia', true),
+  ('a4000000-0000-4000-8000-000000000014',
+   'a4a4a4a4-0000-4000-8000-000000000014', 'rascunho-do-bento', 'Bento', false),
+  ('a5000000-0000-4000-8000-000000000015',
+   'a5a5a5a5-0000-4000-8000-000000000015', 'ja-no-ar', 'No Ar', true);
+
+select testes.barrado('página no ar NÃO troca de dono pela migração', $q$
+  select public.migrar_rascunho(
+    'a5000000-0000-4000-8000-000000000015',
+    'a5a5a5a5-0000-4000-8000-000000000015',
+    'a2a2a2a2-0000-4000-8000-000000000012')
+$q$, 'já está no ar');
+
+select testes.barrado('conta de origem que NÃO é provisória é recusada', $q$
+  select public.migrar_rascunho(
+    'a3000000-0000-4000-8000-000000000013',
+    'a3a3a3a3-0000-4000-8000-000000000013',
+    'a2a2a2a2-0000-4000-8000-000000000012')
+$q$, 'provisória');
+
+-- O dono informado precisa bater com o gravado, senão a função viraria um jeito
+-- de mover a página de qualquer conta provisória dizendo que ela é sua.
+select testes.barrado('dono informado que NÃO bate com o gravado é recusado', $q$
+  select public.migrar_rascunho(
+    'a1000000-0000-4000-8000-000000000011',
+    'a4a4a4a4-0000-4000-8000-000000000014',
+    'a2a2a2a2-0000-4000-8000-000000000012')
+$q$, 'outra conta');
+
+select public.migrar_rascunho(
+  'a1000000-0000-4000-8000-000000000011',
+  'a1a1a1a1-0000-4000-8000-000000000011',
+  'a2a2a2a2-0000-4000-8000-000000000012');
+
+select testes.ok('rascunho de conta provisória vai para a conta que já existe',
+  (select dono_id from public.negocios
+    where id = 'a1000000-0000-4000-8000-000000000011')
+  = 'a2a2a2a2-0000-4000-8000-000000000012');
+
+select testes.ok('e continua rascunho, porque migrar não publica',
+  (select publicado from public.negocios
+    where id = 'a1000000-0000-4000-8000-000000000011') = false);
+
+-- O limite do plano vale na migração, senão ela seria a porta lateral para
+-- passar de uma página no gratuito. O gatilho de limite é BEFORE INSERT e não
+-- pega update, então a conta é refeita dentro da função.
+select testes.barrado('destino sem vaga no plano é recusado', $q$
+  select public.migrar_rascunho(
+    'a4000000-0000-4000-8000-000000000014',
+    'a4a4a4a4-0000-4000-8000-000000000014',
+    'a3a3a3a3-0000-4000-8000-000000000013')
+$q$, 'limite');
+
+select testes.ok('migrar_rascunho fica fora do alcance do visitante',
+  not has_function_privilege('anon', 'public.migrar_rascunho(uuid, uuid, uuid)', 'EXECUTE'));
+
+select testes.ok('migrar_rascunho fica fora do alcance de quem está logado',
+  not has_function_privilege('authenticated', 'public.migrar_rascunho(uuid, uuid, uuid)', 'EXECUTE'));
 
 do $$
 begin

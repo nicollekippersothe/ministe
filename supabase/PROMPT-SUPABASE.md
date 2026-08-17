@@ -162,3 +162,108 @@ Login
   Supabase, apagar o antigo.
 - **Correção 003, a listagem do bucket.** Continua parada até existir a
   primeira imagem, que é quando ela passa a ter o que conferir.
+
+---
+
+# Prompt 3, para a extensão do Supabase: a cobrança
+
+Vai depois do Prompt 2. **Os dois arquivos estão na branch
+`claude/app-checkout-logic-rkij8d`, e não na `main`.** Nenhum segredo do Mercado
+Pago entra aqui: o token de acesso e a chave do webhook ficam nas variáveis de
+ambiente do servidor, e nunca no banco nem neste arquivo.
+
+Copie daqui até o fim.
+
+```
+Projeto Supabase: niekaszanicnrciuixnb (Entrais, São Paulo).
+
+Só SQL desta vez, nenhum ajuste de painel. No SQL Editor, nesta ordem, o
+conteúdo de cada arquivo do repositório nicollekippersothe/ministe, branch
+claude/app-checkout-logic-rkij8d:
+
+  a) supabase/correcoes/009-cobranca.sql
+  b) supabase/correcoes/010-migrar-rascunho.sql
+  c) supabase/testes-rls.sql
+
+Atenção à branch: na main esses dois arquivos não existem, e a testes-rls.sql
+de lá é a versão sem cobrança. Ela passaria verde sem testar nada disto, que é
+o pior tipo de erro.
+
+O terceiro é a bateria de testes. Roda dentro de uma transação e termina em
+rollback, então não deixa nada gravado. Tem que terminar com a mensagem
+TODOS OS TESTES PASSARAM, com 151 asserções. Se parar antes, me mande a linha
+do FALHOU inteira, sem resumir e sem tentar consertar por conta própria.
+
+O que a 009 traz: três tabelas novas (assinaturas, cobrancas,
+avisos_pagamento), cinco funções novas, e o endereço `assinar` entrando na
+lista de reservados. Quem escreve o plano pago é o webhook, com a chave de
+serviço, e é por isso que as funções do dinheiro precisam terminar fechadas
+para o navegador.
+
+O que a 010 traz: uma função só, migrar_rascunho. O login com Google recusa
+ligar uma identidade que já pertence a outra conta, e nesse caso o rascunho
+ficaria preso na conta provisória. Ela move a página, e escreve dono_id, que é
+campo protegido pelo mesmo gatilho do plano.
+
+CONFERIR NO FIM
+
+  select relname, relrowsecurity from pg_class
+   where relnamespace = 'public'::regnamespace
+     and relname in ('assinaturas', 'cobrancas', 'avisos_pagamento')
+   order by relname;
+
+Tem que trazer as três, as três com relrowsecurity = true.
+
+  select p.proname,
+         has_function_privilege('anon', p.oid, 'execute') as anon,
+         has_function_privilege('authenticated', p.oid, 'execute') as logado
+    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public'
+     and p.proname in ('registrar_cobranca_paga', 'encerrar_assinatura',
+                       'marcar_atraso', 'desfazer_cobranca',
+                       'numeros_do_negocio', 'migrar_rascunho')
+   order by p.proname;
+
+O esperado, linha por linha:
+
+  desfazer_cobranca         false  false
+  encerrar_assinatura       false  false
+  marcar_atraso             false  false
+  migrar_rascunho           false  false
+  numeros_do_negocio        false  true
+  registrar_cobranca_paga   false  false
+
+Se registrar_cobranca_paga ou migrar_rascunho vierem true em qualquer uma das
+duas colunas, PARE e me avise antes de qualquer outra coisa. A primeira é a
+única coisa no banco que consegue escrever plano pago, e a segunda move a
+página de qualquer conta provisória. Abertas ao navegador, viram plano de graça
+e página roubada para quem souber mandar um POST em /rest/v1/rpc.
+
+  select indexname from pg_indexes
+   where schemaname = 'public' and tablename = 'assinaturas'
+   order by indexname;
+
+Tem que aparecer assinaturas_externo_idx e assinaturas_viva_idx.
+
+  select slug from public.slugs_reservados where slug = 'assinar';
+
+Tem que trazer uma linha.
+
+  select p.proname, pg_get_userbyid(p.proowner) as dono
+    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public'
+     and p.proname in ('registrar_cobranca_paga', 'migrar_rascunho');
+
+O esperado é postgres nas duas. As duas são security definer, e o gatilho
+protege_cobranca só deixa passar quem é 'postgres' ou 'service_role'. Com
+outro dono, o gatilho devolve o valor anterior em silêncio: o cliente pagaria
+sem receber o plano, e o rascunho não mudaria de dono.
+
+O QUE EU PRECISO DE VOLTA
+
+  1. A última linha do testes-rls.sql, com a contagem.
+  2. As três tabelas, com o relrowsecurity de cada uma.
+  3. A tabela inteira das seis funções, com as duas colunas.
+  4. Os índices e o slug 'assinar'.
+  5. O dono das duas funções.
+```

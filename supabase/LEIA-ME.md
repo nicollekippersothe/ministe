@@ -12,8 +12,8 @@ do que falta no painel do Supabase está em `PROMPT-SUPABASE.md`.
 
 | arquivo | o que é | testado |
 | --- | --- | --- |
-| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 87 asserções |
-| `testes-rls.sql` | 87 asserções de RLS, de limite e de permissão de função | sim |
+| `schema.sql` | tabelas, restrições, gatilhos, funções e RLS | sim, 151 asserções |
+| `testes-rls.sql` | 151 asserções de RLS, de limite, de cobrança, de migração de rascunho e de permissão de função | sim |
 | `correcoes/` | remendos para projeto que já rodou uma versão anterior do schema | sim |
 | `storage.sql` | bucket das imagens e permissões | não, precisa do Supabase |
 | `local/stub.sql` | só para rodar local, nunca aplicar no Supabase | sim |
@@ -64,6 +64,8 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `006-endereco-livre.sql` | a conferência de endereço do cadastro, que a RLS deixava responder "livre" para endereço já guardado no rascunho de outra pessoa |
 | `007-enderecos-dos-exemplos.sql` | reserva os seis endereços das páginas de exemplo que estavam soltos, e que alguém poderia cadastrar para nunca abrir |
 | `008-envio-de-imagem.sql` | prepara o banco para imagem enviada pelo dono. **Guardada**, ver a nota no topo |
+| `009-cobranca.sql` | assinatura, cobrança e a trava de idempotência do webhook, as quatro funções da chave de serviço, os números do painel e o endereço `/assinar` |
+| `010-migrar-rascunho.sql` | move o rascunho da conta provisória para a conta que já existe, quando o Google recusa ligar a identidade |
 
 ## Rodar local, sem Supabase
 
