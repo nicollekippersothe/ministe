@@ -163,6 +163,43 @@ export type AssinaturaCriada = {
   testeAte: string | null;
   /** Quando o provedor cobra o próximo ciclo, em ISO 8601. */
   proximaCobranca: string | null;
+  /**
+   * O `referencia` que mandamos na criação, de volta.
+   *
+   * É por ele que o webhook descobre de quem é a assinatura. O aviso do
+   * provedor carrega só um id, e o id sozinho não diz nada sobre o nosso banco.
+   */
+  referencia: string | null;
+  /**
+   * Quantas cobranças já saíram desta assinatura, segundo o provedor.
+   *
+   * Zero significa que a assinatura ainda está no teste grátis, e é assim que o
+   * webhook decide entre "abriu o teste" e "cobrou o ciclo", sem depender do
+   * nosso relógio nem de comparar datas.
+   */
+  cobrancasFeitas: number;
+};
+
+/**
+ * Uma cobrança que a assinatura recorrente gerou sozinha.
+ *
+ * É a peça que estende o plano todo mês. Ela é um objeto próprio do provedor,
+ * separado tanto do preapproval quanto do pagamento avulso, e por isso tem
+ * consulta própria: o aviso dela chega no tópico
+ * `subscription_authorized_payment`, e é o único que aparece sem ninguém ter
+ * clicado em nada.
+ */
+export type CobrancaDaAssinatura = {
+  /** O id da cobrança recorrente no provedor. */
+  idExterno: string;
+  /** A assinatura que a gerou, para achar o negócio pelo id_externo gravado. */
+  idDaAssinatura: string | null;
+  /** O pagamento por trás dela, quando já existe um. */
+  idDoPagamento: string | null;
+  situacao: SituacaoCobranca;
+  valorCentavos: number;
+  /** Preenchido quando a situação é "recusada". */
+  motivo: MotivoRecusa | null;
 };
 
 export type CobrancaCriada = {
@@ -177,6 +214,17 @@ export type CobrancaCriada = {
   pixQrBase64: string | null;
   /** Quando o Pix expira, em ISO 8601. */
   expiraEm: string | null;
+  /** O `referencia` de volta, pelo mesmo motivo da assinatura. */
+  referencia: string | null;
+  /**
+   * Verdadeiro quando este pagamento nasceu de uma assinatura recorrente.
+   *
+   * Existe para o webhook desempatar: a cobrança mensal do crédito chega por
+   * dois avisos, o da fatura da assinatura e o do pagamento em si. Sem esta
+   * marca, o segundo seria tratado como compra avulsa e empurraria o
+   * vencimento um ciclo além do que a pessoa pagou.
+   */
+  daAssinatura: boolean;
   /**
    * Preenchido quando `situacao` é "recusada", para a tela ter o que dizer.
    *
@@ -195,8 +243,24 @@ export type CobrancaCriada = {
  * internet aberta e pode ter sido remontado por qualquer um.
  */
 export type Aviso = {
-  /** "pagamento" para /v1/payments, "assinatura" para /preapproval. */
-  tipo: "pagamento" | "assinatura" | "outro";
+  /**
+   * "pagamento" para /v1/payments, "assinatura" para /preapproval, e
+   * "cobranca_da_assinatura" para a fatura que a recorrência gera sozinha.
+   *
+   * O terceiro parece detalhe e é o mais importante dos três: é ele que estende
+   * o plano todo mês de quem paga no crédito. Os outros dois só aparecem quando
+   * alguém clica em alguma coisa.
+   */
+  tipo: "pagamento" | "assinatura" | "cobranca_da_assinatura" | "outro";
+  /**
+   * O id do aviso em si, que é a chave da trava de idempotência.
+   *
+   * É diferente do `idExterno` de propósito, e a diferença é a razão de este
+   * campo existir. O mesmo pagamento gera vários avisos ao longo da vida dele
+   * (aprovado hoje, estornado em outubro), todos com o mesmo `data.id`. Travar
+   * por `data.id` faria o estorno ser engolido como repetição do aprovado.
+   */
+  idDoEvento: string;
   /** O id do objeto que mudou, no provedor. */
   idExterno: string;
   /** O `action` cru do provedor, por exemplo "payment.updated". */
@@ -218,6 +282,10 @@ export type Gateway = {
   assinarComCartao(p: DadosCartao): Promise<Resultado<AssinaturaCriada>>;
   cobrarUmaVez(p: DadosAvulso): Promise<Resultado<CobrancaCriada>>;
   consultarCobranca(idExterno: string): Promise<Resultado<CobrancaCriada>>;
+  consultarAssinatura(idExterno: string): Promise<Resultado<AssinaturaCriada>>;
+  consultarCobrancaDaAssinatura(
+    idExterno: string,
+  ): Promise<Resultado<CobrancaDaAssinatura>>;
   cancelarAssinatura(idExterno: string): Promise<Resultado<void>>;
   lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | null>;
 };

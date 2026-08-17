@@ -123,8 +123,13 @@ npm run logos     # redesenha os monogramas dos negócios de exemplo
 ## Fora da versão 1
 
 Pagamento do cliente final, pedido ou carrinho, domínio próprio, multiusuário,
-app nativo, chat interno, integração com iFood ou Instagram. A cobrança da
-assinatura começa manual: o campo `plano` é virado na mão.
+app nativo, chat interno, integração com iFood ou Instagram.
+
+A cobrança da assinatura é própria, com o Mercado Pago por trás: crédito com
+sete dias de teste e renovação automática, Pix e débito comprando um ciclo à
+vista. A tela é nossa do começo ao fim, sem redirecionamento. Quem escreve
+`plano` e `plano_expira_em` é o webhook, com a chave de serviço, e é a única
+porta que o gatilho `protege_cobranca` deixa aberta. Ver `COBRANCA.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

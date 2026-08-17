@@ -58,6 +58,7 @@ export type {
   Aviso,
   Ciclo,
   CobrancaCriada,
+  CobrancaDaAssinatura,
   DadosAvulso,
   DadosCartao,
   Documento,

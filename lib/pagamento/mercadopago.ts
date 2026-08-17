@@ -6,6 +6,7 @@ import type {
   Aviso,
   Ciclo,
   CobrancaCriada,
+  CobrancaDaAssinatura,
   DadosAvulso,
   DadosCartao,
   Gateway,
@@ -213,6 +214,29 @@ function cicloDoValor(centavos: number): Ciclo | null {
   return null;
 }
 
+/**
+ * O ciclo de uma assinatura consultada, lido do `auto_recurring`.
+ *
+ * O `/preapproval` só conhece "days" e "months", então o anual chega como doze
+ * meses. Quando o formato vier de um jeito que não dá para ler, o valor decide,
+ * e é por isso que os dois preços do produto são diferentes.
+ */
+function cicloDaRecorrencia(recorrente: Registro, centavos: number): Ciclo {
+  const tipo = texto(recorrente.frequency_type);
+  const quantos = Number(recorrente.frequency);
+  if (tipo === "months" && Number.isFinite(quantos)) {
+    return quantos >= 12 ? "anual" : "mensal";
+  }
+  return cicloDoValor(centavos) ?? "mensal";
+}
+
+/** Quantas cobranças o provedor diz que já saíram desta assinatura. */
+function cobrancasFeitas(d: Registro): number {
+  const resumo = objeto(d.summarized);
+  const n = Number(resumo.charged_quantity);
+  return Number.isFinite(n) && n > 0 ? Math.trunc(n) : 0;
+}
+
 function meioDaResposta(d: Registro): Meio {
   if (texto(d.payment_method_id) === "pix") return "pix";
   switch (texto(d.payment_type_id)) {
@@ -239,14 +263,23 @@ function lerCobranca(d: Registro, ciclo: Ciclo | null, meio: Meio): CobrancaCria
     pixCopiaECola: texto(interacao.qr_code),
     pixQrBase64: texto(interacao.qr_code_base64),
     expiraEm: texto(d.date_of_expiration),
+    referencia: texto(d.external_reference),
+    // "recurring_payment" é o que o Mercado Pago escreve na cobrança que a
+    // assinatura gerou sozinha. Compra avulsa vem "regular_payment".
+    daAssinatura: texto(d.operation_type) === "recurring_payment",
     motivo:
       situacao === "recusada" ? motivoDoStatusDetail(texto(d.status_detail)) : null,
   };
 }
 
+/**
+ * O `ciclo` entra nulo na consulta, porque ali ninguém sabe o que foi pedido, e
+ * a resposta é a única fonte. Na criação vem preenchido, e vale mais que a
+ * leitura, porque é o que a pessoa escolheu na tela.
+ */
 function lerAssinatura(
   d: Registro,
-  ciclo: Ciclo,
+  ciclo: Ciclo | null,
   valorPedidoCentavos: number,
 ): AssinaturaCriada {
   const recorrente = objeto(d.auto_recurring);
@@ -256,16 +289,44 @@ function lerAssinatura(
     recorrente.transaction_amount === undefined
       ? valorPedidoCentavos
       : emCentavos(recorrente.transaction_amount);
+  const feitas = cobrancasFeitas(d);
 
   return {
     idExterno: texto(d.id) ?? "",
     situacao: situacaoAssinatura(texto(d.status)),
-    ciclo,
+    ciclo: ciclo ?? cicloDaRecorrencia(recorrente, valor),
     valorCentavos: valor,
     // Com teste grátis, a próxima cobrança é justamente o fim do teste: o
     // Mercado Pago empurra a primeira fatura para o dia seguinte ao sétimo.
-    testeAte: temTeste ? proxima : null,
+    //
+    // Depois da primeira cobrança essa mesma data passa a ser a próxima fatura,
+    // e aí ela deixa de ser fim de teste. É o que `cobrancasFeitas` resolve, e
+    // é por isso que a conta é feita aqui e não em quem lê.
+    testeAte: temTeste && feitas === 0 ? proxima : null,
     proximaCobranca: proxima,
+    referencia: texto(d.external_reference),
+    cobrancasFeitas: feitas,
+  };
+}
+
+/** A fatura que a recorrência gerou sozinha, de `/authorized_payments/{id}`. */
+function lerCobrancaDaAssinatura(d: Registro): CobrancaDaAssinatura {
+  // O status que importa é o do pagamento por dentro, e não o do envelope: o
+  // envelope diz "processed" tanto para o que foi aprovado quanto para o que o
+  // banco recusou.
+  const pagamento = objeto(d.payment);
+  const situacao = situacaoCobranca(texto(pagamento.status));
+
+  return {
+    idExterno: texto(d.id) ?? "",
+    idDaAssinatura: texto(d.preapproval_id),
+    idDoPagamento: texto(pagamento.id),
+    situacao,
+    valorCentavos: emCentavos(d.transaction_amount),
+    motivo:
+      situacao === "recusada"
+        ? motivoDoStatusDetail(texto(pagamento.status_detail))
+        : null,
   };
 }
 
@@ -376,6 +437,44 @@ async function consultarCobranca(
   return { ok: true, valor: lerCobranca(r.valor, null, meioDaResposta(r.valor)) };
 }
 
+/**
+ * O estado de uma assinatura recorrente, direto na fonte.
+ *
+ * É o que o webhook chama quando chega um aviso de `subscription_preapproval`.
+ * Traz o `external_reference` de volta, que é como o aviso vira um negócio do
+ * nosso banco: o aviso em si carrega um id do Mercado Pago e mais nada.
+ */
+async function consultarAssinatura(
+  idExterno: string,
+): Promise<Resultado<AssinaturaCriada>> {
+  if (!idExterno) return { ok: false, motivo: "cobranca_ausente" };
+
+  const r = await pedir("GET", `/preapproval/${encodeURIComponent(idExterno)}`);
+  if (!r.ok) return r;
+  return { ok: true, valor: lerAssinatura(r.valor, null, 0) };
+}
+
+/**
+ * A fatura mensal que a assinatura gerou sozinha.
+ *
+ * É a chamada menos estável da API de assinaturas, e é justamente ela que
+ * estende o plano todo mês de quem paga no crédito. Quando ela sai do ar, o
+ * webhook devolve 500 e o Mercado Pago reentrega, que é o comportamento certo:
+ * melhor tentar de novo do que rebaixar quem pagou.
+ */
+async function consultarCobrancaDaAssinatura(
+  idExterno: string,
+): Promise<Resultado<CobrancaDaAssinatura>> {
+  if (!idExterno) return { ok: false, motivo: "cobranca_ausente" };
+
+  const r = await pedir(
+    "GET",
+    `/authorized_payments/${encodeURIComponent(idExterno)}`,
+  );
+  if (!r.ok) return r;
+  return { ok: true, valor: lerCobrancaDaAssinatura(r.valor) };
+}
+
 /** Cancela a recorrência. O ciclo já pago segue valendo até vencer. */
 async function cancelarAssinatura(idExterno: string): Promise<Resultado<void>> {
   if (!idExterno) return { ok: false, motivo: "cobranca_ausente" };
@@ -396,6 +495,9 @@ function tipoDoAviso(bruto: string | null): Aviso["tipo"] {
     case "subscription_preapproval":
     case "preapproval":
       return "assinatura";
+    case "subscription_authorized_payment":
+    case "authorized_payment":
+      return "cobranca_da_assinatura";
     default:
       return "outro";
   }
@@ -434,10 +536,18 @@ async function lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | nul
     });
     if (!confere || !idExterno) return null;
 
+    const tipo = tipoDoAviso(texto(dados.type) ?? texto(dados.topic));
+    const acao = texto(dados.action);
+
     return {
-      tipo: tipoDoAviso(texto(dados.type) ?? texto(dados.topic)),
+      tipo,
+      // O `id` do topo é o do aviso, e é ele que trava a idempotência. O
+      // reserva existe porque nem todo aviso do Mercado Pago traz esse campo:
+      // sem ele, o par ação mais objeto separa pelo menos o aprovado do
+      // estornado, que é a confusão que custa dinheiro.
+      idDoEvento: texto(dados.id) ?? `${tipo}:${acao ?? "?"}:${idExterno}`,
       idExterno,
-      acao: texto(dados.action),
+      acao,
       recebidoEm: texto(dados.date_created) ?? new Date().toISOString(),
     };
   } catch {
@@ -452,6 +562,8 @@ export const mercadoPago: Gateway = {
   assinarComCartao,
   cobrarUmaVez,
   consultarCobranca,
+  consultarAssinatura,
+  consultarCobrancaDaAssinatura,
   cancelarAssinatura,
   lerAviso,
 };
