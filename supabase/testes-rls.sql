@@ -16,8 +16,17 @@
 -- aborta o script e desfaz a transação nos dois ambientes. O ON_ERROR_STOP da
 -- linha de comando acima é cinto e suspensório, não requisito.
 --
--- Qualquer linha "FALHOU" interrompe a execução. No fim tem que aparecer
--- "TODOS OS TESTES PASSARAM".
+-- O resultado sai como tabela, e não como mensagem. O SQL Editor do Supabase
+-- descarta `raise notice`, então a bateria inteira rodava muda justamente no
+-- lugar que o LEIA-ME manda usar: nem os "ok" nem o "TODOS OS TESTES PASSARAM"
+-- apareciam ali. Cada asserção grava uma linha em testes.registro e o fim do
+-- arquivo devolve essa tabela, que aparece nos dois caminhos e traz a contagem
+-- vinda do banco em vez de um número escrito na mão.
+--
+-- Passou quando a última consulta devolve linhas, a primeira delas dizendo
+-- "TODOS OS TESTES PASSARAM". Falhou quando o resultado é erro vermelho
+-- começando em "FALHOU:", e nesse caso tabela nenhuma volta, porque a exceção
+-- desfaz a transação.
 -- =============================================================================
 
 begin;
@@ -47,10 +56,25 @@ begin
 end;
 $$;
 
+-- O diário da bateria, que é o que aparece na tela no fim.
+--
+-- Tabela comum, e não temporária, porque as asserções rodam sob os papéis anon
+-- e authenticated: tabela temporária pertence a quem a criou e os dois não
+-- teriam onde gravar. Esta some junto com o schema testes no rollback do fim.
+--
+-- A numeração vem de coluna de identidade, que dispensa permissão na sequência,
+-- então o grant abaixo é só de insert.
+create table testes.registro (
+  numero integer generated always as identity primary key,
+  nome text not null,
+  motivo text
+);
+
 create function testes.ok(p_nome text, p_condicao boolean) returns void language plpgsql as $$
 begin
   if p_condicao then
     raise notice 'ok      %', p_nome;
+    insert into testes.registro (nome) values (p_nome);
   else
     raise exception 'FALHOU: %', p_nome;
   end if;
@@ -74,14 +98,18 @@ begin
         p_nome, replace(sqlerrm, E'\n', ' ');
     end if;
     raise notice 'ok      % (%)', p_nome, replace(sqlerrm, E'\n', ' ');
+    insert into testes.registro (nome, motivo)
+      values (p_nome, replace(sqlerrm, E'\n', ' '));
     return;
   end;
   raise exception 'FALHOU: % deixou passar', p_nome;
 end;
 $$;
 
--- As funções acima são chamadas já dentro do papel de visitante ou de dono.
+-- As funções acima são chamadas já dentro do papel de visitante ou de dono, e
+-- gravam no diário de dentro desses papéis.
 grant usage on schema testes to anon, authenticated;
+grant insert on testes.registro to anon, authenticated;
 
 -- -----------------------------------------------------------------------------
 -- Cenário
@@ -1297,11 +1325,27 @@ select testes.ok('migrar_rascunho fica fora do alcance do visitante',
 select testes.ok('migrar_rascunho fica fora do alcance de quem está logado',
   not has_function_privilege('authenticated', 'public.migrar_rascunho(uuid, uuid, uuid)', 'EXECUTE'));
 
-do $$
-begin
-  raise notice '';
-  raise notice 'TODOS OS TESTES PASSARAM';
-end;
-$$;
+-- -----------------------------------------------------------------------------
+-- O resultado
+-- -----------------------------------------------------------------------------
+-- Última consulta do arquivo de propósito: é a que o SQL Editor mostra. Chegar
+-- aqui já significa que nenhuma asserção falhou, porque falha levanta exceção e
+-- exceção aborta antes. A contagem sai do diário, então ela conta o que rodou
+-- de verdade em vez de repetir um número escrito no LEIA-ME.
+
+reset role;
+
+select resultado, asserção, motivo
+from (
+  select 0 as ordem,
+         'TODOS OS TESTES PASSARAM' as resultado,
+         count(*)::text || ' asserções' as asserção,
+         null::text as motivo
+    from testes.registro
+  union all
+  select numero, 'ok', numero::text || '. ' || nome, motivo
+    from testes.registro
+) as linhas
+order by ordem;
 
 rollback;

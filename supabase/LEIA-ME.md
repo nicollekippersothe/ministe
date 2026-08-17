@@ -33,8 +33,17 @@ do que falta no painel do Supabase está em `PROMPT-SUPABASE.md`.
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/testes-rls.sql
 ```
 
-Tem que terminar com `TODOS OS TESTES PASSARAM`. O script roda dentro de uma
-transação e desfaz tudo no fim, então pode ser executado com dados reais.
+   O resultado vem como tabela, e não como mensagem: a última consulta do
+   arquivo devolve uma linha por asserção, com a primeira dizendo
+   `TODOS OS TESTES PASSARAM` e a contagem, que hoje é 151. Falha aparece como
+   erro começando em `FALHOU:`, e nesse caso tabela nenhuma volta.
+
+   Sai como tabela porque o SQL Editor descarta `raise notice`. Enquanto a
+   bateria terminava por notice, este passo pedia para conferir uma mensagem
+   que naquele caminho nunca apareceu.
+
+   O script roda dentro de uma transação e desfaz tudo no fim, então pode ser
+   executado com dados reais.
 
 5. Conferir na mão a lista que está no fim de `storage.sql`.
 6. Rodar a conferência pela API, que testa do lado de fora:
