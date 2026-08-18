@@ -220,7 +220,28 @@ async function abrir(
     throw new Definitivo("assinatura sem periodo valido");
   }
 
-  const r = await sb.rpc("abrir_assinatura", {
+  const r = await gravarAssinatura(sb, assinatura, negocio, testeAte, cicloAte);
+
+  if (r.error) {
+    // 23505 aqui é sempre o mesmo índice: assinaturas_viva_idx, que garante uma
+    // assinatura viva por negócio. Ver `resolverDuplicata`.
+    if (r.error.code === "23505") {
+      return await resolverDuplicata(sb, assinatura, negocio, testeAte, cicloAte);
+    }
+    throw new Passageiro(r.error.message);
+  }
+
+  return typeof r.data === "string" ? r.data : null;
+}
+
+function gravarAssinatura(
+  sb: Cliente,
+  assinatura: AssinaturaCriada,
+  negocio: string,
+  testeAte: string | null,
+  cicloAte: string | null,
+) {
+  return sb.rpc("abrir_assinatura", {
     p_negocio: negocio,
     p_id_externo: assinatura.idExterno,
     p_ciclo: assinatura.ciclo,
@@ -229,8 +250,94 @@ async function abrir(
     p_teste_ate: testeAte,
     p_ciclo_ate: cicloAte,
   });
+}
+
+/**
+ * Chegou uma segunda assinatura para um negócio que já tem uma viva.
+ *
+ * Acontece quando a tela cria dois preapproval: o `X-Idempotency-Key` é gerado
+ * por tentativa e a tela não tem onde gravá-lo antes, então duas tentativas
+ * viram dois objetos diferentes no Mercado Pago. A tela tem as próprias travas,
+ * e todas elas podem perder uma corrida. Esta aqui é a que fecha.
+ *
+ * Sem este tratamento o índice recusaria, o webhook devolveria 500, o Mercado
+ * Pago reentregaria para sempre, e no oitavo dia a pessoa seria cobrada duas
+ * vezes.
+ *
+ * Quem decide é o Mercado Pago, e não o nosso banco, porque a linha daqui pode
+ * estar velha: a pessoa pode ter cancelado por lá, e aí a assinatura nova é a
+ * legítima. Então a pergunta é feita para a fonte.
+ */
+async function resolverDuplicata(
+  sb: Cliente,
+  nova: AssinaturaCriada,
+  negocio: string,
+  testeAte: string | null,
+  cicloAte: string | null,
+): Promise<string | null> {
+  const { data } = await sb
+    .from("assinaturas")
+    .select("id, id_externo")
+    .eq("negocio_id", negocio)
+    .in("status", ["teste", "ativa", "em_atraso"])
+    .maybeSingle();
+
+  const antiga = typeof data?.id_externo === "string" ? data.id_externo : null;
+
+  // Sem id externo gravado, a linha viva é de um caminho que nem chegou ao
+  // provedor. Encerra e grava a que chegou.
+  if (!antiga || antiga === nova.idExterno) {
+    return await retomar(sb, nova, negocio, testeAte, cicloAte);
+  }
+
+  const consulta = await gateway.consultarAssinatura(antiga);
+
+  if (consulta.ok && consulta.valor.situacao === "autorizada") {
+    // A antiga continua de pé lá. A nova é duplicata de verdade, e deixá-la
+    // viva significaria cobrar duas vezes a mesma pessoa todo mês.
+    const cancelada = await gateway.cancelarAssinatura(nova.idExterno);
+    registrar({
+      topico: "assinatura",
+      id: nova.idExterno,
+      decisao: cancelada.ok
+        ? "duplicata cancelada no provedor"
+        : "duplicata identificada, o cancelamento fica para a mão",
+    });
+    // Definitivo: reentregar daria o mesmo, e a assinatura que vale já está
+    // gravada. O que sobra é o registro acima, para alguém conferir.
+    throw new Definitivo("assinatura duplicada");
+  }
+
+  if (!consulta.ok && PASSAGEIROS.has(consulta.motivo)) {
+    // Sem resposta do provedor, decidir agora seria chutar qual das duas
+    // cancelar. Melhor reentregar.
+    throw new Passageiro(consulta.motivo);
+  }
+
+  // A antiga saiu do ar lá e a linha daqui é que ficou para trás. A nova é a
+  // legítima.
+  return await retomar(sb, nova, negocio, testeAte, cicloAte);
+}
+
+/** Encerra a assinatura viva que ficou para trás e grava a que chegou. */
+async function retomar(
+  sb: Cliente,
+  nova: AssinaturaCriada,
+  negocio: string,
+  testeAte: string | null,
+  cicloAte: string | null,
+): Promise<string | null> {
+  const fim = await sb.rpc("encerrar_assinatura", { p_negocio: negocio });
+  if (fim.error) throw new Passageiro(fim.error.message);
+
+  const r = await gravarAssinatura(sb, nova, negocio, testeAte, cicloAte);
   if (r.error) throw new Passageiro(r.error.message);
 
+  registrar({
+    topico: "assinatura",
+    id: nova.idExterno,
+    decisao: "assinatura antiga encerrada, a nova assumiu",
+  });
   return typeof r.data === "string" ? r.data : null;
 }
 

@@ -82,3 +82,18 @@ export async function contaProvisoria(): Promise<boolean> {
   const { data } = await sb.auth.getUser();
   return data.user?.is_anonymous === true;
 }
+
+/**
+ * O e-mail de quem está pedindo, ou nulo.
+ *
+ * Existe para o checkout: o `/preapproval` do Mercado Pago pede `payer_email`,
+ * e a conta provisória não tem nenhum, que é justamente por que assinar exige
+ * entrar com o Google antes.
+ */
+export async function emailDoUsuario(): Promise<string | null> {
+  if (!configurado) return null;
+  const sb = await servidor();
+  const { data } = await sb.auth.getUser();
+  const email = data.user?.email;
+  return typeof email === "string" && email !== "" ? email : null;
+}

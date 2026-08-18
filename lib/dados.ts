@@ -3,12 +3,13 @@ import { dirname, join } from "node:path";
 import { redirect } from "next/navigation";
 import { doceria, EXEMPLOS } from "./exemplos";
 import { montar } from "./novo";
+import { planoValido } from "./plano";
 import { MODO_VITRINE } from "./site";
 import { configurado } from "./supabase/config";
 import { paraLinha, paraNegocio, TUDO } from "./supabase/mapa";
 import { publico } from "./supabase/publico";
 import { garantirConta, servidor, usuarioAtual } from "./supabase/servidor";
-import type { Negocio } from "./tipos";
+import type { Negocio, Plano } from "./tipos";
 
 /**
  * Camada de dados.
@@ -264,4 +265,143 @@ export async function registrarDenuncia(denuncia: {
   fila.push(linha);
   await mkdir(dirname(arquivo), { recursive: true });
   await writeFile(arquivo, JSON.stringify(fila, null, 2), "utf8");
+}
+
+/**
+ * O uuid do negócio de quem está logado.
+ *
+ * Existe separado do `doDono()` porque o `Negocio` não carrega o id de
+ * propósito: ele é o tipo que a página pública também usa, e os sete exemplos
+ * de lib/exemplos.ts precisariam inventar um uuid para servir uma tela só.
+ *
+ * Quem precisa disto é o checkout, e ele precisa exatamente. O uuid vira o
+ * `external_reference` da assinatura no Mercado Pago, e é por ele que o webhook
+ * acha o negócio: `abrir_assinatura(p_negocio uuid)`. Mandar o slug ali dá erro
+ * de tipo no Postgres, que o webhook lê como falha passageira e reentrega para
+ * sempre. Mandar vazio é pior, porque ele responde 200 em silêncio e o dinheiro
+ * entra sem o plano mudar.
+ *
+ * Nulo no destino de arquivo local, onde uuid nenhum existe. Quem chama recusa
+ * cobrar quando vier nulo, em vez de inventar um valor.
+ */
+export async function idDoNegocioDoDono(): Promise<string | null> {
+  if (!configurado) return null;
+
+  const uid = await usuarioAtual();
+  if (uid === null) return null;
+
+  const sb = await servidor();
+  const { data } = await sb
+    .from("negocios")
+    .select("id")
+    .eq("dono_id", uid)
+    .order("criado_em")
+    .limit(1)
+    .maybeSingle();
+
+  const id = data?.id;
+  return typeof id === "string" && id !== "" ? id : null;
+}
+
+/**
+ * O estado da cobrança do negócio de quem está logado.
+ *
+ * Junta numa consulta só o que a tela do plano precisa e que o `Negocio` não
+ * carrega: o uuid, a validade crua do plano, e a assinatura viva se houver.
+ * A política `assinaturas_leitura_dono` já permite exatamente isto, então roda
+ * pelo cookie da pessoa e não pela chave de serviço.
+ *
+ * A assinatura vem só a mais recente. Encerrada convive com viva no banco, de
+ * propósito (senão trocar de plano travaria), e quem manda na tela é a de cima.
+ */
+export type EstadoDaCobranca = {
+  negocioId: string | null;
+  /** O plano efetivo, já passado pelo `planoValido`. */
+  plano: Plano;
+  /** `plano_expira_em` cru, que o `paraNegocio` descarta. */
+  expiraEm: string | null;
+  assinatura: SituacaoDaAssinatura | null;
+};
+
+export type SituacaoDaAssinatura = {
+  status: "teste" | "ativa" | "em_atraso" | "encerrada";
+  ciclo: string | null;
+  meio: string | null;
+  testeTerminaEm: string | null;
+  cicloTerminaEm: string | null;
+};
+
+const STATUS_DA_ASSINATURA = new Set([
+  "teste",
+  "ativa",
+  "em_atraso",
+  "encerrada",
+]);
+
+/** Status conhecido, ou "encerrada", que é o valor que entrega menos. */
+function statusDaAssinatura(bruto: unknown): SituacaoDaAssinatura["status"] {
+  const texto = String(bruto ?? "");
+  return STATUS_DA_ASSINATURA.has(texto)
+    ? (texto as SituacaoDaAssinatura["status"])
+    : "encerrada";
+}
+
+export async function cobrancaDoDono(): Promise<EstadoDaCobranca> {
+  if (!configurado) {
+    // Sem banco a tela ainda abre, mostra os preços e explica o que falta. É o
+    // mesmo espírito do resto do arquivo: o destino muda, a tela continua.
+    const todos = await ler();
+    const negocio = todos[0] ?? doceria;
+    return {
+      negocioId: null,
+      plano: negocio.plano,
+      expiraEm: null,
+      assinatura: null,
+    };
+  }
+
+  const uid = await usuarioAtual();
+  if (uid === null) redirect("/criar");
+
+  const sb = await servidor();
+  const { data } = await sb
+    .from("negocios")
+    .select(
+      "id, plano, plano_expira_em, assinaturas(status, ciclo, meio, teste_termina_em, ciclo_termina_em, criado_em)",
+    )
+    .eq("dono_id", uid)
+    .order("criado_em")
+    .limit(1)
+    .maybeSingle();
+
+  if (!data) redirect("/criar");
+
+  const expiraEm =
+    typeof data.plano_expira_em === "string" ? data.plano_expira_em : null;
+
+  const linhas = Array.isArray(data.assinaturas) ? data.assinaturas : [];
+  const recente = [...linhas].sort((a, b) =>
+    String(b?.criado_em ?? "").localeCompare(String(a?.criado_em ?? "")),
+  )[0];
+
+  return {
+    negocioId: typeof data.id === "string" ? data.id : null,
+    plano: planoValido(String(data.plano ?? "gratuito"), expiraEm),
+    expiraEm,
+    assinatura: recente
+      ? {
+          status: statusDaAssinatura(recente.status),
+          ciclo: recente.ciclo === null ? null : String(recente.ciclo),
+          meio: recente.meio === null ? null : String(recente.meio),
+          testeTerminaEm:
+            typeof recente.teste_termina_em === "string"
+              ? recente.teste_termina_em
+              : null,
+          cicloTerminaEm:
+            typeof recente.ciclo_termina_em === "string"
+              ? recente.ciclo_termina_em
+              : null,
+        }
+      : null,
+  };
 }

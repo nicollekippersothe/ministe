@@ -33,6 +33,7 @@ export {
 } from "./ciclo.ts";
 
 export {
+  MOTIVOS_DO_CHECKOUT,
   MOTIVOS_PAGAMENTO,
   mensagemDeRecusa,
   mensagemDoStatusDetail,

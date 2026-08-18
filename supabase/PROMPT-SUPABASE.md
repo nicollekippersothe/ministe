@@ -197,13 +197,13 @@ o pior tipo de erro.
 
 O quarto é a bateria de testes. Roda dentro de uma transação e termina em
 rollback, então não deixa nada gravado. O resultado vem como tabela, uma linha
-por asserção, e a primeira linha diz TODOS OS TESTES PASSARAM, 163 asserções.
+por asserção, e a primeira linha diz TODOS OS TESTES PASSARAM, 164 asserções.
 Me mande essa primeira linha como ela aparecer na tela. Se parar antes, o
 resultado é um erro começando em FALHOU: me mande essa linha inteira, sem
 resumir e sem tentar consertar por conta própria.
 
 A contagem sai do próprio banco, e não de uma constante escrita no arquivo.
-Número diferente de 163 quer dizer asserção a mais ou a menos, e vale me
+Número diferente de 164 quer dizer asserção a mais ou a menos, e vale me
 avisar mesmo com tudo verde.
 
 O que a 009 traz: três tabelas novas (assinaturas, cobrancas,

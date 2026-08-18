@@ -90,6 +90,17 @@ export function Navegacao({
       <nav aria-label="Partes da sua página">
         <ListaSecoes />
       </nav>
+
+      {/* Fora de SECOES de propósito: aquela lista é das partes editáveis da
+          página, e plano é conta, e não conteúdo. */}
+      <p className="text-sm">
+        <Link
+          href="/painel/plano"
+          className="text-suave underline-offset-4 hover:underline"
+        >
+          Plano e cobrança
+        </Link>
+      </p>
     </div>
   );
 }

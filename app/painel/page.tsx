@@ -2,8 +2,9 @@ import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
 import { ListaSecoes } from "@/componentes/painel/ListaSecoes";
 import { CartaoEstado } from "@/componentes/painel/Navegacao";
+import { CartaoPlano } from "@/componentes/painel/CartaoPlano";
 import { acoesDoRodape } from "@/lib/acoes";
-import { doDono } from "@/lib/dados";
+import { cobrancaDoDono, doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { contaProvisoria } from "@/lib/supabase/servidor";
@@ -86,6 +87,11 @@ export default async function Painel() {
   // isso antes do clique, em vez de deixar a pessoa descobrir no erro.
   const provisoria = await contaProvisoria();
 
+  // O estado da cobrança vem separado do negócio porque o `Negocio` não carrega
+  // nem o uuid nem a validade do plano, de propósito: ele é o tipo que a página
+  // pública também usa.
+  const cobranca = await cobrancaDoDono();
+
   // Rua, cidade e UF numa linha só, na ordem em que a página pública mostra. O
   // CEP fica fora: numa linha de resumo ele ocupa espaço sem ajudar ninguém a
   // reconhecer o endereço de relance.
@@ -106,8 +112,9 @@ export default async function Painel() {
       </h1>
 
       <div className="lg:hidden">
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col gap-4">
           <CartaoEstado negocio={negocio} provisoria={provisoria} />
+          <CartaoPlano estado={cobranca} />
         </div>
 
         <h2 className="mt-8 mb-3 text-lg font-semibold tracking-tight text-texto">
@@ -149,6 +156,10 @@ export default async function Painel() {
               : "A página fica guardada aqui com você. Publicar abre este endereço para qualquer pessoa, e o botão fica na coluna ao lado."}
           </p>
         </section>
+
+        <div className="mt-6">
+          <CartaoPlano estado={cobranca} />
+        </div>
 
         <h2 className="mt-10 text-lg font-semibold tracking-tight text-texto">
           O que a página mostra hoje

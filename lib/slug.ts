@@ -8,7 +8,7 @@
 
 export const RESERVADOS = new Set([
   "painel", "api", "login", "entrar", "sair", "cadastro", "criar",
-  "admin", "conta", "assinatura", "cobranca", "suporte",
+  "admin", "conta", "assinar", "assinatura", "cobranca", "suporte",
   "ajuda", "sobre", "precos", "termos", "privacidade",
   "denunciar", "contato", "blog", "demo", "exemplo",
   "entrais", "app", "www", "static", "assets", "public",

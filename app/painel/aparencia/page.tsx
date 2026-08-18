@@ -4,6 +4,8 @@ import { Aviso } from "@/componentes/painel/Aviso";
 import { BarraSalvar, Botao } from "@/componentes/painel/Campos";
 import { doDono } from "@/lib/dados";
 import { FONTE_PADRAO, LISTA_COMBINACOES, podeEscolherFonte } from "@/lib/fontes";
+import { preco } from "@/lib/formato";
+import { PLANOS } from "@/lib/pagamento";
 
 import { exigirLogin } from "@/app/painel/vitrine";
 
@@ -43,8 +45,16 @@ export default async function Aparencia({
           <strong className="font-semibold text-texto">
             Sua página usa a letra padrão.
           </strong>{" "}
-          Escolher outra faz parte do plano pago. As opções abaixo mostram como
-          o nome do seu negócio ficaria em cada uma.
+          Escolher outra faz parte do plano pago, a partir de{" "}
+          {preco(PLANOS.mensal.valorCentavos)} por mês. As opções abaixo mostram
+          como o nome do seu negócio ficaria em cada uma.{" "}
+          <Link
+            href="/painel/plano"
+            className="font-medium text-destaque underline-offset-4 hover:underline"
+          >
+            Ver os planos
+          </Link>
+          .
         </p>
       ) : null}
 

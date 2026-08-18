@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  MOTIVOS_DO_CHECKOUT,
   MOTIVOS_PAGAMENTO,
   mensagemDeRecusa,
   mensagemDoStatusDetail,
@@ -8,7 +9,15 @@ import {
   normalizarDetalhe,
 } from "./erros.ts";
 
-const mensagens = Object.entries(MOTIVOS_PAGAMENTO);
+/*
+ * As duas listas juntas, de propósito: a do gateway e a que o checkout recusa
+ * por conta própria. As regras de escrita valem igual nas duas, e quem
+ * acrescentar um motivo novo em qualquer uma delas cai nos mesmos testes.
+ */
+const mensagens = [
+  ...Object.entries(MOTIVOS_PAGAMENTO),
+  ...Object.entries(MOTIVOS_DO_CHECKOUT),
+];
 
 /*
  * A regra de escrita do projeto, virada em teste.

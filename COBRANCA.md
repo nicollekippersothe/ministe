@@ -84,7 +84,7 @@ o número num input nosso jogaria o projeto em SAQ-D, com pentest e varredura
 trimestral: custo que um produto de R$ 19,90 por mês não paga.
 
 O Pix não tem nem iframe. O servidor chama `POST /v1/payments`, recebe `qr_code`
-e `qr_code_base64`, e o QR é desenhado no nosso próprio modal.
+e `qr_code_base64`, e o QR é desenhado na nossa própria tela.
 
 ## O caminho de cada compra
 
@@ -109,12 +109,19 @@ e `qr_code_base64`, e o QR é desenhado no nosso próprio modal.
 ### Pix
 
 1. A Server Action chama `cobrarUmaVez` com `payment_method_id: "pix"`.
-2. A resposta traz o código para colar e o QR em PNG base64, que a tela desenha.
-   O código **não é guardado no banco**: é segredo em repouso, com ganho pequeno,
-   e expira em trinta minutos de qualquer jeito.
-3. A tela espera com `<meta http-equiv="refresh" content="5">`, e não com
-   polling em JavaScript: o QR é estático, o recarregamento é barato, funciona
-   sem JS, e mantém a página pública enxuta.
+2. A resposta traz o código para colar e o QR em PNG base64, que a tela desenha
+   como estado da própria página, e nunca num modal: modal morre a cada recarga,
+   e esta tela se recarrega sozinha.
+
+   O código **não é guardado no banco**: é segredo em repouso, com ganho
+   pequeno, e expira em trinta minutos de qualquer jeito. O que atravessa a
+   recarga é só o id do pagamento, num cookie `httpOnly` com caminho
+   `/painel/plano` e trinta minutos de vida, e a tela relê o código no Mercado
+   Pago a cada render. O segredo continua fora do banco, que é a propriedade
+   que importa.
+3. A tela espera se recarregando a cada dez segundos, e não com polling em
+   JavaScript pedindo estado: o QR é estático e o recarregamento é barato. Ver
+   a nota sobre a recarga, mais abaixo.
 4. O aviso chega no tópico `payment`. O webhook consulta, confirma
    `status: approved`, e chama `registrar_cobranca_paga` com o fim do ciclo
    contado do instante da aprovação.
@@ -194,6 +201,28 @@ ser engolido como repetição do aprovado, deixando no ar quem pediu o dinheiro 
 volta. A chave é o `id` do topo do aviso, e dois testes em
 `lib/pagamento/aviso.test.ts` ficam vermelhos quando a distinção some.
 
+### A assinatura dobrada, e as quatro travas
+
+A tela gera a chave de idempotência por tentativa e não tem onde gravá-la antes:
+a 009 tira a escrita de `cobrancas` de quem está logado, e a 011 diz que a tela
+não escreve a linha da assinatura. Então duas tentativas viram dois preapproval
+diferentes no Mercado Pago, o segundo aviso bate no índice
+`assinaturas_viva_idx`, e sem tratamento o webhook devolveria 500 para sempre
+enquanto a pessoa seria cobrada duas vezes no oitavo dia.
+
+Quatro travas, e nenhuma sozinha resolve:
+
+1. O botão do checkout desabilita enquanto envia, o que pega o clique duplo.
+2. O token do cartão é de uso único, então um POST duplicado literal é recusado
+   pelo próprio Mercado Pago.
+3. A Server Action lê a assinatura do dono antes de chamar o gateway, e recusa
+   quando já existe uma viva.
+4. **O webhook trata o `23505` como definitivo.** É a única que não depende de
+   corrida. Ele consulta no Mercado Pago a assinatura que já estava gravada: se
+   ela continua autorizada lá, a nova é duplicata de verdade e é cancelada no
+   provedor; se ela já saiu do ar lá, a linha daqui é que ficou para trás, e
+   então ela é encerrada e a nova assume.
+
 ### Falha passageira solta a trava
 
 Provedor fora do ar e banco recusando a escrita devolvem 500, para o Mercado
@@ -218,6 +247,28 @@ da fatura, que sabe a data certa. Tratar os dois somaria um ciclo a mais. O
 desempate sai de `operation_type: "recurring_payment"`, que o Mercado Pago
 escreve na resposta. O estorno vale para os dois, porque é o único caminho que
 traz de volta o dinheiro devolvido de uma cobrança recorrente.
+
+### A recarga da tela de espera
+
+A Server Action escreve nada, por desenho: o webhook é o único escritor. Então a
+tela sabe que está esperando pelo `?aguardando=` no endereço, e sabe que parou
+lendo a linha do próprio negócio, que `abrir_assinatura` acabou de escrever. O
+`?desde=` carrega o instante do começo e sobrevive à recarga, então ela para
+sozinha depois de dois minutos.
+
+A recarga é um `setTimeout` de umas sessenta letras, e **não** um
+`<meta http-equiv="refresh">`. O meta cai na regra `meta-refresh` do axe, que o
+Lighthouse roda, e o `AGENTS.md` põe acessibilidade em 100. O comportamento é o
+mesmo, e o link "Conferir agora" fica na tela dos dois jeitos, que é o que
+atende quem estiver sem JavaScript.
+
+A tela de espera e o formulário do cartão nunca aparecem juntos. Página que se
+recarrega embaixo de quem está digitando um cartão seria o pior defeito do
+produto.
+
+Rodando na máquina, o Mercado Pago alcança o `localhost` de jeito nenhum, então
+esta tela sempre vai até o limite dos dois minutos. Quem fecha o ciclo local é
+`npm run aviso -- assinatura <id do preapproval>`.
 
 ### O `revalidatePath` não é acabamento
 
@@ -306,6 +357,9 @@ authenticated` escrito na mão e `grant` só para `service_role`.
 | `marcar_atraso` | 009 | carência de 5 dias depois de uma recusa |
 | `desfazer_cobranca` | 009 | estorno e chargeback. O único lugar onde a data anda para trás |
 | `numeros_do_negocio` | 009 | os números do painel. `security invoker`, para herdar a RLS de `eventos` |
+
+A tela do checkout chama nenhuma delas. Ela cria a cobrança no Mercado Pago e
+termina ali: quem escreve é o webhook, sempre.
 
 `numeros_do_negocio` é a única com `grant to authenticated`, e é a única que não
 mexe em dinheiro.

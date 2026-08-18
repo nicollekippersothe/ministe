@@ -48,6 +48,23 @@ export const MOTIVOS_PAGAMENTO: Record<MotivoRecusa, string> = {
 };
 
 /**
+ * O que o próprio checkout recusa, antes de falar com o Mercado Pago.
+ *
+ * Mora aqui e não na tela pelo mesmo motivo do registro de cima: assim a frase
+ * fica no mesmo arquivo da regra, e o teste que recusa palavra negativa varre
+ * as duas listas de uma vez. Frase de recusa é o pior lugar do produto para a
+ * regra de escrita escapar, e é o mais fácil de escapar.
+ */
+export const MOTIVOS_DO_CHECKOUT: Record<string, string> = {
+  ciclo: "Escolha entre o plano mensal e o anual para seguir.",
+  conta:
+    "Publique a sua página antes de assinar. O plano vale para a página que está no ar.",
+  assinatura_viva:
+    "Você já tem uma assinatura em andamento. A situação dela está logo acima.",
+  entrar: "Entre com o Google para assinar. O plano fica ligado à sua conta.",
+};
+
+/**
  * O `status_detail` do Mercado Pago, já sem o prefixo, virando motivo nosso.
  *
  * A chave é o sufixo porque o mesmo detalhe chega com prefixo diferente

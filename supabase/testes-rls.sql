@@ -1182,6 +1182,18 @@ begin
 end;
 $$;
 
+-- A trava que impede cobrar duas vezes a mesma pessoa.
+--
+-- A tela de checkout gera a chave de idempotência por tentativa e não tem onde
+-- gravá-la antes, então duas tentativas viram dois preapproval diferentes no
+-- Mercado Pago. Quem recusa o segundo é este índice, e o webhook lê o 23505
+-- para cancelar a duplicata lá em vez de reentregar para sempre.
+select testes.barrado('segundo preapproval no mesmo negócio é recusado', $q$
+  select public.abrir_assinatura(
+    '33333333-0000-4000-8000-000000000003', 'preapproval-c-duplicado',
+    'mensal', 'credito', 1990, now() + interval '7 days', null)
+$q$, 'assinaturas_viva_idx');
+
 -- Cancelar e receber um aviso atrasado é o caminho que devolveria plano pago a
 -- quem já saiu, e é por isso que a função sai cedo quando a linha está
 -- encerrada.
