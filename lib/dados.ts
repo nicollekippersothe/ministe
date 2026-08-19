@@ -3,6 +3,15 @@ import { dirname, join } from "node:path";
 import { redirect } from "next/navigation";
 import { doceria, EXEMPLOS } from "./exemplos";
 import { montar } from "./novo";
+import {
+  anterior,
+  montarSerie,
+  somar,
+  VAZIO,
+  type Contagem,
+  type DiaContado,
+  type LinhaCrua,
+} from "./numeros";
 import { planoValido } from "./plano";
 import { MODO_VITRINE } from "./site";
 import { configurado } from "./supabase/config";
@@ -402,6 +411,112 @@ export async function cobrancaDoDono(): Promise<EstadoDaCobranca> {
               ? recente.ciclo_termina_em
               : null,
         }
+      : null,
+  };
+}
+
+/**
+ * Registra uma visita ou um clique.
+ *
+ * Chamada por `/api/evento`, que é onde o sinal do navegador chega. Nunca
+ * escreve na tabela direto: quem escreve é `registrar_evento`, que é security
+ * definer e só aceita negócio publicado e ativo, com um dos três tipos. Assim
+ * um visitante não consegue inflar o número de outro negócio nem inventar tipo.
+ *
+ * Pelo cliente público, e não pelo de sessão: quem visita a página de um
+ * negócio quase nunca tem conta, e a função está liberada para `anon` desde a
+ * correção 002.
+ *
+ * Sem banco, silêncio. Guardar visita num arquivo local seria trabalho para
+ * produzir um número que ninguém vai ler.
+ */
+export async function registrarEvento(
+  slug: string,
+  tipo: "visita" | "clique_whatsapp" | "clique_acao",
+): Promise<void> {
+  if (!configurado) return;
+
+  await publico().rpc("registrar_evento", { p_slug: slug, p_tipo: tipo });
+}
+
+export type NumerosDoPainel = {
+  dias: number;
+  serie: DiaContado[];
+  totais: Contagem;
+  /** O período de igual tamanho logo antes. Nulo quando ninguém pediu. */
+  anterior: Contagem | null;
+};
+
+/**
+ * Os números do negócio de quem está logado.
+ *
+ * Pela sessão da pessoa, de propósito. A função `numeros_do_negocio` é security
+ * invoker e herda a RLS de `eventos`, então negócio de outra pessoa volta vazio
+ * sozinho, sem esta camada repetir a regra.
+ *
+ * Quando `comparar` é verdadeiro, faz duas consultas, de `dias` e de `dias * 2`,
+ * e o período anterior é a subtração. Pedir a janela dobrada e cortar no meio
+ * pela data erraria, porque o dia da fronteira é data civil e o corte é um
+ * instante. Ver `anterior()` em lib/numeros.ts.
+ *
+ * Sem banco devolve zeros, e nunca evento de mentira: a regra 6 do AGENTS.md
+ * vale aqui igual. O efeito colateral é bom, porque deixa o desenvolvimento
+ * local sempre no estado vazio, que é o que todo dono vive na primeira semana.
+ */
+export async function numerosDoNegocio(
+  dias: number,
+  comparar = false,
+): Promise<NumerosDoPainel> {
+  const agora = Date.now();
+
+  if (!configurado) {
+    const todos = await ler();
+    const fuso = (todos[0] ?? doceria).fuso;
+    const serie = montarSerie([], dias, fuso, agora);
+    return {
+      dias,
+      serie,
+      totais: somar(serie),
+      anterior: comparar ? { ...VAZIO } : null,
+    };
+  }
+
+  const negocioId = await idDoNegocioDoDono();
+  const negocio = await doDono();
+
+  if (negocioId === null) {
+    const serie = montarSerie([], dias, negocio.fuso, agora);
+    return {
+      dias,
+      serie,
+      totais: somar(serie),
+      anterior: comparar ? { ...VAZIO } : null,
+    };
+  }
+
+  const sb = await servidor();
+  const buscar = async (quantos: number): Promise<LinhaCrua[]> => {
+    const { data } = await sb.rpc("numeros_do_negocio", {
+      p_negocio: negocioId,
+      p_dias: quantos,
+    });
+    return Array.isArray(data) ? (data as LinhaCrua[]) : [];
+  };
+
+  const [linhas, linhasDobro] = await Promise.all([
+    buscar(dias),
+    comparar ? buscar(dias * 2) : Promise.resolve([] as LinhaCrua[]),
+  ]);
+
+  const serie = montarSerie(linhas, dias, negocio.fuso, agora);
+  const totais = somar(serie);
+
+  return {
+    dias,
+    serie,
+    totais,
+    anterior: comparar
+      ? anterior(somar(montarSerie(linhasDobro, dias * 2, negocio.fuso, agora)), totais)
       : null,
   };
 }

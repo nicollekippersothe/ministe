@@ -117,6 +117,15 @@ export default async function Painel() {
           <CartaoPlano estado={cobranca} />
         </div>
 
+        <p className="mt-4 text-sm">
+          <Link
+            href="/painel/numeros"
+            className="font-medium text-destaque underline-offset-4 hover:underline"
+          >
+            Ver quantas pessoas abriram a sua página
+          </Link>
+        </p>
+
         <h2 className="mt-8 mb-3 text-lg font-semibold tracking-tight text-texto">
           Editar
         </h2>
@@ -160,6 +169,15 @@ export default async function Painel() {
         <div className="mt-6">
           <CartaoPlano estado={cobranca} />
         </div>
+
+        <p className="mt-4 text-sm">
+          <Link
+            href="/painel/numeros"
+            className="font-medium text-destaque underline-offset-4 hover:underline"
+          >
+            Ver quantas pessoas abriram a sua página
+          </Link>
+        </p>
 
         <h2 className="mt-10 text-lg font-semibold tracking-tight text-texto">
           O que a página mostra hoje

@@ -178,8 +178,14 @@ período anterior ficam para o pago. O raciocínio é que o número básico é o
 único jeito de o dono ver que a página está trabalhando, e esconder isso
 atrás de assinatura tira justamente a prova que faria ele assinar.
 
-A tabela `eventos` já guarda os três tipos (`visita`, `clique_whatsapp`,
-`clique_acao`) e a página pública já tem os ganchos. Falta a tela do painel.
+A tabela `eventos` guarda os três tipos (`visita`, `clique_whatsapp`,
+`clique_acao`), a página pública manda o sinal por `sendBeacon` para
+`/api/evento`, e `/painel/numeros` mostra o resultado. Quem escreve continua
+sendo `registrar_evento`, e nunca a tabela direto.
+
+O gratuito vê os dois números e o gráfico dos últimos sete dias. O gráfico entra
+no gratuito de propósito: são dados que a pessoa já tem direito de ver pela RLS,
+e ver a forma tenta mais do que ler uma lista do que ela ganharia.
 
 ## Ainda em aberto
 

@@ -151,6 +151,90 @@ passo("o painel não baixa fonte nenhuma", (await fontesBaixadas("/painel")) ===
 // mais que isso.
 passo("a tela inicial baixa só as duas da prévia", (await fontesBaixadas("/")) === 2);
 
+// ---------------------------------------------------------------------------
+// Contagem de visitas e cliques
+// ---------------------------------------------------------------------------
+// A página fica uma hora em cache, então o render do servidor não roda a cada
+// visita e a conta precisa sair do navegador. Isso vira três coisas fáceis de
+// quebrar sem perceber, e as três ficam testadas aqui.
+
+/** Abre uma rota e devolve o que foi mandado para /api/evento. */
+async function avisosDe(rota, acao) {
+  const pagina = await contexto.newPage();
+  const vistos = [];
+  pagina.on("request", (r) => {
+    if (r.url().includes("/api/evento")) vistos.push(r.postData() ?? "");
+  });
+  await pagina.goto(BASE + rota, { waitUntil: "load" });
+  await pagina.waitForTimeout(500);
+  if (acao) await acao(pagina, vistos);
+  await pagina.close();
+  return vistos;
+}
+
+const daVisita = await avisosDe("/demo");
+passo(
+  "abrir a página pública conta uma visita",
+  daVisita.length === 1 && daVisita[0].includes('"t":"visita"'),
+);
+
+// PaginaPublica é a mesma na prévia do painel, com os botões de verdade e o
+// data-evento de verdade. Sem a trava, o dono infla os próprios números só de
+// conferir a página antes de publicar.
+passo(
+  "a prévia do painel não conta nada",
+  (await avisosDe("/painel/previa")).length === 0,
+);
+
+// O mesmo botão é renderizado duas vezes no HTML, uma na barra de baixo do
+// celular e outra na coluna do monitor. Por isso a contagem é delegação num
+// ouvinte só, e nunca uma varredura de lista, que contaria em dobro.
+const doClique = await avisosDe("/demo", async (pagina) => {
+  await pagina.locator("a[data-evento]:visible").first().click();
+  await pagina.waitForTimeout(600);
+});
+passo(
+  "clicar no botão conta um clique, e um só",
+  doClique.filter((c) => c.includes('"t":"clique_whatsapp"')).length === 1,
+);
+
+// Sem guardar nada no aparelho: quem sabe que foi recarga é o próprio
+// navegador, e a informação some quando a aba fecha.
+const daRecarga = await avisosDe("/demo", async (pagina, vistos) => {
+  await pagina.reload({ waitUntil: "load" });
+  await pagina.waitForTimeout(600);
+  void vistos;
+});
+passo(
+  "recarregar com F5 não conta uma segunda visita",
+  daRecarga.length === 1,
+);
+
+// O teto do JavaScript inline da página pública.
+//
+// Conta só o que a gente escreveu: script com `type` é dado e não executa, e o
+// que começa por `self.__next` ou traz `__next` no meio é o próprio Next, que
+// sozinho passa de 70 KB e dominaria qualquer teto.
+const NOSSO_JS_MAXIMO = 1400;
+
+async function jsInlineNosso(rota) {
+  const pagina = await contexto.newPage();
+  await pagina.goto(BASE + rota, { waitUntil: "load" });
+  const bytes = await pagina.evaluate(() =>
+    Array.from(document.querySelectorAll("script"))
+      .filter((s) => !s.type && !s.src && !s.textContent.includes("__next"))
+      .reduce((soma, s) => soma + s.textContent.length, 0),
+  );
+  await pagina.close();
+  return bytes;
+}
+
+const jsDaPublica = await jsInlineNosso("/demo");
+passo(
+  `a página pública tem ${jsDaPublica} bytes de JavaScript nosso, abaixo de ${NOSSO_JS_MAXIMO}`,
+  jsDaPublica > 0 && jsDaPublica < NOSSO_JS_MAXIMO,
+);
+
 // A escolha de letra é do plano pago. O negócio de exemplo é gratuito, então
 // as opções aparecem para ver, mas travadas.
 await p.goto(`${BASE}/painel/aparencia`, { waitUntil: "networkidle" });

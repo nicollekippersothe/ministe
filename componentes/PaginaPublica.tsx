@@ -1,4 +1,5 @@
 import { BarraAcoes, BotaoAcao, respiroDaBarra } from "./BarraAcoes";
+import { Contagem } from "./Contagem";
 import { Capa } from "./Capa";
 import { Catalogo } from "./Catalogo";
 import { Endereco } from "./Endereco";
@@ -33,9 +34,18 @@ import type { Negocio } from "@/lib/tipos";
 export function PaginaPublica({
   negocio,
   urlBase,
+  contar = false,
 }: {
   negocio: Negocio;
   urlBase: string;
+  /**
+   * Liga a contagem de visitas e cliques.
+   *
+   * Só `app/[slug]/page.tsx` passa. A prévia do painel renderiza esta mesma
+   * página, com os botões de verdade, e sem esta trava o dono inflaria os
+   * próprios números só de conferir antes de publicar.
+   */
+  contar?: boolean;
 }) {
   const temItens = negocio.itens.some((i) => i.ativo);
   const temGaleria = negocio.galeria.length > 0;
@@ -89,6 +99,7 @@ export function PaginaPublica({
     <div
       data-tema={negocio.tema}
       data-fonte={fonte.chave}
+      data-conta={contar ? negocio.slug : undefined}
       className={`marca min-h-dvh bg-fundo ${fonte.classe}`}
     >
       <script
@@ -162,6 +173,8 @@ export function PaginaPublica({
       <div className="lg:hidden">
         <BarraAcoes negocio={negocio} />
       </div>
+
+      {contar ? <Contagem /> : null}
     </div>
   );
 }

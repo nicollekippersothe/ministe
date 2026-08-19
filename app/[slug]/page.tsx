@@ -65,5 +65,7 @@ export default async function Pagina({ params }: Props) {
   const negocio = await porSlug(slug);
   if (!negocio || !negocio.publicado) notFound();
 
-  return <PaginaPublica negocio={negocio} urlBase={urlBase} />;
+  // `contar` só aqui: a prévia do painel renderiza a mesma página, e sem esta
+  // separação o dono inflaria os próprios números só de conferir.
+  return <PaginaPublica negocio={negocio} urlBase={urlBase} contar />;
 }

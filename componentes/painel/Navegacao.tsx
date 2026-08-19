@@ -92,15 +92,21 @@ export function Navegacao({
       </nav>
 
       {/* Fora de SECOES de propósito: aquela lista é das partes editáveis da
-          página, e plano é conta, e não conteúdo. */}
-      <p className="text-sm">
+          página, e nem número nem plano são conteúdo de página. */}
+      <div className="flex flex-col gap-1.5 text-sm">
+        <Link
+          href="/painel/numeros"
+          className="text-suave underline-offset-4 hover:underline"
+        >
+          Números da página
+        </Link>
         <Link
           href="/painel/plano"
           className="text-suave underline-offset-4 hover:underline"
         >
           Plano e cobrança
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

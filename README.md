@@ -88,9 +88,11 @@ CLS 0 nas duas. A variação em performance é ruído da máquina que roda a
 medição, não do código. As telas de cadastro e o painel também dão 100 em
 acessibilidade.
 
-A página pública não tem nenhum componente de cliente. O único JavaScript
-próprio são 1,2 KB inline que recalculam o selo de "aberto agora", porque a
-página fica em cache e o HTML envelhece.
+A página pública não tem nenhum componente de cliente. O JavaScript próprio são
+1,2 KB inline, em dois pedaços: um recalcula o selo de "aberto agora", porque a
+página fica em cache e o HTML envelhece, e o outro conta a visita e os cliques,
+pelo mesmo motivo (com a página em cache, o servidor não roda a cada visita).
+`testes/fluxo.mjs` mede esse total a cada rodada e recusa passar de 1400 bytes.
 
 ## Tela inicial
 

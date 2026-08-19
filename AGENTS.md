@@ -117,7 +117,7 @@ npm run logos     # redesenha os monogramas dos negócios de exemplo
    de cadastro feitos, falta ligar o login de verdade.**
 5. Upload de imagens.
 6. Catálogo e links.
-7. Contagem de visitas e cliques.
+7. Contagem de visitas e cliques. **Feita.**
 8. Os outros dois temas.
 
 ## Fora da versão 1
