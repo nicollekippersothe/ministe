@@ -173,6 +173,10 @@ jeito conhecido de o dinheiro sair errado:
 
 ### Onde ele é registrado, e com quais valores
 
+O passo a passo para quem for clicar está em `PROMPT-MERCADOPAGO.md`, no molde dos
+prompts de extensão que o projeto já usa. O que segue aqui são os valores e a
+razão de cada um.
+
 O Mercado Pago entrega aviso para endereço cadastrado no painel deles, por
 aplicação. Registro por código fica de fora nesta versão: dava para mandar
 `notification_url` em cada cobrança, e o segredo que assina o aviso nasce no
