@@ -171,6 +171,60 @@ jeito conhecido de o dinheiro sair errado:
 5. **Aplicar por tópico**, sempre por função do banco.
 6. **`revalidatePath`** na página pública e no painel.
 
+### Onde ele é registrado, e com quais valores
+
+O Mercado Pago entrega aviso para endereço cadastrado no painel deles, por
+aplicação. Registro por código fica de fora nesta versão: dava para mandar
+`notification_url` em cada cobrança, e o segredo que assina o aviso nasce no
+painel do mesmo jeito, então o painel é o lugar de uma coisa só.
+
+Caminho: **Suas integrações**, a aplicação, **Webhooks**, **Configurar
+notificações**. A tela tem duas abas, **Modo produtivo** e **Modo de teste**, e
+cada uma guarda URL, eventos e segredo próprios. Com chave de teste no
+`MERCADOPAGO_ACCESS_TOKEN`, a aba que vale é a de teste, e o segredo a copiar é
+o dela.
+
+**URL**, enquanto o checkout vive na branch:
+
+```
+https://ministe-git-claude-app-check-e61198-nicollesothe-8601s-projects.vercel.app/api/pagamento/webhook
+```
+
+Quando isto chegar na `main`:
+
+```
+https://ministe.vercel.app/api/pagamento/webhook
+```
+
+**Eventos**, três, e são os três que `tipoDoAviso` conhece:
+
+| na tela deles | o que chega no corpo | o que o webhook faz |
+| --- | --- | --- |
+| Pagamentos | `payment` | Pix e débito, mais estorno e chargeback |
+| Assinaturas | `subscription_preapproval` | a assinatura nascendo, pausando, encerrando |
+| Cobranças de assinatura | `subscription_authorized_payment` | a renovação mensal do crédito |
+
+Qualquer outro evento marcado por engano custa nada: o tópico cai em `outro`,
+o webhook responde 200 e a reentrega para ali.
+
+**O segredo** que a tela mostra depois de salvar vai para a Vercel como
+`MERCADOPAGO_WEBHOOK_SECRET`, sem `NEXT_PUBLIC_`, e depois disso o projeto
+precisa de um deploy novo: variável de servidor entra na função quando a função
+nasce, e a que está rodando continua com o valor de antes.
+
+**Como conferir sem esperar pagamento nenhum**, direto do terminal:
+
+```
+curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+  <URL>/api/pagamento/webhook \
+  -H 'content-type: application/json' -d '{"type":"payment","data":{"id":"1"}}'
+```
+
+- **401** é o certo: a rota está de pé e recusou a assinatura ausente.
+- **405** aparece no GET, porque só POST existe ali.
+- **404** quer dizer que a URL aponta para um deploy sem esta rota, que é o caso
+  da `main` enquanto a cobrança viver na branch.
+
 ### O manifesto do HMAC
 
 Causa número um de "a assinatura nunca bate":
