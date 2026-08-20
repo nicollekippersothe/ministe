@@ -166,7 +166,7 @@ async function levarORascunho(para: string): Promise<string> {
   const destino = quem.user?.id;
   if (!destino || destino === de) return para;
 
-  if (!temChaveDeServico) return "/painel?rascunho=cheio";
+  if (!temChaveDeServico) return "/painel?rascunho=ficou";
 
   const { error } = await servico().rpc("migrar_rascunho", {
     p_negocio: negocio,
@@ -174,9 +174,13 @@ async function levarORascunho(para: string): Promise<string> {
     p_para: destino,
   });
 
+  if (!error) return "/painel?rascunho=veio";
+
   // O caso que recusa na prática é o do limite: a conta de sempre já tem a
-  // página que o plano gratuito permite. O painel diz isso em uma linha, e o
-  // resto dos guardas termina no mesmo lugar, porque para quem está olhando a
-  // tela o desfecho é o mesmo.
-  return error ? "/painel?rascunho=cheio" : "/painel?rascunho=veio";
+  // página que o plano gratuito guarda, e aí o painel oferece o plano. Os
+  // outros três guardas são de corrida ou de engano nosso, e ali a única coisa
+  // honesta a dizer é onde a página ficou.
+  return error.message.includes("limite")
+    ? "/painel?rascunho=cheio"
+    : "/painel?rascunho=ficou";
 }

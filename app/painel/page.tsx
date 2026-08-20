@@ -83,12 +83,12 @@ function Linha({
  * O recado de quem acabou de entrar numa conta que já existia.
  *
  * Chega por `app/auth/retorno`, que é onde a página montada em conta
- * provisória troca de dono quando o Google já pertence a alguém. As duas
- * frases dizem o que existe: ou a página veio junto, ou a conta já tem a
- * página que o plano guarda.
+ * provisória troca de dono quando o Google já pertence a alguém. As três
+ * frases dizem o que existe: a página veio junto, a conta já tem a página que
+ * o plano guarda, ou a montada agora ficou onde estava.
  */
 function Rascunho({ estado }: { estado?: string }) {
-  if (estado !== "veio" && estado !== "cheio") return null;
+  if (estado !== "veio" && estado !== "cheio" && estado !== "ficou") return null;
 
   return (
     <p
@@ -97,6 +97,8 @@ function Rascunho({ estado }: { estado?: string }) {
     >
       {estado === "veio" ? (
         "A página que você montou agora está nesta conta."
+      ) : estado === "ficou" ? (
+        "A página que você montou agora ficou na conta provisória, e esta aqui abriu com o que já era seu."
       ) : (
         <>
           Esta conta já tem uma página, e o plano atual guarda uma por conta.{" "}
