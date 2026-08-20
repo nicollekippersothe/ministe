@@ -79,8 +79,43 @@ function Linha({
  * é o endereço dela e por onde continuar, sem abrir as quatro seções para
  * lembrar o que já preencheu.
  */
-export default async function Painel() {
+/**
+ * O recado de quem acabou de entrar numa conta que já existia.
+ *
+ * Chega por `app/auth/retorno`, que é onde a página montada em conta
+ * provisória troca de dono quando o Google já pertence a alguém. As duas
+ * frases dizem o que existe: ou a página veio junto, ou a conta já tem a
+ * página que o plano guarda.
+ */
+function Rascunho({ estado }: { estado?: string }) {
+  if (estado !== "veio" && estado !== "cheio") return null;
+
+  return (
+    <p
+      role="status"
+      className="mt-4 rounded-xl bg-aberto-fundo px-4 py-3 text-sm leading-relaxed font-medium text-aberto-texto"
+    >
+      {estado === "veio" ? (
+        "A página que você montou agora está nesta conta."
+      ) : (
+        <>
+          Esta conta já tem uma página, e o plano atual guarda uma por conta.{" "}
+          <Link href="/painel/plano" className="underline underline-offset-4">
+            Ver o plano
+          </Link>
+        </>
+      )}
+    </p>
+  );
+}
+
+export default async function Painel({
+  searchParams,
+}: {
+  searchParams: Promise<{ rascunho?: string }>;
+}) {
   exigirLogin();
+  const { rascunho } = await searchParams;
   const negocio = await doDono();
   const noAr = negocio.publicado;
   // Conta provisória monta e guarda, e o Google é que põe no ar. A tela diz
@@ -110,6 +145,8 @@ export default async function Painel() {
       <h1 className="text-2xl font-bold tracking-tight text-texto lg:text-3xl">
         Sua página
       </h1>
+
+      <Rascunho estado={rascunho} />
 
       <div className="lg:hidden">
         <div className="mt-4 flex flex-col gap-4">

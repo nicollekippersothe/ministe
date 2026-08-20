@@ -20,6 +20,15 @@ import { SUPABASE_URL } from "./config";
  *   1. **Nenhuma tela, Server Action ou rota que a pessoa alcança importa este
  *      arquivo.** Se um dia for mais fácil resolver um problema de RLS com a
  *      chave de serviço, o problema é a política, e não a chave.
+ *
+ *      A exceção é `app/auth/retorno`, e ela está escrita aqui para continuar
+ *      sendo exceção. Aquela rota chama uma função só, `migrar_rascunho`, que
+ *      existe porque `protege_cobranca` devolve `dono_id` ao valor anterior em
+ *      toda escrita que não venha do serviço, e essa proteção é justamente o
+ *      que impede alguém de apontar a página dos outros para si. A função tem
+ *      quatro guardas próprios, o negócio que a rota passa vem de um cookie
+ *      `httpOnly` que só o nosso servidor escreveu, e o destino é sempre a
+ *      sessão de quem está pedindo. Uma segunda porta pede a mesma conversa.
  *   2. **A chave nunca sai daqui.** Nada de repassar o cliente para componente,
  *      nem de ler a variável em outro lugar.
  *   3. **O guarda abaixo é a última linha de defesa.** Se este módulo entrar

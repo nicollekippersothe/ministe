@@ -16,6 +16,10 @@ import { navegador } from "@/lib/supabase/navegador";
  * A diferença importa: entrar por cima da conta provisória criaria uma conta
  * nova e deixaria o rascunho para trás, que é exatamente o que este fluxo
  * existe para evitar.
+ *
+ * O terceiro caso, o Google que já pertence a outra conta daqui, é resolvido em
+ * `app/auth/retorno`: a recusa do `linkIdentity` chega na volta, e nunca aqui,
+ * porque o Supabase só a descobre depois que o Google responde.
  */
 export function BotaoGoogle({
   rotulo = "Entrar com o Google",
@@ -42,16 +46,20 @@ export function BotaoGoogle({
         provider: "google",
         options: opcoes,
       });
-      if (!error) {
-        if (data?.url) location.assign(data.url);
+      if (!error && data?.url) {
+        location.assign(data.url);
         return;
       }
-      // Cai aqui quando este Google já tem uma conta aqui dentro. Entrar nela é
-      // o caminho certo, e a pessoa precisa saber que a página que ela estava
-      // montando agora está fora, em vez de descobrir sozinha depois.
-      setRecado(
-        "Este Google já tem uma página aqui. Entrando nela, a que você montou agora fica guardada neste aparelho.",
+      // Quando este Google já tem conta aqui dentro, o Supabase só descobre
+      // depois que o Google responde, então a recusa chega em
+      // `app/auth/retorno` e a recuperação mora lá: a pessoa entra na conta que
+      // já existia e a página montada agora vai junto. Na vez rara em que a
+      // recusa aparece já no clique, o caminho é o mesmo, e por isso este
+      // botão manda para a mesma porta em vez de repetir o passo aqui.
+      location.assign(
+        `/auth/retorno?error_code=identity_already_exists&para=${encodeURIComponent(para)}`,
       );
+      return;
     }
 
     const { error } = await sb.auth.signInWithOAuth({
