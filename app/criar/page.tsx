@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { criarPagina } from "./acoes";
 import { exigirLogin } from "@/app/painel/vitrine";
 import { FormularioCriar } from "@/componentes/cadastro/FormularioCriar";
 import { Moldura } from "@/componentes/cadastro/Moldura";
-import { enderecoLivre } from "@/lib/dados";
+import { enderecoLivre, idDoNegocioDoDono } from "@/lib/dados";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { CADASTRO_ABERTO } from "@/lib/site";
 import { conferirFormato, MOTIVOS, normalizar, type Recusa } from "@/lib/slug";
@@ -79,10 +80,26 @@ export default async function Criar({
 
   if (!CADASTRO_ABERTO) return <EnderecoConferido slug={slug ?? ""} />;
   exigirLogin();
+
+  /*
+   * Quem já tem página vai para o painel, em vez de ver o formulário.
+   *
+   * O limite do plano gratuito é uma página por conta, e quem passasse daqui
+   * levaria a recusa do banco só depois de preencher tudo. Além disso `/criar`
+   * é o destino do `doDono()` quando falta página, então alguém com página
+   * chega aqui por engano de navegação, e não por vontade.
+   *
+   * Sem risco de laço: este desvio só acontece quando a página existe, que é
+   * exatamente o caso em que o painel abre.
+   */
+  if ((await idDoNegocioDoDono()) !== null) redirect("/painel");
+
   const mensagem =
     erro === "nome"
       ? "Informe o nome do negócio."
-      : (MOTIVOS[erro as Recusa] ?? null);
+      : erro === "limite"
+        ? "Sua conta já tem uma página no plano gratuito. Abra o painel para editá-la, ou veja os planos para ter mais de uma."
+        : (MOTIVOS[erro as Recusa] ?? null);
 
   return (
     <FormularioCriar

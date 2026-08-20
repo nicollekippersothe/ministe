@@ -42,7 +42,29 @@ export async function criarPagina(formData: FormData) {
   const categoriaLivre =
     escolhida === null && livre.length >= LIVRE_MINIMO ? livre : null;
 
-  await criar(slug, nome, escolhida?.id ?? null, categoriaLivre);
+  /*
+   * O limite de páginas por conta é gatilho do banco, e não conferência de
+   * tela: o painel escreve direto pelo navegador, então limite que morasse só
+   * aqui não seria limite. O preço é que a recusa chega como exceção.
+   *
+   * Sem este try, ela subia como 500 e o navegador mostrava a tela de erro do
+   * Next. Foi o que aconteceu de verdade: quem já tinha página e mandava o
+   * formulário via "this page couldn't load", sem nenhuma pista do motivo.
+   *
+   * O try envolve só a criação, e nunca o `redirect` de baixo: o próprio
+   * `redirect` funciona levantando uma exceção, e um catch em volta dele
+   * engoliria a navegação.
+   */
+  try {
+    await criar(slug, nome, escolhida?.id ?? null, categoriaLivre);
+  } catch (erro) {
+    const recado = erro instanceof Error ? erro.message : "";
+    if (recado.includes("limite")) volta("limite");
+    if (recado.includes("duplicate key") || recado.includes("negocios_slug"))
+      volta("ocupado");
+    throw erro;
+  }
+
   revalidatePath("/painel");
   redirect("/painel?criado=1");
 }
