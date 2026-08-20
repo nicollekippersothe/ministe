@@ -37,10 +37,16 @@ import type {
  *   3. Nenhuma chamada que cria dinheiro vai sem `X-Idempotency-Key`. A chave
  *      é o uuid da cobrança, criado e gravado por quem chama, antes de chamar.
  *      Clique duplo, retry do navegador e reenvio de fila cobram uma vez só.
- *   4. Nada é registrado em log. Nem o token de acesso, nem o segredo do
- *      webhook, nem o token do cartão. Este arquivo tem zero `console`, e é de
- *      propósito: log de gateway é onde credencial vaza, porque o log vai para
- *      um lugar que a revisão de segurança esqueceu que existia.
+ *   4. Nenhuma credencial é registrada em log. Nem o token de acesso, nem o
+ *      segredo do webhook, nem o token do cartão, nem o número do cartão, que
+ *      nem chega aqui. Log de gateway é onde credencial vaza, porque o log vai
+ *      para um lugar que a revisão de segurança esqueceu que existia.
+ *
+ *      O que vai para o log é só o suficiente para saber por que a chamada
+ *      falhou: o caminho, o código HTTP, e a frase de erro do próprio Mercado
+ *      Pago. Isso existe porque a primeira falha de verdade em produção deixou
+ *      uma tela dizendo "o banco demorou" e nada mais, e descobrir o motivo
+ *      virou adivinhação. Ver `anotar`, logo abaixo de `pedir`.
  */
 
 const BASE = "https://api.mercadopago.com";
@@ -130,7 +136,11 @@ async function pedir(
   corpo?: Registro,
   idempotencia?: string,
 ): Promise<Resultado<Registro>> {
-  const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  // O `trim` é regra, e não zelo: painel de hospedagem guarda o valor com a
+  // quebra de linha que veio junto na hora de colar, e um cabeçalho com quebra
+  // de linha faz o `fetch` levantar antes de sair da máquina. O sintoma é a
+  // chamada falhando na hora, com cara de provedor fora do ar.
+  const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
   if (!token) return { ok: false, motivo: "chave_ausente" };
 
   const cabecalhos: Record<string, string> = {
@@ -148,9 +158,11 @@ async function pedir(
       body: corpo === undefined ? undefined : JSON.stringify(corpo),
       signal: AbortSignal.timeout(TEMPO_LIMITE_MS),
     });
-  } catch {
+  } catch (e) {
     // DNS, TLS, socket fechado e tempo esgotado caem todos aqui, e todos
-    // significam a mesma coisa para quem está pagando: tente de novo.
+    // significam a mesma coisa para quem está pagando: tente de novo. Para
+    // quem mantém, significam coisas bem diferentes, e por isso o log separa.
+    anotar(caminho, { erro: semSegredo(e, token) });
     return { ok: false, motivo: "provedor_fora" };
   }
 
@@ -167,11 +179,40 @@ async function pedir(
   if (resposta.ok) {
     // Resposta 200 que veio ilegível é o provedor com problema, e insistir na
     // leitura só produziria um objeto vazio com cara de cobrança criada.
-    if (!lido) return { ok: false, motivo: "provedor_fora" };
+    if (!lido) {
+      anotar(caminho, { status: resposta.status, erro: "corpo ilegível" });
+      return { ok: false, motivo: "provedor_fora" };
+    }
     return { ok: true, valor: dados };
   }
 
-  return { ok: false, motivo: motivoDoHttp(resposta.status, dados) };
+  const motivo = motivoDoHttp(resposta.status, dados);
+  anotar(caminho, { status: resposta.status, motivo, dizem: detalheDoCorpo(dados) });
+  return { ok: false, motivo };
+}
+
+/**
+ * A linha de log de uma chamada que falhou.
+ *
+ * Um `console.error` por falha, e nenhum por sucesso: o que interessa aqui é o
+ * caminho, o código HTTP e a frase que o Mercado Pago devolveu. Nada de
+ * cabeçalho, nada de corpo inteiro, nada de token. Sem isto, toda falha de
+ * gateway chega como a mesma frase de tela e o motivo vira adivinhação.
+ */
+function anotar(caminho: string, dados: Record<string, unknown>) {
+  console.error(`mercadopago ${caminho}`, JSON.stringify(dados));
+}
+
+/**
+ * A mensagem de uma exceção, com o token apagado.
+ *
+ * Cinto e suspensório de uma linha: a exceção de cabeçalho inválido é
+ * justamente a que pode carregar o valor do cabeçalho junto, e o valor do
+ * cabeçalho é o token de acesso.
+ */
+function semSegredo(e: unknown, token: string): string {
+  const bruto = e instanceof Error ? `${e.name}: ${e.message}` : "desconhecido";
+  return bruto.split(token).join("***");
 }
 
 function situacaoAssinatura(status: string | null): SituacaoAssinatura {
