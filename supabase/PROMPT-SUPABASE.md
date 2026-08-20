@@ -196,7 +196,11 @@ de lá é a versão sem cobrança. Ela passaria verde sem testar nada disto, que
 o pior tipo de erro.
 
 O quarto é a bateria de testes. Roda dentro de uma transação e termina em
-rollback, então não deixa nada gravado. O resultado vem como tabela, uma linha
+rollback, então não deixa nada gravado. O SQL Editor vai abrir um diálogo
+avisando de operações destrutivas e de uma tabela sem RLS: escolha "Run without
+RLS". A outra opção acrescenta um enable row level security ao script e muda o
+que está sendo testado, porque as asserções gravam o diário de dentro dos papéis
+anon e authenticated. O resultado vem como tabela, uma linha
 por asserção, e a primeira linha diz TODOS OS TESTES PASSARAM, 164 asserções.
 Me mande essa primeira linha como ela aparecer na tela. Se parar antes, o
 resultado é um erro começando em FALHOU: me mande essa linha inteira, sem
@@ -255,8 +259,9 @@ O esperado, linha por linha:
 Se registrar_cobranca_paga, abrir_assinatura ou migrar_rascunho vierem true em
 qualquer uma das duas colunas, PARE e me avise antes de qualquer outra coisa.
 As duas primeiras são as únicas coisas no banco que conseguem escrever plano
-pago, e a terceira move a página de qualquer conta provisória. Abertas ao navegador, viram plano de graça
-e página roubada para quem souber mandar um POST em /rest/v1/rpc.
+pago, e a terceira move a página de qualquer conta provisória. Abertas ao
+navegador, viram plano de graça e página roubada para quem souber mandar um
+POST em /rest/v1/rpc.
 
   select indexname from pg_indexes
    where schemaname = 'public' and tablename = 'assinaturas'
@@ -274,7 +279,7 @@ Tem que trazer uma linha.
      and p.proname in ('registrar_cobranca_paga', 'abrir_assinatura',
                        'migrar_rascunho');
 
-O esperado é postgres nas três. As duas são security definer, e o gatilho
+O esperado é postgres nas três. As três são security definer, e o gatilho
 protege_cobranca só deixa passar quem é 'postgres' ou 'service_role'. Com
 outro dono, o gatilho devolve o valor anterior em silêncio: o cliente pagaria
 sem receber o plano, e o rascunho não mudaria de dono.

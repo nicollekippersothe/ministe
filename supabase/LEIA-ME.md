@@ -42,6 +42,13 @@ psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/testes-rls.sql
    bateria terminava por notice, este passo pedia para conferir uma mensagem
    que naquele caminho nunca apareceu.
 
+   **O SQL Editor abre um diálogo antes de rodar**, avisando de operações
+   destrutivas e de uma tabela criada sem RLS. Escolher **"Run without RLS"**. A
+   outra opção acrescenta um `enable row level security` ao script e muda o que
+   está sendo testado: as asserções gravam o diário de dentro dos papéis `anon`
+   e `authenticated`, e com RLS ligada e política nenhuma elas parariam de
+   gravar. A tabela do diário nasce e morre dentro da transação.
+
    O script roda dentro de uma transação e desfaz tudo no fim, então pode ser
    executado com dados reais.
 

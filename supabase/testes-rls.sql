@@ -64,6 +64,21 @@ $$;
 --
 -- A numeração vem de coluna de identidade, que dispensa permissão na sequência,
 -- então o grant abaixo é só de insert.
+--
+-- SOBRE O AVISO DO SQL EDITOR
+--
+-- O editor do Supabase abre um diálogo "Potential issues detected" ao ver esta
+-- tabela nascer sem RLS, e ao ver os comandos destrutivos que a bateria usa de
+-- propósito. **A escolha certa é "Run without RLS".**
+--
+-- A outra opção acrescenta um `enable row level security` ao script antes de
+-- executar, e isso muda o que está sendo testado: as asserções gravam aqui de
+-- dentro dos papéis anon e authenticated, e com RLS ligada e política nenhuma
+-- elas parariam de gravar. A bateria passaria a medir a si mesma em vez de
+-- medir o schema.
+--
+-- RLS aqui não protege nada que exista depois: a tabela e o schema inteiro
+-- nascem e morrem dentro da transação, e o arquivo termina em rollback.
 create table testes.registro (
   numero integer generated always as identity primary key,
   nome text not null,
