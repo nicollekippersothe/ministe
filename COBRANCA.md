@@ -472,6 +472,22 @@ caminho para conferir o `greatest`.
 
 Os tópicos aceitos são `payment`, `assinatura` e `recorrente`.
 
+### O MCP do Mercado Pago
+
+`.mcp.json` na raiz declara o servidor MCP deles, em
+`https://mcp.mercadopago.com/mcp`. Ele serve para três coisas que aparecem o
+tempo todo nesta parte do produto: criar usuário de teste, conferir e configurar
+webhook, e buscar na documentação viva deles, que é onde moram os valores que
+mudam sem aviso (a lista de nomes de portador do sandbox, por exemplo).
+
+**O arquivo tem endereço e mais nada.** Nenhuma credencial entra ali, porque a
+autenticação é por OAuth no navegador, guardada fora do repositório. É por isso
+que ele pode ser versionado sem susto.
+
+Duas coisas que ele pede na primeira vez, e as duas são interativas: aprovar o
+servidor do projeto, e completar o OAuth escolhendo o país. Sessão sem navegador
+alcança nenhum dos dois passos.
+
 ### No sandbox do Mercado Pago
 
 Usuários de teste por `POST /users/test_user`. **O desfecho do cartão é decidido
