@@ -27,10 +27,10 @@ export default async function Entrar({
 
   return (
     <Moldura
-      titulo={publicando ? "Falta uma etapa" : "Entrar"}
+      titulo={publicando ? "A última etapa" : "Entrar"}
       subtitulo={
         publicando
-          ? "Entre com o Google para pôr sua página no ar. A página que você montou continua sendo sua, com o mesmo endereço."
+          ? "Entre com o Google para pôr sua página no ar. Ela continua sua, com o mesmo endereço."
           : "Uma conta do Google, e sua página abre do jeito que você deixou."
       }
       rodape={
@@ -38,7 +38,7 @@ export default async function Entrar({
           Quer começar uma página?{" "}
           <Link
             href="/criar"
-            className="font-medium text-destaque underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center px-1 font-medium text-destaque underline-offset-4 hover:underline"
           >
             Criar agora
           </Link>
@@ -55,17 +55,21 @@ export default async function Entrar({
             role="alert"
             className="rounded-2xl border border-destaque/30 bg-destaque/8 px-4 py-3 text-sm leading-relaxed text-destaque"
           >
-            O Google respondeu: {erro}. Tente de novo, e se continuar assim me
-            conte o que apareceu aqui.
+            O Google respondeu: {erro}. Tente de novo, e se repetir, me conte o
+            que apareceu aqui.
           </p>
         ) : null}
 
         <p className="text-center text-sm leading-relaxed text-suave">
-          Usamos seu nome e seu e-mail para guardar a página no seu nome.
+          Usamos seu nome e seu e-mail para deixar a página registrada com
+          você.
         </p>
 
         <p className="text-center text-sm text-suave">
-          <Link href="/entrar/ajuda" className="underline underline-offset-2">
+          <Link
+            href="/entrar/ajuda"
+            className="inline-flex min-h-11 items-center px-1 underline underline-offset-2"
+          >
             Preciso de ajuda para entrar
           </Link>
         </p>

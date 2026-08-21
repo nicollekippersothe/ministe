@@ -17,15 +17,21 @@ import { DOMINIO_PUBLICO } from "@/lib/marca";
  *
  * Só aparece no computador. No celular ela roubaria a tela do formulário, que
  * é o que a pessoa veio fazer, e o cadastro inteiro cabe em três respostas.
+ *
+ * `escolhido` é separado de `categoria` por causa de "Outro": ali a receita é
+ * a padrão e a categoria é nula, e a frase de baixo ficava pedindo um ramo que
+ * a pessoa acabara de escrever.
  */
 export function PreviaViva({
   nome,
   slug,
   categoria,
+  escolhido = false,
 }: {
   nome: string;
   slug: string;
   categoria: string | null;
+  escolhido?: boolean;
 }) {
   const receita = receitaDe(categoria);
   const inicial = nome.trim().charAt(0).toUpperCase();
@@ -116,9 +122,9 @@ export function PreviaViva({
         aria-live="polite"
         className="mt-4 px-1 text-center text-sm leading-relaxed text-suave"
       >
-        {categoria === null
-          ? "Escolha o seu ramo e a página se monta aqui do lado."
-          : `Sua página começa assim. Tudo aqui muda depois, no painel.`}
+        {escolhido
+          ? "Sua página começa assim. Tudo muda depois, no painel."
+          : "Escolha o seu ramo e a página se monta aqui do lado."}
       </p>
     </div>
   );

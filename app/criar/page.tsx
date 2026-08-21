@@ -37,7 +37,7 @@ async function EnderecoConferido({ slug }: { slug: string }) {
       }
       subtitulo={
         livre
-          ? "Ninguém está usando este endereço."
+          ? "Dá para começar por ele quando o cadastro abrir."
           : pedido === ""
             ? "Volte e escreva o nome do seu negócio."
             : (MOTIVOS[recusa as Recusa] ?? MOTIVOS.ocupado)
@@ -46,7 +46,7 @@ async function EnderecoConferido({ slug }: { slug: string }) {
         <p className="text-center text-[0.95rem] text-suave">
           <Link
             href="/"
-            className="font-medium text-destaque underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center px-1 font-medium text-destaque underline-offset-4 hover:underline"
           >
             Voltar e escolher outro
           </Link>
@@ -55,28 +55,48 @@ async function EnderecoConferido({ slug }: { slug: string }) {
     >
       <div className="flex flex-col gap-6">
         <p className="leading-relaxed text-suave">
-          O cadastro abre junto com o login, que é a próxima etapa. Os endereços
-          que já estão no ar continuam abrindo, e dá para percorrer um inteiro
-          para ver como o seu vai ficar.
+          O cadastro abre junto com o login, que é a próxima etapa. Enquanto
+          isso, dá para percorrer uma página inteira e ver como a sua vai ficar.
         </p>
 
         <Link
           href="/demo"
           className="flex h-13 w-full items-center justify-center rounded-full bg-texto px-6 text-[1.05rem] font-semibold text-superficie"
         >
-          Ver um endereço por dentro
+          Ver uma página por dentro
         </Link>
       </div>
     </Moldura>
   );
 }
 
+/**
+ * Onde cada recusa do servidor aparece na tela.
+ *
+ * Uma mensagem só, colada no botão, era o que existia antes: no celular ela
+ * nascia a 1260px do topo, fora da tela, e falava de um campo que ficava
+ * quatrocentos pixels acima. Agora o motivo do endereço vai para debaixo do
+ * endereço, o do nome para debaixo do nome, e sobra o aviso de conta, que é o
+ * único que fala do formulário inteiro e por isso abre no alto.
+ */
+function ondeMostrar(erro: string | undefined): "nome" | "endereco" | "geral" {
+  if (erro === "nome") return "nome";
+  if (erro === "limite") return "geral";
+  return "endereco";
+}
+
 export default async function Criar({
   searchParams,
 }: {
-  searchParams: Promise<{ erro?: string; nome?: string; slug?: string }>;
+  searchParams: Promise<{
+    erro?: string;
+    nome?: string;
+    slug?: string;
+    categoria?: string;
+    livre?: string;
+  }>;
 }) {
-  const { erro, nome, slug } = await searchParams;
+  const { erro, nome, slug, categoria, livre } = await searchParams;
 
   if (!CADASTRO_ABERTO) return <EnderecoConferido slug={slug ?? ""} />;
   exigirLogin();
@@ -96,16 +116,22 @@ export default async function Criar({
 
   const mensagem =
     erro === "nome"
-      ? "Informe o nome do negócio."
+      ? "Escreva o nome que vai na página."
       : erro === "limite"
-        ? "Sua conta já tem uma página no plano gratuito. Abra o painel para editá-la, ou veja os planos para ter mais de uma."
+        ? "Sua conta já tem uma página no plano gratuito. Abra o painel para editar, ou veja os planos para ter mais de uma."
         : (MOTIVOS[erro as Recusa] ?? null);
+  const onde = ondeMostrar(erro);
 
   return (
     <FormularioCriar
       acao={criarPagina}
       nomeInicial={nome ?? ""}
-      mensagem={mensagem}
+      slugInicial={slug ?? ""}
+      categoriaInicial={categoria ?? ""}
+      livreInicial={livre ?? ""}
+      erroNome={onde === "nome" ? mensagem : null}
+      erroEndereco={onde === "endereco" ? mensagem : null}
+      erroGeral={onde === "geral" ? mensagem : null}
     />
   );
 }

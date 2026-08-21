@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   CATEGORIAS,
   GRUPOS,
@@ -32,8 +32,8 @@ function resumo(receita: Receita): string {
   const precos = receita.mostrarPrecos
     ? "preço à vista"
     : "preço combinado na conversa";
-  const ordem = receita.galeriaPrimeiro ? ", e a galeria vem na frente" : "";
-  return `Começa com ${receita.tituloCatalogo}, ${precos}${ordem}.`;
+  const ordem = receita.galeriaPrimeiro ? ", com a galeria na frente" : "";
+  return `Sua página começa com ${receita.tituloCatalogo}, ${precos}${ordem}.`;
 }
 
 function Opcao({
@@ -55,7 +55,7 @@ function Opcao({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 ${
+      className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 ${
         marcada ? "border-texto bg-texto/6" : "border-transparent bg-superficie"
       }`}
     >
@@ -86,6 +86,33 @@ function Opcao({
   );
 }
 
+/** Lupa desenhada, para o campo de busca se anunciar como busca. */
+function Lupa() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className="pointer-events-none absolute top-1/2 left-4 h-4.5 w-4.5 -translate-y-1/2 text-suave"
+    >
+      <circle
+        cx="8.5"
+        cy="8.5"
+        r="5.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M12.8 12.8 17 17"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /**
  * O seletor de ramo do cadastro.
  *
@@ -96,19 +123,30 @@ function Opcao({
  *
  * Funciona sem JavaScript: os rádios têm name e value próprios, então o
  * formulário envia a escolha do mesmo jeito. A busca é conforto por cima.
+ *
+ * Três decisões de tamanho, todas medidas no iPhone 13 (390x664):
+ *
+ * - A lista e a linha "Outro" moram na mesma caixa com borda. Em caixas
+ *   separadas, a costura entre as duas parecia bloco desalinhado.
+ * - A altura vai a 21rem no celular (era 26rem, 63% da tela) e volta a 26rem
+ *   no computador, onde a altura sobra.
+ * - O nome do grupo gruda no topo enquanto a lista rola, senão a pessoa perde
+ *   de vista se está em Saúde ou em Comida no meio de trinta e cinco linhas.
  */
 export function CampoCategoria({
   inicial = "",
+  livreInicial = "",
   aoMudar,
 }: {
   inicial?: string;
-  /** O id escolhido, ou nulo em "outro" e enquanto ninguém escolheu. */
-  aoMudar?: (categoria: string | null) => void;
+  livreInicial?: string;
+  /** O valor marcado: um id da lista, ou OUTRO. Vazio enquanto ninguém marcou. */
+  aoMudar?: (escolha: string) => void;
 }) {
   const id = useId();
   const [termo, setTermo] = useState("");
   const [selecionada, setSelecionada] = useState(inicial);
-  const [livre, setLivre] = useState("");
+  const [livre, setLivre] = useState(livreInicial);
 
   const filtrando = termo.trim().length >= MINIMO_BUSCA;
   const achados = useMemo(
@@ -133,36 +171,79 @@ export function CampoCategoria({
     ? []
     : GRUPOS.map((g) => [g, CATEGORIAS.filter((c) => c.grupo === g)]);
 
+  /** Sete linhas já passam da altura da caixa, no celular e no computador. */
+  const podeRolar = filtrando === false || achados.length > 7;
+
+  /*
+   * Quando o formulário volta com o ramo já marcado, a lista abre no topo e a
+   * marcação fica escondida trinta linhas abaixo: a pessoa vê um formulário que
+   * parece vazio e responde tudo de novo. Aqui a caixa abre já na linha dela.
+   *
+   * Mexe no scrollTop da caixa, e nunca em scrollIntoView, que arrastaria a
+   * página inteira junto e jogaria o título para fora da tela.
+   */
+  const rolador = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (inicial === "" || inicial === OUTRO) return;
+    const caixa = rolador.current;
+    const alvo = caixa
+      ?.querySelector(`input[value="${inicial}"]`)
+      ?.closest("label");
+    if (!caixa || !alvo) return;
+    const daBorda =
+      alvo.getBoundingClientRect().top - caixa.getBoundingClientRect().top;
+    caixa.scrollTop +=
+      daBorda - caixa.clientHeight / 2 + alvo.getBoundingClientRect().height / 2;
+    // Só na montagem: depois disso quem manda na rolagem é a pessoa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const escolher = (valor: string) => {
     setSelecionada(valor);
-    aoMudar?.(valor === OUTRO ? null : valor);
+    aoMudar?.(valor);
   };
 
   return (
-    <fieldset>
+    <fieldset aria-describedby={`${id}-dica`}>
       <legend className="text-[0.95rem] font-medium text-texto">
         Escolha o seu ramo
       </legend>
       <p id={`${id}-dica`} className="mt-1 text-sm leading-relaxed text-suave">
-        A escolha monta a sua página e ajuda o buscador a mostrar você para quem
-        procura pelo seu ramo. Dá para trocar depois.
+        Monta a sua página e ajuda quem procura pelo seu ramo a te achar. Dá
+        para trocar depois.
       </p>
 
       <label htmlFor={`${id}-busca`} className="sr-only">
         Procure pelo seu ramo
       </label>
-      <input
-        id={`${id}-busca`}
-        type="search"
-        value={termo}
-        onChange={(e) => setTermo(e.target.value)}
-        autoCapitalize="none"
-        autoCorrect="off"
-        spellCheck={false}
-        placeholder="terapia, unha, inglês, foto"
-        aria-describedby={`${id}-quantos`}
-        className="mt-3 w-full rounded-2xl border border-borda bg-superficie px-4 py-3 text-[1rem] text-texto placeholder:text-suave/70"
-      />
+      <div className="relative mt-3">
+        <Lupa />
+        <input
+          id={`${id}-busca`}
+          type="search"
+          value={termo}
+          onChange={(e) => setTermo(e.target.value)}
+          /*
+           * Enter num campo solto dentro de um formulário com botão de enviar
+           * manda o formulário. No celular a tecla do teclado vira "ir", e
+           * quem procurava um ramo enviava o cadastro pela metade. Aqui o
+           * Enter fecha o teclado e deixa a lista já filtrada na tela.
+           */
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.currentTarget.blur();
+            }
+          }}
+          enterKeyHint="search"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="terapia, unha, inglês, foto"
+          aria-describedby={`${id}-quantos`}
+          className="w-full rounded-2xl border border-borda bg-superficie py-3 pr-4 pl-11 text-[1rem] text-texto placeholder:text-suave/70"
+        />
+      </div>
 
       <p id={`${id}-quantos`} aria-live="polite" className="sr-only">
         {filtrando
@@ -170,62 +251,83 @@ export function CampoCategoria({
           : ""}
       </p>
 
-      <div className="mt-3 max-h-[26rem] overflow-y-auto overscroll-contain rounded-2xl border border-borda bg-superficie p-1.5">
-        {filtrando ? (
-          <div className="flex flex-col gap-0.5">
-            {achados.map((c) => (
-              <Opcao
-                key={c.id}
-                id={`${id}-${c.id}`}
-                valor={c.id}
-                rotulo={c.nome}
-                detalhe={c.grupo}
-                marcada={selecionada === c.id}
-                exigir={escolhaVisivel}
-                aoEscolher={escolher}
-              />
-            ))}
-          </div>
-        ) : (
-          grupos.map(([grupo, lista]) => (
-            <div key={grupo} className="mb-1 last:mb-0">
-              <p className="px-3.5 pt-3 pb-1.5 text-xs font-semibold tracking-wide text-suave uppercase">
-                {grupo}
-              </p>
-              <div className="flex flex-col gap-0.5">
-                {lista.map((c) => (
+      <div className="mt-2 rounded-2xl border border-borda bg-superficie">
+        <div className="relative">
+          <div
+            ref={rolador}
+            className="max-h-[21rem] overflow-y-auto overscroll-contain px-1.5 pb-1.5 lg:max-h-[26rem]"
+          >
+            {filtrando ? (
+              <div className="flex flex-col gap-0.5 pt-1.5">
+                {achados.map((c) => (
                   <Opcao
                     key={c.id}
                     id={`${id}-${c.id}`}
                     valor={c.id}
                     rotulo={c.nome}
+                    detalhe={c.grupo}
                     marcada={selecionada === c.id}
                     exigir={escolhaVisivel}
                     aoEscolher={escolher}
                   />
                 ))}
               </div>
-            </div>
-          ))
-        )}
+            ) : (
+              grupos.map(([grupo, lista]) => (
+                <div key={grupo}>
+                  <p className="sticky top-0 z-10 -mx-1.5 bg-superficie px-5 pt-3 pb-1.5 text-xs font-semibold tracking-wide text-suave uppercase">
+                    {grupo}
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {lista.map((c) => (
+                      <Opcao
+                        key={c.id}
+                        id={`${id}-${c.id}`}
+                        valor={c.id}
+                        rotulo={c.nome}
+                        marcada={selecionada === c.id}
+                        exigir={escolhaVisivel}
+                        aoEscolher={escolher}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
 
-        {filtrando && achados.length === 0 ? (
-          <p className="px-3.5 py-4 text-sm leading-relaxed text-suave">
-            Escolha Outro logo abaixo e escreva o seu ramo com as suas palavras.
-          </p>
-        ) : null}
-      </div>
+            {filtrando && achados.length === 0 ? (
+              <p className="px-3.5 py-4 text-sm leading-relaxed text-suave">
+                Escolha Outro aqui embaixo e escreva com as suas palavras.
+              </p>
+            ) : null}
+          </div>
 
-      <div className="mt-2">
-        <Opcao
-          id={`${id}-${OUTRO}`}
-          valor={OUTRO}
-          rotulo="Outro"
-          detalhe="Escreva o seu ramo com as suas palavras"
-          marcada={selecionada === OUTRO}
-          exigir={escolhaVisivel}
-          aoEscolher={escolher}
-        />
+          {/*
+            A última linha aparece cortada ao meio, que é o que diz que a lista
+            rola. Cortada seca ela parecia defeito de desenho, e o esmaecido
+            resolve os dois: continua dizendo que tem mais, e parece de
+            propósito. Só entra quando a lista passa da altura da caixa.
+          */}
+          {podeRolar ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-superficie to-transparent"
+            />
+          ) : null}
+        </div>
+
+        {/* "Outro" mora na mesma caixa da lista, embaixo de uma linha. */}
+        <div className="border-t border-borda p-1.5">
+          <Opcao
+            id={`${id}-${OUTRO}`}
+            valor={OUTRO}
+            rotulo="Outro"
+            detalhe="Escreva com as suas palavras"
+            marcada={selecionada === OUTRO}
+            exigir={escolhaVisivel}
+            aoEscolher={escolher}
+          />
+        </div>
       </div>
 
       {!escolhaVisivel ? (
@@ -254,7 +356,16 @@ export function CampoCategoria({
         </div>
       ) : null}
 
-      <p aria-live="polite" className="mt-3 min-h-5 text-sm text-suave">
+      {/*
+        Fica montado sempre, mesmo vazio, senão o leitor de tela perde o
+        anúncio: região viva que nasce junto com o texto costuma passar batido.
+        Vazio ele não reserva altura, e o espaço entre o ramo e o campo de nome
+        fica do mesmo tamanho do espaço entre os outros campos.
+      */}
+      <p
+        aria-live="polite"
+        className={`text-sm text-suave ${receita ? "mt-2.5" : ""}`}
+      >
         {receita ? resumo(receita) : ""}
       </p>
     </fieldset>

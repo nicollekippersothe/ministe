@@ -45,8 +45,38 @@ export async function criarPagina(formData: FormData) {
     .slice(0, NOME_MAXIMO);
   const slug = normalizar(String(formData.get("slug") ?? ""));
 
-  const volta = (erro: string) =>
-    redirect(`/criar?erro=${erro}&nome=${encodeURIComponent(nome)}`);
+  /*
+   * A categoria vale se estiver na lista. "Outro", valor inventado e campo
+   * vazio caem todos em nulo, que é a receita padrão. Passar pela lista em vez
+   * de aceitar o texto do formulário é o que garante o formato que o banco
+   * exige, e o que impede uma categoria inventada de virar @type no JSON-LD.
+   */
+  const marcada = String(formData.get("categoria") ?? "");
+  const escolhida = categoriaPorId(marcada);
+  const livre = String(formData.get("categoria_livre") ?? "")
+    .trim()
+    .slice(0, LIVRE_MAXIMO);
+  const categoriaLivre =
+    escolhida === null && livre.length >= LIVRE_MINIMO ? livre : null;
+
+  /*
+   * A volta leva de novo tudo o que a pessoa já respondeu.
+   *
+   * Levando só o nome, quem escolhia o ramo no meio de trinta e cinco, digitava
+   * o endereço e via "este endereço já está em uso" voltava para um formulário
+   * com o ramo em branco e o endereço apagado. O trabalho perdido era o de
+   * achar o ramo, que é a resposta mais cara desta tela.
+   *
+   * O ramo volta como veio marcado, e não como categoria conferida: "outro" e
+   * o texto livre também precisam sobreviver à recusa.
+   */
+  const volta = (erro: string) => {
+    const campos = new URLSearchParams({ erro, nome });
+    if (slug !== "") campos.set("slug", slug);
+    if (marcada !== "") campos.set("categoria", marcada);
+    if (livre !== "") campos.set("livre", livre);
+    redirect(`/criar?${campos}`);
+  };
 
   if (nome === "") volta("nome");
 
@@ -54,19 +84,6 @@ export async function criarPagina(formData: FormData) {
   if (recusa) volta(recusa);
 
   if (!(await enderecoLivre(slug))) volta("ocupado");
-
-  /*
-   * A categoria vale se estiver na lista. "Outro", valor inventado e campo
-   * vazio caem todos em nulo, que é a receita padrão. Passar pela lista em vez
-   * de aceitar o texto do formulário é o que garante o formato que o banco
-   * exige, e o que impede uma categoria inventada de virar @type no JSON-LD.
-   */
-  const escolhida = categoriaPorId(String(formData.get("categoria") ?? ""));
-  const livre = String(formData.get("categoria_livre") ?? "")
-    .trim()
-    .slice(0, LIVRE_MAXIMO);
-  const categoriaLivre =
-    escolhida === null && livre.length >= LIVRE_MINIMO ? livre : null;
 
   /*
    * O limite de páginas por conta é gatilho do banco, e não conferência de

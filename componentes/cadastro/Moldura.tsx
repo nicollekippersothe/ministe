@@ -12,6 +12,12 @@ import { Marca } from "@/componentes/Marca";
  * O `lado` some no celular, e não encolhe. Ali a tela é do formulário, que é o
  * que a pessoa veio fazer, e uma prévia espremida em cima roubaria o espaço da
  * lista de ramos por nenhum ganho.
+ *
+ * A largura de duas colunas é `4xl`, e não `5xl`, porque o par cabe em 800px:
+ * com `5xl` sobravam 160px de vazio à direita da prévia, e o conjunto inteiro
+ * ficava encostado à esquerda dentro da própria moldura. Medido em 1440.
+ * A coluna do `lado` cresce e centraliza a prévia no que sobra, então a folga
+ * fica igual dos dois lados em vez de toda de um lado só.
  */
 export function Moldura({
   titulo,
@@ -26,7 +32,7 @@ export function Moldura({
   rodape?: ReactNode;
   lado?: ReactNode;
 }) {
-  const largura = lado ? "max-w-md lg:max-w-5xl" : "max-w-md";
+  const largura = lado ? "max-w-md lg:max-w-4xl" : "max-w-md";
 
   const coluna = (
     <div className="flex w-full max-w-md flex-col">
@@ -47,7 +53,14 @@ export function Moldura({
 
   return (
     <div data-tema="areia" className="flex min-h-dvh flex-col bg-fundo">
-      <header className={`mx-auto w-full ${largura} px-6 py-5`}>
+      {/*
+        O alvo do link da marca tem 23px de altura por conta da própria letra.
+        A altura mínima vem por aqui, e não dentro de `Marca`, porque a marca
+        também aparece em lugares onde ela não é alvo de toque.
+      */}
+      <header
+        className={`mx-auto w-full ${largura} px-6 py-4 [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center`}
+      >
         <Marca />
       </header>
 
@@ -55,9 +68,11 @@ export function Moldura({
         className={`mx-auto flex w-full ${largura} flex-1 flex-col px-6 pt-6 pb-10`}
       >
         {lado ? (
-          <div className="lg:flex lg:items-start lg:gap-16">
+          <div className="lg:flex lg:items-start lg:gap-12">
             {coluna}
-            <div className="hidden lg:sticky lg:top-10 lg:block">{lado}</div>
+            <div className="hidden lg:sticky lg:top-8 lg:flex lg:flex-1 lg:justify-center">
+              {lado}
+            </div>
           </div>
         ) : (
           coluna

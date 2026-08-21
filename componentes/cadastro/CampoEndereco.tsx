@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { conferirFormato, MOTIVOS, normalizar } from "@/lib/slug";
 
@@ -16,19 +16,41 @@ type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
  * O domínio fica numa linha própria embaixo, e não colado dentro do campo:
  * no celular o prefixo dentro do campo come metade do espaço de digitação e
  * o texto acaba cortado no meio.
+ *
+ * Com `recusa`, a resposta do servidor já abre escrita embaixo do campo, no
+ * mesmo lugar onde a conferência do navegador escreve. Antes ela aparecia lá
+ * embaixo, colada no botão, e no celular ficava fora da tela: a pessoa voltava
+ * de um envio recusado sem ver motivo nenhum.
  */
 export function CampoEndereco({
   inicial = "",
+  recusa = null,
   aoMudar,
 }: {
   inicial?: string;
+  /** O motivo que o servidor devolveu para este endereço, já em português. */
+  recusa?: string | null;
   /** O endereço já limpo, para a prévia do cadastro acompanhar. */
   aoMudar?: (slug: string) => void;
 }) {
   const id = useId();
   const [valor, setValor] = useState(inicial);
-  const [estado, setEstado] = useState<Estado>("vazio");
-  const [motivo, setMotivo] = useState<string | null>(null);
+  const [estado, setEstado] = useState<Estado>(recusa ? "ocupado" : "vazio");
+  const [motivo, setMotivo] = useState<string | null>(recusa);
+
+  /*
+   * O endereço que o servidor recusou, guardado para a conferência do navegador
+   * deixar a resposta dele em pé.
+   *
+   * Sem isto, o efeito de baixo rodava na montagem, perguntava de novo pelo
+   * mesmo endereço e apagava o motivo: a pessoa voltava de um envio recusado
+   * para um campo verde, sem saber por que voltou. A trava compara endereços em
+   * vez de contar visitas de propósito, porque em desenvolvimento o React roda
+   * cada efeito duas vezes, e uma trava de uma vez só cairia na segunda.
+   */
+  const recusado = useRef<string | null>(
+    recusa === null ? null : normalizar(inicial),
+  );
 
   const slug = normalizar(valor);
 
@@ -40,16 +62,18 @@ export function CampoEndereco({
   }, [slug]);
 
   useEffect(() => {
+    if (recusado.current !== null && slug === recusado.current) return;
+
     if (slug === "") {
       setEstado("vazio");
       setMotivo(null);
       return;
     }
 
-    const recusa = conferirFormato(slug);
-    if (recusa) {
+    const problema = conferirFormato(slug);
+    if (problema) {
       setEstado("ocupado");
-      setMotivo(MOTIVOS[recusa]);
+      setMotivo(MOTIVOS[problema]);
       return;
     }
 
@@ -90,22 +114,36 @@ export function CampoEndereco({
         Endereço da sua página
       </label>
       <p id={`${id}-dica`} className="mt-1 text-sm text-suave">
-        Use o nome pelo qual as pessoas conhecem seu negócio. Pode ser trocado
-        depois.
+        Use o nome que as pessoas já usam para te achar. Dá para trocar depois.
       </p>
 
       <input
         id={id}
         name="slug"
         value={valor}
-        onChange={(e) => setValor(e.target.value)}
+        onChange={(e) => {
+          setValor(e.target.value);
+          recusado.current = null;
+        }}
         aria-describedby={`${id}-dica ${id}-estado`}
+        aria-invalid={estado === "ocupado"}
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
         required
+        /*
+         * Voltando de um envio recusado, o cursor já nasce aqui. Sem isso a
+         * pessoa caía no topo da página e o motivo ficava 1129px abaixo, fora
+         * da tela do celular: ela via o formulário preenchido e nenhuma pista
+         * do que aconteceu. O foco traz a linha para a tela e deixa o campo
+         * pronto para ser corrigido. Vale sem JavaScript também, porque o
+         * atributo sai escrito no HTML.
+         */
+        autoFocus={recusa !== null}
         placeholder="camila reis"
-        className={`mt-3 w-full rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto outline-none ${borda}`}
+        /* scroll-mb deixa a barra do botão fora do caminho quando o navegador
+           traz o campo focado para a tela. */
+        className={`mt-3 w-full scroll-mb-24 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto outline-none ${borda}`}
       />
 
       <p
