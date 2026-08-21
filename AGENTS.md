@@ -124,7 +124,7 @@ npm run logos     # redesenha os monogramas dos negócios de exemplo
 4. Login por link mágico e painel editando os campos básicos. **Painel e telas
    de cadastro feitos, falta ligar o login de verdade.**
 5. Upload de imagens.
-6. Catálogo e links.
+6. Catálogo e links. **Feito**, em `app/painel/catalogo` e `app/painel/links`.
 7. Contagem de visitas e cliques. **Feita.**
 8. Os outros dois temas.
 

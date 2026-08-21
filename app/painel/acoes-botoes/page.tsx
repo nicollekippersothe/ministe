@@ -89,8 +89,8 @@ export default async function Acoes({
   return (
     <main className="mt-6">
       {/*
-        No computador a coluna da esquerda fica sempre à vista, com as quatro
-        seções e o estado da página, então o Voltar seria um segundo caminho
+        No computador a coluna da esquerda fica sempre à vista, com as seções
+        e o estado da página, então o Voltar seria um segundo caminho
         para onde já dá para ir com um clique.
       */}
       <Link href="/painel" className="text-sm text-suave lg:hidden">

@@ -353,6 +353,162 @@ passo(
 );
 
 // ---------------------------------------------------------------------------
+// Catálogo
+// ---------------------------------------------------------------------------
+// A tela é um formulário só, e todos os botões dela enviam esse formulário. O
+// que se testa aqui é o caminho inteiro de quem mexe no cardápio pelo celular:
+// acrescentar, editar, reordenar, guardar da página e remover.
+
+/** Abre a linha, que vem fechada para a lista caber na tela do celular. */
+async function abrirLinha(id) {
+  await p.locator(`#${id} > details`).evaluate((d) => {
+    d.open = true;
+  });
+}
+
+await p.goto(`${BASE}/painel/catalogo`, { waitUntil: "networkidle" });
+const itensAntes = await p.locator("fieldset[id^=item-]").count();
+passo(
+  "o catálogo lista os itens que a página mostra",
+  (await p.textContent("main")).includes("Cheesecake de frutas vermelhas") &&
+    itensAntes > 0,
+);
+
+await p.fill("#novo-titulo", "Brigadeiro de colher");
+await p.fill("#novo-preco", "12,50");
+await p.click('button:has-text("Acrescentar ao catálogo")');
+await p.waitForURL(/acrescentado=1/);
+const ultimo = itensAntes;
+passo(
+  "acrescentar põe o item no fim da lista, com o preço em reais",
+  (await p.locator("fieldset[id^=item-]").count()) === itensAntes + 1 &&
+    (await p.inputValue(`#item-${ultimo}-preco`)) === "12,50",
+);
+
+// O banco guarda centavos, e a tela fala reais. A ida e a volta passam por
+// lib/formato.ts, e é aqui que o par inteiro é conferido de ponta a ponta.
+const doceria = JSON.parse(await readFile(".dados/negocios.json", "utf8")).find(
+  (n) => n.slug === "demo",
+);
+passo(
+  "o preço em reais chega ao banco em centavos",
+  doceria?.itens.at(-1)?.precoCentavos === 1250,
+);
+
+await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
+const comItem = await p.textContent("body");
+passo(
+  "e a página pública mostra o item novo com o preço formatado",
+  comItem.includes("Brigadeiro de colher") &&
+    comItem.replace(/ /g, " ").includes("R$ 12,50"),
+);
+
+/*
+ * Reordenar no toque, sem arrastar. Arrastar pede JavaScript, briga com a
+ * rolagem do celular e some para quem usa teclado ou leitor de tela.
+ *
+ * A espera é pela âncora do item, e nunca só por "movido=1": a URL de antes já
+ * tem movido=1, e esperar por ela voltaria antes da segunda troca, medindo a
+ * tela velha. Foi assim que este passo passou verde estando errado.
+ */
+await p.goto(`${BASE}/painel/catalogo`, { waitUntil: "networkidle" });
+await p.click(`#item-${ultimo} button[aria-label="Subir Brigadeiro de colher"]`);
+await p.waitForURL(new RegExp(`movido=1#item-${ultimo - 1}$`));
+const subiu = (await p.inputValue(`#item-${ultimo - 1}-titulo`)) === "Brigadeiro de colher";
+
+await p.click(`#item-${ultimo - 1} button[aria-label="Descer Brigadeiro de colher"]`);
+await p.waitForURL(new RegExp(`movido=1#item-${ultimo}$`));
+passo(
+  "subir e descer trocam o item de lugar, sem arrastar",
+  subiu && (await p.inputValue(`#item-${ultimo}-titulo`)) === "Brigadeiro de colher",
+);
+
+await p.goto(`${BASE}/painel/catalogo`, { waitUntil: "networkidle" });
+await abrirLinha(`item-${ultimo}`);
+await p.locator(`#item-${ultimo}-ativo`).evaluate((e) =>
+  e.scrollIntoView({ block: "center" }),
+);
+await p.uncheck(`#item-${ultimo}-ativo`);
+await p.click('main button:has-text("Salvar")');
+await p.waitForURL(/salvo=1/);
+const guardado = (await p.textContent("main")).includes("Guardado");
+
+await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
+passo(
+  "item desmarcado fica guardado no painel e sai da página",
+  guardado && !(await p.textContent("body")).includes("Brigadeiro de colher"),
+);
+
+await p.goto(`${BASE}/painel/catalogo`, { waitUntil: "networkidle" });
+await p.click(`#item-${ultimo} summary:has-text("Remover")`);
+await p.click(`#item-${ultimo} button:has-text("Remover este item")`);
+await p.waitForURL(/removido=1/);
+passo(
+  "remover pede dois toques e devolve o catálogo ao tamanho de antes",
+  (await p.locator("fieldset[id^=item-]").count()) === itensAntes &&
+    !(await p.textContent("main")).includes("Brigadeiro de colher"),
+);
+
+/*
+ * A parede dos 20 itens.
+ *
+ * Quem levanta é o gatilho checa_limite_itens, que só existe com banco, então
+ * o que se confere aqui é a outra metade: a recusa já traduzida chegando na
+ * tela como convite, com o número do plano gratuito, o do pago e o caminho da
+ * assinatura. É o melhor momento de venda que o produto tem.
+ */
+await p.goto(`${BASE}/painel/catalogo?erro=limite_itens`, { waitUntil: "networkidle" });
+const parede = await p.textContent('main [role="alert"]');
+passo(
+  "o limite de itens vira convite, com o caminho do plano pago",
+  parede.includes("20 itens") &&
+    parede.includes("500") &&
+    (await p.getAttribute('main [role="alert"] a', "href")) === "/painel/plano",
+);
+
+// ---------------------------------------------------------------------------
+// Links extras
+// ---------------------------------------------------------------------------
+
+await p.goto(`${BASE}/painel/links`, { waitUntil: "networkidle" });
+const linksAntes = await p.locator("fieldset[id^=link-]").count();
+
+await p.fill("#novo-rotulo", "Ver o cardápio completo");
+await p.fill("#novo-url", "bit.ly/cardapio");
+await p.click('button:has-text("Acrescentar à página")');
+await p.waitForURL(/erro=link_encurtador/);
+passo(
+  "link encurtado é recusado também na lista de links",
+  (await p.textContent('main [role="alert"]')).includes("endereço completo"),
+);
+
+await p.fill("#novo-rotulo", "Ver o cardápio completo");
+await p.fill("#novo-url", "doceria-da-ana.com.br/cardapio");
+await p.selectOption("#novo-icone", "site");
+await p.click('button:has-text("Acrescentar à página")');
+await p.waitForURL(/acrescentado=1/);
+passo(
+  "endereço sem https é aceito e completado no link novo",
+  (await p.inputValue(`#link-${linksAntes}-url`)) ===
+    "https://doceria-da-ana.com.br/cardapio",
+);
+
+await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
+passo(
+  "e o link novo vira botão na página pública",
+  (await p.textContent("body")).includes("Ver o cardápio completo"),
+);
+
+await p.goto(`${BASE}/painel/links`, { waitUntil: "networkidle" });
+await p.click(`#link-${linksAntes} summary:has-text("Remover")`);
+await p.click(`#link-${linksAntes} button:has-text("Remover este link")`);
+await p.waitForURL(/removido=1/);
+passo(
+  "remover devolve a lista de links ao tamanho de antes",
+  (await p.locator("fieldset[id^=link-]").count()) === linksAntes,
+);
+
+// ---------------------------------------------------------------------------
 // Publicar e tirar do ar
 // ---------------------------------------------------------------------------
 

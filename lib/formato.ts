@@ -50,3 +50,76 @@ export function mensagemDoItem(modelo: string | null, titulo: string): string | 
   if (!modelo) return null;
   return modelo.replace(/\{item\}/g, titulo);
 }
+
+/**
+ * O preço do jeito que ele entra no campo do painel.
+ *
+ * O banco guarda centavos e o campo fala reais, que é como a pessoa fala. Item
+ * sem preço volta como campo vazio, e nunca como "0,00": zero é um preço, e a
+ * página mostraria "R$ 0,00" onde a linha do preço deveria sair de cena.
+ *
+ * Sai sem o ponto de milhar de propósito. Dentro de um campo de digitar, o
+ * separador atrapalha quem edita o número, e a leitura de volta aceita ele de
+ * qualquer jeito. Quem mostra preço com ponto é a página, pelo `preco`.
+ */
+export function precoEditavel(centavos: number | null): string {
+  return centavos === null ? "" : (centavos / 100).toFixed(2).replace(".", ",");
+}
+
+/**
+ * O que a pessoa digitou no campo de preço virando centavos.
+ *
+ * Campo vazio é resposta legítima, e significa item sem linha de preço. Por
+ * isso o retorno separa as três respostas: vazio, número, e texto que não é
+ * preço. Um `number | null` sozinho misturaria "em branco" com "não deu".
+ *
+ * O teclado do celular manda ponto, e a pessoa manda vírgula, então os dois
+ * entram. A regra de desempate é a do português: com vírgula, ela é o decimal
+ * e o ponto é milhar (1.234,56). Sem vírgula, um ponto único com uma ou duas
+ * casas atrás é decimal (74.90), e qualquer outro arranjo de pontos é milhar
+ * (1.500 são mil e quinhentos reais, e não um e meio).
+ *
+ * O teto é R$ 999.999,99. A coluna do banco é integer, e centavo acima disso
+ * estoura a coluna: o erro viraria "escrita_recusada", que é o guarda-chuva,
+ * em vez da frase que diz para conferir o campo.
+ */
+export type LeituraDePreco = { ok: true; centavos: number | null } | { ok: false };
+
+const TETO_EM_CENTAVOS = 99_999_999;
+
+export function lerPreco(entrada: string | null): LeituraDePreco {
+  const limpo = (entrada ?? "").replace(/\s/g, "").replace(/^r\$/i, "");
+  if (limpo === "") return { ok: true, centavos: null };
+  if (!/^[0-9.,]+$/.test(limpo)) return { ok: false };
+
+  const pedacos = limpo.split(",");
+  if (pedacos.length > 2) return { ok: false };
+
+  let inteiro: string;
+  let decimal: string;
+
+  if (pedacos.length === 2) {
+    inteiro = pedacos[0].replace(/\./g, "");
+    decimal = pedacos[1];
+  } else {
+    const porPonto = limpo.split(".");
+    const ultimo = porPonto[porPonto.length - 1];
+    if (porPonto.length === 2 && ultimo.length >= 1 && ultimo.length <= 2) {
+      inteiro = porPonto[0];
+      decimal = ultimo;
+    } else {
+      inteiro = limpo.replace(/\./g, "");
+      decimal = "";
+    }
+  }
+
+  if (decimal.length > 2) return { ok: false };
+  if (inteiro === "" && decimal === "") return { ok: false };
+
+  const centavos = Number(inteiro || "0") * 100 + Number(decimal.padEnd(2, "0"));
+  if (!Number.isSafeInteger(centavos) || centavos > TETO_EM_CENTAVOS) {
+    return { ok: false };
+  }
+
+  return { ok: true, centavos };
+}

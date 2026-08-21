@@ -222,3 +222,39 @@ export function IconeCardapio({ className }: Props) {
     </svg>
   );
 }
+
+/**
+ * Subir e descer, os dois botões que ordenam as listas do painel.
+ *
+ * A seta cheia, de ponta a ponta, e não o chevron sozinho: no tamanho de um
+ * botão de dedo o chevron vira um risco torto, e a seta inteira diz para onde a
+ * linha vai. Ver `componentes/painel/Ordem.tsx`.
+ */
+export function IconeSubir({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" />
+    </svg>
+  );
+}
+
+export function IconeDescer({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="M12 5v14M5.5 12.5 12 19l6.5-6.5" />
+    </svg>
+  );
+}
+
+/** Dois elos de corrente, para a seção dos links extras da página. */
+export function IconeElo({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 0 0-5.7-5.7l-1.3 1.3" />
+      <path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 0 0 5.7 5.7l1.3-1.3" />
+    </svg>
+  );
+}

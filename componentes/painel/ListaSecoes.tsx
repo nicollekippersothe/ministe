@@ -6,11 +6,11 @@ import { IconeSeta } from "@/componentes/Icones";
 import { SECOES } from "./secoes";
 
 /**
- * As quatro partes da página, e onde a pessoa está agora.
+ * As seis partes da página, e onde a pessoa está agora.
  *
  * Roda no navegador só para saber o caminho de agora e marcar a seção aberta.
  * No celular isso não faria falta (cada seção é uma tela inteira), mas na
- * coluna fixa do computador as quatro ficam sempre à vista, e sem a marcação a
+ * coluna fixa do computador todas ficam sempre à vista, e sem a marcação a
  * pessoa perde a referência de onde está.
  */
 export function ListaSecoes() {
@@ -39,7 +39,7 @@ export function ListaSecoes() {
                 {/*
                   O resumo apresenta a seção para quem chega pela primeira vez.
                   Na coluna lateral ele vira repetição: a pessoa já está dentro
-                  do painel e já leu uma vez, e quatro linhas de apoio empurram
+                  do painel e já leu uma vez, e seis linhas de apoio empurram
                   o cartão de estado para fora da tela.
                 */}
                 <span className="block text-xs text-suave lg:hidden">

@@ -9,7 +9,7 @@ import { cobrancaDoDono, doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { contaProvisoria } from "@/lib/supabase/servidor";
-import type { Intervalo } from "@/lib/tipos";
+import type { Intervalo, Item } from "@/lib/tipos";
 
 import { exigirLogin } from "@/app/painel/vitrine";
 
@@ -29,10 +29,26 @@ function resumoHorarios(horarios: Intervalo[]): string | null {
 }
 
 /**
+ * Quantos itens o catálogo guarda, e quantos deles a página mostra.
+ *
+ * Os dois números, e não só um: item desligado continua guardado no painel, e
+ * dizer "7 itens" para uma página que mostra 4 seria mentira sobre a página,
+ * que é o que este resumo promete descrever.
+ */
+function resumoItens(itens: Item[]): string | null {
+  if (itens.length === 0) return null;
+  const contagem = `${itens.length} ${itens.length === 1 ? "item" : "itens"}`;
+  const naPagina = itens.filter((i) => i.ativo).length;
+  return naPagina === itens.length
+    ? contagem
+    : `${contagem}, ${naPagina} na página`;
+}
+
+/**
  * Uma linha do resumo: o que a página mostra hoje, e o caminho para mudar.
  *
  * Campo preenchido aparece com o valor de verdade, que é o que deixa a pessoa
- * conferir a página inteira sem abrir as quatro seções. Campo em branco vira
+ * conferir a página inteira sem abrir as seções. Campo em branco vira
  * convite escrito como tarefa ("Informar o WhatsApp"), na cor de destaque: a
  * linha continua dizendo o que existe para fazer, em vez do que está faltando.
  */
@@ -70,14 +86,14 @@ function Linha({
 /**
  * A abertura do painel, nas duas larguras.
  *
- * No celular ela é a navegação inteira: o estado da página primeiro, as quatro
+ * No celular ela é a navegação inteira: o estado da página primeiro, as seis
  * partes logo abaixo. No computador esses dois já moram na coluna da esquerda,
  * então repeti-los aqui seria a mesma lista duas vezes na mesma tela.
  *
  * O que sobra para o computador é o que a coluna estreita comporta mal: o
  * endereço em tamanho de ler em voz alta, e o conteúdo de verdade da página,
  * linha por linha. Assim quem chega vê num relance se a página está no ar, qual
- * é o endereço dela e por onde continuar, sem abrir as quatro seções para
+ * é o endereço dela e por onde continuar, sem abrir as seções para
  * lembrar o que já preencheu.
  */
 /**
@@ -255,6 +271,12 @@ export default async function Painel({
             href="/painel/negocio"
           />
           <Linha
+            rotulo="Catálogo"
+            valor={resumoItens(negocio.itens)}
+            convite="Acrescentar o primeiro item"
+            href="/painel/catalogo"
+          />
+          <Linha
             rotulo="Horários"
             valor={resumoHorarios(negocio.horarios)}
             convite="Marcar os horários da semana"
@@ -265,6 +287,16 @@ export default async function Painel({
             valor={botoes || null}
             convite="Escolher o botão principal"
             href="/painel/acoes-botoes"
+          />
+          <Linha
+            rotulo="Links extras"
+            valor={
+              negocio.links.length > 0
+                ? negocio.links.map((l) => l.rotulo).join(", ")
+                : null
+            }
+            convite="Apontar para o seu Instagram"
+            href="/painel/links"
           />
         </ul>
       </div>

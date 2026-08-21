@@ -8,6 +8,9 @@ import { MOTIVOS_LINK, type RecusaLink } from "@/lib/links";
 
 const MENSAGENS: Record<string, string> = {
   nome: "Escreva o nome do negócio para salvar.",
+  titulo: "Escreva o nome do item para salvar. Ele é o que aparece na página.",
+  preco: "Confira o preço. Escreva só o número, por exemplo 74,90.",
+  rotulo: "Escreva o texto do link para salvar. Ele é o que aparece no botão.",
   whatsapp: "Confira o WhatsApp. Informe o DDD e o número completo.",
   estado: "O estado é a sigla de duas letras, por exemplo SP.",
   cep: "O CEP tem oito dígitos, por exemplo 04113-000.",
@@ -59,10 +62,18 @@ export function Aviso({
   salvo,
   copiado,
   erro,
+  mensagem,
 }: {
   salvo?: boolean;
   copiado?: boolean;
   erro?: string;
+  /**
+   * O recado de sucesso desta tela, quando "Alterações salvas" fica curto
+   * demais. As listas do painel salvam de cinco jeitos diferentes (acrescentar,
+   * mover, remover), e dizer qual deles aconteceu é o que confirma o toque para
+   * quem usa leitor de tela e para quem tocou no botão errado.
+   */
+  mensagem?: string;
 }) {
   if (erro) {
     const { texto, saida } = recado(erro);
@@ -93,7 +104,9 @@ export function Aviso({
         role="status"
         className="mt-4 rounded-xl bg-aberto-fundo px-4 py-3 text-sm font-medium text-aberto-texto"
       >
-        {copiado ? "Horário copiado para terça a sexta." : "Alterações salvas."}
+        {copiado
+          ? "Horário copiado para terça a sexta."
+          : (mensagem ?? "Alterações salvas.")}
       </p>
     );
   }

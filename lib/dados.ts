@@ -19,7 +19,7 @@ import { configurado } from "./supabase/config";
 import { paraLinha, paraNegocio, TUDO } from "./supabase/mapa";
 import { publico } from "./supabase/publico";
 import { garantirConta, servidor, usuarioAtual } from "./supabase/servidor";
-import type { Intervalo, Negocio, Plano } from "./tipos";
+import type { Intervalo, Item, LinkExtra, Negocio, Plano } from "./tipos";
 
 /**
  * Camada de dados.
@@ -219,6 +219,8 @@ export async function salvar(negocio: Negocio): Promise<void> {
   const id = data?.id;
   if (typeof id === "string" && id !== "") {
     await gravarHorarios(sb, id, negocio.horarios);
+    await gravarItens(sb, id, negocio.itens);
+    await gravarLinks(sb, id, negocio.links);
   }
 }
 
@@ -242,11 +244,11 @@ export async function salvar(negocio: Negocio): Promise<void> {
  * pelo navegador, e ele é pequeno aqui porque a lista tem no máximo vinte e uma
  * linhas e quem salvou está olhando para a tela.
  *
- * As outras quatro filhas (itens, fotos de item, galeria e links) ficam de fora
- * até existir tela que as edite. Escrita sem chamador é código que ninguém
- * exercita, e o dia em que a tela de catálogo chegar ela vem com o `delete` que
- * cascateia para `itens_fotos`, que pede o mesmo guarda de igualdade por outro
- * motivo: um `salvar` de outra tela apagaria as fotos dos produtos.
+ * Catálogo e links seguem logo abaixo, com o mesmo guarda e outro jeito de
+ * escrever. O porquê da diferença está escrito lá.
+ *
+ * Galeria e fotos de item continuam de fora até existir tela que as edite.
+ * Escrita sem chamador é código que ninguém exercita.
  */
 async function gravarHorarios(
   sb: Awaited<ReturnType<typeof servidor>>,
@@ -287,6 +289,224 @@ async function gravarHorarios(
   );
 
   if (erroDaEscrita) throw recusaDoBanco(erroDaEscrita);
+}
+
+/**
+ * O catálogo, que também mora em tabela própria.
+ *
+ * Duas coisas separam esta escrita da dos horários, e as duas são o mesmo
+ * risco visto de dois lados.
+ *
+ * **O guarda de igualdade aqui é obrigatório, e não economia de requisição.**
+ * `salvar` é chamado por toda tela do painel, e a de letras e a de informações
+ * passam por aqui com o catálogo intocado. O `delete` em `itens` cascateia para
+ * `itens_fotos` pela chave composta de supabase/schema.sql, então uma escrita
+ * cega apagaria as fotos dos produtos de quem só trocou a fonte da página. Sem
+ * erro nenhum na tela, que é o pior tipo de perda: a mesma que existia quando
+ * os horários não tinham escrita própria.
+ *
+ * **E o que muda quando o catálogo mudou de verdade: linha por linha, e nunca
+ * apagar tudo para inserir tudo.** O molde dos horários serve lá porque a
+ * semana é uma lista pequena, sem filha e sem limite que estoure no meio. Aqui
+ * ele custaria caro duas vezes:
+ *
+ * 1. A cascata de novo. Reordenar o cardápio apagaria as fotos de todo item,
+ *    desta vez com a tela de catálogo aberta na frente da pessoa.
+ * 2. A parede dos 20 itens. O gatilho `checa_limite_itens` é `before insert`, e
+ *    conta o que já está na tabela. Com o `delete` numa requisição e o `insert`
+ *    noutra, sem transação entre elas, a recusa do item 21 chegaria depois de
+ *    os 20 já terem sido apagados: a pessoa leria o convite do plano pago com o
+ *    catálogo vazio atrás. O convite vira ameaça, e o melhor momento de venda
+ *    do produto vira o pior momento do produto.
+ *
+ * Então: apaga só o que saiu, atualiza só o que mudou, insere só o que é novo.
+ * O `insert` continua sendo o único que passa pelo gatilho, que é exatamente
+ * quando o limite deve falar, e uma recusa dele deixa o catálogo como estava.
+ *
+ * O preço é uma requisição por item alterado, porque o PostgREST atualiza uma
+ * linha de cada vez com valores próprios. Na prática é uma (editar um item) ou
+ * duas (trocar dois de lugar), e o teto é o número de itens do plano.
+ *
+ * O id vem pronto de quem chamou, e não do `gen_random_uuid()` da coluna. É o
+ * que permite reconhecer, na volta, qual linha é qual: item novo é o que ainda
+ * não está no banco, e o resto é atualização. Ver `app/painel/catalogo/acoes.ts`.
+ */
+type Cliente = Awaited<ReturnType<typeof servidor>>;
+
+/** A linha do banco, do jeito que ela vai e volta. A ordem é a da lista. */
+function linhaDoItem(item: Item, ordem: number) {
+  return {
+    ordem,
+    titulo: item.titulo,
+    descricao: item.descricao,
+    preco_centavos: item.precoCentavos,
+    ativo: item.ativo,
+  };
+}
+
+/** Uma linha virada em texto, para comparar guardado com o que chegou. */
+const textoDaLinha = (l: Record<string, unknown>): string =>
+  JSON.stringify(Object.keys(l).sort().map((c) => [c, l[c] ?? null]));
+
+async function gravarItens(
+  sb: Cliente,
+  negocioId: string,
+  itens: Item[],
+): Promise<void> {
+  const { data, error: erroDaLeitura } = await sb
+    .from("itens")
+    .select("id, ordem, titulo, descricao, preco_centavos, ativo")
+    .eq("negocio_id", negocioId);
+
+  if (erroDaLeitura) throw recusaDoBanco(erroDaLeitura);
+
+  const guardados = new Map<string, string>(
+    (data ?? []).map((i) => [
+      String(i.id),
+      textoDaLinha({
+        ordem: Number(i.ordem ?? 0),
+        titulo: String(i.titulo ?? ""),
+        descricao: i.descricao === null ? null : String(i.descricao),
+        preco_centavos:
+          i.preco_centavos === null ? null : Number(i.preco_centavos),
+        ativo: i.ativo !== false,
+      }),
+    ]),
+  );
+
+  const chegaram = itens.map((item, ordem) => ({
+    item,
+    linha: linhaDoItem(item, ordem),
+    texto: textoDaLinha(linhaDoItem(item, ordem)),
+  }));
+
+  // O guarda de igualdade. Ver o comentário acima: sem ele, salvar a letra da
+  // página apaga a foto dos produtos.
+  const igual =
+    chegaram.length === guardados.size &&
+    chegaram.every((c) => guardados.get(c.item.id) === c.texto);
+  if (igual) return;
+
+  const ficaram = new Set(chegaram.map((c) => c.item.id));
+  const sairam = [...guardados.keys()].filter((id) => !ficaram.has(id));
+
+  if (sairam.length > 0) {
+    const { error } = await sb
+      .from("itens")
+      .delete()
+      .eq("negocio_id", negocioId)
+      .in("id", sairam);
+    if (error) throw recusaDoBanco(error);
+  }
+
+  for (const c of chegaram) {
+    const antes = guardados.get(c.item.id);
+    if (antes === undefined || antes === c.texto) continue;
+    const { error } = await sb
+      .from("itens")
+      .update(c.linha)
+      .eq("id", c.item.id)
+      .eq("negocio_id", negocioId);
+    if (error) throw recusaDoBanco(error);
+  }
+
+  const novos = chegaram.filter((c) => !guardados.has(c.item.id));
+  if (novos.length === 0) return;
+
+  const { error } = await sb
+    .from("itens")
+    .insert(
+      novos.map((c) => ({ id: c.item.id, negocio_id: negocioId, ...c.linha })),
+    );
+
+  if (error) throw recusaDoBanco(error);
+}
+
+/**
+ * Os links extras da página, pela mesma receita do catálogo.
+ *
+ * Aqui não há tabela filha para cascatear, então o guarda de igualdade só
+ * economiza duas requisições em cada salvamento das outras telas. O que se
+ * repete é o segundo motivo: `checa_limite_links` é `before insert`, e apagar
+ * os oito links antes de tentar inserir o nono deixaria a página sem link
+ * nenhum quando o banco recusasse. Escrita que se desfaz sozinha vale mais do
+ * que escrita curta.
+ *
+ * Duas escritas irmãs com desenhos diferentes também seriam um convite a
+ * corrigir uma e esquecer a outra.
+ */
+function linhaDoLink(link: LinkExtra, ordem: number) {
+  return { ordem, rotulo: link.rotulo, url: link.url, icone: link.icone };
+}
+
+async function gravarLinks(
+  sb: Cliente,
+  negocioId: string,
+  links: LinkExtra[],
+): Promise<void> {
+  const { data, error: erroDaLeitura } = await sb
+    .from("links")
+    .select("id, ordem, rotulo, url, icone")
+    .eq("negocio_id", negocioId);
+
+  if (erroDaLeitura) throw recusaDoBanco(erroDaLeitura);
+
+  const guardados = new Map<string, string>(
+    (data ?? []).map((l) => [
+      String(l.id),
+      textoDaLinha({
+        ordem: Number(l.ordem ?? 0),
+        rotulo: String(l.rotulo ?? ""),
+        url: String(l.url ?? ""),
+        icone: String(l.icone ?? "link"),
+      }),
+    ]),
+  );
+
+  const chegaram = links.map((link, ordem) => ({
+    link,
+    linha: linhaDoLink(link, ordem),
+    texto: textoDaLinha(linhaDoLink(link, ordem)),
+  }));
+
+  const igual =
+    chegaram.length === guardados.size &&
+    chegaram.every((c) => guardados.get(c.link.id) === c.texto);
+  if (igual) return;
+
+  const ficaram = new Set(chegaram.map((c) => c.link.id));
+  const sairam = [...guardados.keys()].filter((id) => !ficaram.has(id));
+
+  if (sairam.length > 0) {
+    const { error } = await sb
+      .from("links")
+      .delete()
+      .eq("negocio_id", negocioId)
+      .in("id", sairam);
+    if (error) throw recusaDoBanco(error);
+  }
+
+  for (const c of chegaram) {
+    const antes = guardados.get(c.link.id);
+    if (antes === undefined || antes === c.texto) continue;
+    const { error } = await sb
+      .from("links")
+      .update(c.linha)
+      .eq("id", c.link.id)
+      .eq("negocio_id", negocioId);
+    if (error) throw recusaDoBanco(error);
+  }
+
+  const novos = chegaram.filter((c) => !guardados.has(c.link.id));
+  if (novos.length === 0) return;
+
+  const { error } = await sb
+    .from("links")
+    .insert(
+      novos.map((c) => ({ id: c.link.id, negocio_id: negocioId, ...c.linha })),
+    );
+
+  if (error) throw recusaDoBanco(error);
 }
 
 /**

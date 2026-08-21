@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  lerPreco,
   linkWhatsapp,
   mensagemDoItem,
   normalizarWhatsapp,
   preco,
+  precoEditavel,
   telefoneE164,
   telefoneVisivel,
 } from "./formato.ts";
@@ -71,4 +73,61 @@ test("o modelo aplicado a todos troca o nome do item", () => {
     "Oi! Queria saber sobre: Bolo de cenoura",
   );
   assert.equal(mensagemDoItem(null, "Bolo"), null);
+});
+
+test("o preço volta para o campo em reais, com vírgula", () => {
+  assert.equal(precoEditavel(7400), "74,00");
+  assert.equal(precoEditavel(1250), "12,50");
+  assert.equal(precoEditavel(150000), "1500,00");
+  assert.equal(precoEditavel(5), "0,05");
+});
+
+test("item sem preço volta como campo vazio, e nunca como zero", () => {
+  assert.equal(precoEditavel(null), "");
+  assert.equal(precoEditavel(0), "0,00");
+});
+
+test("o campo de preço aceita como o brasileiro digita", () => {
+  assert.deepEqual(lerPreco("74,90"), { ok: true, centavos: 7490 });
+  assert.deepEqual(lerPreco("74"), { ok: true, centavos: 7400 });
+  assert.deepEqual(lerPreco("R$ 74,90"), { ok: true, centavos: 7490 });
+  assert.deepEqual(lerPreco(" 74,9 "), { ok: true, centavos: 7490 });
+  assert.deepEqual(lerPreco(",50"), { ok: true, centavos: 50 });
+  assert.deepEqual(lerPreco("12,"), { ok: true, centavos: 1200 });
+});
+
+test("o ponto do teclado do celular vale como vírgula", () => {
+  assert.deepEqual(lerPreco("74.90"), { ok: true, centavos: 7490 });
+  assert.deepEqual(lerPreco("74.9"), { ok: true, centavos: 7490 });
+});
+
+test("mas o ponto de milhar continua sendo milhar", () => {
+  assert.deepEqual(lerPreco("1.500"), { ok: true, centavos: 150000 });
+  assert.deepEqual(lerPreco("1.234,56"), { ok: true, centavos: 123456 });
+});
+
+test("campo de preço em branco é resposta, e vale item sem preço", () => {
+  assert.deepEqual(lerPreco(""), { ok: true, centavos: null });
+  assert.deepEqual(lerPreco("   "), { ok: true, centavos: null });
+  assert.deepEqual(lerPreco(null), { ok: true, centavos: null });
+});
+
+test("texto que não é preço volta como recusa, e não como zero", () => {
+  assert.deepEqual(lerPreco("combinar"), { ok: false });
+  assert.deepEqual(lerPreco("-5"), { ok: false });
+  assert.deepEqual(lerPreco(","), { ok: false });
+  assert.deepEqual(lerPreco("."), { ok: false });
+  assert.deepEqual(lerPreco("1,2,3"), { ok: false });
+  assert.deepEqual(lerPreco("12,345"), { ok: false });
+});
+
+test("preço acima do que a coluna guarda é recusado no campo", () => {
+  assert.deepEqual(lerPreco("999.999,99"), { ok: true, centavos: 99999999 });
+  assert.deepEqual(lerPreco("1.000.000"), { ok: false });
+});
+
+test("ida e volta entre o que se digita e o que se guarda o preço", () => {
+  const guardado = lerPreco("74,90");
+  assert.ok(guardado.ok);
+  assert.deepEqual(lerPreco(precoEditavel(guardado.centavos)), guardado);
 });

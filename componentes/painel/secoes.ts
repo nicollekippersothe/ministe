@@ -1,4 +1,6 @@
 import {
+  IconeCardapio,
+  IconeElo,
   IconeLetras,
   IconeLoja,
   IconeRelogio,
@@ -6,7 +8,7 @@ import {
 } from "@/componentes/Icones";
 
 /**
- * As quatro partes editáveis da página.
+ * As seis partes editáveis da página.
  *
  * Em arquivo próprio porque a lista é lida do servidor (a coluna do painel) e
  * do navegador (a marcação da seção aberta). Deixá-la junto de um dos dois
@@ -20,6 +22,12 @@ export const SECOES = [
     Icone: IconeLoja,
   },
   {
+    href: "/painel/catalogo",
+    titulo: "Catálogo",
+    resumo: "O que você vende, com preço e ordem",
+    Icone: IconeCardapio,
+  },
+  {
     href: "/painel/horarios",
     titulo: "Horários",
     resumo: "Quando abre e quando fecha, dia por dia",
@@ -30,6 +38,12 @@ export const SECOES = [
     titulo: "Botões da página",
     resumo: "WhatsApp, iFood, agenda ou o link que você quiser",
     Icone: IconeWhatsapp,
+  },
+  {
+    href: "/painel/links",
+    titulo: "Links extras",
+    resumo: "Instagram, cardápio, catálogo, o que você apontar",
+    Icone: IconeElo,
   },
   {
     href: "/painel/aparencia",
