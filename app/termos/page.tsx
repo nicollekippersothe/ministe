@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Artigo, Documento } from "@/componentes/Documento";
 import { NOME_PRODUTO } from "@/lib/marca";
+import { preco } from "@/lib/formato";
+import { PLANOS } from "@/lib/pagamento";
 import { CONTATO_SUPORTE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -55,7 +57,15 @@ export default function Termos() {
           links, a letra padrão e a assinatura do {NOME_PRODUTO} no rodapé.
         </p>
         <p>
-          O plano pago custa R$ 19,90 por mês ou R$ 179 por ano. Ele abre a
+          {/*
+            Os valores saem de lib/pagamento/precos.ts, e nunca escritos à mão.
+            O COBRANCA.md manda os termos e a tabela de preços mudarem no mesmo
+            commit, e documento legal com preço defasado é o pior lugar para
+            essa regra falhar: quem reajusta o produto deixaria o contrato
+            prometendo outro número, e a promessa que vale é a do contrato.
+          */}
+          O plano pago custa {preco(PLANOS.mensal.valorCentavos)} por mês ou{" "}
+          {preco(PLANOS.anual.valorCentavos)} por ano. Ele abre a
           escolha da letra, os números completos de visitas e cliques, limites
           maiores e o rodapé sem a nossa assinatura. Os valores valem para novas
           assinaturas e para as renovações das assinaturas em vigor, e qualquer
