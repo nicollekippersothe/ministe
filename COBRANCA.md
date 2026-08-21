@@ -244,6 +244,32 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST \
 - **404** quer dizer que a URL aponta para um deploy sem esta rota, que é o caso
   da `main` enquanto a cobrança viver na branch.
 
+### O que um 200 do simulador prova, linha por linha
+
+Conferido em 21 de agosto de 2026, com o tópico `payment` e um id inventado:
+
+```
+mercadopago /v1/payments/123456 {"status":404,"motivo":"cobranca_ausente","dizem":"Payment not found"}
+{"onde":"pagamento/webhook","topico":"pagamento","decisao":"sem acao: cobranca_ausente"}
+```
+
+São quatro provas numa linha só, e vale saber ler:
+
+1. **O HMAC conferiu.** Sem linha `mercadopago aviso` antes, quer dizer que a
+   assinatura passou.
+2. **A chave de serviço funciona.** A trava de idempotência é um insert em
+   `avisos_pagamento`, e ela acontece antes de qualquer outra coisa. Chave
+   ausente teria virado 500 com `sem chave de servico`.
+3. **O token de acesso funciona.** O `404 Payment not found` é resposta
+   autenticada: token recusado devolveria 401, que vira `chave_ausente` e 500.
+4. **O id inventado é tratado como definitivo.** 200 encerra a reentrega, em vez
+   de deixar o Mercado Pago repetindo um aviso que nunca vai resolver.
+
+Um detalhe para a próxima vez: o simulador manda sempre o mesmo `id`, e a trava
+guarda esse id. Simular de novo com o mesmo número responde 200 na hora, com
+`aviso repetido`, sem exercitar nada. Para repetir o teste de verdade, apague a
+linha de `avisos_pagamento` ou use outro id.
+
 ### O manifesto do HMAC
 
 Causa número um de "a assinatura nunca bate":
