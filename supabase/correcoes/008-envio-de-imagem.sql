@@ -385,6 +385,9 @@ $$;
 -- "revoke execute on all functions", que roda no fim do schema.sql e não passa
 -- por aqui. Ver a nota na 005 e em LEIA-ME.md.
 
+-- service_role fica fora deste revoke de propósito. Ver a conferência 6 no fim
+-- do arquivo: função de gatilho recusa chamada direta, então execute sobre ela
+-- entrega nada, e tirar de service_role criaria divergência sem fechar buraco.
 revoke execute on function public.enfileira_imagem_removida()
   from public, anon, authenticated;
 revoke execute on function public.imagens_orfas(integer)
@@ -447,9 +450,23 @@ commit;
 --    where n.nspname = 'public'
 --      and p.proname in ('imagens_orfas', 'enfileira_imagem_removida');
 --
---   anon e logado têm que vir false nas duas. servico tem que vir true em
---   imagens_orfas e false em enfileira_imagem_removida, que é gatilho e ninguém
---   chama pelo nome.
+--   anon e logado têm que vir false nas duas. servico tem que vir true nas
+--   duas, e a segunda merece explicação, porque a primeira versão deste
+--   comentário prometia false e o banco respondeu true.
+--
+--   O revoke logo acima tira execute de public, anon e authenticated, e deixa
+--   service_role de fora de propósito: no Supabase, service_role recebe execute
+--   por concessão própria do projeto, e tirar aqui só criaria divergência para
+--   a próxima função nova reabrir.
+--
+--   E ele não abre nada. `enfileira_imagem_removida` é `returns trigger`, e o
+--   Postgres recusa chamada direta de função de gatilho com "trigger functions
+--   can only be called as triggers", SQLSTATE 0A000, antes de executar uma
+--   linha do corpo. Privilégio de execute sobre ela entrega exatamente nada,
+--   com ou sem chave de serviço.
+--
+--   A conferência que vale para essas duas é a de anon e authenticated, e é ela
+--   que precisa vir false.
 --
 -- 7. A varredura responde, mesmo com o bucket vazio:
 --
