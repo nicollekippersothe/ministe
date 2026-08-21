@@ -17,6 +17,20 @@ import { chromium, devices } from "playwright";
 const BASE = process.env.BASE ?? "http://localhost:3000";
 const EXECUTAVEL = process.env.CHROMIUM;
 
+/** O processo, para o endereço criado no teste mudar a cada rodada. */
+const processo = process;
+
+/*
+ * O aviso que fica ao lado do campo de endereço.
+ *
+ * Escrito pelo id, e não como "o primeiro [aria-live] da página", porque o
+ * primeiro deixou de ser este no dia em que o ramo virou a primeira pergunta
+ * do cadastro: passou a ser o contador de opções da lista, que é sr-only. O
+ * teste continuava verde ou vermelho pelo motivo errado, que é pior do que
+ * quebrar.
+ */
+const ESTADO_DO_ENDERECO = '[id$="-estado"][aria-live]';
+
 let falhas = 0;
 
 function passo(nome, ok) {
@@ -64,21 +78,21 @@ await p.fill("input[name=slug]", "Doceria da Ana!!");
 await p.waitForTimeout(800);
 passo(
   "o endereço é limpo e conferido enquanto digita",
-  (await p.textContent("[aria-live]")).includes("/doceria-da-ana"),
+  (await p.textContent(ESTADO_DO_ENDERECO)).includes("/doceria-da-ana"),
 );
 
 await p.fill("input[name=slug]", "painel");
 await p.waitForTimeout(800);
 passo(
   "endereço reservado é avisado na hora",
-  (await p.textContent("[aria-live]")).includes("reservado pelo sistema"),
+  (await p.textContent(ESTADO_DO_ENDERECO)).includes("reservado pelo sistema"),
 );
 
 await p.fill("input[name=slug]", "demo");
 await p.waitForTimeout(800);
 passo(
   "endereço já ocupado é avisado na hora",
-  (await p.textContent("[aria-live]")).length > 0,
+  (await p.textContent(ESTADO_DO_ENDERECO)).length > 0,
 );
 
 await p.goto(`${BASE}/entrar`, { waitUntil: "load" });
@@ -91,7 +105,7 @@ passo(
 await p.goto(`${BASE}/entrar?motivo=publicar`, { waitUntil: "load" });
 passo(
   "e quem chega para publicar é avisado de que a página continua sendo dele",
-  (await p.textContent("body")).includes("continua sendo sua"),
+  (await p.textContent("body")).includes("Ela continua sua"),
 );
 
 // ---------------------------------------------------------------------------
@@ -134,7 +148,13 @@ async function fontesBaixadas(rota) {
   const pagina = await contexto.newPage();
   const vistas = new Set();
   pagina.on("response", (r) => {
-    if (r.url().includes(".woff2")) vistas.add(r.url());
+    // O painel de desenvolvimento do Next baixa a Geist para a própria barra,
+    // de `next-devtools`, e ela some no build de produção. Contar ela aqui
+    // faria a asserção medir uma ferramenta em vez de medir o produto, e ela
+    // aparece de forma intermitente, o que é o pior tipo de teste: o que falha
+    // sozinho de vez em quando.
+    const u = r.url();
+    if (u.includes(".woff2") && !u.includes("geist")) vistas.add(u);
   });
   await pagina.goto(BASE + rota, { waitUntil: "load" });
   // Fonte sem pré-carregamento é pedida depois que o CSS aplica, então
@@ -404,7 +424,7 @@ await p.fill("input[name=slug]", "pix caixa");
 await p.waitForTimeout(800);
 passo(
   "endereço com cara de banco é barrado no cadastro",
-  (await p.textContent("[aria-live]")).includes("palavra restrita"),
+  (await p.textContent(ESTADO_DO_ENDERECO)).includes("palavra restrita"),
 );
 
 // ---------------------------------------------------------------------------
@@ -432,14 +452,26 @@ passo(
   await esperar('fieldset [aria-live]:has-text("Começa com Ensaios")'),
 );
 
+/*
+ * O endereço muda a cada rodada, e isso é conserto de teste, e não capricho.
+ *
+ * Este passo cria uma página de verdade, e o destino de arquivo local guarda o
+ * que ele cria. Com endereço fixo, a segunda rodada da bateria batia em
+ * "endereço ocupado" e morria aqui, o que fazia a suíte inteira depender de
+ * alguém lembrar de apagar `.dados/negocios.json` antes. Teste que só passa uma
+ * vez é teste que ninguém roda duas.
+ */
+const enderecoNovo = `camila reis ${processo.pid}`;
+const slugNovo = enderecoNovo.replace(/ /g, "-");
+
 await p.fill("input[name=nome]", "Camila Reis");
-await p.fill("input[name=slug]", "camila reis ensaios");
+await p.fill("input[name=slug]", enderecoNovo);
 await p.waitForTimeout(800);
 await p.click('button:has-text("Criar página")');
 await p.waitForURL(/criado=1/);
 
 const criada = JSON.parse(await readFile(".dados/negocios.json", "utf8")).find(
-  (n) => n.slug === "camila-reis-ensaios",
+  (n) => n.slug === slugNovo,
 );
 passo(
   "a página nova nasce com a receita da categoria",
@@ -486,8 +518,10 @@ const seco = await navegador.newContext({
 });
 const h = await seco.newPage();
 await h.goto(`${BASE}/criar`, { waitUntil: "load" });
+// Endereço novo a cada rodada, pelo mesmo motivo do passo anterior.
+const slugSemScript = `lanche-sem-script-${processo.pid}`;
 await h.fill("input[name=nome]", "Lanchonete sem script");
-await h.fill("input[name=slug]", "lanche-sem-script");
+await h.fill("input[name=slug]", slugSemScript);
 await h.check(`${opcoes}[value=lanchonete]`);
 await h.click('button:has-text("Criar página")');
 await h.waitForURL(/painel/, { timeout: 20000 });
@@ -495,7 +529,7 @@ await seco.close();
 
 const semScript = JSON.parse(
   await readFile(".dados/negocios.json", "utf8"),
-).find((n) => n.slug === "lanche-sem-script");
+).find((n) => n.slug === slugSemScript);
 passo(
   "o cadastro envia com o JavaScript desligado, e a receita vale igual",
   semScript?.categoria === "lanchonete" &&
