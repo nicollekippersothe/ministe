@@ -104,7 +104,7 @@ export function CampoEndereco({
         autoCorrect="off"
         spellCheck={false}
         required
-        placeholder="doceria da ana"
+        placeholder="camila reis"
         className={`mt-3 w-full rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto outline-none ${borda}`}
       />
 

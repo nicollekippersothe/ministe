@@ -1,8 +1,16 @@
 # Entrais
 
-Micro-SaaS que dá uma página pronta para o negócio local que hoje só tem
-Instagram: endereço, horário, cardápio e um botão de WhatsApp que já abre a
-conversa escrita.
+Micro-SaaS que dá uma página pronta para quem vende o próprio trabalho e hoje
+só tem Instagram: o que a pessoa faz, quanto custa, quando atende, e um botão
+de WhatsApp que já abre a conversa escrita.
+
+**Quem está no centro é a profissional autônoma**: a psicóloga, o fotógrafo, a
+manicure, o personal, a advogada. Loja e restaurante cabem, e as trinta e cinco
+categorias continuam inteiras, mas quem decide o texto de tela, a ordem das
+perguntas e o exemplo que abre em `/demo` é quem trabalha por conta própria.
+Isso é decisão de produto, e não gosto: quem tem loja com ponto na rua já
+aparece no mapa, e quem trabalha sozinho tem só o perfil de rede social e o
+nome dele.
 
 O nome da marca e o domínio ficam em `lib/marca.ts`, um lugar só. Não escrever
 nenhum dos dois direto no meio do texto de tela.

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { categoriaPorId } from "@/lib/categorias";
 import { CampoCategoria } from "./CampoCategoria";
 import { CampoEndereco } from "./CampoEndereco";
 import { BotaoPrincipal, Moldura } from "./Moldura";
@@ -32,6 +33,27 @@ export function FormularioCriar({
   const [slug, setSlug] = useState("");
   const [categoria, setCategoria] = useState<string | null>(null);
 
+  /*
+   * O primeiro campo muda de nome conforme o ramo, e é a única pergunta do
+   * cadastro que faz isso.
+   *
+   * Psicóloga, advogado, personal e fotógrafo assinam com o próprio nome.
+   * "Nome do negócio" pede a eles uma coisa que não existe, e o autocomplete
+   * de organização faz o navegador oferecer empresa para quem é pessoa.
+   * Restaurante e salão são o contrário.
+   *
+   * Antes de a categoria ser escolhida o rótulo é neutro, porque chutar entre
+   * os dois é pior do que perguntar direito: "nome que aparece na página" é
+   * verdade nos dois casos, e é o que a prévia ao lado está mostrando.
+   */
+  const receita = categoriaPorId(categoria);
+  const rotuloDoNome =
+    receita === null
+      ? "Nome que aparece na página"
+      : receita.nomeDePessoa
+        ? "Seu nome"
+        : "Nome do negócio";
+
   return (
     <Moldura
       titulo="Criar sua página"
@@ -50,9 +72,25 @@ export function FormularioCriar({
       }
     >
       <form action={acao} className="flex flex-col gap-7">
+        {/*
+          O ramo vem primeiro, e a ordem é a parte que mais muda esta tela.
+
+          Ele é a única resposta que decide as outras: o tipo que vai para o
+          Google, o nome da seção do catálogo, se preço aparece, se a galeria
+          vem antes, se o endereço da rua faz sentido, e o rótulo do campo
+          logo abaixo. Perguntado por último, ele chega quando a pessoa já
+          respondeu tudo, e as respostas dela é que teriam que se ajustar.
+          Perguntado primeiro, a tela se ajusta a ela.
+
+          Ganha de quebra o momento em que a prévia ao lado sai do vazio: a
+          pessoa escolhe "Fotografia" e a página aparece montada, antes de
+          digitar uma letra.
+        */}
+        <CampoCategoria aoMudar={setCategoria} />
+
         <div>
           <label htmlFor="nome" className="text-[0.95rem] font-medium text-texto">
-            Nome do negócio
+            {rotuloDoNome}
           </label>
           <input
             id="nome"
@@ -61,14 +99,12 @@ export function FormularioCriar({
             maxLength={80}
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            autoComplete="organization"
+            autoComplete={receita?.nomeDePessoa ? "name" : "organization"}
             className="mt-3 w-full rounded-2xl border border-borda bg-superficie px-4 py-3.5 text-[1.05rem] text-texto focus:border-destaque focus:outline-none"
           />
         </div>
 
         <CampoEndereco aoMudar={setSlug} />
-
-        <CampoCategoria aoMudar={setCategoria} />
 
         {mensagem ? (
           <p

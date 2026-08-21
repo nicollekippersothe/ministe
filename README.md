@@ -1,8 +1,12 @@
 # Entrais
 
-Uma página pronta para o negócio local que hoje só tem Instagram: endereço,
-horário, cardápio ou catálogo, e um botão de WhatsApp que já abre a conversa
-escrita. O dono preenche um formulário e a página fica no ar em minutos.
+Uma página pronta para quem vende o próprio trabalho e hoje só tem Instagram:
+o que a pessoa faz, quanto custa, quando atende, e um botão de WhatsApp que já
+abre a conversa escrita. Preenche um formulário e a página fica no ar em
+minutos.
+
+Feito com a profissional autônoma no centro, a psicóloga, o fotógrafo, a
+manicure, o personal. Loja e restaurante cabem também.
 
 ## Estado atual
 

@@ -56,9 +56,38 @@ test("quem produz em casa não tem endereço como esperado", () => {
   }
 });
 
+/**
+ * A ordem dos grupos é escolha de produto, e não acaso da lista.
+ *
+ * O primeiro grupo é o que a pessoa vê antes de rolar, e ele responde "para
+ * quem é isto" antes de qualquer texto de propaganda. Serviços na frente
+ * porque o produto é para quem vende o próprio trabalho. Comida continua na
+ * lista, com os mesmos seis ramos de sempre, só que depois.
+ */
 test("os grupos saem na ordem da lista, sem repetir", () => {
   strictEqual(new Set(GRUPOS).size, GRUPOS.length);
-  strictEqual(GRUPOS[0], "Comida e bebida");
+  strictEqual(GRUPOS[0], "Serviços");
+  strictEqual(GRUPOS.length, 7);
+});
+
+/**
+ * O nome do primeiro campo do cadastro sai daqui.
+ *
+ * Errar para um lado faz a psicóloga inventar um nome de empresa que ninguém
+ * usa. Errar para o outro faz o restaurante achar que está preenchendo um
+ * cadastro de cliente.
+ */
+test("quem assina com o próprio nome está marcado, e quem é lugar fica de fora", () => {
+  for (const id of ["psicologia", "advocacia", "personal", "fotografia", "unhas"]) {
+    strictEqual(receitaDe(id).nomeDePessoa, true, id);
+  }
+  for (const id of ["restaurante", "salao", "mercado", "academia", "bar"]) {
+    strictEqual(receitaDe(id).nomeDePessoa, false, id);
+  }
+  // Quem escolheu "outro" e escreveu o ramo cai na receita padrão, e ali o
+  // rótulo neutro serve melhor do que chutar entre pessoa e lugar.
+  strictEqual(receitaDe(null).nomeDePessoa, false);
+  strictEqual(receitaDe("ramo-que-nao-existe").nomeDePessoa, false);
 });
 
 test("acha pelo jeito que a pessoa fala, e não pelo nome que a gente deu", () => {

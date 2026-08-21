@@ -159,7 +159,7 @@ export function CampoCategoria({
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
-        placeholder="bolo, inglês, unha, marmita"
+        placeholder="terapia, unha, inglês, foto"
         aria-describedby={`${id}-quantos`}
         className="mt-3 w-full rounded-2xl border border-borda bg-superficie px-4 py-3 text-[1rem] text-texto placeholder:text-suave/70"
       />

@@ -35,6 +35,19 @@ export type Receita = {
    * fosse obrigatório faz a pessoa travar no cadastro.
    */
   endereco: "esperado" | "opcional";
+  /**
+   * Se quem trabalha é a marca.
+   *
+   * Psicóloga, advogado, personal e fotógrafo assinam com o próprio nome, e o
+   * cadastro que pergunta "nome do negócio" para eles pede uma coisa que não
+   * existe. A pessoa para, inventa um nome de empresa que ninguém usa, ou
+   * desiste. Restaurante, salão e loja são o contrário: o nome é do lugar, e
+   * perguntar "seu nome" ali soa como cadastro de cliente.
+   *
+   * Muda o rótulo e o autocomplete do primeiro campo, e mais nada. O valor
+   * gravado é o mesmo campo `nome` dos dois jeitos.
+   */
+  nomeDePessoa: boolean;
 };
 
 export type Categoria = Receita & {
@@ -59,6 +72,9 @@ export const RECEITA_PADRAO: Receita = {
   mostrarPrecos: true,
   galeriaPrimeiro: false,
   endereco: "opcional",
+  // Falso na padrão porque ela atende quem escolheu "outro" e escreveu o ramo,
+  // e ali o rótulo neutro serve melhor do que chutar entre pessoa e lugar.
+  nomeDePessoa: false,
 };
 
 function cat(
@@ -81,6 +97,241 @@ function achatar(entrada: string): string {
 }
 
 export const CATEGORIAS: Categoria[] = [
+  // --- Serviços ------------------------------------------------------------
+  cat("fotografia", "Fotografia e vídeo", "Serviços", [
+    "fotografia", "fotógrafo", "fotógrafa", "ensaio", "book",
+    "filmagem", "vídeo", "casamento", "newborn", "gestante"
+  ], {
+    schema: "ProfessionalService",
+    nomeDePessoa: true,
+    tituloCatalogo: "Ensaios",
+    mostrarPrecos: false,
+    galeriaPrimeiro: true,
+  }),
+  cat("design", "Design e comunicação", "Serviços", [
+    "design", "designer", "identidade visual", "logo",
+    "social media", "ilustração", "branding", "gráfico"
+  ], {
+    schema: "ProfessionalService",
+    nomeDePessoa: true,
+    tituloCatalogo: "Serviços",
+    mostrarPrecos: false,
+    galeriaPrimeiro: true,
+  }),
+  cat("consultoria", "Consultoria e finanças", "Serviços", [
+    "consultoria", "consultor", "finanças", "financeira",
+    "investimentos", "planejamento financeiro", "negócios",
+    "mentoria", "marketing"
+  ], {
+    schema: "ProfessionalService",
+    nomeDePessoa: true,
+    tituloCatalogo: "Serviços",
+    mostrarPrecos: false,
+  }),
+  cat("contabilidade", "Contabilidade", "Serviços", [
+    "contabilidade", "contador", "contábil", "imposto de renda",
+    "abertura de empresa", "mei", "folha de pagamento"
+  ], {
+    schema: "AccountingService",
+    nomeDePessoa: true,
+    tituloCatalogo: "Serviços",
+    mostrarPrecos: false,
+  }),
+  cat("advocacia", "Advocacia", "Serviços", ["advocacia", "advogado", "advogada", "jurídico", "direito"], {
+    schema: "LegalService",
+    nomeDePessoa: true,
+    tituloCatalogo: "Áreas de atuação",
+    mostrarPrecos: false,
+  }),
+  cat("aulas", "Aulas particulares", "Serviços", [
+    "aula", "aulas particulares", "professor", "professora",
+    "inglês", "espanhol", "idiomas", "reforço", "matemática",
+    "música", "violão", "piano", "canto", "informática",
+    "concurso"
+  ], {
+    /*
+     * ProfessionalService, e não EducationalOrganization, que era o palpite
+     * óbvio e está errado.
+     *
+     * Conferido no vocabulário do schema.org: EducationalOrganization desce de
+     * CivicStructure e Organization, e NÃO é subclasse de LocalBusiness. É o
+     * tipo de uma escola como instituição. Quem dá aula particular é negócio
+     * local, e o resultado de busca local do Google se apoia em LocalBusiness
+     * e nas subclasses dele. Usar o tipo de fora dessa árvore entrega horário,
+     * endereço e faixa de preço numa forma que o buscador não espera ali.
+     */
+    schema: "ProfessionalService",
+    nomeDePessoa: true,
+    tituloCatalogo: "Aulas",
+  }),
+  cat("assistencia", "Assistência técnica", "Serviços", [
+    "assistência técnica", "conserto", "celular", "computador",
+    "eletrodoméstico", "manutenção", "técnico", "ar condicionado"
+  ], {
+    schema: "ProfessionalService",
+    tituloCatalogo: "Serviços",
+  }),
+  cat("reformas", "Reformas e manutenção", "Serviços", [
+    "reforma", "pedreiro", "pintor", "pintura", "elétrica",
+    "eletricista", "hidráulica", "encanador", "marcenaria",
+    "gesso", "obra"
+  ], {
+    schema: "HomeAndConstructionBusiness",
+    tituloCatalogo: "Serviços",
+    mostrarPrecos: false,
+    galeriaPrimeiro: true,
+  }),
+  cat("limpeza", "Limpeza e organização", "Serviços", [
+    "limpeza", "diarista", "faxina", "organização",
+    "personal organizer", "lavanderia", "higienização",
+    "dedetização"
+  ], {
+    schema: "HomeAndConstructionBusiness",
+    tituloCatalogo: "Serviços",
+  }),
+  cat("eventos", "Festas e eventos", "Serviços", [
+    "eventos", "festa", "buffet", "decoração", "aniversário",
+    "casamento", "cerimonial", "aluguel de itens", "brinquedos"
+  ], {
+    schema: "ProfessionalService",
+    tituloCatalogo: "Pacotes",
+    mostrarPrecos: false,
+    galeriaPrimeiro: true,
+  }),
+  // --- Beleza --------------------------------------------------------------
+  cat("salao", "Salão de beleza", "Beleza", [
+    "salão", "cabeleireiro", "cabelo", "escova", "coloração",
+    "progressiva", "penteado", "maquiagem"
+  ], {
+    schema: "BeautySalon",
+    tituloCatalogo: "Serviços",
+    endereco: "esperado",
+  }),
+  cat("barbearia", "Barbearia", "Beleza", ["barbearia", "barbeiro", "barba", "corte masculino", "navalha"], {
+    schema: "HairSalon",
+    tituloCatalogo: "Serviços",
+    endereco: "esperado",
+  }),
+  cat("unhas", "Manicure e nail design", "Beleza", [
+    "manicure", "pedicure", "unha", "nail", "alongamento de unha",
+    "esmalteria", "fibra"
+  ], {
+    schema: "NailSalon",
+    nomeDePessoa: true,
+    tituloCatalogo: "Serviços",
+    galeriaPrimeiro: true,
+  }),
+  cat("estetica", "Estética e cuidados", "Beleza", [
+    "estética", "limpeza de pele", "massagem", "drenagem",
+    "sobrancelha", "cílios", "micropigmentação", "depilação",
+    "spa"
+  ], {
+    schema: "HealthAndBeautyBusiness",
+    tituloCatalogo: "Procedimentos",
+  }),
+  cat("tatuagem", "Tatuagem e piercing", "Beleza", ["tatuagem", "tatuador", "tattoo", "piercing"], {
+    schema: "TattooParlor",
+    nomeDePessoa: true,
+    tituloCatalogo: "Trabalhos",
+    mostrarPrecos: false,
+    galeriaPrimeiro: true,
+  }),
+  // --- Saúde ---------------------------------------------------------------
+  // Preço guardado por padrão em todas: valor de consulta público é escolha,
+  // e a maioria prefere combinar antes.
+  cat("psicologia", "Psicologia e terapia", "Saúde", [
+    "psicologia", "psicóloga", "psicólogo", "terapia", "terapeuta",
+    "psicanálise", "saúde mental"
+  ], {
+    schema: "MedicalBusiness",
+    nomeDePessoa: true,
+    tituloCatalogo: "Atendimentos",
+    mostrarPrecos: false,
+  }),
+  cat("nutricao", "Nutrição", "Saúde", [
+    "nutrição", "nutricionista", "dieta", "reeducação alimentar",
+    "emagrecimento", "nutri"
+  ], {
+    schema: "MedicalBusiness",
+    nomeDePessoa: true,
+    tituloCatalogo: "Atendimentos",
+    mostrarPrecos: false,
+  }),
+  cat("fisioterapia", "Fisioterapia", "Saúde", [
+    "fisioterapia", "fisioterapeuta", "rpg", "reabilitação",
+    "quiropraxia", "osteopatia"
+  ], {
+    schema: "Physiotherapy",
+    nomeDePessoa: true,
+    tituloCatalogo: "Atendimentos",
+    mostrarPrecos: false,
+  }),
+  cat("odontologia", "Odontologia", "Saúde", [
+    "odontologia", "dentista", "dental", "ortodontia", "aparelho",
+    "clareamento", "implante"
+  ], {
+    schema: "Dentist",
+    tituloCatalogo: "Tratamentos",
+    mostrarPrecos: false,
+    endereco: "esperado",
+  }),
+  // --- Corpo e movimento ---------------------------------------------------
+  cat("yoga-pilates", "Yoga e pilates", "Corpo e movimento", [
+    "yoga", "ioga", "pilates", "meditação", "alongamento",
+    "estúdio"
+  ], {
+    schema: "SportsActivityLocation",
+    tituloCatalogo: "Aulas e planos",
+    endereco: "esperado",
+  }),
+  cat("academia", "Academia", "Corpo e movimento", ["academia", "musculação", "crossfit", "funcional", "ginástica"], {
+    schema: "ExerciseGym",
+    tituloCatalogo: "Planos",
+    endereco: "esperado",
+  }),
+  cat("personal", "Personal trainer", "Corpo e movimento", [
+    "personal", "personal trainer", "treinador", "treino",
+    "preparador físico", "corrida", "assessoria esportiva"
+  ], {
+    schema: "SportsActivityLocation",
+    nomeDePessoa: true,
+    tituloCatalogo: "Planos",
+  }),
+  cat("danca", "Dança", "Corpo e movimento", [
+    "dança", "balé", "ballet", "jazz", "zumba", "forró", "samba",
+    "dança de salão"
+  ], {
+    schema: "SportsActivityLocation",
+    tituloCatalogo: "Aulas e turmas",
+    endereco: "esperado",
+  }),
+  // --- Feito à mão ---------------------------------------------------------
+  // Galeria primeiro no grupo inteiro: peça feita à mão se vende pela foto.
+  cat("artesanato", "Artesanato e peças à mão", "Feito à mão", [
+    "artesanato", "crochê", "tricô", "macramê", "cerâmica",
+    "bordado", "feito à mão", "artesã", "biscuit", "velas",
+    "sabonete"
+  ], {
+    schema: "Store",
+    tituloCatalogo: "Peças",
+    galeriaPrimeiro: true,
+  }),
+  cat("costura", "Costura e ateliê", "Feito à mão", [
+    "costura", "costureira", "ateliê", "ajuste",
+    "reforma de roupa", "alfaiataria", "moda", "sob medida"
+  ], {
+    schema: "ClothingStore",
+    tituloCatalogo: "Peças e serviços",
+    galeriaPrimeiro: true,
+  }),
+  cat("floricultura", "Flores e arranjos", "Feito à mão", [
+    "flores", "floricultura", "florista", "arranjo", "buquê",
+    "plantas", "jardinagem", "paisagismo"
+  ], {
+    schema: "Florist",
+    tituloCatalogo: "Arranjos",
+    galeriaPrimeiro: true,
+  }),
   // --- Comida e bebida -----------------------------------------------------
   cat("restaurante", "Restaurante", "Comida e bebida", [
     "restaurante", "comida", "almoço", "jantar", "self service",
@@ -124,235 +375,6 @@ export const CATEGORIAS: Categoria[] = [
     tituloCatalogo: "Cardápio",
     endereco: "esperado",
   }),
-
-  // --- Beleza --------------------------------------------------------------
-  cat("salao", "Salão de beleza", "Beleza", [
-    "salão", "cabeleireiro", "cabelo", "escova", "coloração",
-    "progressiva", "penteado", "maquiagem"
-  ], {
-    schema: "BeautySalon",
-    tituloCatalogo: "Serviços",
-    endereco: "esperado",
-  }),
-  cat("barbearia", "Barbearia", "Beleza", ["barbearia", "barbeiro", "barba", "corte masculino", "navalha"], {
-    schema: "HairSalon",
-    tituloCatalogo: "Serviços",
-    endereco: "esperado",
-  }),
-  cat("unhas", "Manicure e nail design", "Beleza", [
-    "manicure", "pedicure", "unha", "nail", "alongamento de unha",
-    "esmalteria", "fibra"
-  ], {
-    schema: "NailSalon",
-    tituloCatalogo: "Serviços",
-    galeriaPrimeiro: true,
-  }),
-  cat("estetica", "Estética e cuidados", "Beleza", [
-    "estética", "limpeza de pele", "massagem", "drenagem",
-    "sobrancelha", "cílios", "micropigmentação", "depilação",
-    "spa"
-  ], {
-    schema: "HealthAndBeautyBusiness",
-    tituloCatalogo: "Procedimentos",
-  }),
-  cat("tatuagem", "Tatuagem e piercing", "Beleza", ["tatuagem", "tatuador", "tattoo", "piercing"], {
-    schema: "TattooParlor",
-    tituloCatalogo: "Trabalhos",
-    mostrarPrecos: false,
-    galeriaPrimeiro: true,
-  }),
-
-  // --- Saúde ---------------------------------------------------------------
-  // Preço guardado por padrão em todas: valor de consulta público é escolha,
-  // e a maioria prefere combinar antes.
-  cat("psicologia", "Psicologia e terapia", "Saúde", [
-    "psicologia", "psicóloga", "psicólogo", "terapia", "terapeuta",
-    "psicanálise", "saúde mental"
-  ], {
-    schema: "MedicalBusiness",
-    tituloCatalogo: "Atendimentos",
-    mostrarPrecos: false,
-  }),
-  cat("nutricao", "Nutrição", "Saúde", [
-    "nutrição", "nutricionista", "dieta", "reeducação alimentar",
-    "emagrecimento", "nutri"
-  ], {
-    schema: "MedicalBusiness",
-    tituloCatalogo: "Atendimentos",
-    mostrarPrecos: false,
-  }),
-  cat("fisioterapia", "Fisioterapia", "Saúde", [
-    "fisioterapia", "fisioterapeuta", "rpg", "reabilitação",
-    "quiropraxia", "osteopatia"
-  ], {
-    schema: "Physiotherapy",
-    tituloCatalogo: "Atendimentos",
-    mostrarPrecos: false,
-  }),
-  cat("odontologia", "Odontologia", "Saúde", [
-    "odontologia", "dentista", "dental", "ortodontia", "aparelho",
-    "clareamento", "implante"
-  ], {
-    schema: "Dentist",
-    tituloCatalogo: "Tratamentos",
-    mostrarPrecos: false,
-    endereco: "esperado",
-  }),
-
-  // --- Corpo e movimento ---------------------------------------------------
-  cat("yoga-pilates", "Yoga e pilates", "Corpo e movimento", [
-    "yoga", "ioga", "pilates", "meditação", "alongamento",
-    "estúdio"
-  ], {
-    schema: "SportsActivityLocation",
-    tituloCatalogo: "Aulas e planos",
-    endereco: "esperado",
-  }),
-  cat("academia", "Academia", "Corpo e movimento", ["academia", "musculação", "crossfit", "funcional", "ginástica"], {
-    schema: "ExerciseGym",
-    tituloCatalogo: "Planos",
-    endereco: "esperado",
-  }),
-  cat("personal", "Personal trainer", "Corpo e movimento", [
-    "personal", "personal trainer", "treinador", "treino",
-    "preparador físico", "corrida", "assessoria esportiva"
-  ], {
-    schema: "SportsActivityLocation",
-    tituloCatalogo: "Planos",
-  }),
-  cat("danca", "Dança", "Corpo e movimento", [
-    "dança", "balé", "ballet", "jazz", "zumba", "forró", "samba",
-    "dança de salão"
-  ], {
-    schema: "SportsActivityLocation",
-    tituloCatalogo: "Aulas e turmas",
-    endereco: "esperado",
-  }),
-
-  // --- Feito à mão ---------------------------------------------------------
-  // Galeria primeiro no grupo inteiro: peça feita à mão se vende pela foto.
-  cat("artesanato", "Artesanato e peças à mão", "Feito à mão", [
-    "artesanato", "crochê", "tricô", "macramê", "cerâmica",
-    "bordado", "feito à mão", "artesã", "biscuit", "velas",
-    "sabonete"
-  ], {
-    schema: "Store",
-    tituloCatalogo: "Peças",
-    galeriaPrimeiro: true,
-  }),
-  cat("costura", "Costura e ateliê", "Feito à mão", [
-    "costura", "costureira", "ateliê", "ajuste",
-    "reforma de roupa", "alfaiataria", "moda", "sob medida"
-  ], {
-    schema: "ClothingStore",
-    tituloCatalogo: "Peças e serviços",
-    galeriaPrimeiro: true,
-  }),
-  cat("floricultura", "Flores e arranjos", "Feito à mão", [
-    "flores", "floricultura", "florista", "arranjo", "buquê",
-    "plantas", "jardinagem", "paisagismo"
-  ], {
-    schema: "Florist",
-    tituloCatalogo: "Arranjos",
-    galeriaPrimeiro: true,
-  }),
-
-  // --- Serviços ------------------------------------------------------------
-  cat("fotografia", "Fotografia e vídeo", "Serviços", [
-    "fotografia", "fotógrafo", "fotógrafa", "ensaio", "book",
-    "filmagem", "vídeo", "casamento", "newborn", "gestante"
-  ], {
-    schema: "ProfessionalService",
-    tituloCatalogo: "Ensaios",
-    mostrarPrecos: false,
-    galeriaPrimeiro: true,
-  }),
-  cat("design", "Design e comunicação", "Serviços", [
-    "design", "designer", "identidade visual", "logo",
-    "social media", "ilustração", "branding", "gráfico"
-  ], {
-    schema: "ProfessionalService",
-    tituloCatalogo: "Serviços",
-    mostrarPrecos: false,
-    galeriaPrimeiro: true,
-  }),
-  cat("consultoria", "Consultoria e finanças", "Serviços", [
-    "consultoria", "consultor", "finanças", "financeira",
-    "investimentos", "planejamento financeiro", "negócios",
-    "mentoria", "marketing"
-  ], {
-    schema: "ProfessionalService",
-    tituloCatalogo: "Serviços",
-    mostrarPrecos: false,
-  }),
-  cat("contabilidade", "Contabilidade", "Serviços", [
-    "contabilidade", "contador", "contábil", "imposto de renda",
-    "abertura de empresa", "mei", "folha de pagamento"
-  ], {
-    schema: "AccountingService",
-    tituloCatalogo: "Serviços",
-    mostrarPrecos: false,
-  }),
-  cat("advocacia", "Advocacia", "Serviços", ["advocacia", "advogado", "advogada", "jurídico", "direito"], {
-    schema: "LegalService",
-    tituloCatalogo: "Áreas de atuação",
-    mostrarPrecos: false,
-  }),
-  cat("aulas", "Aulas particulares", "Serviços", [
-    "aula", "aulas particulares", "professor", "professora",
-    "inglês", "espanhol", "idiomas", "reforço", "matemática",
-    "música", "violão", "piano", "canto", "informática",
-    "concurso"
-  ], {
-    /*
-     * ProfessionalService, e não EducationalOrganization, que era o palpite
-     * óbvio e está errado.
-     *
-     * Conferido no vocabulário do schema.org: EducationalOrganization desce de
-     * CivicStructure e Organization, e NÃO é subclasse de LocalBusiness. É o
-     * tipo de uma escola como instituição. Quem dá aula particular é negócio
-     * local, e o resultado de busca local do Google se apoia em LocalBusiness
-     * e nas subclasses dele. Usar o tipo de fora dessa árvore entrega horário,
-     * endereço e faixa de preço numa forma que o buscador não espera ali.
-     */
-    schema: "ProfessionalService",
-    tituloCatalogo: "Aulas",
-  }),
-  cat("assistencia", "Assistência técnica", "Serviços", [
-    "assistência técnica", "conserto", "celular", "computador",
-    "eletrodoméstico", "manutenção", "técnico", "ar condicionado"
-  ], {
-    schema: "ProfessionalService",
-    tituloCatalogo: "Serviços",
-  }),
-  cat("reformas", "Reformas e manutenção", "Serviços", [
-    "reforma", "pedreiro", "pintor", "pintura", "elétrica",
-    "eletricista", "hidráulica", "encanador", "marcenaria",
-    "gesso", "obra"
-  ], {
-    schema: "HomeAndConstructionBusiness",
-    tituloCatalogo: "Serviços",
-    mostrarPrecos: false,
-    galeriaPrimeiro: true,
-  }),
-  cat("limpeza", "Limpeza e organização", "Serviços", [
-    "limpeza", "diarista", "faxina", "organização",
-    "personal organizer", "lavanderia", "higienização",
-    "dedetização"
-  ], {
-    schema: "HomeAndConstructionBusiness",
-    tituloCatalogo: "Serviços",
-  }),
-  cat("eventos", "Festas e eventos", "Serviços", [
-    "eventos", "festa", "buffet", "decoração", "aniversário",
-    "casamento", "cerimonial", "aluguel de itens", "brinquedos"
-  ], {
-    schema: "ProfessionalService",
-    tituloCatalogo: "Pacotes",
-    mostrarPrecos: false,
-    galeriaPrimeiro: true,
-  }),
-
   // --- Comércio ------------------------------------------------------------
   cat("loja-roupas", "Roupas e acessórios", "Comércio", [
     "roupas", "moda", "boutique", "brechó", "calçados",
