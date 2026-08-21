@@ -292,3 +292,52 @@ O QUE EU PRECISO DE VOLTA
   4. Os índices e o slug 'assinar'.
   5. O dono das três funções.
 ```
+
+---
+
+# Prompt 4, para a extensão do Supabase: as imagens e os dois endereços
+
+Vai depois do Prompt 3. A 003 e a 008 estavam guardadas de propósito, esperando
+o envio de imagem existir no produto. Ele existe agora, então elas saem da
+gaveta. A 012 é de uma linha e fecha um furo achado na revisão.
+
+Copie daqui até o fim.
+
+```
+Projeto Supabase: niekaszanicnrciuixnb (Entrais, São Paulo).
+
+Só SQL. No SQL Editor, nesta ordem, o conteúdo de cada arquivo do repositório
+nicollekippersothe/ministe, branch main:
+
+  a) supabase/correcoes/003-fechar-listagem-do-bucket.sql
+  b) supabase/correcoes/008-envio-de-imagem.sql
+  c) supabase/correcoes/012-enderecos-que-faltavam.sql
+  d) supabase/testes-rls.sql
+
+A ORDEM IMPORTA entre a 003 e a 008. A 003 fecha a listagem do bucket, e ela
+esperava existir a primeira imagem para ter o que conferir. A 008 é justamente
+quem cria a primeira. Fechar a listagem antes da primeira imagem existir é mais
+barato do que depois: com o bucket vazio, errar a política expõe nada.
+
+Cada arquivo tem, no próprio topo, o que ele faz e por quê, e as consultas de
+conferência no fim. Rode as consultas de conferência de cada um e me mande o
+resultado, em vez de só dizer que rodou.
+
+DUAS COISAS QUE PEDEM PARADA, e elas estão escritas dentro dos arquivos:
+
+  1. A conferência 2 da 012 pergunta se alguém já registrou os endereços
+     `criar` ou `icon` como página. Se vier alguma linha, PARE e me avise: tem
+     página de gente naquele endereço, e apagar a linha apaga a página de uma
+     pessoa.
+
+  2. A 008 mexe em coluna que já tem dado dos exemplos. Ela foi escrita para
+     conviver com o que existe, e a conferência dela diz o que esperar. Se
+     alguma consulta devolver diferente do que o comentário promete, PARE antes
+     de seguir para a bateria.
+
+O QUE EU PRECISO DE VOLTA
+
+  1. O resultado das consultas de conferência de cada um dos três arquivos.
+  2. A última linha do testes-rls.sql, com a contagem de asserções.
+  3. Se alguma das duas paradas acima aconteceu.
+```

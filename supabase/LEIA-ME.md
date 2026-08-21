@@ -79,7 +79,8 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `005-rascunho-anonimo.sql` | deixa a página começar numa conta provisória, exige conta confirmada para publicar e acrescenta a faxina do rascunho parado |
 | `006-endereco-livre.sql` | a conferência de endereço do cadastro, que a RLS deixava responder "livre" para endereço já guardado no rascunho de outra pessoa |
 | `007-enderecos-dos-exemplos.sql` | reserva os seis endereços das páginas de exemplo que estavam soltos, e que alguém poderia cadastrar para nunca abrir |
-| `008-envio-de-imagem.sql` | prepara o banco para imagem enviada pelo dono. **Guardada**, ver a nota no topo |
+| `008-envio-de-imagem.sql` | prepara o banco para imagem enviada pelo dono. Saiu da gaveta: o envio existe desde `componentes/painel/EnvioDeImagem.tsx` |
+| `012-enderecos-que-faltavam.sql` | `criar` e `icon` entram na lista de reservados do banco, onde já estavam na de `lib/slug.ts` |
 | `009-cobranca.sql` | assinatura, cobrança e a trava de idempotência do webhook, as quatro funções da chave de serviço, os números do painel e o endereço `/assinar` |
 | `010-migrar-rascunho.sql` | move o rascunho da conta provisória para a conta que já existe, quando o Google recusa ligar a identidade |
 | `011-abrir-assinatura.sql` | a assinatura recorrente passa a existir, e o teste de sete dias vira plano pago sem nenhuma cobrança, que é o caso que as quatro funções da 009 não cobriam |
