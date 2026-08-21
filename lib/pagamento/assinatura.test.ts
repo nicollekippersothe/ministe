@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   JANELA_DO_AVISO_SEGUNDOS,
   conferirAssinatura,
+  conferirAssinaturaDetalhe,
   lerCabecalhoDeAssinatura,
   montarManifesto,
 } from "./assinatura.ts";
@@ -271,4 +272,91 @@ test("cabeçalho ausente reprova", () => {
   assert.equal(conferirAssinatura({ ...base, xSignature: null }), false);
   assert.equal(conferirAssinatura({ ...base, xSignature: undefined }), false);
   assert.equal(conferirAssinatura({ ...base, xSignature: "" }), false);
+});
+
+/* -------------------------------------------------------------------------- */
+/* O motivo da recusa, que é o que vai para o log                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Cada motivo aponta para um conserto diferente, e do lado de fora os quatro
+ * parecem a mesma coisa: 401 sem corpo. O teste trava a separação, porque um
+ * motivo que passasse a responder outro deixaria a próxima investigação
+ * seguindo a pista errada.
+ */
+
+test("segredo ausente e HMAC diferente são motivos diferentes", () => {
+  const agoraMs = 1_700_000_000_000;
+  const ts = String(agoraMs / 1000);
+
+  const semSegredo = conferirAssinaturaDetalhe({
+    xSignature: `ts=${ts},v1=abc`,
+    xRequestId: "req",
+    dataId: "123",
+    segredo: "",
+    agoraMs,
+  });
+  assert.equal(semSegredo.motivo, "segredo_ausente");
+  assert.equal(semSegredo.tamanhoDoSegredo, 0);
+
+  const errado = conferirAssinaturaDetalhe({
+    xSignature: `ts=${ts},v1=${"a".repeat(64)}`,
+    xRequestId: "req",
+    dataId: "123",
+    segredo: "segredo-de-teste",
+    agoraMs,
+  });
+  assert.equal(errado.motivo, "hmac_diferente");
+  assert.equal(errado.manifesto, `id:123;request-id:req;ts:${ts};`);
+  assert.equal(errado.tamanhoDoSegredo, 16);
+});
+
+test("carimbo velho vira fora_da_janela, com o atraso em segundos", () => {
+  const agoraMs = 1_700_000_000_000;
+  const ts = String(agoraMs / 1000 - 3600);
+
+  const velho = conferirAssinaturaDetalhe({
+    xSignature: `ts=${ts},v1=${"a".repeat(64)}`,
+    xRequestId: "req",
+    dataId: "123",
+    segredo: "segredo-de-teste",
+    agoraMs,
+  });
+
+  assert.equal(velho.motivo, "fora_da_janela");
+  assert.equal(velho.atrasoS, 3600);
+  // O manifesto fica de fora aqui de propósito: sem carimbo válido ele nem
+  // chega a ser montado, e mostrar um manifesto de mentira no log confundiria.
+  assert.equal(velho.manifesto, undefined);
+});
+
+test("cabeçalho ausente é o terceiro motivo, e nunca hmac_diferente", () => {
+  const r = conferirAssinaturaDetalhe({
+    xSignature: null,
+    xRequestId: "req",
+    dataId: "123",
+    segredo: "segredo-de-teste",
+    agoraMs: 1_700_000_000_000,
+  });
+  assert.equal(r.motivo, "cabecalho_ausente");
+});
+
+test("assinatura boa devolve conferida, e o mesmo manifesto do log", () => {
+  const agoraMs = 1_700_000_000_000;
+  const ts = String(agoraMs / 1000);
+  const segredo = "segredo-de-teste";
+  const manifesto = `id:abc123;request-id:req;ts:${ts};`;
+  const v1 = createHmac("sha256", segredo).update(manifesto, "utf8").digest("hex");
+
+  const r = conferirAssinaturaDetalhe({
+    xSignature: `ts=${ts},v1=${v1}`,
+    xRequestId: "req",
+    dataId: "abc123",
+    segredo,
+    agoraMs,
+  });
+
+  assert.equal(r.ok, true);
+  assert.equal(r.motivo, "conferida");
+  assert.equal(r.manifesto, manifesto);
 });

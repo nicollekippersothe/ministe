@@ -139,6 +139,81 @@ export type EntradaDeConferencia = {
   janelaSegundos?: number;
 };
 
+/** Por que um aviso foi recusado. Vai para o log, nunca para a resposta. */
+export type MotivoDaAssinatura =
+  | "conferida"
+  | "segredo_ausente"
+  | "cabecalho_ausente"
+  | "carimbo_ilegivel"
+  | "fora_da_janela"
+  | "hmac_diferente";
+
+export type Conferencia = {
+  ok: boolean;
+  motivo: MotivoDaAssinatura;
+  /** O manifesto montado. Carrega id e request-id, e nenhum segredo. */
+  manifesto?: string;
+  /** Quantos segundos de diferença entre o carimbo e agora. */
+  atrasoS?: number;
+  /** O tamanho do segredo configurado. Zero diz que a variável falta. */
+  tamanhoDoSegredo: number;
+};
+
+/**
+ * A conferência com o motivo, para o log de quem opera.
+ *
+ * A resposta do webhook continua sendo 401 sem corpo, e é isso que importa
+ * para quem está do lado de fora: mensagem de erro num endereço público é
+ * manual de como acertar a assinatura. O motivo vai para o log do servidor, e
+ * é a diferença entre "a assinatura falhou" e "o carimbo veio quarenta minutos
+ * atrasado", que apontam para lugares opostos.
+ *
+ * O manifesto vai junto porque ele é a causa número um de assinatura que nunca
+ * bate, e porque ele carrega só o id do objeto e o id da requisição. O segredo
+ * aparece pelo tamanho, que separa variável ausente de variável colada pela
+ * metade sem revelar o valor.
+ */
+export function conferirAssinaturaDetalhe(e: EntradaDeConferencia): Conferencia {
+  const tamanhoDoSegredo = e.segredo ? e.segredo.length : 0;
+
+  if (!e.segredo) return { ok: false, motivo: "segredo_ausente", tamanhoDoSegredo };
+
+  const cabecalho = lerCabecalhoDeAssinatura(e.xSignature);
+  if (!cabecalho) {
+    return { ok: false, motivo: "cabecalho_ausente", tamanhoDoSegredo };
+  }
+
+  const carimbo = carimboEmMs(cabecalho.ts);
+  if (carimbo === null) {
+    return { ok: false, motivo: "carimbo_ilegivel", tamanhoDoSegredo };
+  }
+
+  const atrasoS = Math.round((e.agoraMs - carimbo) / 1000);
+  const janela = (e.janelaSegundos ?? JANELA_DO_AVISO_SEGUNDOS) * 1000;
+  // Diferença absoluta: carimbo muito no futuro é tão suspeito quanto carimbo
+  // velho, e ainda pega o caso do nosso relógio ter atrasado.
+  if (Math.abs(e.agoraMs - carimbo) > janela) {
+    return { ok: false, motivo: "fora_da_janela", atrasoS, tamanhoDoSegredo };
+  }
+
+  const manifesto = montarManifesto(e.dataId, e.xRequestId, cabecalho.ts);
+  const esperado = createHmac("sha256", e.segredo)
+    .update(manifesto, "utf8")
+    .digest("hex");
+
+  if (!iguaisEmTempoConstante(esperado, cabecalho.v1)) {
+    return {
+      ok: false,
+      motivo: "hmac_diferente",
+      manifesto,
+      atrasoS,
+      tamanhoDoSegredo,
+    };
+  }
+
+  return { ok: true, motivo: "conferida", manifesto, atrasoS, tamanhoDoSegredo };
+}
+
 /**
  * Diz se o aviso veio mesmo do Mercado Pago e se chegou dentro da janela.
  *
@@ -151,23 +226,5 @@ export type EntradaDeConferencia = {
  * some deixa qualquer um marcar a própria conta como paga.
  */
 export function conferirAssinatura(e: EntradaDeConferencia): boolean {
-  if (!e.segredo) return false;
-
-  const cabecalho = lerCabecalhoDeAssinatura(e.xSignature);
-  if (!cabecalho) return false;
-
-  const carimbo = carimboEmMs(cabecalho.ts);
-  if (carimbo === null) return false;
-
-  const janela = (e.janelaSegundos ?? JANELA_DO_AVISO_SEGUNDOS) * 1000;
-  // Diferença absoluta: carimbo muito no futuro é tão suspeito quanto carimbo
-  // velho, e ainda pega o caso do nosso relógio ter atrasado.
-  if (Math.abs(e.agoraMs - carimbo) > janela) return false;
-
-  const manifesto = montarManifesto(e.dataId, e.xRequestId, cabecalho.ts);
-  const esperado = createHmac("sha256", e.segredo)
-    .update(manifesto, "utf8")
-    .digest("hex");
-
-  return iguaisEmTempoConstante(esperado, cabecalho.v1);
+  return conferirAssinaturaDetalhe(e).ok;
 }

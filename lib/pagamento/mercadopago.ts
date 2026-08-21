@@ -1,4 +1,4 @@
-import { conferirAssinatura } from "./assinatura.ts";
+import { conferirAssinaturaDetalhe } from "./assinatura.ts";
 import { motivoDoStatusDetail } from "./erros.ts";
 import { DIAS_DE_TESTE, MESES_DO_CICLO, PLANOS } from "./precos.ts";
 import type {
@@ -569,19 +569,36 @@ async function lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | nul
     try {
       dados = objeto(JSON.parse(corpo));
     } catch {
+      anotar("aviso", { erro: "corpo ilegível" });
       return null;
     }
 
     const idExterno = texto(objeto(dados.data).id) ?? texto(dados.id);
 
-    const confere = conferirAssinatura({
+    const confere = conferirAssinaturaDetalhe({
       xSignature: cabecalhos.get("x-signature"),
       xRequestId: cabecalhos.get("x-request-id"),
       dataId: idExterno,
-      segredo: process.env.MERCADOPAGO_WEBHOOK_SECRET,
+      // O `trim` pela mesma razão do token de acesso: painel de hospedagem
+      // guarda a quebra de linha que veio junto na hora de colar, e aqui ela
+      // entraria no HMAC e faria toda assinatura sair diferente.
+      segredo: process.env.MERCADOPAGO_WEBHOOK_SECRET?.trim(),
       agoraMs: Date.now(),
     });
-    if (!confere || !idExterno) return null;
+
+    if (!confere.ok || !idExterno) {
+      // A resposta continua sendo 401 sem corpo. O motivo fica no log, porque
+      // segredo ausente, carimbo velho e HMAC diferente pedem três conserto
+      // bem diferentes, e do lado de fora os três parecem a mesma coisa.
+      anotar("aviso", {
+        motivo: idExterno ? confere.motivo : "sem data.id",
+        manifesto: confere.manifesto ?? null,
+        atrasoS: confere.atrasoS ?? null,
+        tamanhoDoSegredo: confere.tamanhoDoSegredo,
+        tipo: texto(dados.type) ?? texto(dados.topic),
+      });
+      return null;
+    }
 
     const tipo = tipoDoAviso(texto(dados.type) ?? texto(dados.topic));
     const acao = texto(dados.action);
