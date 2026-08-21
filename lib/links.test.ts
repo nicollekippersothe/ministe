@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { conferirLink } from "./links.ts";
+import { conferirLink, MOTIVOS_LINK } from "./links.ts";
 
 function recusa(entrada: string) {
   const r = conferirLink(entrada);
@@ -85,4 +85,22 @@ test("o endereço gravado é o normalizado, não o que foi digitado", () => {
   // Maiúscula no host e ponto final são normalizados pela URL, e é o
   // resultado que vai para o banco.
   assert.equal(aceita("https://Doceria.COM.BR."), "https://doceria.com.br/");
+});
+
+/**
+ * A regra de escrita do projeto vale aqui também, e este arquivo escapou dela
+ * por um bom tempo.
+ *
+ * Estas frases vão para a tela pelo `Aviso` do painel, então elas são texto de
+ * produto, e não mensagem de log. A regra do AGENTS.md é que cada frase diz o
+ * que existe: quem está com um link recusado na mão precisa de uma saída, e
+ * "endereço inválido" é só o anúncio da derrota. O mesmo teste existe em
+ * lib/pagamento/erros.test.ts e em lib/dados/erros.test.ts, pelo mesmo motivo.
+ */
+test("nenhuma frase de recusa usa palavra negativa", () => {
+  const NEGATIVA = /\b(n[ãa]o|sem|nunca|jamais|falta|falha|erro|recusad|inv[áa]lid|imposs[íi]vel)/i;
+  for (const [motivo, frase] of Object.entries(MOTIVOS_LINK)) {
+    assert.ok(!NEGATIVA.test(frase), `${motivo}: ${frase}`);
+    assert.ok(!frase.includes("—"), `${motivo} usa travessão`);
+  }
 });

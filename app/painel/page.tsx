@@ -2,6 +2,7 @@ import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
 import { ListaSecoes } from "@/componentes/painel/ListaSecoes";
 import { CartaoEstado } from "@/componentes/painel/Navegacao";
+import { Aviso } from "@/componentes/painel/Aviso";
 import { CartaoPlano } from "@/componentes/painel/CartaoPlano";
 import { acoesDoRodape } from "@/lib/acoes";
 import { cobrancaDoDono, doDono } from "@/lib/dados";
@@ -114,10 +115,10 @@ function Rascunho({ estado }: { estado?: string }) {
 export default async function Painel({
   searchParams,
 }: {
-  searchParams: Promise<{ rascunho?: string }>;
+  searchParams: Promise<{ rascunho?: string; erro?: string }>;
 }) {
   exigirLogin();
-  const { rascunho } = await searchParams;
+  const { rascunho, erro } = await searchParams;
   const negocio = await doDono();
   const noAr = negocio.publicado;
   // Conta provisória monta e guarda, e o Google é que põe no ar. A tela diz
@@ -149,6 +150,9 @@ export default async function Painel({
       </h1>
 
       <Rascunho estado={rascunho} />
+
+      {/* Publicar é a única escrita que sai daqui, e o gatilho pode recusar. */}
+      <Aviso erro={erro} />
 
       <div className="lg:hidden">
         <div className="mt-4 flex flex-col gap-4">

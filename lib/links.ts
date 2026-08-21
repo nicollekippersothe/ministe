@@ -35,12 +35,12 @@ export type RecusaLink =
 
 export const MOTIVOS_LINK: Record<RecusaLink, string> = {
   vazio: "escreva o endereço",
-  invalido: "endereço inválido",
+  invalido: "confira o endereço, letra por letra",
   esquema: "só endereços que começam com https",
-  encurtador: "use o endereço completo, não um link encurtado",
-  usuario: "endereço inválido",
-  endereco_ip: "use o endereço do site, não o número do servidor",
-  sem_dominio: "falta o domínio, como .com.br",
+  encurtador: "use o endereço completo, do jeito que ele abre no navegador",
+  usuario: "escreva o endereço a partir do domínio",
+  endereco_ip: "use o endereço do site, com o nome do domínio",
+  sem_dominio: "complete com o domínio, como .com.br",
 };
 
 /**

@@ -61,7 +61,7 @@ function Par({
 export default async function Horarios({
   searchParams,
 }: {
-  searchParams: Promise<{ salvo?: string; copiado?: string }>;
+  searchParams: Promise<{ salvo?: string; copiado?: string; erro?: string }>;
 }) {
   exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
@@ -86,7 +86,11 @@ export default async function Horarios({
         da meia noite, use 19:00 às 00:30.
       </p>
 
-      <Aviso salvo={params.salvo === "1"} copiado={params.copiado === "1"} />
+      <Aviso
+        salvo={params.salvo === "1"}
+        copiado={params.copiado === "1"}
+        erro={params.erro}
+      />
 
       {/*
         A semana continua empilhada no computador, e o formulário para de

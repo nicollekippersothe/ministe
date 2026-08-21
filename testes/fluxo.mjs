@@ -388,7 +388,7 @@ await p.click('button:has-text("Salvar")');
 await p.waitForURL(/erro=link_encurtador/);
 passo(
   "link encurtado é recusado, dizendo o motivo",
-  (await p.textContent('main [role="alert"]')).includes("não um link encurtado"),
+  (await p.textContent('main [role="alert"]')).includes("endereço completo"),
 );
 
 await p.fill("#secundaria-url", "doceria-da-ana.com.br");

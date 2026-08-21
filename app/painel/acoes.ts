@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { doDono, publicar, salvar } from "@/lib/dados";
+import { motivoDaRecusa } from "@/lib/dados/erros";
 import { contaProvisoria } from "@/lib/supabase/servidor";
 import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
 import { normalizarWhatsapp } from "@/lib/formato";
@@ -22,9 +23,29 @@ function marcado(f: FormData, campo: string): boolean {
   return f.get(campo) === "on";
 }
 
-/** Depois de salvar, a página pública precisa refazer o cache. */
-async function guardar(negocio: Negocio) {
-  await salvar(negocio);
+/**
+ * Salva e refaz o cache da página pública.
+ *
+ * A `tela` é para onde a pessoa volta quando o banco recusa a escrita. Os
+ * limites do produto moram em gatilho, de propósito, porque o painel escreve
+ * direto pelo navegador; o preço é que a recusa chega como exceção do Postgres
+ * e, solta, vira 500 com "this page couldn't load" na frente de quem estava
+ * salvando. Aqui ela vira `?erro=<motivo>` na URL, e o `Aviso` da tela mostra a
+ * frase, que em caso de limite termina no caminho do plano pago.
+ *
+ * `motivoDaRecusa` devolve nulo para o que veio de outro lugar, e aí a exceção
+ * continua subindo. É isso que impede este catch de engolir bug de código e a
+ * navegação do próprio `redirect`, que também trabalha levantando exceção.
+ */
+async function guardar(negocio: Negocio, tela: string) {
+  try {
+    await salvar(negocio);
+  } catch (erro) {
+    const motivo = motivoDaRecusa(erro);
+    if (motivo === null) throw erro;
+    redirect(`${tela}?erro=${motivo}`);
+  }
+
   revalidatePath(`/${negocio.slug}`);
   revalidatePath("/painel");
 }
@@ -59,22 +80,25 @@ export async function salvarBasico(formData: FormData) {
     mapsUrl = conferido.url;
   }
 
-  await guardar({
-    ...negocio,
-    nome,
-    frase: texto(formData, "frase"),
-    whatsapp,
-    mensagemPadrao: texto(formData, "mensagemPadrao"),
-    mensagemItem: texto(formData, "mensagemItem"),
-    mostrarPrecos: marcado(formData, "mostrarPrecos"),
-    tituloCatalogo: texto(formData, "tituloCatalogo") ?? "Catálogo",
-    endereco: texto(formData, "endereco"),
-    cidade: texto(formData, "cidade"),
-    estado: estado ? estado.toUpperCase() : null,
-    cep,
-    mapsUrl,
-    fuso: texto(formData, "fuso") ?? "America/Sao_Paulo",
-  });
+  await guardar(
+    {
+      ...negocio,
+      nome,
+      frase: texto(formData, "frase"),
+      whatsapp,
+      mensagemPadrao: texto(formData, "mensagemPadrao"),
+      mensagemItem: texto(formData, "mensagemItem"),
+      mostrarPrecos: marcado(formData, "mostrarPrecos"),
+      tituloCatalogo: texto(formData, "tituloCatalogo") ?? "Catálogo",
+      endereco: texto(formData, "endereco"),
+      cidade: texto(formData, "cidade"),
+      estado: estado ? estado.toUpperCase() : null,
+      cep,
+      mapsUrl,
+      fuso: texto(formData, "fuso") ?? "America/Sao_Paulo",
+    },
+    "/painel/negocio",
+  );
 
   redirect("/painel/negocio?salvo=1");
 }
@@ -101,7 +125,7 @@ function lerHorarios(formData: FormData): Intervalo[] {
 
 export async function salvarHorarios(formData: FormData) {
   const negocio = await doDono();
-  await guardar({ ...negocio, horarios: lerHorarios(formData) });
+  await guardar({ ...negocio, horarios: lerHorarios(formData) }, "/painel/horarios");
   redirect("/painel/horarios?salvo=1");
 }
 
@@ -119,10 +143,10 @@ export async function copiarSegundaParaSemana(formData: FormData) {
     segunda.map((h) => ({ ...h, dia })),
   );
 
-  await guardar({
-    ...negocio,
-    horarios: [...semSemana, ...segunda, ...copiados],
-  });
+  await guardar(
+    { ...negocio, horarios: [...semSemana, ...segunda, ...copiados] },
+    "/painel/horarios",
+  );
 
   redirect("/painel/horarios?copiado=1");
 }
@@ -133,12 +157,15 @@ export async function salvarAparencia(formData: FormData) {
   // A escolha de letra é do plano pago. Quem está no gratuito fica com a
   // padrão, e o servidor decide isso, não a tela.
   if (!podeEscolherFonte(negocio.plano)) {
-    await guardar({ ...negocio, fonte: FONTE_PADRAO });
+    await guardar({ ...negocio, fonte: FONTE_PADRAO }, "/painel/aparencia");
     redirect("/painel/aparencia?salvo=1");
   }
 
   const escolha = texto(formData, "fonte");
-  await guardar({ ...negocio, fonte: combinacao(escolha).chave });
+  await guardar(
+    { ...negocio, fonte: combinacao(escolha).chave },
+    "/painel/aparencia",
+  );
   redirect("/painel/aparencia?salvo=1");
 }
 
@@ -198,11 +225,14 @@ export async function salvarAcoes(formData: FormData) {
     redirect(`/painel/acoes-botoes?erro=link_${secundaria.erro}`);
   }
 
-  await guardar({
-    ...negocio,
-    acaoPrincipal: principal.acao,
-    acaoSecundaria: secundaria.acao,
-  });
+  await guardar(
+    {
+      ...negocio,
+      acaoPrincipal: principal.acao,
+      acaoSecundaria: secundaria.acao,
+    },
+    "/painel/acoes-botoes",
+  );
   redirect("/painel/acoes-botoes?salvo=1");
 }
 
@@ -212,6 +242,11 @@ export async function salvarAcoes(formData: FormData) {
  * Publicar de conta provisória é recusado pelo banco. A tela manda a pessoa
  * entrar com o Google antes de chegar aqui, e este desvio é para quem apertar
  * o botão com a sessão em outro estado do que a tela mostrava.
+ *
+ * O gatilho protege_publicacao é a mesma regra escrita no banco, e quem chega
+ * nela por fora da tela cai no `conta_confirmada`. A saída dos dois caminhos é
+ * a mesma, o Google, então os dois levam para o mesmo lugar. Qualquer outra
+ * recusa vira `?erro=<motivo>` no painel.
  */
 export async function alternarPublicacao() {
   const negocio = await doDono();
@@ -221,7 +256,15 @@ export async function alternarPublicacao() {
     redirect("/entrar?motivo=publicar");
   }
 
-  await publicar(noArAgora);
+  try {
+    await publicar(noArAgora);
+  } catch (erro) {
+    const motivo = motivoDaRecusa(erro);
+    if (motivo === null) throw erro;
+    if (motivo === "conta_confirmada") redirect("/entrar?motivo=publicar");
+    redirect(`/painel?erro=${motivo}`);
+  }
+
   revalidatePath(`/${negocio.slug}`);
   revalidatePath("/painel");
   redirect("/painel");

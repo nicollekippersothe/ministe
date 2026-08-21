@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { redirect } from "next/navigation";
+import { recusaDoBanco } from "./dados/erros";
 import { doceria, EXEMPLOS } from "./exemplos";
 import { montar } from "./novo";
 import {
@@ -18,7 +19,7 @@ import { configurado } from "./supabase/config";
 import { paraLinha, paraNegocio, TUDO } from "./supabase/mapa";
 import { publico } from "./supabase/publico";
 import { garantirConta, servidor, usuarioAtual } from "./supabase/servidor";
-import type { Negocio, Plano } from "./tipos";
+import type { Intervalo, Negocio, Plano } from "./tipos";
 
 /**
  * Camada de dados.
@@ -43,6 +44,12 @@ import type { Negocio, Plano } from "./tipos";
  * em cache são incompatíveis no Next. A página pública declara uma hora de
  * cache, e enquanto ela falava pelo cliente de sessão, endereço desconhecido
  * respondia 500 em vez da tela de "este endereço está disponível".
+ *
+ * Toda escrita que o banco recusa sai daqui como `RecusaDoBanco`, de
+ * lib/dados/erros.ts, com o motivo já traduzido. Antes disso a exceção do
+ * Postgres subia crua e virava 500, e quem estava salvando via a tela de erro
+ * do Next sem nenhuma pista. Quem chama lê o `motivo` e monta o `?erro=` da
+ * URL; o texto cru continua no `message`, para o log.
  */
 
 const ARQUIVO = join(process.cwd(), ".dados", "negocios.json");
@@ -179,7 +186,7 @@ export async function criar(
     .select(TUDO)
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) throw recusaDoBanco(error);
   return paraNegocio(data);
 }
 
@@ -199,12 +206,87 @@ export async function salvar(negocio: Negocio): Promise<void> {
   const sb = await servidor();
   // A RLS já limita ao dono. O filtro é escrito assim mesmo para o update ser
   // legível sozinho, sem precisar lembrar da política para saber o que ele pega.
-  const { error } = await sb
+  // O `select` de volta traz o uuid, que é o que as tabelas filhas precisam.
+  const { data, error } = await sb
     .from("negocios")
     .update(paraLinha(negocio))
-    .eq("dono_id", uid);
+    .eq("dono_id", uid)
+    .select("id")
+    .maybeSingle();
 
-  if (error) throw new Error(error.message);
+  if (error) throw recusaDoBanco(error);
+
+  const id = data?.id;
+  if (typeof id === "string" && id !== "") {
+    await gravarHorarios(sb, id, negocio.horarios);
+  }
+}
+
+/**
+ * Os horários, que moram em tabela própria e por isso precisam de escrita
+ * própria.
+ *
+ * **Isto existe porque a ausência dele era perda silenciosa de dado.** O
+ * `paraLinha` traduz só as colunas de `negocios`, e o update mandava o objeto
+ * inteiro para lá: a tela de horários dizia "Alterações salvas" e o banco ficava
+ * exatamente como estava. Some com a informação mais importante da página
+ * pública, o selo de aberto agora, e some sem erro nenhum na tela.
+ *
+ * Reescreve só quando mudou, e a comparação é o ponto: `salvarAparencia` e
+ * `salvarBasico` também passam por aqui com os mesmos horários de sempre, e sem
+ * o guarda cada troca de letra apagaria e recriaria a semana inteira.
+ *
+ * Apaga e insere, nesta ordem, porque o PostgREST tem uma requisição por vez e
+ * transação entre requisições não existe. A janela entre as duas é real: se a
+ * inserção falhar, a semana fica vazia e a pessoa refaz. É o preço de gravar
+ * pelo navegador, e ele é pequeno aqui porque a lista tem no máximo vinte e uma
+ * linhas e quem salvou está olhando para a tela.
+ *
+ * As outras quatro filhas (itens, fotos de item, galeria e links) ficam de fora
+ * até existir tela que as edite. Escrita sem chamador é código que ninguém
+ * exercita, e o dia em que a tela de catálogo chegar ela vem com o `delete` que
+ * cascateia para `itens_fotos`, que pede o mesmo guarda de igualdade por outro
+ * motivo: um `salvar` de outra tela apagaria as fotos dos produtos.
+ */
+async function gravarHorarios(
+  sb: Awaited<ReturnType<typeof servidor>>,
+  negocioId: string,
+  horarios: Intervalo[],
+): Promise<void> {
+  const { data, error: erroDaLeitura } = await sb
+    .from("horarios")
+    .select("dia_semana, abre, fecha")
+    .eq("negocio_id", negocioId);
+
+  if (erroDaLeitura) throw recusaDoBanco(erroDaLeitura);
+
+  const guardados = (data ?? [])
+    .map((h) => `${h.dia_semana}|${String(h.abre).slice(0, 5)}|${String(h.fecha).slice(0, 5)}`)
+    .sort();
+  const novos = horarios.map((h) => `${h.dia}|${h.abre}|${h.fecha}`).sort();
+
+  if (guardados.length === novos.length && guardados.every((v, i) => v === novos[i])) {
+    return;
+  }
+
+  const { error: erroDaLimpeza } = await sb
+    .from("horarios")
+    .delete()
+    .eq("negocio_id", negocioId);
+
+  if (erroDaLimpeza) throw recusaDoBanco(erroDaLimpeza);
+  if (horarios.length === 0) return;
+
+  const { error: erroDaEscrita } = await sb.from("horarios").insert(
+    horarios.map((h) => ({
+      negocio_id: negocioId,
+      dia_semana: h.dia,
+      abre: h.abre,
+      fecha: h.fecha,
+    })),
+  );
+
+  if (erroDaEscrita) throw recusaDoBanco(erroDaEscrita);
 }
 
 /**
@@ -231,7 +313,7 @@ export async function publicar(publicado: boolean): Promise<void> {
     .update({ publicado })
     .eq("dono_id", uid);
 
-  if (error) throw new Error(error.message);
+  if (error) throw recusaDoBanco(error);
 }
 
 /**
@@ -253,7 +335,7 @@ export async function registrarDenuncia(denuncia: {
       p_motivo: denuncia.motivo,
       p_detalhe: denuncia.detalhe,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw recusaDoBanco(error);
     return;
   }
 

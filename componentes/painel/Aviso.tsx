@@ -1,3 +1,9 @@
+import Link from "next/link";
+import {
+  MOTIVOS_DADOS,
+  SAIDA_DA_RECUSA,
+  ehRecusaDados,
+} from "@/lib/dados/erros";
 import { MOTIVOS_LINK, type RecusaLink } from "@/lib/links";
 
 const MENSAGENS: Record<string, string> = {
@@ -17,14 +23,36 @@ const CAMPOS_DE_LINK: Record<string, string> = {
   mapa: "o link do mapa",
 };
 
-function mensagem(erro: string): string {
+type Recado = { texto: string; saida?: { rotulo: string; href: string } };
+
+/**
+ * Três origens de recado, na ordem em que são olhadas.
+ *
+ * 1. O link recusado pelo portão de lib/links.ts, no formato "campo_motivo".
+ * 2. O que a própria ação conferiu antes de falar com o banco, aqui em cima.
+ * 3. A recusa do banco, traduzida em lib/dados/erros.ts. É a que carrega uma
+ *    saída junto: o limite do plano gratuito é o melhor momento de venda que o
+ *    produto tem, então a frase dele termina num link para a tela do plano.
+ *
+ * Recado desconhecido cai no guarda-chuva do mesmo registro, e nunca em texto
+ * escrito aqui: frase de tela mora junto da regra que a levanta.
+ */
+function recado(erro: string): Recado {
   const corte = erro.indexOf("_");
   if (corte > 0) {
     const campo = CAMPOS_DE_LINK[erro.slice(0, corte)];
     const motivo = MOTIVOS_LINK[erro.slice(corte + 1) as RecusaLink];
-    if (campo && motivo) return `Confira ${campo}: ${motivo}.`;
+    if (campo && motivo) return { texto: `Confira ${campo}: ${motivo}.` };
   }
-  return MENSAGENS[erro] ?? "Não deu para salvar. Confira os campos.";
+
+  const conferido = MENSAGENS[erro];
+  if (conferido) return { texto: conferido };
+
+  if (ehRecusaDados(erro)) {
+    return { texto: MOTIVOS_DADOS[erro], saida: SAIDA_DA_RECUSA[erro] };
+  }
+
+  return { texto: MOTIVOS_DADOS.escrita_recusada };
 }
 
 export function Aviso({
@@ -37,12 +65,24 @@ export function Aviso({
   erro?: string;
 }) {
   if (erro) {
+    const { texto, saida } = recado(erro);
     return (
       <p
         role="alert"
         className="mt-4 rounded-xl border border-destaque/30 bg-destaque/8 px-4 py-3 text-sm text-destaque"
       >
-        {mensagem(erro)}
+        {texto}
+        {saida ? (
+          <>
+            {" "}
+            <Link
+              href={saida.href}
+              className="font-semibold underline underline-offset-2"
+            >
+              {saida.rotulo}
+            </Link>
+          </>
+        ) : null}
       </p>
     );
   }

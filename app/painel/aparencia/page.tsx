@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export default async function Aparencia({
   searchParams,
 }: {
-  searchParams: Promise<{ salvo?: string }>;
+  searchParams: Promise<{ salvo?: string; erro?: string }>;
 }) {
   exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
@@ -58,7 +58,7 @@ export default async function Aparencia({
         </p>
       ) : null}
 
-      <Aviso salvo={params.salvo === "1"} />
+      <Aviso salvo={params.salvo === "1"} erro={params.erro} />
 
       <form action={salvarAparencia} className="mt-6">
         <fieldset className="flex flex-col gap-3">
