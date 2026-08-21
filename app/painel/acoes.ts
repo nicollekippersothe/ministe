@@ -3,12 +3,22 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { doDono, publicar, salvar } from "@/lib/dados";
-import { motivoDaRecusa } from "@/lib/dados/erros";
-import { contaProvisoria } from "@/lib/supabase/servidor";
+import { motivoDaRecusa, type RecusaDados } from "@/lib/dados/erros";
+import { configurado } from "@/lib/supabase/config";
+import {
+  caminhoDeImagem,
+  caminhoValido,
+  conferirArquivo,
+  ehPasta,
+  MEDIDAS,
+  type PastaDeImagem,
+  type RecusaImagem,
+} from "@/lib/supabase/imagens";
+import { contaProvisoria, servidor, usuarioAtual } from "@/lib/supabase/servidor";
 import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
 import { normalizarWhatsapp } from "@/lib/formato";
 import { conferirLink, type RecusaLink } from "@/lib/links";
-import type { Acao, Intervalo, Negocio } from "@/lib/tipos";
+import type { Acao, Foto, Intervalo, Negocio } from "@/lib/tipos";
 
 const LIMITE_INTERVALOS = 3;
 
@@ -268,4 +278,137 @@ export async function alternarPublicacao() {
   revalidatePath(`/${negocio.slug}`);
   revalidatePath("/painel");
   redirect("/painel");
+}
+
+/**
+ * O envio da foto de perfil e da capa.
+ *
+ * O arquivo sobe PELO NAVEGADOR, direto para o Storage, e é decisão de
+ * tamanho: o bucket aceita até 3 MB por arquivo (`file_size_limit` em
+ * supabase/storage.sql) e o corpo de uma Server Action é limitado a 1 MB por
+ * padrão no Next, configurável em `serverActions.bodySizeLimit`. Uma foto de
+ * celular passa de 1 MB com facilidade, então mandar o arquivo por aqui
+ * recusaria o caso comum, e o remendo (esticar o limite do corpo) faria a foto
+ * atravessar a nossa função só para ser reenviada ao Supabase: dobra o tráfego,
+ * ocupa a função pelo tempo do upload e ainda esbarra no teto de corpo da
+ * Vercel. O caminho curto é o navegador falar com o Storage, que é para onde o
+ * arquivo vai de qualquer jeito, com a mesma sessão e a mesma RLS.
+ *
+ * O que sobra para o servidor são estes dois passos, que são de dado e não de
+ * byte: dizer QUAL caminho o arquivo pode ocupar, e gravar esse caminho na
+ * coluna depois que ele chegou.
+ */
+
+/** Quem manda no caminho é o id da linha, e ele mora só no banco. */
+async function idDoNegocio(): Promise<string | null> {
+  if (!configurado) return null;
+
+  const uid = await usuarioAtual();
+  if (uid === null) return null;
+
+  const sb = await servidor();
+  const { data } = await sb
+    .from("negocios")
+    .select("id")
+    .eq("dono_id", uid)
+    .order("criado_em")
+    .limit(1)
+    .maybeSingle();
+
+  return typeof data?.id === "string" ? data.id : null;
+}
+
+export type RespostaDeImagem =
+  | { ok: true; caminho: string }
+  | { ok: false; recusa: "imagem"; motivo: RecusaImagem };
+
+export type GravacaoDeImagem =
+  | { ok: true; anterior: string | null }
+  | { ok: false; recusa: "imagem"; motivo: RecusaImagem }
+  | { ok: false; recusa: "banco"; motivo: RecusaDados };
+
+/**
+ * O caminho que o navegador vai ocupar no bucket.
+ *
+ * Sai daqui, e nunca da tela, porque ele carrega o id do negócio: a política de
+ * escrita do Storage exige que a primeira pasta seja um negócio de quem está
+ * enviando, e a restrição da 008 exige que seja o id da própria linha. Montar o
+ * caminho no servidor é o que mantém as duas exigências satisfeitas de saída.
+ *
+ * O tipo e o tamanho passam pela mesma conferência da tela. A tela confere para
+ * a pessoa saber na hora; aqui confere porque Server Action é endereço público.
+ */
+export async function prepararEnvioDeImagem(
+  pasta: string,
+  tipo: string,
+  bytes: number,
+): Promise<RespostaDeImagem> {
+  if (!ehPasta(pasta)) return { ok: false, recusa: "imagem", motivo: "envio" };
+
+  const conferido = conferirArquivo({ type: tipo, size: bytes });
+  if (!conferido.ok) {
+    return { ok: false, recusa: "imagem", motivo: conferido.motivo };
+  }
+
+  const id = await idDoNegocio();
+  if (id === null) return { ok: false, recusa: "imagem", motivo: "envio" };
+
+  return { ok: true, caminho: caminhoDeImagem(id, pasta, conferido.tipo) };
+}
+
+/**
+ * Grava na coluna o caminho do arquivo que acabou de subir, ou limpa a coluna
+ * quando a pessoa remove a imagem.
+ *
+ * Devolve o caminho anterior para a tela apagar aquele arquivo do bucket logo
+ * em seguida, que é o caminho feliz descrito na 008. A rede embaixo é do banco:
+ * o gatilho `negocios_enfileira_removida` escreve o caminho que saiu de cena em
+ * `imagens_para_apagar`, então o arquivo continua com destino marcado mesmo
+ * quando a aba fecha no meio.
+ *
+ * O texto alternativo sai do nome do negócio, seguindo o comentário no topo de
+ * lib/supabase/mapa.ts, que é quem traduz a linha do banco em `Foto`. A 008
+ * criou `logo_alt` e `capa_alt` para o dia em que a pessoa puder escrever o
+ * texto dela; enquanto `mapa.ts` deriva o alt do nome, um campo de alt no
+ * painel guardaria um texto que a página pública ignoraria.
+ */
+export async function salvarImagemDoNegocio(
+  pasta: string,
+  caminho: string | null,
+): Promise<GravacaoDeImagem> {
+  if (!ehPasta(pasta)) return { ok: false, recusa: "imagem", motivo: "guardar" };
+
+  const negocio = await doDono();
+  const atual = pasta === "logo" ? negocio.logo : negocio.capa;
+
+  let foto: Foto | null = null;
+  if (caminho !== null) {
+    const id = await idDoNegocio();
+    if (id === null || !caminhoValido(caminho, id, pasta)) {
+      return { ok: false, recusa: "imagem", motivo: "guardar" };
+    }
+    foto = { url: caminho, alt: negocio.nome, ...MEDIDAS[pasta] };
+  }
+
+  const atualizado: Negocio =
+    pasta === "logo" ? { ...negocio, logo: foto } : { ...negocio, capa: foto };
+
+  try {
+    await salvar(atualizado);
+  } catch (erro) {
+    const motivo = motivoDaRecusa(erro);
+    if (motivo === null) throw erro;
+    return { ok: false, recusa: "banco", motivo };
+  }
+
+  revalidatePath(`/${negocio.slug}`);
+  revalidatePath("/painel");
+
+  // Endereço que começa com barra é arquivo do projeto (as páginas de exemplo),
+  // e não do bucket: só o caminho do bucket volta para a tela apagar.
+  const anterior = atual?.url ?? null;
+  return {
+    ok: true,
+    anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,
+  };
 }

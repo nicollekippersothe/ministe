@@ -1,4 +1,5 @@
 import { planoValido } from "@/lib/plano";
+import { enderecoPublico } from "./imagens";
 import type {
   Acao,
   Foto,
@@ -30,8 +31,21 @@ type Linha = Record<string, unknown>;
 const texto = (v: unknown): string | null =>
   typeof v === "string" && v.trim() !== "" ? v : null;
 
+/**
+ * A imagem de logo ou de capa, com o endereço já montado.
+ *
+ * A coluna guarda o **caminho dentro do bucket**, e não a URL, que é o desenho
+ * da correção 008: o dia em que o projeto do Supabase mudar de endereço, ou o
+ * bucket sair para outro provedor, nenhuma linha do banco precisa ser reescrita.
+ * O preço é que alguém precisa montar o endereço, e é aqui, no único lugar por
+ * onde toda leitura passa.
+ *
+ * `enderecoPublico` devolve o caminho intacto quando ele já começa com barra,
+ * que é o caso dos exemplos e do destino de arquivo local. Assim as duas fontes
+ * convivem sem a página pública saber de qual delas a imagem veio.
+ */
 function foto(url: unknown, alt: string, medida: typeof LOGO): Foto | null {
-  const u = texto(url);
+  const u = enderecoPublico(texto(url));
   return u === null ? null : { url: u, alt, ...medida };
 }
 

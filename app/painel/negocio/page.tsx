@@ -10,8 +10,10 @@ import {
   Marcar,
   Texto,
 } from "@/componentes/painel/Campos";
+import { EnvioDeImagem } from "@/componentes/painel/EnvioDeImagem";
 import { doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
+import { configurado } from "@/lib/supabase/config";
 
 import { exigirLogin } from "@/app/painel/vitrine";
 
@@ -60,7 +62,43 @@ export default async function Informacoes({
 
       <Aviso salvo={params.salvo === "1"} erro={params.erro} />
 
-      <form action={salvarBasico} className="mt-6 flex flex-col gap-8">
+      {/*
+        As imagens ficam fora do formulário de texto, e é uma decisão de
+        gravação: cada arquivo sobe pelo navegador e vira coluna na hora em que
+        chega, então esperar o Salvar do rodapé só criaria um segundo momento
+        para a mesma coisa acontecer. O formulário de texto continua inteiro
+        logo abaixo.
+
+        A logo é um selo e a capa é uma faixa, então no monitor a coluna da
+        esquerda é estreita e a da direita fica com o resto. No celular as duas
+        empilham, na ordem em que aparecem na página.
+      */}
+      <section
+        aria-labelledby="titulo-imagens"
+        className="mt-6 flex flex-col gap-4 lg:grid lg:grid-cols-[19rem_1fr] lg:items-start"
+      >
+        <h2
+          id="titulo-imagens"
+          className="text-lg font-semibold tracking-tight text-texto lg:col-span-2"
+        >
+          Imagens da página
+        </h2>
+
+        <EnvioDeImagem
+          pasta="logo"
+          atual={negocio.logo?.url ?? null}
+          nome={negocio.nome}
+          ligado={configurado}
+        />
+        <EnvioDeImagem
+          pasta="capa"
+          atual={negocio.capa?.url ?? null}
+          nome={negocio.nome}
+          ligado={configurado}
+        />
+      </section>
+
+      <form action={salvarBasico} className="mt-8 flex flex-col gap-8">
         <Grupo titulo="Sobre o negócio">
           <Texto
             id="nome"
