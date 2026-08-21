@@ -200,16 +200,31 @@ Quando isto chegar na `main`:
 https://ministe.vercel.app/api/pagamento/webhook
 ```
 
-**Eventos**, três, e são os três que `tipoDoAviso` conhece:
+**Eventos**, os que a tela oferecer entre estes três, que são os que
+`tipoDoAviso` conhece:
 
-| na tela deles | o que chega no corpo | o que o webhook faz |
-| --- | --- | --- |
-| Pagamentos | `payment` | Pix e débito, mais estorno e chargeback |
-| Assinaturas | `subscription_preapproval` | a assinatura nascendo, pausando, encerrando |
-| Cobranças de assinatura | `subscription_authorized_payment` | a renovação mensal do crédito |
+| o que chega no corpo | o que o webhook faz |
+| --- | --- |
+| `payment` | Pix e débito, mais estorno e chargeback |
+| `subscription_preapproval` | a assinatura nascendo, pausando, encerrando |
+| `subscription_authorized_payment` | a renovação mensal do crédito |
 
 Qualquer outro evento marcado por engano custa nada: o tópico cai em `outro`,
 o webhook responde 200 e a reentrega para ali.
+
+**A tela deles oferece menos caixas do que isso.** Conferido em agosto de 2026,
+naquela aplicação: existiam `payment`, com o rótulo "Pagamentos (legacy)", e
+`subscription_authorized_payment`, com o rótulo "Planos e assinaturas".
+`subscription_preapproval` não aparecia em lugar nenhum, e é justamente ele que
+abre o teste de sete dias.
+
+Por isso a cobrança pede o aviso por dentro, e não só pelo painel: tanto o
+`POST /preapproval` quanto o `POST /v1/payments` levam `notification_url`
+apontando para este deploy. Vale por cobrança, chega assinado com o mesmo
+segredo, e a idempotência de `avisos_pagamento` absorve a entrega dupla se o
+painel também mandar. `lib/site.ts` tem o `urlDesteDeploy`, que numa prévia de
+branch é o endereço da prévia, e nunca o domínio de produção: o aviso precisa
+voltar para o código que criou a cobrança.
 
 **O segredo** que a tela mostra depois de salvar vai para a Vercel como
 `MERCADOPAGO_WEBHOOK_SECRET`, sem `NEXT_PUBLIC_`, e depois disso o projeto

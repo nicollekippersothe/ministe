@@ -402,6 +402,12 @@ async function assinarComCartao(
       free_trial: { frequency: DIAS_DE_TESTE, frequency_type: "days" },
     },
   };
+  // Pedido por cobrança, e não deixado para a configuração do painel deles. A
+  // tela de webhooks do Mercado Pago oferece uma caixa só para assinatura, e
+  // ela vale para a cobrança recorrente: o aviso da assinatura nascendo, que é
+  // o que abre o teste de sete dias, chega por este campo. Sem ele, a pessoa
+  // paga e o plano fica no gratuito até a primeira renovação.
+  if (p.urlDeAviso) corpo.notification_url = p.urlDeAviso;
 
   const r = await pedir("POST", "/preapproval", corpo, p.idempotencia);
   if (!r.ok) return r;

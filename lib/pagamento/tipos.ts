@@ -112,6 +112,8 @@ export type DadosCartao = {
   /** Frase que aparece na fatura e no painel do Mercado Pago. */
   descricao: string;
   documento?: Documento | null;
+  /** Para onde o provedor manda o aviso. Em branco, vale o painel do provedor. */
+  urlDeAviso?: string | null;
 };
 
 /**

@@ -7,7 +7,7 @@ import { cobrancaDoDono, idDoNegocioDoDono } from "@/lib/dados";
 import { NOME_PRODUTO } from "@/lib/marca";
 import { PLANOS, gateway } from "@/lib/pagamento";
 import type { Ciclo } from "@/lib/pagamento";
-import { urlBase } from "@/lib/site";
+import { urlBase, urlDesteDeploy } from "@/lib/site";
 import { contaProvisoria, emailDoUsuario, servidor } from "@/lib/supabase/servidor";
 import { COOKIE_DO_PIX, VIDA_DO_PIX_S } from "./cookie";
 
@@ -22,6 +22,18 @@ import { COOKIE_DO_PIX, VIDA_DO_PIX_S } from "./cookie";
  * escrevendo a mesma assinatura fazem o índice de assinatura viva recusar a
  * segunda, e o cliente fica pago com a página no gratuito. Ver COBRANCA.md.
  */
+
+/**
+ * Para onde o Mercado Pago manda o aviso desta cobrança.
+ *
+ * Vai pedido por cobrança, e não deixado só para a configuração do painel
+ * deles, por dois motivos. O primeiro é a prévia de branch, que precisa
+ * receber o aviso no próprio endereço em vez de no domínio de produção. O
+ * segundo apareceu ao configurar o webhook de verdade: a tela deles oferece
+ * uma caixa só para assinatura, então o aviso da assinatura nascendo, que é o
+ * que abre o teste de sete dias, depende deste campo para chegar.
+ */
+const URL_DO_AVISO = `${urlDesteDeploy}/api/pagamento/webhook`;
 
 function cicloDoFormulario(formData: FormData): Ciclo | null {
   const bruto = String(formData.get("ciclo") ?? "");
@@ -94,6 +106,7 @@ export async function assinarComCartao(formData: FormData) {
     tokenDoCartao: token,
     emailDoPagador: email,
     urlDeVolta: `${urlBase}/painel/plano`,
+    urlDeAviso: URL_DO_AVISO,
     referencia: negocioId,
     descricao: `${NOME_PRODUTO} ${PLANOS[escolhido].rotulo.toLowerCase()}`,
   });
@@ -135,6 +148,7 @@ export async function pagarComPix(formData: FormData) {
     ciclo: escolhido,
     meio: "pix",
     emailDoPagador: email,
+    urlDeAviso: URL_DO_AVISO,
     referencia: negocioId,
     descricao: `${NOME_PRODUTO} ${PLANOS[escolhido].rotulo.toLowerCase()}`,
   });

@@ -40,10 +40,14 @@ Eventos, três, e só esses três:
   Assinaturas                (subscription_preapproval)
   Cobranças de assinatura    (subscription_authorized_payment)
 
-Os nomes na tela deles mudam de tempos em tempos. Se algum aparecer com outro
-rótulo, escolha pelo valor entre parênteses, que é o que chega no corpo do
-aviso. Evento a mais marcado por engano custa nada: o nosso lado responde 200 e
-segue.
+Os nomes na tela deles mudam de tempos em tempos, e a tela oferece menos caixas
+do que os três acima. Em agosto de 2026 existiam duas: "Pagamentos (legacy)",
+que é o `payment`, e "Planos e assinaturas", que é o
+`subscription_authorized_payment`. Marque as que existirem, escolhendo pelo
+valor entre parênteses e não pelo rótulo. O `subscription_preapproval` que
+faltar está resolvido do lado do código, que pede o aviso por cobrança.
+
+Evento a mais marcado por engano custa nada: o nosso lado responde 200 e segue.
 
 Salve. Depois de salvar, a tela mostra a assinatura secreta, uma vez.
 

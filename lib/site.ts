@@ -9,6 +9,21 @@ export const urlBase = (
 ).replace(/\/$/, "");
 
 /**
+ * O endereço deste deploy, que pode ser diferente do endereço do site.
+ *
+ * `urlBase` é o domínio de produção, e é o certo para o canonical e o Open
+ * Graph: prévia de branch nenhuma deveria se anunciar como o site. O webhook
+ * de pagamento precisa do oposto. Ele diz ao Mercado Pago para onde mandar o
+ * aviso daquela cobrança, e o aviso precisa voltar para o código que criou a
+ * cobrança. Numa prévia, `urlBase` apontaria para produção, que roda outra
+ * versão, e o aviso morreria em 404 com o dinheiro já dentro.
+ */
+export const urlDesteDeploy =
+  process.env.VERCEL_ENV === "preview" && process.env.VERCEL_BRANCH_URL
+    ? `https://${process.env.VERCEL_BRANCH_URL}`
+    : urlBase;
+
+/**
  * E-mail de suporte. Fica nulo até existir de verdade: a tela de ajuda
  * simplesmente não mostra o bloco de contato, em vez de inventar um endereço
  * para o qual ninguém responde.
