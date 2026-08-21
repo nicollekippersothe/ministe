@@ -678,6 +678,20 @@ function diagnosticar(
         nome: "id_sem_minuscula",
         manifesto: `id:${idDoCorpo ?? ""};request-id:${rid ?? ""};ts:${ts};`,
       },
+      // A sétima variação muda a chave, e não o texto. O segredo deles vem
+      // como 64 caracteres hexadecimais, que é o desenho de quem guarda 32
+      // bytes: se o lado de lá assinar com os bytes em vez da string, o HMAC
+      // sai diferente com todo manifesto do mundo, e nenhuma das seis acima
+      // acharia nada.
+      ...(/^[0-9a-f]{2,}$/i.test(segredo) && segredo.length % 2 === 0
+        ? [
+            {
+              nome: "segredo_em_bytes",
+              manifesto: montarManifesto(idDoCorpo, rid, ts),
+              chave: Buffer.from(segredo, "hex"),
+            },
+          ]
+        : []),
     ],
     cabecalho.v1,
     segredo,

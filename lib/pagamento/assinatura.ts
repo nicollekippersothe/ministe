@@ -153,12 +153,17 @@ export type EntradaDeConferencia = {
  * é motivo para corrigir o código, e nunca para aceitar o aviso.
  */
 export function acharManifesto(
-  alternativas: Array<{ nome: string; manifesto: string }>,
+  alternativas: Array<{
+    nome: string;
+    manifesto: string;
+    /** A chave do HMAC, quando ela mesma é a variação a testar. */
+    chave?: string | Uint8Array;
+  }>,
   v1: string,
   segredo: string,
 ): string | null {
-  for (const { nome, manifesto } of alternativas) {
-    const esperado = createHmac("sha256", segredo)
+  for (const { nome, manifesto, chave } of alternativas) {
+    const esperado = createHmac("sha256", chave ?? segredo)
       .update(manifesto, "utf8")
       .digest("hex");
     if (iguaisEmTempoConstante(esperado, v1)) return nome;
