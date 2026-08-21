@@ -1,9 +1,14 @@
 # Banco
 
 O schema e as correções 001, 002 e 004 a 007 já estão aplicados no projeto de
-verdade. A 008 fica guardada até o envio de imagem existir no produto: ela muda
-o que as colunas de imagem guardam, e aplicar antes do código que grava desse
-jeito deixaria o painel salvando num formato que o banco recusa.
+verdade, e as 009, 010 e 011 também. A 003, a 008 e a 012 esperam a próxima
+passada, e o passo a passo delas é o Prompt 4 de `PROMPT-SUPABASE.md`.
+
+A 008 ficou guardada até o envio de imagem existir no produto, porque ela muda o
+que as colunas de imagem guardam e aplicar antes do código que grava desse jeito
+deixaria o painel salvando num formato que o banco recusa. O envio existe desde
+`componentes/painel/EnvioDeImagem.tsx`, então ela saiu da gaveta. A 003 vai
+antes dela, e o motivo está no topo das duas.
 
 Tudo aqui roda e é testado num Postgres 16 local antes de ir, e o passo a passo
 do que falta no painel do Supabase está em `PROMPT-SUPABASE.md`.
