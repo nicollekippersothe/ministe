@@ -249,3 +249,45 @@ test("tópico que o produto não usa chega marcado como outro", async () => {
 
   assert.equal(aviso?.tipo, "outro");
 });
+
+/**
+ * O manifesto lê o `data.id` do endereço quando ele vem por lá.
+ *
+ * A documentação do Mercado Pago descreve o manifesto com o id que chega na
+ * URL, e o aviso de verdade traz `?data.id=...&type=payment` no endereço. O
+ * corpo é a reserva, porque o simulador do painel manda sem parâmetro nenhum.
+ * Os dois costumam trazer o mesmo valor, e quando divergem quem manda é a URL,
+ * senão o HMAC sai diferente e o aviso legítimo vira 401.
+ */
+test("com data.id no endereço, o manifesto usa o do endereço", async () => {
+  const { corpo, cabecalhos } = avisoDe(
+    { id: "evento-2", type: "payment", data: { id: "do-corpo" } },
+    { dataId: "do-endereco" },
+  );
+
+  const aviso = await comSegredo(SEGREDO, () =>
+    gateway.lerAviso(
+      corpo,
+      cabecalhos,
+      "https://exemplo.test/api/pagamento/webhook?data.id=do-endereco&type=payment",
+    ),
+  );
+
+  assert.ok(aviso);
+  // O id do objeto continua saindo do corpo: quem muda é só o manifesto.
+  assert.equal(aviso.idExterno, "do-corpo");
+});
+
+test("sem endereço, o manifesto continua saindo do corpo", async () => {
+  const { corpo, cabecalhos } = avisoDe(
+    { id: "evento-3", type: "payment", data: { id: "do-corpo" } },
+    { dataId: "do-corpo" },
+  );
+
+  const aviso = await comSegredo(SEGREDO, () =>
+    gateway.lerAviso(corpo, cabecalhos),
+  );
+
+  assert.ok(aviso);
+  assert.equal(aviso.idExterno, "do-corpo");
+});

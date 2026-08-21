@@ -1,4 +1,9 @@
-import { conferirAssinaturaDetalhe } from "./assinatura.ts";
+import {
+  acharManifesto,
+  conferirAssinaturaDetalhe,
+  lerCabecalhoDeAssinatura,
+  montarManifesto,
+} from "./assinatura.ts";
 import { motivoDoStatusDetail } from "./erros.ts";
 import { DIAS_DE_TESTE, MESES_DO_CICLO, PLANOS } from "./precos.ts";
 import type {
@@ -563,7 +568,11 @@ function tipoDoAviso(bruto: string | null): Aviso["tipo"] {
  * qualquer jeito). Quem quiser a conferência presa à query tem
  * `conferirAssinatura`, exportada e pura, e passa o valor que quiser.
  */
-async function lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | null> {
+async function lerAviso(
+  corpo: string,
+  cabecalhos: Headers,
+  url?: string | null,
+): Promise<Aviso | null> {
   try {
     let dados: Registro;
     try {
@@ -575,10 +584,16 @@ async function lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | nul
 
     const idExterno = texto(objeto(dados.data).id) ?? texto(dados.id);
 
+    // O `data.id` do endereço, quando ele vem. A documentação deles descreve o
+    // manifesto com o id que chega na URL, e o aviso de verdade traz
+    // `?data.id=...&type=payment` no endereço. O corpo é a reserva, porque o
+    // simulador do painel manda o aviso sem nenhum parâmetro.
+    const idDaUrl = url ? new URL(url).searchParams.get("data.id") : null;
+
     const confere = conferirAssinaturaDetalhe({
       xSignature: cabecalhos.get("x-signature"),
       xRequestId: cabecalhos.get("x-request-id"),
-      dataId: idExterno,
+      dataId: idDaUrl ?? idExterno,
       // O `trim` pela mesma razão do token de acesso: painel de hospedagem
       // guarda a quebra de linha que veio junto na hora de colar, e aqui ela
       // entraria no HMAC e faria toda assinatura sair diferente.
@@ -596,6 +611,13 @@ async function lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | nul
         atrasoS: confere.atrasoS ?? null,
         tamanhoDoSegredo: confere.tamanhoDoSegredo,
         tipo: texto(dados.type) ?? texto(dados.topic),
+        // Qual variação de manifesto bateria, se alguma. Nulo aqui quer dizer
+        // que o problema está no segredo, e não no formato, que é a bifurcação
+        // que sobra depois de o carimbo e o cabeçalho estarem certos.
+        bateriaCom:
+          confere.motivo === "hmac_diferente"
+            ? diagnosticar(cabecalhos, dados, idExterno, idDaUrl)
+            : null,
       });
       return null;
     }
@@ -619,6 +641,47 @@ async function lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | nul
     // mesmo destino de uma assinatura que saiu diferente.
     return null;
   }
+}
+
+/**
+ * Testa as variações conhecidas de manifesto contra a assinatura recebida.
+ *
+ * Roda só quando o HMAC saiu diferente, e o resultado é uma palavra no log.
+ * Nada aqui muda o que o webhook aceita: a conferência de verdade continua
+ * sendo o formato documentado, e uma variação que bata é motivo para corrigir
+ * o código no dia seguinte, nunca para deixar o aviso passar hoje.
+ */
+function diagnosticar(
+  cabecalhos: Headers,
+  dados: Registro,
+  idDoCorpo: string | null,
+  idDaUrl: string | null,
+): string | null {
+  const segredo = process.env.MERCADOPAGO_WEBHOOK_SECRET?.trim();
+  const cabecalho = lerCabecalhoDeAssinatura(cabecalhos.get("x-signature"));
+  if (!segredo || !cabecalho) return null;
+
+  const rid = cabecalhos.get("x-request-id");
+  const ts = cabecalho.ts;
+
+  return acharManifesto(
+    [
+      { nome: "id_do_corpo", manifesto: montarManifesto(idDoCorpo, rid, ts) },
+      { nome: "id_da_url", manifesto: montarManifesto(idDaUrl, rid, ts) },
+      { nome: "sem_id", manifesto: montarManifesto(null, rid, ts) },
+      { nome: "sem_request_id", manifesto: montarManifesto(idDoCorpo, null, ts) },
+      {
+        nome: "id_do_aviso",
+        manifesto: montarManifesto(texto(dados.id), rid, ts),
+      },
+      {
+        nome: "id_sem_minuscula",
+        manifesto: `id:${idDoCorpo ?? ""};request-id:${rid ?? ""};ts:${ts};`,
+      },
+    ],
+    cabecalho.v1,
+    segredo,
+  );
 }
 
 export const mercadoPago: Gateway = {

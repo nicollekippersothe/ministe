@@ -289,5 +289,10 @@ export type Gateway = {
     idExterno: string,
   ): Promise<Resultado<CobrancaDaAssinatura>>;
   cancelarAssinatura(idExterno: string): Promise<Resultado<void>>;
-  lerAviso(corpo: string, cabecalhos: Headers): Promise<Aviso | null>;
+  lerAviso(
+    corpo: string,
+    cabecalhos: Headers,
+    /** O endereço que recebeu o aviso. O manifesto do HMAC lê o `data.id` dele. */
+    url?: string | null,
+  ): Promise<Aviso | null>;
 };

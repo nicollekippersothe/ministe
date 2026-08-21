@@ -139,6 +139,33 @@ export type EntradaDeConferencia = {
   janelaSegundos?: number;
 };
 
+/**
+ * Qual formato de manifesto bateria com a assinatura recebida, se algum.
+ *
+ * Existe para uma pergunta só, e ela apareceu em produção: quando o HMAC sai
+ * diferente, a causa é o segredo estar errado ou o manifesto estar montado de
+ * outro jeito, e do lado de fora as duas parecem idênticas. Esta função testa
+ * as variações conhecidas e diz qual delas bate, o que separa as duas causas
+ * numa tentativa em vez de várias.
+ *
+ * O resultado vai para o log e nunca para a resposta, e a conferência de
+ * verdade continua sendo só o formato documentado. Uma variação que bata aqui
+ * é motivo para corrigir o código, e nunca para aceitar o aviso.
+ */
+export function acharManifesto(
+  alternativas: Array<{ nome: string; manifesto: string }>,
+  v1: string,
+  segredo: string,
+): string | null {
+  for (const { nome, manifesto } of alternativas) {
+    const esperado = createHmac("sha256", segredo)
+      .update(manifesto, "utf8")
+      .digest("hex");
+    if (iguaisEmTempoConstante(esperado, v1)) return nome;
+  }
+  return null;
+}
+
 /** Por que um aviso foi recusado. Vai para o log, nunca para a resposta. */
 export type MotivoDaAssinatura =
   | "conferida"

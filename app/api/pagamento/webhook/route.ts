@@ -83,7 +83,7 @@ export async function POST(pedido: Request) {
 
   // 2. Assinatura. `lerAviso` devolve nulo tanto para HMAC diferente quanto
   //    para carimbo de tempo velho, que é a defesa contra reenvio gravado.
-  const aviso = await gateway.lerAviso(corpo, pedido.headers);
+  const aviso = await gateway.lerAviso(corpo, pedido.headers, pedido.url);
   if (!aviso) return new Response(null, { status: 401 });
 
   if (aviso.tipo === "outro") {
