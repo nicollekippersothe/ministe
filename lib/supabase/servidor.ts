@@ -75,6 +75,14 @@ export async function garantirConta(): Promise<string | null> {
  * Conta provisória monta a página e guarda rascunho. Publicar pede conta
  * confirmada, e quem recusa de verdade é o gatilho protege_publicacao no banco.
  * Isto aqui é só para a tela saber o que oferecer.
+ *
+ * **Lê o mesmo campo que o gatilho lê, e isso é regra e não coincidência.** O
+ * `protege_publicacao` da correção 005 decide por `auth.jwt() ->> 'is_anonymous'`,
+ * que é o valor gravado dentro do token. Se esta função passasse a decidir por
+ * outra coisa, por exemplo pela existência de e-mail, a tela ofereceria publicar
+ * para quem o banco vai recusar, e a pessoa levaria um erro no lugar de um
+ * convite. Quando os dois lados discordam, quem está errado é o token, e o
+ * conserto é renová-lo: ver `app/auth/retorno/route.ts`.
  */
 export async function contaProvisoria(): Promise<boolean> {
   if (!configurado) return false;

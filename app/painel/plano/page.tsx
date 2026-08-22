@@ -508,12 +508,21 @@ function Assinado({
   );
 }
 
+/**
+ * O convite para sair da conta provisória.
+ *
+ * A frase antiga dizia só "entre com o Google para assinar", e ela lia como se
+ * o produto estivesse pedindo login a quem já está dentro do painel. Quem chega
+ * aqui está logado, e por isso a frase precisa nomear o estado em que ela está:
+ * a conta provisória, que nasceu no primeiro clique de montar a página.
+ */
 function PrecisaEntrar() {
   return (
     <div className="mt-6">
       <p className="rounded-xl border border-borda bg-superficie px-4 py-3.5 text-sm leading-relaxed text-suave">
-        Entre com o Google para assinar. O plano fica ligado à sua conta, e é por
-        ela que você volta ao painel.
+        A sua página está numa conta provisória, criada no momento em que você
+        começou a montar. Entrar com o Google guarda ela na sua conta de sempre,
+        e é essa conta que recebe o plano.
       </p>
       <p className="mt-3 text-sm">
         <Link

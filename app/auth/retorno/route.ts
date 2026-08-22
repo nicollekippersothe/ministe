@@ -67,6 +67,29 @@ export async function GET(pedido: NextRequest) {
   if (codigo) {
     const sb = await servidor();
     const { error } = await sb.auth.exchangeCodeForSession(codigo);
+
+    /*
+     * A renovação logo depois da troca, e ela conserta um defeito que só
+     * aparece para quem entrou pelo caminho da conta provisória.
+     *
+     * `linkIdentity` muda a conta no banco: `auth.users.is_anonymous` vira
+     * falso. O que decide o que a pessoa pode fazer, dos dois lados, é o
+     * `is_anonymous` gravado dentro do token, e não a coluna. O gatilho
+     * `protege_publicacao` lê `auth.jwt() ->> 'is_anonymous'` (correção 005), e
+     * `contaProvisoria()` lê o mesmo campo pelo cliente. Token velho faz os
+     * dois acharem que a conta continua provisória.
+     *
+     * O efeito, na cara de quem acabou de ligar o Google: o painel oferece
+     * entrar de novo, a tela do plano manda entrar com o Google para assinar, e
+     * publicar volta recusado pelo banco. Tudo isso enquanto ela está logada.
+     *
+     * Uma renovação resolve, porque o token novo é montado a partir da conta
+     * como ela está agora. Falha aqui fica em silêncio de propósito: a sessão
+     * já existe e vale, e no pior caso a pessoa espera o vencimento normal do
+     * token em vez de perder o login por causa de um passo de acabamento.
+     */
+    if (!error) await sb.auth.refreshSession();
+
     if (error) {
       return NextResponse.redirect(
         new URL(`/entrar?erro=${encodeURIComponent(error.message)}`, url.origin),
