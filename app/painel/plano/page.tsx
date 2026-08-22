@@ -256,8 +256,8 @@ function Cartao({ ciclo }: { ciclo: Ciclo }) {
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-suave">
         {plano.descricao} Os primeiros {DIAS_DE_TESTE} dias são de teste: a
-        primeira cobrança acontece no oitavo dia, e cancelar antes disso mantém o
-        cartão sem cobrança alguma.
+        primeira cobrança acontece no oitavo dia, e cancelar antes disso deixa o
+        cartão intacto.
       </p>
 
       {CHAVE_PUBLICA === "" ? (
