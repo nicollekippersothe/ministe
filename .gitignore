@@ -43,3 +43,14 @@ next-env.d.ts
 
 # dados locais do painel, enquanto o Supabase nao entra
 /.dados/
+
+# sondas de navegador, criadas na raiz e apagadas depois
+#
+# O pacote playwright só resolve para script que esteja dentro do projeto, então
+# toda medição no navegador nasce um arquivo solto aqui na raiz. Ele é
+# descartável por definição: existe para rodar uma vez e sair. Ficar fora do git
+# evita que uma medição pela metade vire commit.
+/medir-*.mjs
+/conferir-*.mjs
+/*.tmp.mjs
+/_*.mjs
