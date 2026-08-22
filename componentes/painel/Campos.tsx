@@ -203,6 +203,85 @@ export function Grupo({
 }
 
 /**
+ * Um grupo que começa recolhido, com o que está guardado à mostra na dobra.
+ *
+ * Existe para o endereço, e a regra de quando ele abre vem de `lib/categorias.ts`,
+ * e não desta tela: a receita de cada ramo diz se o endereço na rua costuma
+ * fazer sentido. Ver o comentário do campo `endereco` lá, que explica o motivo
+ * por extenso: perguntar endereço como se fosse obrigatório faz travar no
+ * cadastro quem atende online ou produz em casa.
+ *
+ * Recolhido não é escondido. O `resumo` mostra na dobra o que já está gravado,
+ * então quem tem endereço continua lendo o endereço sem abrir nada, e quem
+ * ainda não tem lê o convite para pôr um. E os campos continuam no formulário
+ * mesmo com a dobra fechada, que é como o `details` do HTML funciona: o Salvar
+ * do rodapé leva os mesmos valores das duas formas.
+ *
+ * `details` nativo, e não estado no React, por três motivos que valem a escolha:
+ * abre sem JavaScript, o teclado já o alcança com Tab e Enter, e o leitor de
+ * tela já o anuncia como uma dobra com estado.
+ */
+export function GrupoRecolhivel({
+  titulo,
+  resumo,
+  aberto,
+  duplo,
+  children,
+}: {
+  titulo: string;
+  /** O que aparece na dobra fechada: o valor guardado, ou o convite. */
+  resumo: string;
+  aberto: boolean;
+  duplo?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <details
+      open={aberto}
+      className="group rounded-xl border border-borda bg-superficie/40 px-4 open:pb-4"
+    >
+      <summary className="-mx-4 flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg font-semibold tracking-tight text-texto">
+            {titulo}
+          </span>
+          <span className="mt-0.5 block truncate text-xs leading-relaxed text-suave">
+            {resumo}
+          </span>
+        </span>
+        {/*
+          Seta desenhada, e nunca emoji, que é a regra de layout do projeto. Ela
+          gira meia volta quando a dobra abre, e é a única coisa na tela que diz
+          se ela está aberta ou fechada para quem enxerga.
+        */}
+        <svg
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+          className="h-5 w-5 shrink-0 text-suave transition-transform duration-150 group-open:rotate-180"
+        >
+          <path
+            d="M5 8l5 5 5-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </summary>
+
+      <div
+        className={`flex flex-col gap-4 ${
+          duplo ? "lg:grid lg:grid-cols-2 lg:items-start lg:gap-4" : ""
+        }`}
+      >
+        {children}
+      </div>
+    </details>
+  );
+}
+
+/**
  * O Salvar do rodapé.
  *
  * No celular ele fica preso na base da tela, porque o formulário tem sempre

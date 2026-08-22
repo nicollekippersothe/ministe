@@ -103,8 +103,8 @@ await p.waitForURL(/painel/, { timeout: 25000 });
 const painel = await p.textContent("body");
 passo("criar página leva para o painel", p.url().includes("criado=1"));
 passo(
-  "a página nasce como rascunho, no endereço escolhido",
-  painel.includes("Rascunho") && painel.includes(SLUG),
+  "a página nasce só para a dona, no endereço escolhido",
+  painel.includes("Só para você") && painel.includes(SLUG),
 );
 passo(
   "e o painel oferece entrar com o Google para publicar",

@@ -1,7 +1,8 @@
 import { planoValido } from "@/lib/plano";
-import { enderecoPublico } from "./imagens";
+import { enderecoPublico, limitarFoco } from "./imagens";
 import type {
   Acao,
+  Foco,
   Foto,
   Intervalo,
   Item,
@@ -49,6 +50,19 @@ function foto(url: unknown, alt: string, medida: typeof LOGO): Foto | null {
   return u === null ? null : { url: u, alt, ...medida };
 }
 
+/**
+ * O ponto focal da capa, quando as duas colunas trazem número.
+ *
+ * As colunas nascem na correção 014, e ela é aplicada à mão. Enquanto ela não
+ * roda, a linha chega sem as duas chaves, isto devolve nulo, e a página corta a
+ * capa pelo centro, do jeito que sempre cortou. Um número só, sem o par, também
+ * cai no centro: meio ponto focal não é ponto focal.
+ */
+function foco(x: unknown, y: unknown): Foco | null {
+  if (typeof x !== "number" || typeof y !== "number") return null;
+  return { x: limitarFoco(x), y: limitarFoco(y) };
+}
+
 function acao(v: unknown): Acao | null {
   if (v === null || typeof v !== "object") return null;
   const a = v as Record<string, unknown>;
@@ -77,6 +91,9 @@ function fotosDe(linhas: Linha[]): Foto[] {
 
 export function paraNegocio(linha: Linha): Negocio {
   const nome = String(linha.nome ?? "");
+
+  const capa = foto(linha.capa_url, nome, CAPA);
+  if (capa) capa.foco = foco(linha.capa_foco_x, linha.capa_foco_y);
 
   const itens: Item[] = porOrdem((linha.itens as Linha[]) ?? []).map((i) => ({
     id: String(i.id),
@@ -114,7 +131,7 @@ export function paraNegocio(linha: Linha): Negocio {
     nome,
     frase: texto(linha.frase),
     logo: foto(linha.logo_url, nome, LOGO),
-    capa: foto(linha.capa_url, nome, CAPA),
+    capa,
     tema: (linha.tema as Negocio["tema"]) ?? "areia",
     fonte: (linha.fonte as Negocio["fonte"]) ?? "moderno",
     categoria: texto(linha.categoria),
@@ -168,6 +185,17 @@ export function paraLinha(n: Negocio): Linha {
     frase: n.frase,
     logo_url: n.logo?.url ?? null,
     capa_url: n.capa?.url ?? null,
+    /*
+     * As duas colunas do ponto focal só entram no update quando existe um ponto
+     * gravado, e é proteção contra a ordem das coisas: a correção 014 é aplicada
+     * à mão, então o código pode estar no ar antes dela. Mandar coluna que ainda
+     * não existe faria o Postgres recusar TODO salvamento desta tela, inclusive
+     * o do nome. Como só a tela do ponto focal preenche `foco`, quem nunca tocou
+     * nele segue salvando exatamente como salvava.
+     */
+    ...(n.capa?.foco
+      ? { capa_foco_x: n.capa.foco.x, capa_foco_y: n.capa.foco.y }
+      : {}),
     tema: n.tema,
     fonte: n.fonte,
     categoria: n.categoria,

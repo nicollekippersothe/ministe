@@ -4,10 +4,11 @@ import { ListaSecoes } from "@/componentes/painel/ListaSecoes";
 import { CartaoEstado } from "@/componentes/painel/Navegacao";
 import { Aviso } from "@/componentes/painel/Aviso";
 import { CartaoPlano } from "@/componentes/painel/CartaoPlano";
+import { EstadoDaPagina } from "@/componentes/painel/EstadoDaPagina";
+import { passosParaOAr } from "@/componentes/painel/prontidao";
 import { acoesDoRodape } from "@/lib/acoes";
 import { cobrancaDoDono, doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
-import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { contaProvisoria } from "@/lib/supabase/servidor";
 import type { Intervalo, Item } from "@/lib/tipos";
 
@@ -169,6 +170,32 @@ export default async function Painel({
     .map((a) => a.rotulo)
     .join(" e ");
 
+  /*
+   * Enquanto a página ainda estiver crua, o plano e a contagem de visitas saem
+   * da frente e vão para depois da lista de seções.
+   *
+   * Os dois falam de uma página que já tem público: o plano vende letra e
+   * números, e a contagem conta quem abriu. Numa página que ninguém abriu
+   * ainda, eles se enfileiravam entre a pessoa e o lugar de escrever, e a
+   * primeira tela do produto virava uma oferta em cima de outra. Continuam na
+   * mesma tela, e continuam a um rolar de distância.
+   */
+  const emMontagem = !noAr && passosParaOAr(negocio).length > 0;
+
+  const plano = (
+    <>
+      <CartaoPlano estado={cobranca} />
+      <p className="mt-4 text-sm">
+        <Link
+          href="/painel/numeros"
+          className="inline-flex min-h-11 items-center font-medium text-destaque underline-offset-4 hover:underline"
+        >
+          Ver quantas pessoas abriram a sua página
+        </Link>
+      </p>
+    </>
+  );
+
   return (
     <main className="mt-6">
       <h1 className="text-2xl font-bold tracking-tight text-texto lg:text-3xl">
@@ -181,72 +208,34 @@ export default async function Painel({
       <Aviso erro={erro} />
 
       <div className="lg:hidden">
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4">
           <CartaoEstado negocio={negocio} provisoria={provisoria} />
-          <CartaoPlano estado={cobranca} />
         </div>
 
-        <p className="mt-4 text-sm">
-          <Link
-            href="/painel/numeros"
-            className="font-medium text-destaque underline-offset-4 hover:underline"
-          >
-            Ver quantas pessoas abriram a sua página
-          </Link>
-        </p>
+        {emMontagem ? null : <div className="mt-4">{plano}</div>}
 
         <h2 className="mt-8 mb-3 text-lg font-semibold tracking-tight text-texto">
           Editar
         </h2>
 
         <ListaSecoes />
+
+        {emMontagem ? <div className="mt-8">{plano}</div> : null}
       </div>
 
       <div className="hidden lg:block">
         <section className="mt-6 rounded-2xl border border-borda bg-superficie p-6">
           {/*
-            A coluna do lado empilha o selo em cima do endereço, então aqui os
-            dois vão na mesma linha: o endereço é o assunto, e o selo é o que se
-            diz sobre ele. Assim o resumo continua sendo resumo, em vez de virar
-            a mesma peça duas vezes na mesma tela.
+            O endereço em tamanho de ler em voz alta, e embaixo a frase de quem
+            o enxerga. Mesmo componente da coluna do lado, de propósito: uma
+            tela que dissesse "No ar" de um lado e outra coisa do outro seria
+            pior que ficar calada. O que muda é o corpo do texto e a frase a
+            mais que a coluna estreita comportaria mal.
           */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <p className="text-2xl leading-snug font-semibold tracking-tight break-all text-suave">
-              {DOMINIO_PUBLICO}/
-              <span className="text-texto">{negocio.slug}</span>
-            </p>
-
-            <p
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${
-                noAr
-                  ? "bg-aberto-fundo text-aberto-texto"
-                  : "bg-fechado-fundo text-fechado-texto"
-              }`}
-            >
-              <span className="h-2 w-2 rounded-full bg-current" aria-hidden />
-              {noAr ? "No ar" : "Rascunho"}
-            </p>
-          </div>
-
-          <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-suave">
-            {noAr
-              ? "Este endereço abre a sua página para qualquer pessoa. O que você salvar aqui aparece nela na mesma hora."
-              : "A página fica guardada aqui com você. Publicar abre este endereço para qualquer pessoa, e o botão fica na coluna ao lado."}
-          </p>
+          <EstadoDaPagina negocio={negocio} grande />
         </section>
 
-        <div className="mt-6">
-          <CartaoPlano estado={cobranca} />
-        </div>
-
-        <p className="mt-4 text-sm">
-          <Link
-            href="/painel/numeros"
-            className="font-medium text-destaque underline-offset-4 hover:underline"
-          >
-            Ver quantas pessoas abriram a sua página
-          </Link>
-        </p>
+        {emMontagem ? null : <div className="mt-6">{plano}</div>}
 
         <h2 className="mt-10 text-lg font-semibold tracking-tight text-texto">
           O que a página mostra hoje
@@ -309,6 +298,8 @@ export default async function Painel({
             href="/painel/links"
           />
         </ul>
+
+        {emMontagem ? <div className="mt-10">{plano}</div> : null}
       </div>
     </main>
   );

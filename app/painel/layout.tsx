@@ -44,7 +44,10 @@ export default async function LayoutPainel({
       </Suspense>
 
       <div className="mx-auto w-full max-w-[34rem] px-5 pt-5 pb-8 lg:max-w-5xl lg:px-8">
-        <Marca href="/painel" />
+        {/* -my-2 devolve o espaço que a altura de alvo toma: o logotipo é um
+            link para /painel, então o dedo precisa dos 44 pixels, e sem isso o
+            topo da tela ganharia um vão que ninguém pediu. */}
+        <Marca href="/painel" className="-my-2 min-h-11" />
 
         <div className="lg:mt-6 lg:grid lg:grid-cols-[17rem_1fr] lg:items-start lg:gap-10">
           <aside className="hidden lg:sticky lg:top-8 lg:block">

@@ -212,7 +212,7 @@ function Comeco({ slug, publicado }: { slug: string; publicado: boolean }) {
       ) : (
         <p className="mt-1 text-sm leading-relaxed text-suave">
           A contagem vale para quem abre a página no endereço público. Enquanto
-          ela estiver em rascunho, só você a enxerga.{" "}
+          ela estiver só para você, a conta espera.{" "}
           <Link
             href="/painel"
             className="font-medium text-destaque underline-offset-4 hover:underline"

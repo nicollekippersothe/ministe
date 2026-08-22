@@ -522,7 +522,10 @@ passo(
 await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });
 await p.click('main button:has-text("Tirar do ar")');
 await p.waitForSelector('main button:has-text("Publicar")');
-passo("tirar do ar vira rascunho", (await p.textContent("body")).includes("Rascunho"));
+passo(
+  "tirar do ar devolve a página para quem é dona dela",
+  (await p.textContent("body")).includes("Só para você"),
+);
 
 const fora = await p.goto(`${BASE}/demo`);
 passo("página fora do ar responde 404", fora.status() === 404);
@@ -736,13 +739,32 @@ passo(
  */
 await p.goto(`${BASE}/painel/negocio`, { waitUntil: "networkidle" });
 
+/*
+ * O endereço mora numa dobra, e ela começa fechada para quem tem categoria de
+ * ramo que costuma atender sem ponto na rua. Ver app/painel/negocio/page.tsx: a
+ * regra vem da receita de lib/categorias.ts, e não da tela. O CEP daqui de
+ * baixo é um campo de dentro dessa dobra, então abrir vem antes de digitar.
+ */
+async function abrirEndereco() {
+  const dobra = p.locator("details:has(#cep)");
+  if ((await dobra.getAttribute("open")) === null) {
+    await dobra.locator("summary").click();
+  }
+}
+
 const fraseDoBanco = await p.inputValue("#frase");
 await p.fill("#nome", "Nome digitado e ainda por salvar");
 await p.fill("#frase", "Frase digitada e ainda por salvar");
+await abrirEndereco();
 await p.fill("#cep", "abc12");
 await p.click('button:has-text("Salvar")');
 await p.waitForURL(/erro=cep/, { timeout: 20000 });
 await p.waitForTimeout(1200);
+
+passo(
+  "a recusa de um campo do endereço volta com a dobra dele aberta",
+  await p.locator("#cep").isVisible(),
+);
 
 passo(
   "a recusa do servidor devolve a tela com o nome que a pessoa digitou",
@@ -758,6 +780,7 @@ passo(
 );
 
 // Salva de verdade e confere que o rascunho sai do navegador.
+await abrirEndereco();
 await p.fill("#cep", "");
 await p.fill("#frase", fraseDoBanco ?? "");
 await p.click('button:has-text("Salvar")');

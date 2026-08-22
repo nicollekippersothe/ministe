@@ -21,12 +21,38 @@ export type Intervalo = {
   fecha: string;
 };
 
+/**
+ * O ponto da foto que precisa aparecer, em porcentagem da largura e da altura.
+ *
+ * A capa da pagina e 16 por 9 no celular e 64 por 15 no monitor, e a foto que a
+ * pessoa manda quase nunca tem nenhuma das duas proporcoes. Com corte fixo no
+ * centro, o rosto do topo e a peca da beirada saem de cena, e a dona da pagina
+ * so descobre olhando a propria pagina.
+ *
+ * Dois numeros resolvem, e resolvem no CSS: viram `object-position`, que o
+ * navegador aplica em qualquer proporcao de tela sem recorte, sem segunda copia
+ * do arquivo e sem biblioteca. 50 e 50 e o centro, que e o que o navegador ja
+ * faz sozinho, entao valor ausente continua valendo centro.
+ */
+export type Foco = {
+  /** 0 na borda esquerda, 100 na direita. */
+  x: number;
+  /** 0 no topo, 100 na base. */
+  y: number;
+};
+
 export type Foto = {
   url: string;
   /** Texto alternativo. Obrigatorio, porque acessibilidade e regra do projeto. */
   alt: string;
   largura: number;
   altura: number;
+  /**
+   * Opcional, e so a capa usa hoje. Ausente vale centro, que e o corte de
+   * sempre: assim a coluna do banco pode chegar depois do codigo sem nenhuma
+   * pagina mudar de aparencia enquanto ela nao chega.
+   */
+  foco?: Foco | null;
 };
 
 export type Item = {

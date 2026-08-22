@@ -112,6 +112,37 @@ function medir() {
   };
 }
 
+/*
+ * Espera o React assumir a página antes de medir.
+ *
+ * O `networkidle` diz que a rede sossegou, e isso é outra coisa: na primeira
+ * visita depois de subir o `next dev`, o Turbopack compila a rota enquanto o
+ * navegador já tem o HTML na mão, e a medição caía na página ainda por
+ * hidratar. Medida assim, ela é a do servidor, e o alvo de toque que só existe
+ * depois da montagem passava batido.
+ *
+ * A pista é a chave que o React pendura no primeiro elemento do corpo quando
+ * monta. Passado o prazo, a medição segue assim mesmo: relatório atrasado vale
+ * mais que ferramenta parada.
+ */
+async function esperarHidratacao(pagina) {
+  try {
+    await pagina.waitForFunction(
+      () => {
+        const raiz = document.body.firstElementChild;
+        return (
+          raiz !== null &&
+          Object.keys(raiz).some((k) => k.startsWith("__react"))
+        );
+      },
+      null,
+      { timeout: 20000 },
+    );
+  } catch {
+    // Página sem React, ou prazo estourado. Os dois seguem para a medição.
+  }
+}
+
 await mkdir(saida, { recursive: true });
 const navegador = await chromium.launch({ executablePath: CHROMIUM });
 let houveVazamento = false;
@@ -128,10 +159,25 @@ for (const caminho of caminhos) {
 
     const url = `${base}${caminho}`;
     await pagina.goto(url, { waitUntil: "networkidle" });
+    await esperarHidratacao(pagina);
     const m = await pagina.evaluate(medir);
 
     const arquivo = `${saida}/${caminho.replace(/\W+/g, "-") || "raiz"}-${tamanho.nome}.png`;
-    await pagina.screenshot({ path: arquivo, fullPage: true });
+    /*
+     * caret: "initial" deixa a página como ela está.
+     *
+     * O padrão do Playwright é "hide", e ele esconde o cursor de texto
+     * escrevendo `style="caret-color: transparent"` em cada campo da página,
+     * de verdade, no DOM. Numa compilação fria do `next dev` o `networkidle`
+     * chega antes de o React assumir, a captura acontece nessa fresta, e o
+     * React encontra na montagem um `style` que o componente jamais escreveu.
+     * O resultado era o aviso de hidratação divergente em /criar, que a
+     * própria medição criava e depois relatava como defeito da tela.
+     *
+     * O cursor pode aparecer piscando na captura de um campo com autoFocus, e
+     * isso é o preço certo: a ferramenta mede, e a página fica intacta.
+     */
+    await pagina.screenshot({ path: arquivo, fullPage: true, caret: "initial" });
 
     const vazou = m.larguraDaTela > m.larguraDaJanela;
     if (vazou) houveVazamento = true;

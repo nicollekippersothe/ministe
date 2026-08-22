@@ -28,10 +28,10 @@ export function CartaoPlano({ estado }: { estado: EstadoDaCobranca }) {
         {titulo}
       </p>
       <p className="mt-1 text-sm leading-relaxed text-suave">{dica}</p>
-      <p className="mt-3 text-sm">
+      <p className="mt-2 text-sm">
         <Link
           href="/painel/plano"
-          className="font-medium text-destaque underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center font-medium text-destaque underline-offset-4 hover:underline"
         >
           {chamada}
         </Link>

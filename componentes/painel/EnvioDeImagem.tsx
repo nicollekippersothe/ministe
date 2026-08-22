@@ -19,6 +19,8 @@ import {
   type PastaDeImagem,
 } from "@/lib/supabase/imagens";
 import { navegador } from "@/lib/supabase/navegador";
+import type { Foco } from "@/lib/tipos";
+import { FocoDaCapa } from "./FocoDaCapa";
 import { LADO_MAXIMO, reduzirImagem } from "./reduzirImagem";
 
 /**
@@ -113,12 +115,19 @@ function frase(gravado: Extract<GravacaoDeImagem, { ok: false }>): string {
 export function EnvioDeImagem({
   pasta,
   atual,
+  foco,
   nome,
   ligado,
 }: {
   pasta: PastaDeImagem;
   /** O valor cru da coluna: caminho do bucket, ou endereço local com barra. */
   atual: string | null;
+  /**
+   * O ponto da capa que precisa aparecer, quando já existe um gravado. Só a
+   * capa usa: a logo é redonda e quadrada, e o corte dela nunca descarta o que
+   * a pessoa escolheu.
+   */
+  foco?: Foco | null;
   /** O texto alternativo, derivado do nome como lib/supabase/mapa.ts faz. */
   nome: string;
   /** Se o Supabase está configurado, e portanto se existe bucket para receber. */
@@ -129,6 +138,11 @@ export function EnvioDeImagem({
 
   const [caminho, setCaminho] = useState<string | null>(atual);
   const [previa, setPrevia] = useState<string | null>(null);
+  /*
+   * Foto nova nasce centralizada. O ponto anterior era um lugar da foto
+   * anterior, e apontaria para o canto errado da que acabou de chegar.
+   */
+  const [pontoInicial, setPontoInicial] = useState<Foco | null>(foco ?? null);
   /*
    * Um estado só para as duas escritas, porque as duas travam os mesmos botões.
    * Ele guarda qual delas está acontecendo para o botão dizer a verdade
@@ -210,6 +224,7 @@ export function EnvioDeImagem({
       }
 
       trocarPrevia(URL.createObjectURL(arquivo));
+      setPontoInicial(null);
 
       if (!ligado) {
         contar(SO_PREVIA);
@@ -297,31 +312,47 @@ export function EnvioDeImagem({
       <div
         className={`mt-3 flex gap-4 ${redonda ? "items-center" : "flex-col"}`}
       >
-        <div
-          className={`shrink-0 overflow-hidden border border-borda bg-fundo ${
-            redonda ? "h-20 w-20 rounded-full" : "aspect-[16/9] w-full rounded-lg"
-          }`}
-        >
-          {mostrada ? (
-            /*
-              Imagem crua, e não next/image: aqui a fonte é ora um blob: do
-              próprio navegador, ora o endereço do Storage, que mora fora da
-              lista de domínios do otimizador. O painel é tela de trabalho e
-              carrega uma imagem por campo, então o otimizador seria peso sem
-              ganho. Quem passa pelo next/image é a página pública.
-            */
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={mostrada}
-              alt={nome}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span className="flex h-full w-full items-center justify-center px-3 text-center text-xs leading-snug text-suave">
-              {redonda ? "Sua marca aqui" : "Sua capa aqui"}
-            </span>
-          )}
-        </div>
+        {/*
+          A capa com imagem vira o escolhedor do ponto focal, em vez de uma
+          prévia parada. O motivo está em ./FocoDaCapa.tsx: a moldura é fixa e a
+          foto quase nunca tem a proporção dela, então alguém precisa dizer o que
+          fica dentro do corte, e esse alguém é a dona da página. A logo continua
+          com a prévia de sempre, porque redonda e quadrada cortam igual.
+        */}
+        {!redonda && mostrada ? (
+          <FocoDaCapa
+            src={mostrada}
+            alt={nome}
+            inicial={pontoInicial}
+            ocupado={ocupado !== null}
+          />
+        ) : (
+          <div
+            className={`shrink-0 overflow-hidden border border-borda bg-fundo ${
+              redonda ? "h-20 w-20 rounded-full" : "aspect-[16/9] w-full rounded-lg"
+            }`}
+          >
+            {mostrada ? (
+              /*
+                Imagem crua, e não next/image: aqui a fonte é ora um blob: do
+                próprio navegador, ora o endereço do Storage, que mora fora da
+                lista de domínios do otimizador. O painel é tela de trabalho e
+                carrega uma imagem por campo, então o otimizador seria peso sem
+                ganho. Quem passa pelo next/image é a página pública.
+              */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={mostrada}
+                alt={nome}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center px-3 text-center text-xs leading-snug text-suave">
+                {redonda ? "Sua marca aqui" : "Sua capa aqui"}
+              </span>
+            )}
+          </div>
+        )}
 
         {/*
           Ao lado do selo redondo os dois botões empilham, porque ali a largura

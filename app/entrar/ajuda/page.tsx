@@ -25,7 +25,7 @@ const CAUSAS = [
   {
     titulo: "Você começou a página em outro aparelho",
     texto:
-      "Enquanto a página está em rascunho, ela fica guardada no aparelho onde você começou. Publicar com o Google é o que a leva para todos os seus aparelhos.",
+      "Enquanto a página está só para você, ela fica guardada no aparelho onde você começou. Publicar com o Google é o que a leva para todos os seus aparelhos.",
   },
   {
     titulo: "O Google recusou a entrada",

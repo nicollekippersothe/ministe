@@ -1,4 +1,5 @@
 import { SUPABASE_URL } from "./config.ts";
+import type { Foco } from "../tipos.ts";
 
 /**
  * As regras do bucket de imagens, escritas uma vez do lado do código.
@@ -152,4 +153,26 @@ export function enderecoPublico(caminho: string | null | undefined): string | nu
   if (caminho.startsWith("/")) return caminho;
   if (SUPABASE_URL === "") return null;
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${caminho}`;
+}
+
+/**
+ * O ponto da capa que precisa aparecer, virando CSS.
+ *
+ * `object-position` é o que faz o `object-cover` cortar por onde a dona da
+ * página escolheu, em vez de sempre pelo centro. Vale para qualquer proporção
+ * de tela e para qualquer proporção de foto, e custa dois números.
+ *
+ * Valor ausente devolve o centro, que é o mesmo corte de antes de a coluna
+ * existir. É essa linha que deixa o código ir para o ar antes da correção 014
+ * ser aplicada à mão: a página lê nulo e desenha o que sempre desenhou.
+ */
+export function posicaoDoFoco(foco: Foco | null | undefined): string {
+  if (!foco) return "50% 50%";
+  return `${limitarFoco(foco.x)}% ${limitarFoco(foco.y)}%`;
+}
+
+/** Mesma faixa da restrição `capa_foco_faixa` da 014: de 0 a 100, inteiro. */
+export function limitarFoco(valor: number): number {
+  if (!Number.isFinite(valor)) return 50;
+  return Math.min(100, Math.max(0, Math.round(valor)));
 }

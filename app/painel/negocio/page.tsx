@@ -7,10 +7,16 @@ import {
   Botao,
   Escolha,
   Grupo,
+  GrupoRecolhivel,
   Marcar,
   Texto,
 } from "@/componentes/painel/Campos";
 import { EnvioDeImagem } from "@/componentes/painel/EnvioDeImagem";
+import {
+  MensagemDoBotao,
+  MensagemDosItens,
+} from "@/componentes/painel/PreviaDaMensagem";
+import { receitaDe } from "@/lib/categorias";
 import { doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
 import { configurado } from "@/lib/supabase/config";
@@ -44,6 +50,35 @@ export default async function Informacoes({
 }) {
   exigirLogin();
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
+
+  /*
+   * Quem manda no endereço é a receita do ramo, e não esta tela.
+   *
+   * `lib/categorias.ts` já marca cada categoria com `endereco: "esperado" |
+   * "opcional"`, e o comentário do campo lá diz o porquê: quem produz em casa e
+   * quem atende online raramente quer o endereço público, e perguntar como se
+   * fosse obrigatório faz a pessoa travar no cadastro. A tela ignorava isso e
+   * abria os cinco campos de rua para todo mundo, inclusive para a psicóloga
+   * que atende por vídeo. Agora ela obedece: ramo com ponto na rua abre o bloco,
+   * ramo que costuma atender de outro jeito começa com ele recolhido, e a dobra
+   * abre com um toque para quem quiser.
+   *
+   * A recusa do servidor também abre: quando o `?erro=` é de um campo daqui de
+   * dentro, esconder o campo esconderia justamente o que precisa de conserto.
+   */
+  const receita = receitaDe(negocio.categoria);
+  const erroDeEndereco =
+    params.erro === "cep" ||
+    params.erro === "estado" ||
+    (params.erro ?? "").startsWith("mapa_");
+  const enderecoAberto = receita.endereco === "esperado" || erroDeEndereco;
+
+  /** O que a dobra fechada mostra: o endereço guardado, ou o convite para pôr um. */
+  const resumoDoEndereco =
+    [negocio.endereco, negocio.cidade, negocio.estado]
+      .filter((p) => p !== null && p !== "")
+      .join(", ") ||
+    "Rua, cidade e link do mapa. Abra para pôr o seu na página.";
 
   return (
     <main className="mt-6">
@@ -93,6 +128,7 @@ export default async function Informacoes({
         <EnvioDeImagem
           pasta="capa"
           atual={negocio.capa?.url ?? null}
+          foco={negocio.capa?.foco ?? null}
           nome={negocio.nome}
           ligado={configurado}
         />
@@ -115,6 +151,20 @@ export default async function Informacoes({
             valor={negocio.frase}
             maxLength={160}
           />
+          {/*
+            O fuso mora aqui, e saiu do bloco de endereço de propósito: ele
+            manda no selo de aberto e fechado, que a página mostra para quem
+            atende de qualquer lugar. Dentro da dobra do endereço, quem trabalha
+            online passaria direto por ele e a hora do selo ficaria a de
+            Brasília para quem atende no Acre.
+          */}
+          <Escolha
+            id="fuso"
+            rotulo="Fuso horário"
+            dica="Define a hora usada no selo de aberto e fechado."
+            valor={negocio.fuso}
+            opcoes={FUSOS}
+          />
         </Grupo>
 
         <Grupo titulo="WhatsApp e catálogo" duplo>
@@ -127,19 +177,15 @@ export default async function Informacoes({
             inputMode="tel"
             autoComplete="tel"
           />
-          <AreaTexto
-            id="mensagemPadrao"
+          <MensagemDoBotao
+            negocio={negocio}
             rotulo="Mensagem que já vem escrita"
             dica="É o que o cliente vê digitado quando toca no botão."
-            valor={negocio.mensagemPadrao}
-            maxLength={200}
           />
-          <AreaTexto
-            id="mensagemItem"
+          <MensagemDosItens
+            negocio={negocio}
             rotulo="Mensagem dos itens"
             dica="Vale para todos os itens de uma vez. O {item} vira o nome do produto."
-            valor={negocio.mensagemItem}
-            maxLength={200}
           />
           <Escolha
             id="tituloCatalogo"
@@ -156,7 +202,12 @@ export default async function Informacoes({
           />
         </Grupo>
 
-        <Grupo titulo="Endereço" duplo>
+        <GrupoRecolhivel
+          titulo="Endereço"
+          resumo={resumoDoEndereco}
+          aberto={enderecoAberto}
+          duplo
+        >
           {/* A rua é a linha mais comprida do grupo, então fica com a largura
               toda e deixa cidade, UF e CEP dividirem a linha de baixo. */}
           <div className="lg:col-span-2">
@@ -202,14 +253,7 @@ export default async function Informacoes({
             valor={negocio.mapsUrl}
             inputMode="url"
           />
-          <Escolha
-            id="fuso"
-            rotulo="Fuso horário"
-            dica="Define a hora usada no selo de aberto e fechado."
-            valor={negocio.fuso}
-            opcoes={FUSOS}
-          />
-        </Grupo>
+        </GrupoRecolhivel>
 
         <BarraSalvar>
           <Botao type="submit">Salvar</Botao>

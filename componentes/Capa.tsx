@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { posicaoDoFoco } from "@/lib/supabase/imagens";
 import type { Negocio } from "@/lib/tipos";
 
 export function Capa({
@@ -31,6 +32,10 @@ export function Capa({
         primeira tela, que e o oposto do que uma capa deveria fazer.
       */}
       {mostrarCapa && negocio.capa ? (
+        /* O ponto que a dona escolheu no painel manda no corte, e o mesmo par
+           de números serve as duas molduras desta faixa: 16 por 9 no celular e
+           64 por 15 no monitor. Capa sem ponto gravado sai centralizada, que é
+           o corte de sempre. */
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-borda lg:aspect-[64/15]">
           <Image
             src={negocio.capa.url}
@@ -40,6 +45,7 @@ export function Capa({
             priority
             fetchPriority="high"
             sizes="(max-width: 560px) 100vw, (max-width: 1024px) 560px, 1024px"
+            style={{ objectPosition: posicaoDoFoco(negocio.capa.foco) }}
             className="h-full w-full object-cover"
           />
         </div>

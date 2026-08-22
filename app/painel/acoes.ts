@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { doDono, publicar, salvar } from "@/lib/dados";
-import { motivoDaRecusa, type RecusaDados } from "@/lib/dados/erros";
+import { MOTIVOS_DADOS, motivoDaRecusa, type RecusaDados } from "@/lib/dados/erros";
 import { guardar } from "./guardar";
 import { configurado } from "@/lib/supabase/config";
 import {
@@ -11,7 +11,9 @@ import {
   caminhoValido,
   conferirArquivo,
   ehPasta,
+  limitarFoco,
   MEDIDAS,
+  MOTIVOS_IMAGEM,
   type PastaDeImagem,
   type RecusaImagem,
 } from "@/lib/supabase/imagens";
@@ -385,4 +387,42 @@ export async function salvarImagemDoNegocio(
     ok: true,
     anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,
   };
+}
+
+/**
+ * O ponto da capa que precisa aparecer.
+ *
+ * Grava sozinho, junto do envio da imagem, e fora do Salvar do rodapé: quem
+ * arrasta o ponto está olhando a prévia da capa, e o resultado do arraste é a
+ * própria prévia mudando. Fazer o ajuste esperar um botão lá embaixo colocaria
+ * um segundo momento no meio de uma coisa que já se explica na tela.
+ *
+ * Os dois números são conferidos aqui porque Server Action é endereço público,
+ * e a mesma conta está escrita na restrição `capa_foco_faixa` da correção 014.
+ * Capa vazia recusa: ponto focal de foto nenhuma seria um par de números que
+ * página nenhuma lê.
+ */
+export async function salvarFocoDaCapa(
+  x: number,
+  y: number,
+): Promise<{ ok: true } | { ok: false; motivo: string }> {
+  const negocio = await doDono();
+  if (!negocio.capa) return { ok: false, motivo: MOTIVOS_IMAGEM.guardar };
+
+  const capa: Foto = {
+    ...negocio.capa,
+    foco: { x: limitarFoco(x), y: limitarFoco(y) },
+  };
+
+  try {
+    await salvar({ ...negocio, capa });
+  } catch (erro) {
+    const motivo = motivoDaRecusa(erro);
+    if (motivo === null) throw erro;
+    return { ok: false, motivo: MOTIVOS_DADOS[motivo] };
+  }
+
+  revalidatePath(`/${negocio.slug}`);
+  revalidatePath("/painel");
+  return { ok: true };
 }
