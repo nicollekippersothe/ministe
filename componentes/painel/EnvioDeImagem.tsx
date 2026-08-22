@@ -37,13 +37,14 @@ import { LADO_MAXIMO, reduzirImagem } from "./reduzirImagem";
  * A ordem dos passos é de propósito:
  *
  * 1. conferir o tipo, antes de qualquer byte sair;
- * 2. reduzir a foto no próprio celular, que é o que ./reduzirImagem.ts faz;
- * 3. conferir o tamanho do arquivo que de fato vai subir;
- * 4. mostrar a prévia local, que aparece na hora e independe de rede;
- * 5. pedir ao servidor o caminho, que carrega o id do negócio;
- * 6. subir o arquivo;
- * 7. gravar o caminho na coluna;
- * 8. apagar o arquivo anterior do bucket.
+ * 2. conferir que o navegador abre o arquivo, que é o passo do `ehImagem`;
+ * 3. reduzir a foto no próprio celular, que é o que ./reduzirImagem.ts faz;
+ * 4. conferir o tamanho do arquivo que de fato vai subir;
+ * 5. mostrar a prévia local, que aparece na hora e independe de rede;
+ * 6. pedir ao servidor o caminho, que carrega o id do negócio;
+ * 7. subir o arquivo;
+ * 8. gravar o caminho na coluna;
+ * 9. apagar o arquivo anterior do bucket.
  *
  * O passo 8 é o caminho feliz que a correção 008 descreve. A rede embaixo dele
  * é o gatilho `negocios_enfileira_removida`, que guarda o caminho que saiu de
@@ -70,6 +71,38 @@ const VAZIOS: Record<PastaDeImagem, string> = {
  */
 const SO_PREVIA =
   "A prévia mostra como a imagem fica na página. O envio guarda o arquivo assim que o banco de imagens estiver ligado.";
+
+/**
+ * Se o navegador realmente abre este arquivo como imagem.
+ *
+ * **Este passo faltava, e a falta dele era imagem quebrada na página no ar.**
+ * O `conferirArquivo` lê `file.type`, que é o tipo que o sistema do celular
+ * declara pela extensão, e a extensão mente com facilidade: uma foto de iPhone
+ * renomeada para `.jpg` chega aqui dizendo `image/jpeg`, passa na conferência
+ * de tipo, passa na de tamanho e sobe. O bucket confere a mesma coisa
+ * declarada e aceita também. A coluna guarda o caminho, a página pública põe a
+ * imagem, e o navegador de quem visita descobre o que ninguém tinha
+ * perguntado: aqueles bytes não desenham nada.
+ *
+ * `createImageBitmap` é a pergunta certa porque é a mesma decodificação que o
+ * navegador de quem visita vai fazer. `reduzirImagem` já a fazia, e engolia a
+ * resposta de propósito, devolvendo o arquivo original em qualquer falha: o
+ * contrato dele é reduzir ou passar adiante, e ele mantém esse contrato. Quem
+ * recusa é aqui.
+ *
+ * Custa uma decodificação a mais por arquivo escolhido, e ela acontece com o
+ * "Preparando a imagem" já na tela. Vale o preço: a alternativa é a pessoa
+ * descobrir pela página dela.
+ */
+async function ehImagem(arquivo: File): Promise<boolean> {
+  try {
+    const bitmap = await createImageBitmap(arquivo);
+    bitmap.close();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function frase(gravado: Extract<GravacaoDeImagem, { ok: false }>): string {
   return gravado.recusa === "banco"
@@ -103,6 +136,26 @@ export function EnvioDeImagem({
    */
   const [ocupado, setOcupado] = useState<"envio" | "remocao" | null>(null);
   const [recado, setRecado] = useState<string | null>(null);
+  /*
+   * Se o último recado é uma recusa. A frase sozinha ficava na mesma linha
+   * cinza de "Enviando a imagem", no rodapé do cartão, e passava batido:
+   * a pessoa via a capa continuar vazia e concluía que a tela tinha quebrado.
+   * Recusa vira `alert` e ganha a cor de destaque, que é como o resto do painel
+   * já mostra o que precisa de uma ação de volta.
+   */
+  const [recusado, setRecusado] = useState(false);
+
+  /** Recusa: a frase aparece como aviso, e o passo para sair dele vem junto. */
+  function recusar(frase: string) {
+    setRecusado(true);
+    setRecado(frase);
+  }
+
+  /** Andamento e sucesso: a frase é só um relato do que está acontecendo. */
+  function contar(frase: string) {
+    setRecusado(false);
+    setRecado(frase);
+  }
 
   const id = `imagem-${pasta}`;
   const redonda = pasta === "logo";
@@ -125,32 +178,45 @@ export function EnvioDeImagem({
     // O tipo é conferido no arquivo cru, antes de tudo: reduzir um PDF seria
     // trabalho para chegar na mesma recusa.
     if (!conferirArquivo({ type: escolhido.type, size: 0 }).ok) {
-      setRecado(MOTIVOS_IMAGEM.tipo);
+      recusar(MOTIVOS_IMAGEM.tipo);
       return;
     }
 
     setOcupado("envio");
-    setRecado("Preparando a imagem.");
+    contar("Preparando a imagem.");
 
     try {
+      /*
+       * A recusa que faltava, e ela vem antes de qualquer byte sair daqui.
+       * Ver `ehImagem` acima: o tipo declarado pelo celular passa na conferência
+       * de cima mesmo quando os bytes são de outro formato, e o resultado disso
+       * é a imagem chegar quebrada na página pública. A frase é a mesma da
+       * recusa de tipo, que é o que este caso é: o arquivo escolhido está fora
+       * dos três que a página guarda, e a extensão dizia outra coisa.
+       */
+      if (!(await ehImagem(escolhido))) {
+        recusar(MOTIVOS_IMAGEM.tipo);
+        return;
+      }
+
       const arquivo = await reduzirImagem(escolhido, LADO_MAXIMO[pasta]);
 
       // O tamanho é conferido no arquivo que vai subir, e não no que saiu da
       // câmera: é ele que o bucket vai medir do outro lado.
       const conferido = conferirArquivo(arquivo);
       if (!conferido.ok) {
-        setRecado(MOTIVOS_IMAGEM[conferido.motivo]);
+        recusar(MOTIVOS_IMAGEM[conferido.motivo]);
         return;
       }
 
       trocarPrevia(URL.createObjectURL(arquivo));
 
       if (!ligado) {
-        setRecado(SO_PREVIA);
+        contar(SO_PREVIA);
         return;
       }
 
-      setRecado("Enviando a imagem.");
+      contar("Enviando a imagem.");
 
       const preparo = await prepararEnvioDeImagem(
         pasta,
@@ -158,7 +224,7 @@ export function EnvioDeImagem({
         arquivo.size,
       );
       if (!preparo.ok) {
-        setRecado(MOTIVOS_IMAGEM[preparo.motivo]);
+        recusar(MOTIVOS_IMAGEM[preparo.motivo]);
         return;
       }
 
@@ -166,7 +232,7 @@ export function EnvioDeImagem({
         .storage.from(BUCKET)
         .upload(preparo.caminho, arquivo, { contentType: arquivo.type });
       if (error) {
-        setRecado(MOTIVOS_IMAGEM.envio);
+        recusar(MOTIVOS_IMAGEM.envio);
         return;
       }
 
@@ -175,7 +241,7 @@ export function EnvioDeImagem({
         // O arquivo subiu e a coluna ficou como estava, então ele já nasceu
         // órfão: sai agora, em vez de esperar a varredura de imagens_orfas.
         await sb().storage.from(BUCKET).remove([preparo.caminho]);
-        setRecado(frase(gravado));
+        recusar(frase(gravado));
         return;
       }
 
@@ -183,7 +249,7 @@ export function EnvioDeImagem({
       if (gravado.anterior !== null) {
         await sb().storage.from(BUCKET).remove([gravado.anterior]);
       }
-      setRecado("Imagem no ar na sua página.");
+      contar("Imagem no ar na sua página.");
       router.refresh();
     } finally {
       setOcupado(null);
@@ -192,11 +258,11 @@ export function EnvioDeImagem({
 
   async function remover() {
     setOcupado("remocao");
-    setRecado("Atualizando a sua página.");
+    contar("Atualizando a sua página.");
     try {
       const gravado = await salvarImagemDoNegocio(pasta, null);
       if (!gravado.ok) {
-        setRecado(frase(gravado));
+        recusar(frase(gravado));
         return;
       }
 
@@ -206,7 +272,7 @@ export function EnvioDeImagem({
 
       trocarPrevia(null);
       setCaminho(null);
-      setRecado(VAZIOS[pasta]);
+      contar(VAZIOS[pasta]);
       router.refresh();
     } finally {
       setOcupado(null);
@@ -291,7 +357,7 @@ export function EnvioDeImagem({
               ocupado !== null
                 ? "pointer-events-none bg-fundo text-suave"
                 : "cursor-pointer bg-texto text-superficie"
-            } peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-destaque`}
+            } transition-transform duration-75 active:scale-[0.97] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-destaque`}
           >
             {ocupado === "envio"
               ? "Enviando"
@@ -305,7 +371,7 @@ export function EnvioDeImagem({
               type="button"
               onClick={() => void remover()}
               disabled={ocupado !== null}
-              className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-borda bg-superficie px-4 text-sm font-semibold text-texto disabled:text-suave"
+              className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-borda bg-superficie px-4 text-sm font-semibold text-texto transition-transform duration-75 active:scale-[0.97] disabled:text-suave"
             >
               Remover
             </button>
@@ -314,9 +380,13 @@ export function EnvioDeImagem({
       </div>
 
       <p
-        role="status"
+        role={recusado ? "alert" : "status"}
         aria-live="polite"
-        className="mt-3 text-xs leading-relaxed text-suave"
+        className={
+          recusado
+            ? "mt-3 rounded-lg border border-destaque/30 bg-destaque/8 px-3 py-2 text-xs leading-relaxed font-medium text-destaque"
+            : "mt-3 text-xs leading-relaxed text-suave"
+        }
       >
         {recado ??
           (ligado

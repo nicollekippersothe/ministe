@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { alternarPublicacao } from "@/app/painel/acoes";
+import { BotaoDeAcao } from "./BotaoDeAcao";
 import { ListaSecoes } from "./ListaSecoes";
 import { IconeSeta } from "@/componentes/Icones";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
@@ -47,14 +48,14 @@ export function CartaoEstado({
       <div className="mt-4 flex flex-col gap-2.5">
         <Link
           href={noAr ? `/${negocio.slug}` : "/painel/previa"}
-          className="flex h-12 items-center justify-center gap-2 rounded-full border border-borda bg-fundo px-5 font-semibold text-texto"
+          className="flex h-12 items-center justify-center gap-2 rounded-full border border-borda bg-fundo px-5 font-semibold text-texto transition-transform duration-75 active:scale-[0.97]"
         >
           {noAr ? "Ver a página" : "Ver a prévia"}
           <IconeSeta className="h-4 w-4" />
         </Link>
 
         <form action={alternarPublicacao}>
-          <button
+          <BotaoDeAcao
             className={`flex h-12 w-full items-center justify-center rounded-full px-5 font-semibold ${
               noAr
                 ? "border border-borda bg-superficie text-texto"
@@ -62,7 +63,7 @@ export function CartaoEstado({
             }`}
           >
             {noAr ? "Tirar do ar" : provisoria ? "Entrar e publicar" : "Publicar"}
-          </button>
+          </BotaoDeAcao>
         </form>
       </div>
 

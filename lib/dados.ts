@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { recusaDoBanco } from "./dados/erros";
 import { doceria, EXEMPLOS } from "./exemplos";
@@ -110,8 +111,22 @@ export async function porSlug(slug: string): Promise<Negocio | null> {
  * lugar onde as duas coisas se resolvem. Por isso o retorno continua sendo um
  * negócio e não um talvez: `redirect` interrompe, então quem chama segue com
  * dado de verdade na mão.
+ *
+ * **Uma vez por pedido, pelo `cache` do React.** Toda tela do painel pede esta
+ * mesma página duas vezes: uma no `app/painel/layout.tsx`, que monta a coluna
+ * de navegação, e outra na própria tela. São duas idas ao banco em São Paulo
+ * para a mesma linha, uma esperando a outra, e a segunda chega sempre com a
+ * resposta da primeira. Com o `cache` a consulta sai uma vez e as duas leituras
+ * recebem a mesma promessa.
+ *
+ * O `cache` nasce e morre com o pedido, então duas pessoas nunca compartilham
+ * resposta. E como ele guarda a promessa, e não o valor, o `redirect` de dentro
+ * continua interrompendo quem chamar depois.
+ *
+ * Escrita continua fora disto: `salvar` e `publicar` falam com o banco direto,
+ * e quem chama uma delas está num pedido próprio, que termina em redirect.
  */
-export async function doDono(): Promise<Negocio> {
+export const doDono = cache(async function doDono(): Promise<Negocio> {
   if (!configurado) {
     const todos = await ler();
     return todos[0] ?? doceria;
@@ -131,7 +146,7 @@ export async function doDono(): Promise<Negocio> {
 
   if (!data) redirect("/criar");
   return paraNegocio(data);
-}
+});
 
 /**
  * Um endereço só está livre se ninguém pegou.
@@ -596,21 +611,8 @@ export async function registrarDenuncia(denuncia: {
  * cobrar quando vier nulo, em vez de inventar um valor.
  */
 export async function idDoNegocioDoDono(): Promise<string | null> {
-  if (!configurado) return null;
-
-  const uid = await usuarioAtual();
-  if (uid === null) return null;
-
-  const sb = await servidor();
-  const { data } = await sb
-    .from("negocios")
-    .select("id")
-    .eq("dono_id", uid)
-    .order("criado_em")
-    .limit(1)
-    .maybeSingle();
-
-  const id = data?.id;
+  const linha = await linhaDaCobranca();
+  const id = linha?.id;
   return typeof id === "string" && id !== "" ? id : null;
 }
 
@@ -657,6 +659,41 @@ function statusDaAssinatura(bruto: unknown): SituacaoDaAssinatura["status"] {
     : "encerrada";
 }
 
+/**
+ * A linha de cobrança de quem está pedindo, uma vez por pedido.
+ *
+ * **Existe para o uuid e o estado da cobrança saírem da mesma ida ao banco.**
+ * `idDoNegocioDoDono` fazia uma consulta própria só para pegar o `id`, e a tela
+ * de números pedia as duas em fila: o estado do plano primeiro, para saber a
+ * janela de dias, e o uuid depois, para pedir os eventos. Eram três idas a São
+ * Paulo, uma esperando a outra, e a do meio pedia uma coluna que a de cima já
+ * tinha trazido.
+ *
+ * Devolve nulo em vez de desviar, e é o que permite as duas leituras
+ * compartilharem: `cobrancaDoDono` desvia para o cadastro porque é uma tela e
+ * precisa de página; `idDoNegocioDoDono` responde nulo porque quem chama recusa
+ * cobrar sozinho, e uma delas é a própria tela de cadastro, onde desviar para
+ * o cadastro seria um laço.
+ */
+const linhaDaCobranca = cache(async function linhaDaCobranca() {
+  if (!configurado) return null;
+
+  const uid = await usuarioAtual();
+  if (uid === null) return null;
+
+  const { data } = await (await servidor())
+    .from("negocios")
+    .select(
+      "id, plano, plano_expira_em, assinaturas(status, ciclo, meio, teste_termina_em, ciclo_termina_em, criado_em)",
+    )
+    .eq("dono_id", uid)
+    .order("criado_em")
+    .limit(1)
+    .maybeSingle();
+
+  return data ?? null;
+});
+
 export async function cobrancaDoDono(): Promise<EstadoDaCobranca> {
   if (!configurado) {
     // Sem banco a tela ainda abre, mostra os preços e explica o que falta. É o
@@ -671,20 +708,7 @@ export async function cobrancaDoDono(): Promise<EstadoDaCobranca> {
     };
   }
 
-  const uid = await usuarioAtual();
-  if (uid === null) redirect("/criar");
-
-  const sb = await servidor();
-  const { data } = await sb
-    .from("negocios")
-    .select(
-      "id, plano, plano_expira_em, assinaturas(status, ciclo, meio, teste_termina_em, ciclo_termina_em, criado_em)",
-    )
-    .eq("dono_id", uid)
-    .order("criado_em")
-    .limit(1)
-    .maybeSingle();
-
+  const data = await linhaDaCobranca();
   if (!data) redirect("/criar");
 
   const expiraEm =
@@ -783,8 +807,12 @@ export async function numerosDoNegocio(
     };
   }
 
-  const negocioId = await idDoNegocioDoDono();
-  const negocio = await doDono();
+  // As duas juntas: `doDono` já veio do cache da tela, e o uuid sai da mesma
+  // linha de cobrança que a tela pediu antes.
+  const [negocioId, negocio] = await Promise.all([
+    idDoNegocioDoDono(),
+    doDono(),
+  ]);
 
   if (negocioId === null) {
     const serie = montarSerie([], dias, negocio.fuso, agora);

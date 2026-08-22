@@ -25,7 +25,7 @@ export function ListaSecoes() {
             <Link
               href={s.href}
               aria-current={aqui ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 lg:border-transparent lg:py-2.5 ${
+              className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-transform duration-75 active:scale-[0.98] lg:border-transparent lg:py-2.5 ${
                 aqui
                   ? "border-borda bg-fundo lg:bg-texto/6"
                   : "border-borda bg-superficie lg:bg-transparent lg:hover:bg-superficie"

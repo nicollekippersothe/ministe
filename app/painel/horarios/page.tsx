@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { copiarSegundaParaSemana, salvarHorarios } from "../acoes";
 import { Aviso } from "@/componentes/painel/Aviso";
+import { BotaoDeAcao } from "@/componentes/painel/BotaoDeAcao";
 import { BarraSalvar, Botao } from "@/componentes/painel/Campos";
 import { doDono } from "@/lib/dados";
 import { DIAS_LONGO, porDiaSemana } from "@/lib/horarios";
@@ -145,12 +146,12 @@ export default async function Horarios({
           );
         })}
 
-        <button
+        <BotaoDeAcao
           formAction={copiarSegundaParaSemana}
           className="mt-1 h-12 w-full rounded-full border border-borda bg-superficie px-5 font-semibold text-texto lg:w-auto lg:self-start lg:px-8"
         >
           Copiar segunda para terça a sexta
-        </button>
+        </BotaoDeAcao>
 
         <BarraSalvar>
           <Botao type="submit">Salvar</Botao>

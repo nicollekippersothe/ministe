@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BotaoDeAcao } from "./BotaoDeAcao";
 
 /**
  * Campos do painel.
@@ -232,12 +233,14 @@ export function Botao({
     tom === "forte"
       ? "bg-texto text-superficie"
       : "border border-borda bg-superficie text-texto";
+  // Passa por BotaoDeAcao para o toque ter resposta na hora: afunda no dedo,
+  // gira enquanto o servidor responde e desliga os irmãos do mesmo formulário.
   return (
-    <button
+    <BotaoDeAcao
       className={`flex h-12 w-full items-center justify-center rounded-full px-5 font-semibold ${cor}`}
       {...resto}
     >
       {children}
-    </button>
+    </BotaoDeAcao>
   );
 }

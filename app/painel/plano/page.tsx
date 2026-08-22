@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { exigirLogin } from "@/app/painel/vitrine";
+import { BotaoDeAcao } from "@/componentes/painel/BotaoDeAcao";
 import { AvisoCobranca } from "@/componentes/painel/AvisoCobranca";
 import { CamposCartao } from "@/componentes/painel/CamposCartao";
 import { cobrancaDoDono } from "@/lib/dados";
@@ -323,12 +324,12 @@ async function Pix({
 
         <form action={pagarComPix} className="mt-6">
           <input type="hidden" name="ciclo" value={ciclo} />
-          <button
+          <BotaoDeAcao
             type="submit"
             className="h-13 w-full rounded-full bg-texto text-[1.05rem] font-medium text-superficie"
           >
             Gerar o código de {preco(plano.valorCentavos)}
-          </button>
+          </BotaoDeAcao>
         </form>
       </div>
     );
@@ -492,12 +493,12 @@ function Assinado({
 
       {encerrada ? null : (
         <form action={cancelarPlano}>
-          <button
+          <BotaoDeAcao
             type="submit"
             className="h-11 rounded-full border border-borda px-5 text-sm font-medium text-texto"
           >
             Cancelar a assinatura
-          </button>
+          </BotaoDeAcao>
           <p className="mt-2 text-sm leading-relaxed text-suave">
             O cancelamento encerra as próximas cobranças. O plano pago segue
             valendo até o fim do período que já está pago.

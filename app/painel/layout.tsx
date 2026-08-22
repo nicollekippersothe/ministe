@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import { PreservarDigitado } from "./PreservarDigitado";
 import { Navegacao } from "@/componentes/painel/Navegacao";
 import { Marca } from "@/componentes/Marca";
 import { doDono } from "@/lib/dados";
@@ -26,11 +28,21 @@ export default async function LayoutPainel({
 }: {
   children: React.ReactNode;
 }) {
-  const negocio = await doDono();
-  const provisoria = await contaProvisoria();
+  // As duas juntas: nenhuma depende da outra, e cada uma é uma ida ao banco.
+  const [negocio, provisoria] = await Promise.all([doDono(), contaProvisoria()]);
 
   return (
     <div data-tema="areia" className="min-h-dvh bg-fundo">
+      {/*
+        Sem desenho na tela: guarda o que foi digitado no envio e devolve
+        quando o servidor recusa. Ver o arquivo dele para o porquê do mecanismo.
+        O Suspense é exigência do `useSearchParams`, que ele usa para saber que
+        a volta trouxe `?erro=`.
+      */}
+      <Suspense fallback={null}>
+        <PreservarDigitado />
+      </Suspense>
+
       <div className="mx-auto w-full max-w-[34rem] px-5 pt-5 pb-8 lg:max-w-5xl lg:px-8">
         <Marca href="/painel" />
 

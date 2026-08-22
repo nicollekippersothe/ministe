@@ -67,7 +67,7 @@ function Linha({
     <li>
       <Link
         href={href}
-        className="flex items-start gap-4 px-5 py-4 hover:bg-fundo"
+        className="flex items-start gap-4 px-5 py-4 hover:bg-fundo active:bg-fundo"
       >
         <span className="w-28 shrink-0 text-sm text-suave">{rotulo}</span>
         <span
@@ -134,17 +134,27 @@ export default async function Painel({
   searchParams: Promise<{ rascunho?: string; erro?: string }>;
 }) {
   exigirLogin();
-  const { rascunho, erro } = await searchParams;
-  const negocio = await doDono();
-  const noAr = negocio.publicado;
-  // Conta provisória monta e guarda, e o Google é que põe no ar. A tela diz
-  // isso antes do clique, em vez de deixar a pessoa descobrir no erro.
-  const provisoria = await contaProvisoria();
+  /*
+   * As quatro de uma vez, e não uma esperando a outra.
+   *
+   * Nenhuma delas precisa da resposta da anterior, e cada uma é uma ida ao
+   * banco em São Paulo. Em fila, esta tela levava o tempo das quatro somado; em
+   * paralelo, o da mais lenta. A pergunta de quem está pedindo sai uma vez só
+   * para as três, pelo `cache` de lib/supabase/servidor.ts.
+   */
+  const [{ rascunho, erro }, negocio, provisoria, cobranca] = await Promise.all([
+    searchParams,
+    doDono(),
+    // Conta provisória monta e guarda, e o Google é que põe no ar. A tela diz
+    // isso antes do clique, em vez de deixar a pessoa descobrir no erro.
+    contaProvisoria(),
+    // O estado da cobrança vem separado do negócio porque o `Negocio` não
+    // carrega nem o uuid nem a validade do plano, de propósito: ele é o tipo que
+    // a página pública também usa.
+    cobrancaDoDono(),
+  ]);
 
-  // O estado da cobrança vem separado do negócio porque o `Negocio` não carrega
-  // nem o uuid nem a validade do plano, de propósito: ele é o tipo que a página
-  // pública também usa.
-  const cobranca = await cobrancaDoDono();
+  const noAr = negocio.publicado;
 
   // Rua, cidade e UF numa linha só, na ordem em que a página pública mostra. O
   // CEP fica fora: numa linha de resumo ele ocupa espaço sem ajudar ninguém a

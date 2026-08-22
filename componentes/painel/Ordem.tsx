@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { IconeAvancar, IconeDescer, IconeSubir } from "@/componentes/Icones";
+import { BotaoDeAcao } from "./BotaoDeAcao";
 
 /** Uma ação de lista, que recebe o número da linha por `bind`. */
 type Alvo = (alvo: number, formData: FormData) => void;
@@ -50,7 +51,7 @@ function Botoes({
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-t border-borda px-4 py-3">
-      <button
+      <BotaoDeAcao
         type="submit"
         formAction={subir.bind(null, indice)}
         disabled={indice === 0}
@@ -58,9 +59,9 @@ function Botoes({
         className={quadrado}
       >
         <IconeSubir className="h-5 w-5" />
-      </button>
+      </BotaoDeAcao>
 
-      <button
+      <BotaoDeAcao
         type="submit"
         formAction={descer.bind(null, indice)}
         disabled={indice === total - 1}
@@ -68,7 +69,7 @@ function Botoes({
         className={quadrado}
       >
         <IconeDescer className="h-5 w-5" />
-      </button>
+      </BotaoDeAcao>
 
       <p className="text-xs tabular-nums text-suave">
         {indice + 1} de {total}
@@ -78,14 +79,14 @@ function Botoes({
         <summary className="flex h-11 cursor-pointer list-none items-center rounded-full px-3 text-sm font-medium text-suave">
           Remover
         </summary>
-        <button
+        <BotaoDeAcao
           type="submit"
           formAction={remover.bind(null, indice)}
           className="mt-1 h-11 rounded-full border border-borda bg-fundo px-4 text-sm font-semibold text-texto"
         >
           Remover este {prefixo}
           <span className="sr-only">, {nome}</span>
-        </button>
+        </BotaoDeAcao>
       </details>
     </div>
   );

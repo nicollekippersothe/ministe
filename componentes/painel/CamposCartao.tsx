@@ -376,7 +376,7 @@ export function CamposCartao({
         <button
           type="submit"
           disabled={ocupado}
-          className="h-13 w-full rounded-full bg-texto text-[1.05rem] font-medium text-superficie disabled:opacity-60"
+          className="h-13 w-full rounded-full bg-texto text-[1.05rem] font-medium text-superficie transition-transform duration-75 active:scale-[0.97] disabled:opacity-60"
         >
           {etapa === "carregando"
             ? "Preparando os campos"

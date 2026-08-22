@@ -66,7 +66,7 @@ passo(
 
 // O campo da abertura é o que transforma visita em intenção, então ele precisa
 // conferir de verdade, e não só parecer que confere.
-await p.fill('form[action="/criar"] input[name=slug]', "cafe alecrim novo");
+await p.fill('form[action="/criar"] input[name=slug]', "helena massagem nova");
 await p.waitForTimeout(900);
 passo(
   "o campo da abertura confere o endereço ao vivo",
@@ -116,8 +116,8 @@ await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });
 passo("o painel mostra o estado da página", (await p.textContent("body")).includes("No ar"));
 
 await p.goto(`${BASE}/painel/negocio`, { waitUntil: "networkidle" });
-await p.fill("#nome", "Café Alecrim, Confeitaria");
-await p.fill("#frase", "Bolo de pote, torta e salgado de festa, por encomenda.");
+await p.fill("#nome", "Helena Vasques, Massoterapia");
+await p.fill("#frase", "Massagem terapêutica e drenagem, com hora marcada.");
 await p.fill("#whatsapp", "(11) 98888-7777");
 await p.click('button[type="submit"]');
 await p.waitForURL(/salvo=1/);
@@ -129,8 +129,8 @@ passo(
 
 await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 const publica = await p.textContent("body");
-passo("a página pública mostra o nome novo", publica.includes("Café Alecrim, Confeitaria"));
-passo("a página pública mostra a frase nova", publica.includes("Bolo de pote"));
+passo("a página pública mostra o nome novo", publica.includes("Helena Vasques, Massoterapia"));
+passo("a página pública mostra a frase nova", publica.includes("Massagem terapêutica"));
 passo(
   "o link do WhatsApp sai com o código do país",
   (await p.getAttribute('a[data-evento="clique_whatsapp"]', "href")).startsWith(
@@ -267,15 +267,15 @@ passo(
   (await p.textContent("body")).includes("plano pago"),
 );
 
-// Os quatro exemplos usam a letra padrão de propósito: numa peça com vários
-// negócios lado a lado, quatro letras diferentes fazem parecer quatro
-// produtos. Quem prova que a escolha existe é a tela de aparência, acima.
+// Os sete exemplos usam a letra padrão de propósito: numa peça com vários
+// negócios lado a lado, sete letras diferentes fazem parecer sete produtos.
+// Quem prova que a escolha existe é a tela de aparência, acima.
 await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 passo(
   "a página gratuita usa a letra padrão",
   (await p.getAttribute("[data-fonte]", "data-fonte")) === "moderno",
 );
-await p.goto(`${BASE}/studio-raiz`, { waitUntil: "networkidle" });
+await p.goto(`${BASE}/bia-marconi`, { waitUntil: "networkidle" });
 passo(
   "e a do plano pago usa a mesma, para os exemplos ficarem irmãos",
   (await p.getAttribute("[data-fonte]", "data-fonte")) === "moderno",
@@ -306,11 +306,14 @@ passo(
   pago.includes("Denunciar esta página"),
 );
 
-await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
+// A confeitaria é o exemplo que aponta o segundo botão para fora do WhatsApp.
+await p.goto(`${BASE}/alecrim-confeitaria`, { waitUntil: "networkidle" });
 passo(
-  "o iFood aparece ao lado do WhatsApp na doceria",
+  "o iFood aparece ao lado do WhatsApp na confeitaria",
   (await p.textContent("body")).includes("Pedir pelo iFood"),
 );
+
+await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 passo(
   "a assinatura aparece na página gratuita",
   (await p.textContent("body")).includes("feito com"),
@@ -370,7 +373,7 @@ await p.goto(`${BASE}/painel/catalogo`, { waitUntil: "networkidle" });
 const itensAntes = await p.locator("fieldset[id^=item-]").count();
 passo(
   "o catálogo lista os itens que a página mostra",
-  (await p.textContent("main")).includes("Cheesecake de frutas vermelhas") &&
+  (await p.textContent("main")).includes("Massagem relaxante, 60 minutos") &&
     itensAntes > 0,
 );
 
@@ -387,12 +390,12 @@ passo(
 
 // O banco guarda centavos, e a tela fala reais. A ida e a volta passam por
 // lib/formato.ts, e é aqui que o par inteiro é conferido de ponta a ponta.
-const doceria = JSON.parse(await readFile(".dados/negocios.json", "utf8")).find(
+const noArquivo = JSON.parse(await readFile(".dados/negocios.json", "utf8")).find(
   (n) => n.slug === "demo",
 );
 passo(
   "o preço em reais chega ao banco em centavos",
-  doceria?.itens.at(-1)?.precoCentavos === 1250,
+  noArquivo?.itens.at(-1)?.precoCentavos === 1250,
 );
 
 await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
@@ -473,8 +476,8 @@ passo(
 await p.goto(`${BASE}/painel/links`, { waitUntil: "networkidle" });
 const linksAntes = await p.locator("fieldset[id^=link-]").count();
 
-await p.fill("#novo-rotulo", "Ver o cardápio completo");
-await p.fill("#novo-url", "bit.ly/cardapio");
+await p.fill("#novo-rotulo", "Ver a agenda completa");
+await p.fill("#novo-url", "bit.ly/agenda");
 await p.click('button:has-text("Acrescentar à página")');
 await p.waitForURL(/erro=link_encurtador/);
 passo(
@@ -482,21 +485,21 @@ passo(
   (await p.textContent('main [role="alert"]')).includes("endereço completo"),
 );
 
-await p.fill("#novo-rotulo", "Ver o cardápio completo");
-await p.fill("#novo-url", "doceria-da-ana.com.br/cardapio");
+await p.fill("#novo-rotulo", "Ver a agenda completa");
+await p.fill("#novo-url", "helena-vasques.com.br/agenda");
 await p.selectOption("#novo-icone", "site");
 await p.click('button:has-text("Acrescentar à página")');
 await p.waitForURL(/acrescentado=1/);
 passo(
   "endereço sem https é aceito e completado no link novo",
   (await p.inputValue(`#link-${linksAntes}-url`)) ===
-    "https://doceria-da-ana.com.br/cardapio",
+    "https://helena-vasques.com.br/agenda",
 );
 
 await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
 passo(
   "e o link novo vira botão na página pública",
-  (await p.textContent("body")).includes("Ver o cardápio completo"),
+  (await p.textContent("body")).includes("Ver a agenda completa"),
 );
 
 await p.goto(`${BASE}/painel/links`, { waitUntil: "networkidle" });
@@ -567,12 +570,12 @@ passo(
   (await p.textContent('main [role="alert"]')).includes("endereço completo"),
 );
 
-await p.fill("#secundaria-url", "doceria-da-ana.com.br");
+await p.fill("#secundaria-url", "helena-vasques.com.br");
 await p.click('button:has-text("Salvar")');
 await p.waitForURL(/salvo=1/);
 passo(
   "endereço sem https é aceito e completado",
-  (await p.inputValue("#secundaria-url")) === "https://doceria-da-ana.com.br/",
+  (await p.inputValue("#secundaria-url")) === "https://helena-vasques.com.br/",
 );
 
 await p.goto(`${BASE}/criar`, { waitUntil: "networkidle" });
@@ -715,6 +718,54 @@ await p.waitForSelector("h1:has-text('Denúncia recebida')");
 passo(
   "e termina numa confirmação, sem pedir e-mail",
   !(await p.textContent("body")).includes("Seu e-mail"),
+);
+
+// ---------------------------------------------------------------------------
+// A recusa do servidor devolve a tela com o que a pessoa escreveu
+// ---------------------------------------------------------------------------
+
+/*
+ * O pior defeito que este painel já teve, e ele aconteceu com a dona do
+ * produto: ela preencheu a tela de negócio, salvou, o servidor recusou um campo
+ * e a tela voltou em branco. A ação confere, chama `redirect` para `?erro=`, e a
+ * página é montada de novo lendo do banco, então o que ainda não tinha sido
+ * gravado desaparecia. Quem devolve é `app/painel/PreservarDigitado.tsx`.
+ *
+ * Fica no fim de propósito: mexe nos campos da página criada mais acima e
+ * termina desfazendo o que escreveu, para nenhum passo anterior depender disto.
+ */
+await p.goto(`${BASE}/painel/negocio`, { waitUntil: "networkidle" });
+
+const fraseDoBanco = await p.inputValue("#frase");
+await p.fill("#nome", "Nome digitado e ainda por salvar");
+await p.fill("#frase", "Frase digitada e ainda por salvar");
+await p.fill("#cep", "abc12");
+await p.click('button:has-text("Salvar")');
+await p.waitForURL(/erro=cep/, { timeout: 20000 });
+await p.waitForTimeout(1200);
+
+passo(
+  "a recusa do servidor devolve a tela com o nome que a pessoa digitou",
+  (await p.inputValue("#nome")) === "Nome digitado e ainda por salvar",
+);
+passo(
+  "e com a frase também, que nunca chegou ao banco",
+  (await p.inputValue("#frase")) === "Frase digitada e ainda por salvar",
+);
+passo(
+  "e o campo recusado continua à vista para ela corrigir",
+  (await p.inputValue("#cep")) === "abc12",
+);
+
+// Salva de verdade e confere que o rascunho sai do navegador.
+await p.fill("#cep", "");
+await p.fill("#frase", fraseDoBanco ?? "");
+await p.click('button:has-text("Salvar")');
+await p.waitForURL(/salvo=1/, { timeout: 20000 });
+await p.waitForTimeout(800);
+passo(
+  "e o rascunho sai do navegador assim que a gravação passa",
+  (await p.evaluate(() => sessionStorage.getItem("entrais:digitado"))) === null,
 );
 
 await navegador.close();
