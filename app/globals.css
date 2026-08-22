@@ -52,6 +52,60 @@
   --c-fechado-texto: #67615c;
 }
 
+/*
+ * Noite. A parede escura de galeria.
+ *
+ * Existe para quem expõe trabalho visual, e o motivo é o mesmo pelo qual museu
+ * pinta a sala de escuro: a foto avança e a parede recua. Tatuador, fotógrafo,
+ * ilustrador e tarólogo ganham mais com ela do que com qualquer clarinho.
+ *
+ * O texto de apoio ficou em Pedra clara, e não no cinza médio óbvio: sobre
+ * fundo escuro o cinza médio some. Medido, 7,16 sobre o fundo e 6,57 sobre a
+ * superfície, bem acima dos 4,5 da WCAG. O destaque é o mesmo Barro da areia
+ * clareado até 8,94, porque a marca continua sendo a mesma marca.
+ */
+[data-tema="noite"] {
+  --c-fundo: #14120f;
+  --c-superficie: #1e1b17;
+  --c-texto: #f5f1e8;
+  --c-suave: #a89f92;
+  --c-borda: #322c25;
+  --c-destaque: #e0a878;
+  --c-zap: #34b37e;
+  --c-zap-forte: #2a9468;
+  --c-aberto-fundo: #12352a;
+  --c-aberto-texto: #6fd6a6;
+  --c-fechado-fundo: #2c2620;
+  --c-fechado-texto: #b5aa9c;
+}
+
+/*
+ * Menta. O claro frio, para quem atende pessoa.
+ *
+ * A areia é quente e acolhedora, e é ótima para comida e para peça feita à mão.
+ * Psicóloga, nutricionista e fisioterapeuta pedem o oposto: sala limpa, ar de
+ * consultório, verde sóbrio em vez de terra. É a mesma estrutura de tokens, com
+ * a temperatura invertida.
+ *
+ * O verde do destaque é escuro de propósito, 5,84 sobre o fundo. Verde claro em
+ * texto é a armadilha desta paleta: ele parece bonito no editor e reprova no
+ * contraste.
+ */
+[data-tema="menta"] {
+  --c-fundo: #f2f5f2;
+  --c-superficie: #ffffff;
+  --c-texto: #16201b;
+  --c-suave: #5d6b63;
+  --c-borda: #dce5de;
+  --c-destaque: #1f6b4f;
+  --c-zap: #0e7a55;
+  --c-zap-forte: #0b6647;
+  --c-aberto-fundo: #dff0e6;
+  --c-aberto-texto: #0b6647;
+  --c-fechado-fundo: #e6e9e6;
+  --c-fechado-texto: #5a6560;
+}
+
 * {
   min-width: 0;
 }

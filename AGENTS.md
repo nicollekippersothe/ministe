@@ -126,7 +126,8 @@ npm run logos     # redesenha os monogramas dos negócios de exemplo
 5. Upload de imagens.
 6. Catálogo e links. **Feito**, em `app/painel/catalogo` e `app/painel/links`.
 7. Contagem de visitas e cliques. **Feita.**
-8. Os outros dois temas.
+8. Os outros dois temas. **Feitos.** `noite` para quem expõe trabalho visual,
+   `menta` para quem atende pessoa. Ver `app/globals.css`.
 
 ## Fora da versão 1
 
