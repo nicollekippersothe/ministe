@@ -41,7 +41,9 @@ export function Horarios({ negocio }: { negocio: Negocio }) {
       <SeloHorario estado={estado} id="selo" />
 
       <details className="group mt-3">
-        <summary className="inline-flex cursor-pointer list-none items-center gap-2 text-sm text-suave hover:text-texto">
+        {/* Alvo de 44, pelo mesmo motivo do botão do catálogo: quem abre isto
+            está no celular, decidindo se dá tempo de ir hoje. */}
+        <summary className="-mx-2 inline-flex min-h-11 cursor-pointer list-none items-center gap-2 px-2 text-sm text-suave hover:text-texto">
           <IconeRelogio className="h-4 w-4" />
           Horários da semana
           <svg

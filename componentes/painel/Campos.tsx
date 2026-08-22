@@ -143,8 +143,20 @@ export function Marcar({
   dica?: string;
   marcado: boolean;
 }) {
+  /*
+   * O cartão inteiro é o alvo, e não só o quadradinho de 20 pixels.
+   *
+   * Medido em 20 por 20, que é metade do que o dedo precisa. Envolver tudo num
+   * `label` resolve sem mudar um pixel do desenho: o toque em qualquer lugar do
+   * cartão marca e desmarca, que é o comportamento que a pessoa já espera. O
+   * rótulo de dentro vira `span` porque `label` dentro de `label` é inválido, e
+   * quem passou a nomear o campo é o `label` de fora.
+   */
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-borda bg-superficie p-3.5">
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-start gap-3 rounded-xl border border-borda bg-superficie p-3.5"
+    >
       <input
         id={id}
         name={id}
@@ -154,16 +166,16 @@ export function Marcar({
         className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--c-destaque)]"
       />
       <div>
-        <label htmlFor={id} className="text-sm font-medium text-texto">
+        <span className="block text-sm font-medium text-texto">
           {rotulo}
-        </label>
+        </span>
         {dica ? (
           <p id={`${id}-dica`} className="mt-0.5 text-xs leading-relaxed text-suave">
             {dica}
           </p>
         ) : null}
       </div>
-    </div>
+    </label>
   );
 }
 

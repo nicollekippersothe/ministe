@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { salvarFocoDaCapa } from "@/app/painel/acoes";
 import { limitarFoco } from "@/lib/supabase/imagens";
@@ -54,10 +54,27 @@ export function FocoDaCapa({
    * foto justamente nas fotos em pé, que são as que mais precisam disto.
    */
   const quadro = useRef<HTMLSpanElement>(null);
+  const foto = useRef<HTMLImageElement>(null);
   const [foco, setFoco] = useState<Foco>(inicial ?? CENTRO);
   const [proporcao, setProporcao] = useState<number | null>(null);
   const [recado, setRecado] = useState<string | null>(null);
   const [arrastando, setArrastando] = useState(false);
+
+  /*
+   * A proporção da foto, medida também depois da montagem.
+   *
+   * `onLoad` sozinho perde o caso mais comum desta tela: a imagem que já está
+   * no cache do navegador termina de carregar ANTES de o React hidratar, o
+   * evento passa antes de existir quem ouvisse, e a medida ficaria nula para
+   * sempre. Nula significa quadro de 16 por 9, e aí o ponto marcado num retrato
+   * cairia longe de onde o dedo encostou.
+   */
+  useEffect(() => {
+    const img = foto.current;
+    if (img?.complete && img.naturalHeight > 0) {
+      setProporcao(img.naturalWidth / img.naturalHeight);
+    }
+  }, [src]);
 
   async function guardar(novo: Foco) {
     const resposta = await salvarFocoDaCapa(novo.x, novo.y);
@@ -163,6 +180,7 @@ export function FocoDaCapa({
           */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            ref={foto}
             src={src}
             alt={alt}
             onLoad={(e) => {

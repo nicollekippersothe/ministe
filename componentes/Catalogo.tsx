@@ -77,7 +77,14 @@ function Cartao({ item, negocio }: { item: Item; negocio: Negocio }) {
             href={linkWhatsapp(negocio.whatsapp, mensagem)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 inline-flex w-fit items-center gap-1.5 text-sm font-medium text-zap hover:text-zap-forte"
+            /*
+             * O respiro vem de dentro do alvo, e a margem negativa devolve o
+             * alinhamento. Este é o botão que converte a página inteira: ele
+             * fica no celular de quem está decidindo pedir, e com 20 pixels de
+             * altura o dedo erra e a pessoa desiste. Medido em 169 por 20
+             * antes desta linha.
+             */
+            className="-mx-2 mt-0.5 inline-flex min-h-11 w-fit items-center gap-1.5 px-2 text-sm font-medium text-zap hover:text-zap-forte"
           >
             <IconeWhatsapp className="h-4 w-4" />
             Pedir pelo WhatsApp

@@ -90,6 +90,7 @@ não precisa de nenhum: o `schema.sql` já sai correto.
 | `009-cobranca.sql` | assinatura, cobrança e a trava de idempotência do webhook, as quatro funções da chave de serviço, os números do painel e o endereço `/assinar` |
 | `010-migrar-rascunho.sql` | move o rascunho da conta provisória para a conta que já existe, quando o Google recusa ligar a identidade |
 | `011-abrir-assinatura.sql` | a assinatura recorrente passa a existir, e o teste de sete dias vira plano pago sem nenhuma cobrança, que é o caso que as quatro funções da 009 não cobriam |
+| `014-foco-da-capa.sql` | duas colunas para o ponto da capa que precisa aparecer, porque a moldura é fixa e a foto que a dona manda quase nunca tem a proporção dela |
 
 ## Rodar local, sem Supabase
 

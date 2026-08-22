@@ -77,7 +77,12 @@ export default async function Links({
 
   return (
     <main className="mt-6">
-      <Link href="/painel" className="text-sm text-suave lg:hidden">
+      <Link
+        href="/painel"
+        /* O respiro vem de dentro do alvo, e a margem negativa devolve o
+           alinhamento: o dedo ganha 44 de altura sem o desenho mudar. */
+        className="-ml-2 inline-flex min-h-11 items-center px-2 text-sm text-suave lg:hidden"
+      >
         Voltar
       </Link>
 

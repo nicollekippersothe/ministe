@@ -81,7 +81,13 @@ function Moldura({
      */
     <div inert className="mt-2.5 rounded-xl border border-borda bg-fundo p-2.5">
       <p className="text-xs leading-relaxed text-suave">{chamada}</p>
-      <div className="mt-1.5 max-w-[17rem]">{gatilho}</div>
+      {/*
+        Uma coluna só, sempre. O `Catalogo` de verdade abre em duas a partir de
+        640px de tela, que é a medida certa na página pública e a errada aqui
+        dentro: numa moldura de 17rem a segunda coluna parte o cartão ao meio e
+        o título do item sai quebrado em três linhas.
+      */}
+      <div className="mt-1.5 max-w-[17rem] [&_ul]:grid-cols-1">{gatilho}</div>
       <p className="mt-2 mb-1.5 text-xs leading-relaxed text-suave">
         E o WhatsApp abre assim:
       </p>

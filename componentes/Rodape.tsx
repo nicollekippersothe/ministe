@@ -30,7 +30,7 @@ export function Rodape({ negocio }: { negocio: Negocio }) {
       <a
         href={`/denunciar?p=${encodeURIComponent(negocio.slug)}`}
         rel="nofollow"
-        className="text-xs text-suave underline decoration-borda underline-offset-2 hover:text-texto"
+        className="-mx-2 inline-flex min-h-11 items-center px-2 text-xs text-suave underline decoration-borda underline-offset-2 hover:text-texto"
       >
         Denunciar esta página
       </a>
