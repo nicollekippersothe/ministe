@@ -39,6 +39,7 @@ const QUADRADA = [800, 800];
 const AVATAR = [400, 400];
 
 const BUSCAS = [
+  // Alecrim Confeitaria, o único exemplo de comida.
   {
     consulta: "cafe",
     arquivos: [
@@ -88,45 +89,8 @@ const BUSCAS = [
     consulta: "coffee",
     arquivos: [["galeria-2", QUADRADA, 1]],
   },
-  {
-    consulta: "yoga",
-    arquivos: [
-      ["raiz-capa", CAPA, 1],
-      ["raiz-1", QUADRADA, 3],
-      ["raiz-g2", QUADRADA, 2],
-    ],
-  },
-  {
-    consulta: "fitness",
-    arquivos: [
-      ["raiz-2", QUADRADA, 4],
-      ["raiz-g1", QUADRADA, 9],
-    ],
-  },
-  {
-    consulta: "meditation",
-    arquivos: [
-      ["raiz-3", QUADRADA, 9],
-      ["raiz-g3", QUADRADA, 6],
-    ],
-  },
-  {
-    consulta: "healthy food",
-    arquivos: [
-      ["nutri-capa", CAPA, 0],
-      ["nutri-1", QUADRADA, 7],
-      ["nutri-3", QUADRADA, 5],
-      ["nutri-g1", QUADRADA, 11],
-      ["nutri-g3", QUADRADA, 2],
-    ],
-  },
-  {
-    consulta: "vegetables",
-    arquivos: [
-      ["nutri-2", QUADRADA, 0],
-      ["nutri-g2", QUADRADA, 5],
-    ],
-  },
+
+  // Camila Reis, psicóloga. A sala de atendimento e as plantas.
   {
     consulta: "living room",
     arquivos: [
@@ -145,98 +109,170 @@ const BUSCAS = [
     ],
   },
 
-  // Ateliê Trama, peças de crochê e tricô.
+  // Helena Vasques, massoterapeuta. É a página que abre em /demo.
   {
-    consulta: "yarn",
+    consulta: "massage",
     arquivos: [
-      ["trama-capa", CAPA, 1],
-      ["trama-3", QUADRADA, 7],
-      ["trama-g1", QUADRADA, 0],
-      ["trama-g4", QUADRADA, 5],
+      ["spa-capa", CAPA, 1],
+      ["spa-1", QUADRADA, 2],
+      ["spa-2", QUADRADA, 3],
+      ["spa-3", QUADRADA, 5],
+      ["spa-4", QUADRADA, 4],
+      ["spa-5", QUADRADA, 11],
     ],
   },
   {
-    consulta: "knitting",
+    consulta: "spa",
     arquivos: [
-      ["trama-1", QUADRADA, 10],
-      ["trama-2", QUADRADA, 9],
-      ["trama-g3", QUADRADA, 6],
-      ["trama-g5", QUADRADA, 3],
-    ],
-  },
-  {
-    consulta: "handmade",
-    arquivos: [
-      ["trama-g2", QUADRADA, 0],
-      ["trama-g6", QUADRADA, 8],
+      ["spa-g1", QUADRADA, 0],
+      ["spa-g2", QUADRADA, 1],
+      ["spa-g3", QUADRADA, 4],
+      ["spa-g4", QUADRADA, 8],
     ],
   },
 
-  // Aurora Massas, massa fresca por encomenda.
+  // Nara Bittencourt, astróloga. Céu, lua e a mesa da leitura.
   {
-    consulta: "pasta",
+    consulta: "night sky",
     arquivos: [
-      ["aurora-capa", CAPA, 0],
-      ["aurora-4", QUADRADA, 5],
-      ["aurora-g1", QUADRADA, 2],
+      ["astro-capa", CAPA, 1],
+      ["astro-g1", QUADRADA, 8],
     ],
   },
   {
-    consulta: "dough",
+    consulta: "stars sky",
     arquivos: [
-      ["aurora-1", QUADRADA, 6],
-      ["aurora-3", QUADRADA, 0],
-      ["aurora-g2", QUADRADA, 11],
+      ["astro-1", QUADRADA, 3],
+      ["astro-4", QUADRADA, 5],
     ],
   },
   {
-    consulta: "flour",
+    consulta: "moon",
     arquivos: [
-      ["aurora-2", QUADRADA, 3],
-      ["aurora-g3", QUADRADA, 1],
+      ["astro-2", QUADRADA, 5],
+      ["astro-g3", QUADRADA, 9],
+    ],
+  },
+  {
+    consulta: "candle",
+    arquivos: [["astro-3", QUADRADA, 3]],
+  },
+  {
+    consulta: "crystals",
+    arquivos: [["astro-g2", QUADRADA, 4]],
+  },
+
+  /*
+   * Téo Sarmento, tatuador. A categoria abre a página pela galeria, então ele
+   * tem mais foto de galeria que de catálogo, ao contrário da maioria.
+   *
+   * O avatar sai daqui, e não da busca de retrato: a foto de quem está
+   * tatuando diz o ramo antes de qualquer texto.
+   */
+  {
+    consulta: "tattoo",
+    arquivos: [
+      ["tatu-capa", CAPA, 11],
+      ["tatu-1", QUADRADA, 0],
+      ["tatu-3", QUADRADA, 3],
+      ["tatu-4", QUADRADA, 1],
+      ["tatu-g1", QUADRADA, 8],
+      ["tatu-g2", QUADRADA, 5],
+      ["tatu-g3", QUADRADA, 9],
+      ["tatu-g4", QUADRADA, 2],
+      ["tatu-g6", QUADRADA, 4],
+    ],
+  },
+  {
+    consulta: "arm tattoo",
+    arquivos: [
+      ["tatu-2", QUADRADA, 8],
+      ["tatu-g5", QUADRADA, 3],
+      ["tatu-logo", AVATAR, 1],
     ],
   },
 
-  // Rafael Nunes, fotografia. Aqui a galeria é o produto, então ela tem mais
-  // fotos que o catálogo, ao contrário de todos os outros exemplos.
+  /*
+   * Lia Prado, ilustradora. Também abre pela galeria. O avatar sai da busca de
+   * ateliê pelo mesmo motivo do tatuador: a mesa de trabalho aparece junto.
+   */
   {
-    consulta: "portrait",
+    consulta: "illustration",
     arquivos: [
-      ["foto-capa", CAPA, 0],
-      ["foto-2", QUADRADA, 4],
-      ["foto-g2", QUADRADA, 9],
-      ["foto-logo", AVATAR, 5],
-      ["psi-logo", AVATAR, 10],
+      ["ilustra-capa", CAPA, 0],
+      ["ilustra-g4", QUADRADA, 3],
     ],
   },
   {
-    consulta: "wedding",
+    consulta: "drawing",
     arquivos: [
-      ["foto-1", QUADRADA, 8],
-      ["foto-g1", QUADRADA, 4],
+      ["ilustra-1", QUADRADA, 0],
+      ["ilustra-2", QUADRADA, 2],
+      ["ilustra-4", QUADRADA, 1],
     ],
   },
   {
-    consulta: "photographer",
+    consulta: "watercolor",
     arquivos: [
-      ["foto-3", QUADRADA, 7],
-      ["foto-g3", QUADRADA, 1],
-      ["foto-g4", QUADRADA, 10],
+      ["ilustra-3", QUADRADA, 9],
+      ["ilustra-g1", QUADRADA, 0],
+      ["ilustra-g3", QUADRADA, 8],
     ],
+  },
+  {
+    consulta: "art studio",
+    arquivos: [
+      ["ilustra-g2", QUADRADA, 3],
+      ["ilustra-logo", AVATAR, 0],
+    ],
+  },
+
+  // Bia Marconi, professora de canto.
+  {
+    consulta: "microphone",
+    arquivos: [
+      ["canto-capa", CAPA, 0],
+      ["canto-g1", QUADRADA, 3],
+    ],
+  },
+  {
+    consulta: "singing",
+    arquivos: [
+      ["canto-1", QUADRADA, 4],
+      ["canto-3", QUADRADA, 5],
+      ["canto-4", QUADRADA, 1],
+      ["canto-g3", QUADRADA, 10],
+    ],
+  },
+  {
+    consulta: "piano",
+    arquivos: [["canto-2", QUADRADA, 0]],
+  },
+  {
+    consulta: "music",
+    arquivos: [["canto-g2", QUADRADA, 8]],
   },
 
   /*
    * Retratos para os avatares.
    *
    * Quem vende o próprio nome coloca o próprio rosto no lugar do logotipo, e
-   * monograma ali soa a papelada. Quem tem nome de casa (ateliê, café, estúdio)
-   * continua com monograma, que é o que uma marca pequena costuma ter.
+   * monograma ali soa a papelada. Só a confeitaria tem nome de casa, e é a
+   * única que continua com monograma, desenhado em scripts/gerar-logos.mjs.
    *
    * Os quadrados aqui são menores porque avatar aparece com 88px de lado.
    */
   {
+    consulta: "portrait",
+    arquivos: [
+      ["psi-logo", AVATAR, 10],
+      ["spa-logo", AVATAR, 9],
+      ["canto-logo", AVATAR, 4],
+    ],
+  },
+  {
     consulta: "woman",
-    arquivos: [["nutri-logo", AVATAR, 7]],
+    arquivos: [["astro-logo", AVATAR, 7]],
   },
 ];
 

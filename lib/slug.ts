@@ -15,8 +15,8 @@ export const RESERVADOS = new Set([
   "_next", "favicon", "robots", "sitemap", "opengraph-image", "icon",
   // Os endereços das páginas de exemplo. Elas são o portfólio do produto e
   // abrem direto de lib/exemplos.ts, então o nome delas fica fora do sorteio.
-  "studio-raiz", "marina-nutricao", "camila-psicologia",
-  "atelie-trama", "aurora-massas", "rafael-nunes",
+  "camila-reis", "nara-bittencourt", "teo-sarmento",
+  "lia-prado", "bia-marconi", "alecrim-confeitaria",
 ]);
 
 /**

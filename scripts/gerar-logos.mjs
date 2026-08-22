@@ -27,21 +27,19 @@ const FONTE_URL =
 const LADO = 512;
 
 /**
- * Um por negócio de exemplo. A cor sai da paleta do próprio negócio, não da
- * paleta da entrais: o logotipo é do cliente.
+ * Um por negócio de exemplo com nome de casa. A cor sai da paleta do próprio
+ * negócio, não da paleta da entrais: o logotipo é do cliente.
  */
 const LOGOS = [
-  { arquivo: "logo", iniciais: "CA", fundo: "#7a4a2b" }, // Café Alecrim
-  { arquivo: "raiz-logo", iniciais: "SR", fundo: "#2f5d4a" }, // Studio Raiz
-  { arquivo: "trama-logo", iniciais: "AT", fundo: "#8a4a52" }, // Ateliê Trama
-  { arquivo: "aurora-logo", iniciais: "AM", fundo: "#a05a22" }, // Aurora Massas
+  { arquivo: "logo", iniciais: "AC", fundo: "#7a4a2b" }, // Alecrim Confeitaria
 ];
 
 /*
- * Marina Alcântara, Camila Reis e Rafael Nunes ficaram de fora de propósito.
- * Quem vende o próprio nome põe o próprio rosto ali, e monograma no lugar do
- * retrato soa a papelada. Os avatares deles vêm de scripts/baixar-fotos.mjs,
- * na busca de retrato.
+ * Os outros seis exemplos ficaram de fora de propósito, e hoje isso vale para
+ * quase todos: quem vende o próprio nome põe o próprio rosto ali, e monograma
+ * no lugar do retrato soa a papelada. Os avatares de Helena Vasques, Camila
+ * Reis, Nara Bittencourt, Téo Sarmento, Lia Prado e Bia Marconi vêm de
+ * scripts/baixar-fotos.mjs.
  */
 
 if (!existsSync(FONTE)) {

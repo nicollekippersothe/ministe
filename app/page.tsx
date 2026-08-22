@@ -9,7 +9,7 @@ import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
 import { CADASTRO_ABERTO } from "@/lib/site";
-import { atelie, doceria, massas, VITRINE } from "@/lib/exemplos";
+import { atelie, canto, tatuagem, VITRINE } from "@/lib/exemplos";
 
 export const revalidate = 3600;
 
@@ -82,7 +82,7 @@ export default async function Home() {
    * serve melhor que os outros aí: tem preço, tem galeria cheia e é o caso
    * que o produto existe para atender.
    */
-  const negocio = (await porSlug("atelie-trama")) ?? atelie;
+  const negocio = (await porSlug("lia-prado")) ?? atelie;
 
   /* Quatro no carrossel. O quinto ninguém chega a ver. */
   const naAbertura = VITRINE.slice(0, 4).map((v) => v.negocio);
@@ -163,9 +163,9 @@ export default async function Home() {
             <div className="mt-12 sm:mt-14">
               <Mosaico
                 negocio={negocio}
-                paraCatalogo={massas}
+                paraCatalogo={canto}
                 paraBotoes={atelie}
-                paraGaleria={doceria}
+                paraGaleria={tatuagem}
               />
             </div>
           </div>
