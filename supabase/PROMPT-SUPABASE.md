@@ -341,3 +341,30 @@ O QUE EU PRECISO DE VOLTA
   2. A última linha do testes-rls.sql, com a contagem de asserções.
   3. Se alguma das duas paradas acima aconteceu.
 ```
+
+---
+
+# Prompt 5, para a extensão do Supabase: os endereços dos exemplos novos
+
+Uma correção só, de seis linhas. Vai quando der.
+
+Copie daqui até o fim.
+
+```
+Projeto Supabase: niekaszanicnrciuixnb (Entrais, São Paulo).
+
+No SQL Editor, o conteúdo de supabase/correcoes/013-enderecos-dos-exemplos-novos.sql,
+do repositório nicollekippersothe/ministe, branch main.
+
+É um insert de seis linhas em slugs_reservados, com on conflict do nothing, e
+nenhum delete. As páginas de exemplo do produto mudaram de nome, e o endereço
+delas precisa sair do sorteio: quem cadastrasse um deles ficaria com uma página
+que endereço nenhum alcança.
+
+A PARADA que o arquivo pede, e ela vem antes do insert: a conferência 2 pergunta
+se alguém já registrou algum desses seis endereços. Se vier alguma linha, PARE e
+me avise. Tem página de gente ali, e apagar a linha apaga a página de uma pessoa.
+
+Depois de aplicar, rode as duas conferências do fim do arquivo e me mande o
+resultado das duas.
+```

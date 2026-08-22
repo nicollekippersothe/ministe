@@ -141,7 +141,7 @@ const PERGUNTAS = [
 ];
 
 export default async function Precos() {
-  const base = (await porSlug("atelie-trama")) ?? atelie;
+  const base = (await porSlug("lia-prado")) ?? atelie;
   const gratuito = noPlano(base, "gratuito");
   const pago = noPlano(base, "pago");
 
