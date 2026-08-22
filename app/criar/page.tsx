@@ -37,33 +37,25 @@ async function EnderecoConferido({ slug }: { slug: string }) {
       }
       subtitulo={
         livre
-          ? "Dá para começar por ele quando o cadastro abrir."
+          ? "Comece por ele quando o cadastro abrir."
           : pedido === ""
-            ? "Volte e escreva o nome do seu negócio."
+            ? "Volte e escreva o nome do seu trabalho."
             : (MOTIVOS[recusa as Recusa] ?? MOTIVOS.ocupado)
       }
-      rodape={
-        <p className="text-center text-[0.95rem] text-suave">
-          <Link
-            href="/"
-            className="inline-flex min-h-11 items-center px-1 font-medium text-destaque underline-offset-4 hover:underline"
-          >
-            Voltar e escolher outro
-          </Link>
-        </p>
-      }
+      /* A volta mora no cabeçalho, e uma vez basta. */
+      voltar={{ href: "/", rotulo: "Escolher outro" }}
     >
       <div className="flex flex-col gap-6">
         <p className="leading-relaxed text-suave">
-          O cadastro abre junto com o login, que é a próxima etapa. Enquanto
-          isso, dá para percorrer uma página inteira e ver como a sua vai ficar.
+          O cadastro abre junto com o login. Enquanto isso, veja uma galeria
+          por dentro.
         </p>
 
         <Link
           href="/demo"
           className="flex h-13 w-full items-center justify-center rounded-full bg-texto px-6 text-[1.05rem] font-semibold text-superficie"
         >
-          Ver uma página por dentro
+          Abrir uma galeria
         </Link>
       </div>
     </Moldura>
@@ -118,7 +110,7 @@ export default async function Criar({
     erro === "nome"
       ? "Escreva o nome que vai na página."
       : erro === "limite"
-        ? "Sua conta já tem uma página no plano gratuito. Abra o painel para editar, ou veja os planos para ter mais de uma."
+        ? "Sua conta já tem uma página no plano gratuito. Abra o painel para editar."
         : (MOTIVOS[erro as Recusa] ?? null);
   const onde = ondeMostrar(erro);
 

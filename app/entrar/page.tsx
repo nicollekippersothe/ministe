@@ -28,10 +28,15 @@ export default async function Entrar({
   return (
     <Moldura
       titulo={publicando ? "A última etapa" : "Entrar"}
+      /*
+       * Quem chega com um motivo veio do painel, e é para lá que a seta
+       * devolve. Quem chega direto veio da tela inicial.
+       */
+      voltar={{ href: motivo ? "/painel" : "/" }}
       subtitulo={
         publicando
-          ? "Entre com o Google para pôr sua página no ar. Ela continua sua, com o mesmo endereço."
-          : "Uma conta do Google, e sua página abre do jeito que você deixou."
+          ? "Sua galeria entra no ar agora. Ela continua sua, com o mesmo endereço."
+          : "Sua galeria abre do jeito que você deixou."
       }
       rodape={
         <p className="text-center text-[0.95rem] text-suave">
@@ -55,14 +60,12 @@ export default async function Entrar({
             role="alert"
             className="rounded-2xl border border-destaque/30 bg-destaque/8 px-4 py-3 text-sm leading-relaxed text-destaque"
           >
-            O Google respondeu: {erro}. Tente de novo, e se repetir, me conte o
-            que apareceu aqui.
+            O Google respondeu: {erro}. Tente de novo.
           </p>
         ) : null}
 
-        <p className="text-center text-sm leading-relaxed text-suave">
-          Usamos seu nome e seu e-mail para deixar a página registrada com
-          você.
+        <p className="text-center text-sm text-suave">
+          Seu nome e seu e-mail deixam a página registrada com você.
         </p>
 
         <p className="text-center text-sm text-suave">

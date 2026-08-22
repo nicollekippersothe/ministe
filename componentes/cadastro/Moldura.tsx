@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Marca } from "@/componentes/Marca";
 
@@ -13,6 +14,11 @@ import { Marca } from "@/componentes/Marca";
  * que a pessoa veio fazer, e uma prévia espremida em cima roubaria o espaço da
  * lista de ramos por nenhum ganho.
  *
+ * Com `voltar`, o cabeçalho ganha a saída da tela, à esquerda, e a marca vai
+ * para a direita. É um link de verdade, e não `history.back()`: funciona com o
+ * JavaScript desligado, abre em nova aba se a pessoa quiser, e leva sempre
+ * para o mesmo lugar, mesmo quando a pessoa chegou pelo endereço direto.
+ *
  * A largura de duas colunas é `4xl`, e não `5xl`, porque o par cabe em 800px:
  * com `5xl` sobravam 160px de vazio à direita da prévia, e o conjunto inteiro
  * ficava encostado à esquerda dentro da própria moldura. Medido em 1440.
@@ -25,12 +31,15 @@ export function Moldura({
   children,
   rodape,
   lado,
+  voltar,
 }: {
   titulo: string;
   subtitulo?: string;
   children: ReactNode;
   rodape?: ReactNode;
   lado?: ReactNode;
+  /** A saída da tela, no alto à esquerda. O rótulo padrão é "Voltar". */
+  voltar?: { href: string; rotulo?: string };
 }) {
   const largura = lado ? "max-w-md lg:max-w-4xl" : "max-w-md";
 
@@ -61,7 +70,25 @@ export function Moldura({
       <header
         className={`mx-auto w-full ${largura} px-6 py-4 [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center`}
       >
-        <Marca />
+        {voltar ? (
+          <div className="flex items-center justify-between gap-4">
+            {/*
+              O -ml-2 devolve à seta o alinhamento com o texto da coluna: o
+              alvo de dedo precisa de 44px de largura, e sem isso os 44px
+              empurrariam o desenho para dentro da página.
+            */}
+            <Link
+              href={voltar.href}
+              className="-ml-2 min-w-11 justify-start gap-1.5 rounded-full px-2 text-[0.95rem] font-medium text-texto"
+            >
+              <Seta />
+              {voltar.rotulo ?? "Voltar"}
+            </Link>
+            <Marca />
+          </div>
+        ) : (
+          <Marca />
+        )}
       </header>
 
       <main
@@ -79,6 +106,26 @@ export function Moldura({
         )}
       </main>
     </div>
+  );
+}
+
+/** A seta da saída. Desenho próprio, do tamanho da letra ao lado. */
+function Seta() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className="h-4.5 w-4.5 shrink-0"
+    >
+      <path
+        d="M12 4.5 6.5 10l5.5 5.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

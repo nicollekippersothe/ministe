@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { conferirFormato, MOTIVOS, normalizar } from "@/lib/slug";
+import { Pergunta } from "./Pergunta";
 
 type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
 
@@ -16,6 +17,13 @@ type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
  * O domínio fica numa linha própria embaixo, e não colado dentro do campo:
  * no celular o prefixo dentro do campo come metade do espaço de digitação e
  * o texto acaba cortado no meio.
+ *
+ * Essa linha de baixo é também onde mora o exemplo. Antes ela dizia "Vai
+ * ficar em entrais.app/" e terminava numa barra solta, enquanto o exemplo do
+ * endereço vivia como texto de espera dentro da caixa, 65px acima: eram duas
+ * metades da mesma frase separadas pelo campo. Agora a linha mostra o
+ * endereço inteiro do exemplo, e ela é a mesma linha que passa a mostrar o
+ * endereço de verdade na primeira letra digitada.
  *
  * Com `recusa`, a resposta do servidor já abre escrita embaixo do campo, no
  * mesmo lugar onde a conferência do navegador escreve. Antes ela aparecia lá
@@ -110,12 +118,9 @@ export function CampoEndereco({
 
   return (
     <div>
-      <label htmlFor={id} className="text-[0.95rem] font-medium text-texto">
-        Endereço da sua página
+      <label htmlFor={id}>
+        <Pergunta numero={3}>Qual vai ser o endereço?</Pergunta>
       </label>
-      <p id={`${id}-dica`} className="mt-1 text-sm text-suave">
-        Use o nome que as pessoas já usam para te achar. Dá para trocar depois.
-      </p>
 
       <input
         id={id}
@@ -125,7 +130,7 @@ export function CampoEndereco({
           setValor(e.target.value);
           recusado.current = null;
         }}
-        aria-describedby={`${id}-dica ${id}-estado`}
+        aria-describedby={`${id}-estado`}
         aria-invalid={estado === "ocupado"}
         autoCapitalize="none"
         autoCorrect="off"
@@ -141,9 +146,18 @@ export function CampoEndereco({
          */
         autoFocus={recusa !== null}
         placeholder="camila reis"
-        /* scroll-mb deixa a barra do botão fora do caminho quando o navegador
-           traz o campo focado para a tela. */
-        className={`mt-3 w-full scroll-mb-24 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto outline-none ${borda}`}
+        /*
+         * Duas classes que valem por uma decisão cada.
+         *
+         * placeholder:text-suave/70 é a cor de exemplo do campo de busca. Sem
+         * ela o navegador escolhe a própria, mais escura, e o exemplo passava
+         * por valor já digitado: o campo parecia preenchido e a pessoa seguia
+         * em frente.
+         *
+         * scroll-mb deixa a barra do botão fora do caminho quando o navegador
+         * traz o campo focado para a tela.
+         */
+        className={`mt-4 w-full scroll-mb-24 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/70 outline-none ${borda}`}
       />
 
       <p
@@ -153,8 +167,8 @@ export function CampoEndereco({
       >
         {slug === "" ? (
           <span className="text-suave">
-            Vai ficar em{" "}
-            <span className="font-medium text-texto">{DOMINIO_PUBLICO}/</span>
+            exemplo:{" "}
+            <span className="font-medium">{DOMINIO_PUBLICO}/camila-reis</span>
           </span>
         ) : (
           <>

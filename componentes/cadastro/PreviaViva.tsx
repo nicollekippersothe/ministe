@@ -6,17 +6,23 @@ import { DOMINIO_PUBLICO } from "@/lib/marca";
 /**
  * A página nascendo, ao lado do formulário.
  *
- * Mostra o ESQUELETO que a categoria monta, e não uma página de mentira. Ao
- * escolher Fotografia, o nome da seção vira Ensaios e a galeria sobe para
- * antes do catálogo; ao escolher Confeitaria, vira Cardápio e o preço aparece.
- * É a mesma receita que vai montar a página de verdade, lida do mesmo lugar.
+ * Mostra o que a categoria monta, e não uma página de mentira. Ao escolher
+ * Fotografia, o nome da seção vira Ensaios e a galeria sobe para antes do
+ * catálogo; ao escolher Confeitaria, vira Cardápio e o preço aparece. É a
+ * mesma receita que vai montar a página de verdade, lida do mesmo lugar.
  *
  * Encher de bolo e preço faria esta tela vender melhor e mentiria sobre o que a
  * pessoa recebe, que é uma página vazia esperando ela preencher. Mesma regra de
  * nunca inventar dado na página publicada, aplicada antes de a página existir.
  *
+ * O que mudou foi o desenho do vazio, e só ele. Blocos cinzentos empilhados
+ * liam como carregamento travado: a pessoa via defeito onde deveria ver a
+ * galeria dela. Agora cada espaço é uma moldura de verdade, com o quadro
+ * desenhado dentro, do tamanho que a foto vai ter. Continua vazio, continua
+ * honesto, e passa a parecer parede de exposição esperando o trabalho.
+ *
  * Só aparece no computador. No celular ela roubaria a tela do formulário, que
- * é o que a pessoa veio fazer, e o cadastro inteiro cabe em três respostas.
+ * é o que a pessoa veio fazer, e o cadastro inteiro cabe em três perguntas.
  *
  * `escolhido` é separado de `categoria` por causa de "Outro": ali a receita é
  * a padrão e a categoria é nula, e a frase de baixo ficava pedindo um ramo que
@@ -41,12 +47,10 @@ export function PreviaViva({
       <div className="flex flex-col gap-2">
         {[0, 1].map((i) => (
           <div key={i} className="flex items-center gap-2.5">
-            <Vazio className="h-11 w-11 shrink-0 rounded-lg" />
+            <EspacoDeFoto className="h-11 w-11 shrink-0 rounded-lg" />
             <div className="flex-1">
-              <Vazio className="h-2 w-2/3 rounded-full" />
-              {receita.mostrarPrecos ? (
-                <Vazio className="mt-1.5 h-2 w-10 rounded-full" />
-              ) : null}
+              <Linha className="w-2/3" />
+              {receita.mostrarPrecos ? <Linha className="mt-2 w-10" /> : null}
             </div>
           </div>
         ))}
@@ -58,14 +62,14 @@ export function PreviaViva({
     <Secao titulo="Fotos">
       <div className="grid grid-cols-3 gap-1.5">
         {[0, 1, 2].map((i) => (
-          <Vazio key={i} className="aspect-square rounded-md" />
+          <EspacoDeFoto key={i} className="aspect-square rounded-md" />
         ))}
       </div>
     </Secao>
   );
 
   return (
-    <div data-previa className="w-[19rem]">
+    <div data-previa className="w-[20rem]">
       {/* O aparelho. Desenho, e não imagem, para acompanhar o tema. */}
       <div className="relative rounded-[2.2rem] border border-borda bg-texto/90 p-2.5 shadow-[0_24px_50px_-24px_rgba(28,25,23,0.5)]">
         {/*
@@ -76,21 +80,17 @@ export function PreviaViva({
           aria-hidden
           className="pointer-events-none absolute inset-x-2.5 bottom-2.5 z-10 h-16 rounded-b-[1.7rem] bg-gradient-to-t from-superficie to-transparent"
         />
-        <div className="h-[30rem] overflow-hidden rounded-[1.7rem] bg-superficie">
-          {/* Capa */}
-          <Vazio className="h-24 w-full rounded-none" />
+        <div className="h-[31rem] overflow-hidden rounded-[1.7rem] bg-superficie">
+          {/* A capa, que é a primeira coisa que a pessoa sobe. */}
+          <EspacoDeFoto className="h-24 w-full rounded-none border-x-0 border-t-0" />
 
           <div className="px-4 pb-5">
             <div className="-mt-7 mb-3 flex h-14 w-14 items-center justify-center rounded-full border-4 border-superficie bg-fundo text-lg font-semibold text-suave">
-              {inicial === "" ? (
-                <span className="h-5 w-5 rounded-full bg-borda" />
-              ) : (
-                inicial
-              )}
+              {inicial === "" ? <Retrato /> : inicial}
             </div>
 
             {nome.trim() === "" ? (
-              <Vazio className="h-3.5 w-2/3 rounded-full" />
+              <Linha className="h-3 w-2/3" />
             ) : (
               <p className="text-[1.05rem] leading-tight font-semibold text-balance text-texto">
                 {nome.trim()}
@@ -101,7 +101,8 @@ export function PreviaViva({
               {DOMINIO_PUBLICO}/{slug || "..."}
             </p>
 
-            <div className="mt-4 h-8 rounded-full bg-texto/12" />
+            {/* Onde entra o botão que abre a conversa. */}
+            <div className="mt-4 h-8 rounded-full border border-borda bg-fundo" />
 
             {receita.galeriaPrimeiro ? (
               <>
@@ -123,8 +124,8 @@ export function PreviaViva({
         className="mt-4 px-1 text-center text-sm leading-relaxed text-suave"
       >
         {escolhido
-          ? "Sua página começa assim. Tudo muda depois, no painel."
-          : "Escolha o seu ramo e a página se monta aqui do lado."}
+          ? "Sua galeria nasce assim. O resto é com você."
+          : "Escolha o seu ramo, e ela se monta aqui."}
       </p>
     </div>
   );
@@ -139,7 +140,81 @@ function Secao({ titulo, children }: { titulo: string; children: React.ReactNode
   );
 }
 
-/** Espaço marcado, para dizer que ali cabe conteúdo sem inventar conteúdo. */
-function Vazio({ className }: { className?: string }) {
-  return <div className={`bg-borda/60 ${className ?? ""}`} />;
+/**
+ * Espaço de imagem, do tamanho que a imagem vai ter.
+ *
+ * A moldura com o quadro desenhado dentro diz "aqui entra uma foto sua" sem
+ * pôr foto nenhuma. O retângulo cinza chapado dizia "carregando".
+ */
+function EspacoDeFoto({ className }: { className?: string }) {
+  return (
+    <div
+      className={`flex items-center justify-center border border-borda bg-fundo ${className ?? ""}`}
+    >
+      <Quadro />
+    </div>
+  );
+}
+
+/** Quadro pendurado, desenhado. Ícone é vetor próprio, e nunca emoji. */
+function Quadro() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-1/3 max-h-6 min-h-3.5 w-auto text-borda"
+    >
+      <rect
+        x="3.5"
+        y="5"
+        width="17"
+        height="14"
+        rx="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M5 16.5 9.5 12l3 3 2.5-2.5 4 4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="15" cy="9.5" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** O retrato, no lugar da inicial, enquanto o nome está por vir. */
+function Retrato() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-6 w-6 text-borda"
+    >
+      <circle
+        cx="12"
+        cy="9"
+        r="3.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M4.8 20a7.2 7.2 0 0 1 14.4 0"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** Linha de texto por vir. Fica warm, e nunca cinza de carregamento. */
+function Linha({ className }: { className?: string }) {
+  return <div className={`h-2 rounded-full bg-borda/70 ${className ?? ""}`} />;
 }

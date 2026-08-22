@@ -9,6 +9,7 @@ import {
   type Categoria,
   type Receita,
 } from "@/lib/categorias";
+import { Pergunta } from "./Pergunta";
 
 /**
  * Valor enviado quando a pessoa escreve o ramo dela em vez de escolher um da
@@ -26,14 +27,16 @@ const MINIMO_BUSCA = 2;
  *
  * A categoria parece papelada de cadastro, e ler o efeito dela na hora muda
  * isso: a pessoa vê que escolher "Fotografia" já põe a galeria na frente e
- * guarda o preço para a conversa. Vale mais que qualquer texto de ajuda.
+ * guarda o preço para a conversa. Vale mais que qualquer texto de ajuda, e é
+ * por isso que esta linha ficou no lugar da dica que explicava para que serve
+ * escolher um ramo.
  */
 function resumo(receita: Receita): string {
   const precos = receita.mostrarPrecos
     ? "preço à vista"
     : "preço combinado na conversa";
-  const ordem = receita.galeriaPrimeiro ? ", com a galeria na frente" : "";
-  return `Sua página começa com ${receita.tituloCatalogo}, ${precos}${ordem}.`;
+  const ordem = receita.galeriaPrimeiro ? ", fotos na frente" : "";
+  return `Começa com ${receita.tituloCatalogo}${ordem} e ${precos}.`;
 }
 
 function Opcao({
@@ -137,11 +140,14 @@ export function CampoCategoria({
   inicial = "",
   livreInicial = "",
   aoMudar,
+  aoMudarLivre,
 }: {
   inicial?: string;
   livreInicial?: string;
   /** O valor marcado: um id da lista, ou OUTRO. Vazio enquanto ninguém marcou. */
   aoMudar?: (escolha: string) => void;
+  /** O ramo escrito à mão, para quem marcou Outro. */
+  aoMudarLivre?: (livre: string) => void;
 }) {
   const id = useId();
   const [termo, setTermo] = useState("");
@@ -204,19 +210,15 @@ export function CampoCategoria({
   };
 
   return (
-    <fieldset aria-describedby={`${id}-dica`}>
-      <legend className="text-[0.95rem] font-medium text-texto">
-        Escolha o seu ramo
+    <fieldset>
+      <legend>
+        <Pergunta numero={1}>O que você faz?</Pergunta>
       </legend>
-      <p id={`${id}-dica`} className="mt-1 text-sm leading-relaxed text-suave">
-        Monta a sua página e ajuda quem procura pelo seu ramo a te achar. Dá
-        para trocar depois.
-      </p>
 
       <label htmlFor={`${id}-busca`} className="sr-only">
         Procure pelo seu ramo
       </label>
-      <div className="relative mt-3">
+      <div className="relative mt-4">
         <Lupa />
         <input
           id={`${id}-busca`}
@@ -239,7 +241,7 @@ export function CampoCategoria({
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="terapia, unha, inglês, foto"
+          placeholder="tatuagem, unha, inglês, bolo"
           aria-describedby={`${id}-quantos`}
           className="w-full rounded-2xl border border-borda bg-superficie py-3 pr-4 pl-11 text-[1rem] text-texto placeholder:text-suave/70"
         />
@@ -297,7 +299,7 @@ export function CampoCategoria({
 
             {filtrando && achados.length === 0 ? (
               <p className="px-3.5 py-4 text-sm leading-relaxed text-suave">
-                Escolha Outro aqui embaixo e escreva com as suas palavras.
+                Escolha Outro e escreva com as suas palavras.
               </p>
             ) : null}
           </div>
@@ -346,7 +348,10 @@ export function CampoCategoria({
             id={`${id}-livre`}
             name="categoria_livre"
             value={livre}
-            onChange={(e) => setLivre(e.target.value)}
+            onChange={(e) => {
+              setLivre(e.target.value);
+              aoMudarLivre?.(e.target.value);
+            }}
             required
             minLength={2}
             maxLength={40}

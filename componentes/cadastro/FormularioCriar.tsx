@@ -1,12 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { categoriaPorId } from "@/lib/categorias";
 import { CampoCategoria, OUTRO } from "./CampoCategoria";
 import { CampoEndereco } from "./CampoEndereco";
 import { BotaoPrincipal, Moldura } from "./Moldura";
+import { Pergunta } from "./Pergunta";
 import { PreviaViva } from "./PreviaViva";
+
+/** O que a aba guarda enquanto a pessoa responde. */
+type Guardado = {
+  categoria: string;
+  livre: string;
+  nome: string;
+  slug: string;
+};
+
+const CHAVE = "entrais:cadastro";
+
+function lerGuardado(): Guardado | null {
+  try {
+    const bruto = sessionStorage.getItem(CHAVE);
+    if (bruto === null) return null;
+    const dados = JSON.parse(bruto) as Partial<Guardado>;
+    const guardado: Guardado = {
+      categoria: typeof dados.categoria === "string" ? dados.categoria : "",
+      livre: typeof dados.livre === "string" ? dados.livre : "",
+      nome: typeof dados.nome === "string" ? dados.nome : "",
+      slug: typeof dados.slug === "string" ? dados.slug : "",
+    };
+    const vazio = Object.values(guardado).every((v) => v === "");
+    return vazio ? null : guardado;
+  } catch {
+    // Aba anônima com armazenamento fechado, ou conteúdo estragado. Segue sem.
+    return null;
+  }
+}
+
+function guardar(dados: Guardado) {
+  try {
+    const vazio = Object.values(dados).every((v) => v === "");
+    if (vazio) sessionStorage.removeItem(CHAVE);
+    else sessionStorage.setItem(CHAVE, JSON.stringify(dados));
+  } catch {
+    // Guardar é conforto. O formulário funciona igual sem ele.
+  }
+}
+
+function esquecer() {
+  try {
+    sessionStorage.removeItem(CHAVE);
+  } catch {
+    // idem
+  }
+}
 
 /**
  * A tela de criar página, com a prévia ao lado no computador.
@@ -46,6 +94,73 @@ export function FormularioCriar({
   const [nome, setNome] = useState(nomeInicial);
   const [slug, setSlug] = useState("");
   const [escolha, setEscolha] = useState(categoriaInicial);
+  const [livre, setLivre] = useState(livreInicial);
+
+  /*
+   * As respostas ficam guardadas na aba enquanto a pessoa preenche, e é isso
+   * que faz a seta de voltar ser segura.
+   *
+   * Quem sai daqui e volta pelo histórico do navegador chega numa página nova,
+   * montada no servidor: o estado de React que segurava o ramo, o nome e o
+   * endereço morreu na saída, e voltar para um formulário em branco é pior do
+   * que ficar sem voltar.
+   *
+   * O endereço da página seria o lugar bonito para guardar, e foi a primeira
+   * tentativa. Ela morreu medida: `window.history.replaceState` troca a barra
+   * de endereço, e o Next guarda a busca que ele renderizou dentro do próprio
+   * `history.state` (`renderedSearch`). No `popstate` ele restaura a dele, e a
+   * pessoa volta para `/criar` em branco, com as respostas que estavam na barra
+   * jogadas fora. Chamar `router.replace` a cada pausa arruma isso e cobra uma
+   * ida ao servidor por pausa de digitação, com leitura de banco junto.
+   *
+   * Então o lugar é o `sessionStorage`: vive o tempo da aba, some sozinho
+   * quando ela fecha, e serve para os três caminhos de volta (a seta, o botão
+   * do navegador e a recarga). O que o servidor mandou tem preferência: quando
+   * um envio volta recusado, quem manda é a resposta dele.
+   */
+  const [restaurado, setRestaurado] = useState<Guardado | null>(null);
+  const primeira = useRef(true);
+
+  useEffect(() => {
+    if (categoriaInicial !== "" || nomeInicial !== "" || slugInicial !== "") {
+      return;
+    }
+    /*
+     * A tela pode receber resposta antes de o React assumir: o HTML já sai
+     * pronto do servidor, e quem digita rápido (ou um teste de navegador)
+     * escreve no campo enquanto o JavaScript ainda carrega. Devolver o que
+     * estava guardado por cima disso apagaria o que a pessoa acabou de
+     * escrever, então a leitura é do DOM, e não do estado.
+     */
+    const campo = (seletor: string) =>
+      (document.querySelector(seletor) as HTMLInputElement | null)?.value ?? "";
+    const jaRespondido =
+      campo('input[name="nome"]') !== "" ||
+      campo('input[name="slug"]') !== "" ||
+      document.querySelector('input[name="categoria"]:checked') !== null;
+    if (jaRespondido) return;
+
+    const guardado = lerGuardado();
+    if (guardado === null) return;
+    setRestaurado(guardado);
+    setNome(guardado.nome);
+    setEscolha(guardado.categoria);
+    setLivre(guardado.livre);
+    // Só na montagem: daí em diante quem escreve é a pessoa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (primeira.current) {
+      primeira.current = false;
+      return;
+    }
+    const espera = setTimeout(
+      () => guardar({ categoria: escolha, livre, nome, slug }),
+      300,
+    );
+    return () => clearTimeout(espera);
+  }, [escolha, livre, nome, slug]);
 
   /*
    * A prévia lê a receita, e "outro" não tem receita: ali ela mostra a padrão.
@@ -70,10 +185,10 @@ export function FormularioCriar({
   const receita = categoriaPorId(categoria);
   const rotuloDoNome =
     receita === null
-      ? "O nome que vai na página"
+      ? "Que nome vai na página?"
       : receita.nomeDePessoa
-        ? "Seu nome"
-        : "Nome do negócio";
+        ? "Qual é o seu nome?"
+        : "Qual é o nome do negócio?";
   /*
    * O exemplo acompanha o rótulo. No rótulo neutro ele puxa para pessoa, que é
    * quem está no centro do produto, e casa com o "camila reis" do endereço
@@ -82,10 +197,14 @@ export function FormularioCriar({
   const exemploDoNome =
     receita === null || receita.nomeDePessoa ? "Camila Reis" : "Aurora Massas";
 
+  const ramoGuardado =
+    (restaurado?.categoria ?? "") !== "" || (restaurado?.livre ?? "") !== "";
+  const enderecoGuardado = (restaurado?.slug ?? "") !== "";
+
   return (
     <Moldura
-      titulo="Criar sua página"
-      subtitulo="Três respostas agora. O resto você preenche depois."
+      titulo="Sua galeria em três perguntas"
+      voltar={{ href: "/" }}
       lado={
         <PreviaViva
           nome={nome}
@@ -106,7 +225,8 @@ export function FormularioCriar({
         </p>
       }
     >
-      <form action={acao} className="flex flex-col gap-7">
+      {/* Enviou, a resposta guardada perdeu a função: a página passa a existir. */}
+      <form action={acao} onSubmit={esquecer} className="flex flex-col gap-10">
         {erroGeral ? (
           <p
             role="alert"
@@ -130,15 +250,22 @@ export function FormularioCriar({
           pessoa escolhe "Fotografia" e a página aparece montada, antes de
           digitar uma letra.
         */}
+        {/*
+          A chave só muda quando existe resposta guardada para este campo:
+          remontar por causa do campo vizinho jogaria fora o que a pessoa
+          respondeu aqui enquanto a tela terminava de acordar.
+        */}
         <CampoCategoria
-          inicial={categoriaInicial}
-          livreInicial={livreInicial}
+          key={ramoGuardado ? "ramo-guardado" : "ramo-novo"}
+          inicial={restaurado?.categoria ?? categoriaInicial}
+          livreInicial={restaurado?.livre ?? livreInicial}
           aoMudar={setEscolha}
+          aoMudarLivre={setLivre}
         />
 
         <div>
-          <label htmlFor="nome" className="text-[0.95rem] font-medium text-texto">
-            {rotuloDoNome}
+          <label htmlFor="nome">
+            <Pergunta numero={2}>{rotuloDoNome}</Pergunta>
           </label>
           <input
             id="nome"
@@ -155,7 +282,7 @@ export function FormularioCriar({
             autoFocus={erroNome !== null}
             /* scroll-mb deixa a barra do botão fora do caminho quando o
                navegador traz o campo focado para a tela. */
-            className={`mt-3 w-full scroll-mb-24 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto focus:outline-none ${
+            className={`mt-4 w-full scroll-mb-24 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/70 focus:outline-none ${
               erroNome
                 ? "border-destaque"
                 : "border-borda focus:border-destaque"
@@ -169,13 +296,20 @@ export function FormularioCriar({
         </div>
 
         <CampoEndereco
-          inicial={slugInicial}
+          key={enderecoGuardado ? "endereco-guardado" : "endereco-novo"}
+          inicial={restaurado?.slug ?? slugInicial}
           recusa={erroEndereco}
           aoMudar={setSlug}
         />
 
-        <p className="text-center text-sm leading-relaxed text-suave">
-          A página começa como rascunho, e vai para o ar quando você quiser.
+        {/*
+          As duas dúvidas que aparecem com o dedo em cima do botão, respondidas
+          onde elas aparecem, e não numa seção de preços a três telas daqui:
+          quanto custa começar, e o que acontece com a página no segundo
+          seguinte.
+        */}
+        <p className="text-center text-sm text-suave">
+          Começa de graça, e fica em rascunho até você mandar para o ar.
         </p>
 
         {/*
