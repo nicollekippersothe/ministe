@@ -5,8 +5,8 @@ só tem Instagram: o que a pessoa faz, quanto custa, quando atende, e um botão
 de WhatsApp que já abre a conversa escrita.
 
 **Quem está no centro é a profissional autônoma**: a psicóloga, o fotógrafo, a
-manicure, o personal, a advogada. Loja e restaurante cabem, e as trinta e cinco
-categorias continuam inteiras, mas quem decide o texto de tela, a ordem das
+manicure, o personal, a advogada. Loja e restaurante cabem, e a lista de
+categorias continua inteira, mas quem decide o texto de tela, a ordem das
 perguntas e o exemplo que abre em `/demo` é quem trabalha por conta própria.
 Isso é decisão de produto, e não gosto: quem tem loja com ponto na rua já
 aparece no mapa, e quem trabalha sozinho tem só o perfil de rede social e o

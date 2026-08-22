@@ -108,6 +108,31 @@ export const CATEGORIAS: Categoria[] = [
     mostrarPrecos: false,
     galeriaPrimeiro: true,
   }),
+  /*
+   * Tecnologia entrou depois das outras, e a falta apareceu do
+   * pior jeito: a dona do produto foi montar a página dela e o próprio ramo
+   * dela estava fora da lista.
+   *
+   * `assistencia` cobre consertar computador, `design` cobre a parte visual, e
+   * `consultoria` cobre mentoria. Quem escreve software, cuida de sistema ou
+   * automatiza processo caía em nenhuma das três e ia parar em "outro", que é
+   * onde a receita da página deixa de ajudar.
+   *
+   * Preço guardado, como o resto do grupo: valor de projeto sai de conversa, e
+   * tabela pública engessa a negociação. Endereço opcional porque o trabalho
+   * quase sempre é remoto.
+   */
+  cat("tecnologia", "Tecnologia e desenvolvimento", "Serviços", [
+    "tecnologia", "desenvolvimento", "desenvolvedor", "desenvolvedora",
+    "programação", "programador", "programadora", "dev", "site", "sites",
+    "aplicativo", "app", "software", "sistema", "ti", "automação",
+    "dados", "planilha", "integração", "wordpress", "landing page"
+  ], {
+    schema: "ProfessionalService",
+    nomeDePessoa: true,
+    tituloCatalogo: "Serviços",
+    mostrarPrecos: false,
+  }),
   cat("design", "Design e comunicação", "Serviços", [
     "design", "designer", "identidade visual", "logo",
     "social media", "ilustração", "branding", "gráfico"

@@ -183,3 +183,25 @@ test("todo id de categoria passa na restrição de formato do banco", () => {
     ok(doBanco.test(c.id), `${c.id} seria recusado pelo banco`);
   }
 });
+
+/**
+ * Tecnologia, e a lição que ela deixou.
+ *
+ * A falta dela apareceu do pior jeito: a dona do produto foi montar a própria
+ * página e o ramo dela estava fora da lista. O teste trava os termos que quem
+ * trabalha com isso realmente digita, e nenhum deles é "tecnologia".
+ */
+test("quem escreve software acha o próprio ramo pelas palavras dele", () => {
+  for (const termo of ["dev", "site", "aplicativo", "software", "automação", "programadora"]) {
+    const achados = procurar(termo);
+    ok(
+      achados.some((c) => c.id === "tecnologia"),
+      `"${termo}" precisa achar tecnologia, achou: ${achados.map((c) => c.id).join(", ")}`,
+    );
+  }
+  // Preço guardado e endereço opcional, como o resto de quem vende projeto e
+  // trabalha de onde estiver.
+  strictEqual(receitaDe("tecnologia").mostrarPrecos, false);
+  strictEqual(receitaDe("tecnologia").endereco, "opcional");
+  strictEqual(receitaDe("tecnologia").nomeDePessoa, true);
+});
