@@ -109,3 +109,57 @@ O QUE EU PRECISO DE VOLTA
   5. Que o redeploy foi na branch, e se terminou.
   6. O código que o simulador devolveu.
 ```
+
+---
+
+# Prompt 2: conferir a conta antes do teste do cartão
+
+O webhook já está configurado e provado. Isto aqui é para destravar o teste do
+cartão e saber o que falta para produção.
+
+Copie daqui até o fim.
+
+```
+Conta do Mercado Pago do Entrais. São quatro perguntas, e nenhuma pede que você
+mude alguma coisa. Só conferir e me contar.
+
+1. QUAL É O E-MAIL DA CONTA
+
+   Em Seu perfil, ou onde o painel mostrar o e-mail cadastrado. Preciso do
+   endereço, e não da senha.
+
+   Por que importa: o Mercado Pago recusa assinatura em que o pagador é a mesma
+   conta do vendedor. O nosso checkout usa o e-mail do Google de quem está
+   logada como pagador. Se os dois forem o mesmo endereço, o teste do cartão
+   volta recusado com uma mensagem que parece outra coisa, e a gente perde a
+   tarde atrás do motivo errado.
+
+2. AS CREDENCIAIS DE PRODUÇÃO ESTÃO LIBERADAS
+
+   Em Suas integrações, a aplicação do Entrais, Credenciais de produção. Me diga
+   se elas aparecem disponíveis ou se a tela pede algum passo antes (dados
+   cadastrais, atividade da conta, aceite de termos). NÃO me mande os valores.
+
+3. EXISTE CHAVE PIX CADASTRADA NA CONTA
+
+   Me diga só se existe alguma, e de que tipo (CPF, e-mail, telefone,
+   aleatória). O Pix de teste gerou o QR sem isso, e o de produção pede a chave
+   registrada. É o tipo de coisa que só aparece na primeira cobrança de verdade.
+
+4. A CONTA É PESSOA FÍSICA OU JURÍDICA
+
+   Os dois recebem, e o produto foi escrito para funcionar com CPF. Preciso
+   saber qual é porque os termos de uso publicam a identificação do fornecedor,
+   e o rótulo muda conforme o documento.
+
+O QUE EU PRECISO DE VOLTA
+
+  1. O e-mail da conta.
+  2. Se as credenciais de produção estão liberadas, e o que a tela pediu se não
+     estiverem.
+  3. Se existe chave Pix, e de que tipo.
+  4. Pessoa física ou jurídica.
+
+Nenhuma dessas respostas é segredo. Chave de acesso, senha e assinatura secreta
+ficam fora desta conversa.
+```
