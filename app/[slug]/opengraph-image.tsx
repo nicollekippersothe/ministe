@@ -24,10 +24,35 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "Página do negócio";
 
+/**
+ * A logo lida do disco, e o motivo de conferir o caminho antes.
+ *
+ * `caminho` é a coluna `logo_url`, e a coluna é escrita pelo dono da página. O
+ * painel grava direto pelo PostgREST, então tudo que chega aqui atravessou a
+ * RLS e mais nada: a conferência da tela é enfeite para quem manda um PATCH à
+ * mão. A restrição do banco aceita qualquer texto que comece com barra, de
+ * propósito, porque é assim que os exemplos e o destino de arquivo local
+ * guardam as imagens deles.
+ *
+ * Sem a conferência abaixo, `/../../etc/passwd` normaliza para fora da pasta
+ * `public` e o `readFile` obedece. O conteúdo lido não volta para quem pediu,
+ * porque vira base64 dentro de uma imagem que falha ao decodificar, mas sobram
+ * três coisas: saber se um arquivo existe pelo erro, ler qualquer imagem do
+ * disco, e derrubar a função mandando ler um arquivo enorme.
+ *
+ * A conferência é a de sempre para este caso: resolver o caminho e exigir que
+ * ele continue dentro da pasta permitida. Comparar texto antes de resolver
+ * falharia, porque `a/../../b` só revela o destino depois de normalizado.
+ */
 async function logoEmBase64(caminho: string | undefined) {
   if (!caminho) return null;
+
+  const pasta = join(process.cwd(), "public");
+  const alvo = join(pasta, caminho);
+  if (alvo !== pasta && !alvo.startsWith(`${pasta}/`)) return null;
+
   try {
-    const bytes = await readFile(join(process.cwd(), "public", caminho));
+    const bytes = await readFile(alvo);
     return `data:image/jpeg;base64,${bytes.toString("base64")}`;
   } catch {
     return null;
