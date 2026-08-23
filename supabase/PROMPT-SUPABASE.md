@@ -368,3 +368,34 @@ me avise. Tem página de gente ali, e apagar a linha apaga a página de uma pess
 Depois de aplicar, rode as duas conferências do fim do arquivo e me mande o
 resultado das duas.
 ```
+
+---
+
+# Prompt 6, para a extensão do Supabase: o ponto focal da capa
+
+A capa é 16 por 9 e a foto que a pessoa manda quase nunca é. Sem isto o corte é
+fixo, e rosto ou peça importante fica de fora.
+
+Copie daqui até o fim.
+
+```
+Projeto Supabase: niekaszanicnrciuixnb (Entrais, São Paulo).
+
+Só SQL. No SQL Editor, o conteúdo deste arquivo do repositório
+nicollekippersothe/ministe, branch main:
+
+  supabase/correcoes/014-foco-da-capa.sql
+
+Duas colunas smallint nulas em negocios, com restrição de faixa de 0 a 100. É
+idempotente, e as consultas de conferência estão no fim do arquivo.
+
+O app já está no ar sem ela e continua funcionando: coluna ausente vira nulo na
+leitura, e nulo vale centro. A escrita só inclui as colunas quando existe ponto
+gravado, justamente para um update com coluna inexistente não derrubar o
+salvamento da tela inteira.
+
+Rode as consultas de conferência e me mande o resultado, em vez de só dizer que
+rodou. Se alguma devolver diferente do que o comentário promete, me diga o que
+veio e siga: divergência de texto de comentário eu conserto depois, e só
+divergência que abra acesso é motivo de parar.
+```
