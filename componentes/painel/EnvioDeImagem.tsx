@@ -22,6 +22,7 @@ import { navegador } from "@/lib/supabase/navegador";
 import type { Foco } from "@/lib/tipos";
 import { FocoDaCapa } from "./FocoDaCapa";
 import { LADO_MAXIMO, reduzirImagem } from "./reduzirImagem";
+import { IconeConfirmado, IconeGirando } from "./Sinais";
 
 /**
  * O campo de imagem do painel: mostra a que existe, troca e remove.
@@ -64,14 +65,22 @@ const VAZIOS: Record<PastaDeImagem, string> = {
 };
 
 /**
- * A frase de quando o Supabase ainda está de fora.
+ * As duas frases de quando o Supabase ainda está de fora.
  *
  * O painel roda inteiro guardando num arquivo local, que é o que deixa o
  * `npm run dev` e o teste de fluxo rodarem sozinhos. A prévia funciona igual
  * nesse modo, e a tela diz o que acontece com o arquivo em vez de deixar a
  * pessoa apertar um botão que fica parado.
+ *
+ * São duas porque são dois momentos: `SO_PREVIA_PRONTA` é a confirmação de que
+ * a imagem que a pessoa acabou de escolher entrou, e `SO_PREVIA_PARADA` é o
+ * relato do cartão em repouso. A mesma frase nos dois lugares dizia "imagem
+ * escolhida" para um cartão em que ninguém tinha escolhido nada ainda.
  */
-const SO_PREVIA =
+const SO_PREVIA_PRONTA =
+  "Imagem escolhida, e a prévia já mostra como ela fica na página. O arquivo entra na página assim que o banco de imagens estiver ligado.";
+
+const SO_PREVIA_PARADA =
   "A prévia mostra como a imagem fica na página. O envio guarda o arquivo assim que o banco de imagens estiver ligado.";
 
 /**
@@ -151,23 +160,38 @@ export function EnvioDeImagem({
   const [ocupado, setOcupado] = useState<"envio" | "remocao" | null>(null);
   const [recado, setRecado] = useState<string | null>(null);
   /*
-   * Se o último recado é uma recusa. A frase sozinha ficava na mesma linha
-   * cinza de "Enviando a imagem", no rodapé do cartão, e passava batido:
-   * a pessoa via a capa continuar vazia e concluía que a tela tinha quebrado.
-   * Recusa vira `alert` e ganha a cor de destaque, que é como o resto do painel
-   * já mostra o que precisa de uma ação de volta.
+   * Em que tom o último recado sai.
+   *
+   * Era um booleano de recusa, e a fila inteira do envio cabia no outro lado
+   * dele: "Preparando", "Enviando" e "Imagem no ar" saíam na mesma linha cinza
+   * de 12 pixels no rodapé do cartão. A dona da página mandou a foto e contou
+   * que ficou "sem saber se salvou", e é isso: uma linha cinza que troca de
+   * texto duas vezes em meio segundo passa por decoração.
+   *
+   * Agora são quatro tons, e cada um tem forma própria: andamento roda, pronto
+   * traz o certo em verde, recusa vira `alert` na cor de destaque, e o repouso
+   * continua sendo a linha cinza que descreve o cartão. Nenhum deles some
+   * sozinho: o que apaga um recado é a próxima ação da pessoa.
    */
-  const [recusado, setRecusado] = useState(false);
+  const [tom, setTom] = useState<"repouso" | "andamento" | "pronto" | "recusa">(
+    "repouso",
+  );
 
   /** Recusa: a frase aparece como aviso, e o passo para sair dele vem junto. */
   function recusar(frase: string) {
-    setRecusado(true);
+    setTom("recusa");
     setRecado(frase);
   }
 
-  /** Andamento e sucesso: a frase é só um relato do que está acontecendo. */
+  /** Andamento: a escrita está acontecendo agora, e o sinal roda enquanto isso. */
   function contar(frase: string) {
-    setRecusado(false);
+    setTom("andamento");
+    setRecado(frase);
+  }
+
+  /** Fim de linha: a escrita chegou ao destino, e o certo fica na tela. */
+  function confirmar(frase: string) {
+    setTom("pronto");
     setRecado(frase);
   }
 
@@ -227,7 +251,7 @@ export function EnvioDeImagem({
       setPontoInicial(null);
 
       if (!ligado) {
-        contar(SO_PREVIA);
+        confirmar(SO_PREVIA_PRONTA);
         return;
       }
 
@@ -264,7 +288,7 @@ export function EnvioDeImagem({
       if (gravado.anterior !== null) {
         await sb().storage.from(BUCKET).remove([gravado.anterior]);
       }
-      contar("Imagem no ar na sua página.");
+      confirmar("Pronto, a imagem está na sua página.");
       router.refresh();
     } finally {
       setOcupado(null);
@@ -287,7 +311,7 @@ export function EnvioDeImagem({
 
       trocarPrevia(null);
       setCaminho(null);
-      contar(VAZIOS[pasta]);
+      confirmar(`Pronto. ${VAZIOS[pasta]}`);
       router.refresh();
     } finally {
       setOcupado(null);
@@ -355,15 +379,16 @@ export function EnvioDeImagem({
         )}
 
         {/*
-          Ao lado do selo redondo os dois botões empilham, porque ali a largura
-          que sobra é de um botão só. Embaixo da faixa da capa eles cabem lado a
-          lado, e ficam lado a lado.
+          A mesma linha de botões nos dois cartões.
+
+          Ela era esticada ao lado do selo redondo e do tamanho do texto embaixo
+          da capa, e o resultado eram dois "Escolher imagem" lado a lado com 174
+          e 150 pixels de largura, em duas alturas. É o mesmo botão, com o mesmo
+          texto, fazendo a mesma coisa: agora ele tem uma medida só, e as duas
+          linhas começam na mesma borda esquerda do cartão. Quando a largura
+          aperta, o segundo botão desce, que é o que `flex-wrap` faz.
         */}
-        <div
-          className={`flex min-w-0 flex-1 gap-2 ${
-            redonda ? "flex-col items-stretch" : "flex-wrap items-center"
-          }`}
-        >
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <input
             id={id}
             type="file"
@@ -410,21 +435,41 @@ export function EnvioDeImagem({
         </div>
       </div>
 
+      {/*
+        A faixa de recado do cartão.
+
+        Repouso continua sendo a linha cinza que descreve o cartão, e é o que
+        ela sempre foi. Os outros três tons ganham caixa, cor e sinal: quem
+        acabou de mandar uma foto precisa ver a diferença entre "está indo" e
+        "chegou" de longe, e do canto do olho, com o dedo ainda no botão.
+      */}
       <p
-        role={recusado ? "alert" : "status"}
+        role={tom === "recusa" ? "alert" : "status"}
         aria-live="polite"
-        className={
-          recusado
-            ? "mt-3 rounded-lg border border-destaque/30 bg-destaque/8 px-3 py-2 text-xs leading-relaxed font-medium text-destaque"
-            : "mt-3 text-xs leading-relaxed text-suave"
-        }
+        className={`mt-3 flex items-start gap-2 text-xs leading-relaxed ${
+          tom === "recusa"
+            ? "rounded-lg border border-destaque/30 bg-destaque/8 px-3 py-2 font-medium text-destaque"
+            : tom === "pronto"
+              ? "rounded-lg border border-aberto-texto/25 bg-aberto-fundo px-3 py-2 font-medium text-aberto-texto"
+              : tom === "andamento"
+                ? "rounded-lg border border-borda bg-fundo px-3 py-2 font-medium text-texto"
+                : "text-suave"
+        }`}
       >
-        {recado ??
-          (ligado
-            ? mostrada
-              ? "Imagem no ar na sua página."
-              : VAZIOS[pasta]
-            : SO_PREVIA)}
+        {tom === "andamento" ? (
+          <IconeGirando className="mt-px h-4 w-4 shrink-0 motion-reduce:hidden" />
+        ) : null}
+        {tom === "pronto" ? (
+          <IconeConfirmado className="mt-px h-4 w-4 shrink-0" />
+        ) : null}
+        <span className="min-w-0">
+          {recado ??
+            (mostrada
+              ? ligado
+                ? "Imagem no ar na sua página."
+                : SO_PREVIA_PARADA
+              : VAZIOS[pasta])}
+        </span>
       </p>
     </div>
   );

@@ -48,17 +48,29 @@ export async function salvarBasico(formData: FormData) {
     redirect("/painel/negocio?erro=whatsapp");
   }
 
-  const estado = texto(formData, "estado");
+  /*
+   * A resposta da pergunta do endereço, que a tela faz com duas opções à vista.
+   *
+   * "Deixar de fora" é uma resposta, e não um campo em branco: ela tira o
+   * endereço da página mesmo quando havia um gravado, que é o que a pessoa
+   * espera de uma escolha marcada. Os campos chegam desligados nesse caso e o
+   * formulário nem os manda, então ler tudo como nulo aqui é o mesmo resultado
+   * por dois caminhos, e ficar explícito é o que impede um campo esquecido de
+   * voltar sozinho para a página no dia em que a tela mudar.
+   */
+  const enderecoNaPagina = texto(formData, "enderecoNaPagina") !== "nao";
+
+  const estado = enderecoNaPagina ? texto(formData, "estado") : null;
   if (estado && !/^[A-Za-z]{2}$/.test(estado)) {
     redirect("/painel/negocio?erro=estado");
   }
 
-  const cep = texto(formData, "cep");
+  const cep = enderecoNaPagina ? texto(formData, "cep") : null;
   if (cep && !/^[0-9]{5}-?[0-9]{3}$/.test(cep)) {
     redirect("/painel/negocio?erro=cep");
   }
 
-  const mapaBruto = texto(formData, "mapsUrl");
+  const mapaBruto = enderecoNaPagina ? texto(formData, "mapsUrl") : null;
   let mapsUrl: string | null = null;
   if (mapaBruto) {
     const conferido = conferirLink(mapaBruto);
@@ -76,8 +88,8 @@ export async function salvarBasico(formData: FormData) {
       mensagemItem: texto(formData, "mensagemItem"),
       mostrarPrecos: marcado(formData, "mostrarPrecos"),
       tituloCatalogo: texto(formData, "tituloCatalogo") ?? "Catálogo",
-      endereco: texto(formData, "endereco"),
-      cidade: texto(formData, "cidade"),
+      endereco: enderecoNaPagina ? texto(formData, "endereco") : null,
+      cidade: enderecoNaPagina ? texto(formData, "cidade") : null,
       estado: estado ? estado.toUpperCase() : null,
       cep,
       mapsUrl,

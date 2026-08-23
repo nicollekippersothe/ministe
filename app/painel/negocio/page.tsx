@@ -7,18 +7,14 @@ import {
   Botao,
   Escolha,
   Grupo,
-  GrupoRecolhivel,
   Marcar,
   Texto,
 } from "@/componentes/painel/Campos";
+import { BlocoDoWhatsapp } from "@/componentes/painel/BlocoDoWhatsapp";
 import { EnvioDeImagem } from "@/componentes/painel/EnvioDeImagem";
-import {
-  MensagemDoBotao,
-  MensagemDosItens,
-} from "@/componentes/painel/PreviaDaMensagem";
+import { EscolhaDoEndereco } from "@/componentes/painel/EscolhaDoEndereco";
 import { receitaDe } from "@/lib/categorias";
 import { doDono } from "@/lib/dados";
-import { telefoneVisivel } from "@/lib/formato";
 import { configurado } from "@/lib/supabase/config";
 
 import { exigirLogin } from "@/app/painel/vitrine";
@@ -52,33 +48,55 @@ export default async function Informacoes({
   const [negocio, params] = await Promise.all([doDono(), searchParams]);
 
   /*
-   * Quem manda no endereço é a receita do ramo, e não esta tela.
+   * Qual das duas respostas do endereço já vem marcada.
    *
-   * `lib/categorias.ts` já marca cada categoria com `endereco: "esperado" |
-   * "opcional"`, e o comentário do campo lá diz o porquê: quem produz em casa e
-   * quem atende online raramente quer o endereço público, e perguntar como se
-   * fosse obrigatório faz a pessoa travar no cadastro. A tela ignorava isso e
-   * abria os cinco campos de rua para todo mundo, inclusive para a psicóloga
-   * que atende por vídeo. Agora ela obedece: ramo com ponto na rua abre o bloco,
-   * ramo que costuma atender de outro jeito começa com ele recolhido, e a dobra
-   * abre com um toque para quem quiser.
+   * Quem manda é a receita do ramo, e não esta tela. `lib/categorias.ts` marca
+   * cada categoria com `endereco: "esperado" | "opcional"`, e o comentário do
+   * campo lá diz o porquê: quem produz em casa e quem atende online raramente
+   * quer o endereço público, e perguntar como se fosse obrigatório faz a pessoa
+   * travar no cadastro.
    *
-   * A recusa do servidor também abre: quando o `?erro=` é de um campo daqui de
-   * dentro, esconder o campo esconderia justamente o que precisa de conserto.
+   * Três coisas puxam para "sim", nesta ordem de força: endereço já gravado,
+   * ramo com ponto na rua, e a recusa do servidor num campo daqui de dentro,
+   * porque esconder o campo esconderia justamente o que precisa de conserto.
    */
   const receita = receitaDe(negocio.categoria);
   const erroDeEndereco =
     params.erro === "cep" ||
     params.erro === "estado" ||
     (params.erro ?? "").startsWith("mapa_");
-  const enderecoAberto = receita.endereco === "esperado" || erroDeEndereco;
+  const temEndereco = [
+    negocio.endereco,
+    negocio.cidade,
+    negocio.estado,
+    negocio.cep,
+    negocio.mapsUrl,
+  ].some((p) => p !== null && p !== "");
+  const enderecoNaPagina =
+    temEndereco || receita.endereco === "esperado" || erroDeEndereco
+      ? "sim"
+      : "nao";
 
-  /** O que a dobra fechada mostra: o endereço guardado, ou o convite para pôr um. */
-  const resumoDoEndereco =
-    [negocio.endereco, negocio.cidade, negocio.estado]
-      .filter((p) => p !== null && p !== "")
-      .join(", ") ||
-    "Rua, cidade e link do mapa. Abra para pôr o seu na página.";
+  /*
+   * A chave do bloco de endereço, montada com o que está gravado.
+   *
+   * Campo de digitar aqui é não controlado, com `defaultValue`, e o Salvar
+   * volta por navegação de cliente: o React reaproveita o mesmo input e o valor
+   * que está dentro dele fica onde estava. Sempre foi assim e nunca apareceu,
+   * porque o que volta do servidor costuma ser o que a pessoa acabou de digitar.
+   *
+   * A escolha "prefiro deixar de fora" quebra esse empate: ela apaga o endereço
+   * no banco, e o campo escondido continuaria mostrando a rua antiga para quem
+   * voltasse para "sim" na mesma visita. Com a chave mudando junto com o valor
+   * gravado, o bloco nasce de novo e os campos leem o que o servidor devolveu.
+   */
+  const chaveDoEndereco = [
+    negocio.endereco,
+    negocio.cidade,
+    negocio.estado,
+    negocio.cep,
+    negocio.mapsUrl,
+  ].join("|");
 
   return (
     <main className="mt-6">
@@ -173,25 +191,13 @@ export default async function Informacoes({
         </Grupo>
 
         <Grupo titulo="WhatsApp e catálogo" duplo>
-          <Texto
-            id="whatsapp"
-            rotulo="Número do WhatsApp"
-            dica="Com DDD. Pode digitar com parênteses e traço."
-            valor={negocio.whatsapp ? telefoneVisivel(negocio.whatsapp) : null}
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-          />
-          <MensagemDoBotao
-            negocio={negocio}
-            rotulo="Mensagem que já vem escrita"
-            dica="É o que o cliente vê digitado quando toca no botão."
-          />
-          <MensagemDosItens
-            negocio={negocio}
-            rotulo="Mensagem dos itens"
-            dica="Vale para todos os itens de uma vez. O {item} vira o nome do produto."
-          />
+          {/*
+            O campo do número e as duas prévias saíram juntos para um
+            componente só. O motivo está escrito lá: enquanto as prévias liam o
+            número gravado, digitar não mexia no desenho, e o botão só aparecia
+            depois de uma ida ao servidor.
+          */}
+          <BlocoDoWhatsapp negocio={negocio} />
           <Escolha
             id="tituloCatalogo"
             rotulo="Nome dessa seção na página"
@@ -207,12 +213,7 @@ export default async function Informacoes({
           />
         </Grupo>
 
-        <GrupoRecolhivel
-          titulo="Endereço"
-          resumo={resumoDoEndereco}
-          aberto={enderecoAberto}
-          duplo
-        >
+        <EscolhaDoEndereco key={chaveDoEndereco} inicial={enderecoNaPagina}>
           {/* A rua é a linha mais comprida do grupo, então fica com a largura
               toda e deixa cidade, UF e CEP dividirem a linha de baixo. */}
           <div className="lg:col-span-2">
@@ -224,8 +225,15 @@ export default async function Informacoes({
               autoComplete="street-address"
             />
           </div>
-          <div className="flex gap-3">
-            <div className="flex-1">
+          {/*
+            Os três curtos dividem uma linha só, inclusive no celular.
+
+            Cada um empilhado custava 120 pixels de rolagem para caber duas
+            letras de UF, e a tela já é longa. Cidade fica com o que sobra, e UF
+            e CEP têm largura escrita porque o conteúdo delas tem tamanho fixo.
+          */}
+          <div className="flex gap-2 lg:col-span-2">
+            <div className="min-w-0 flex-1">
               <Texto
                 id="cidade"
                 rotulo="Cidade"
@@ -233,7 +241,7 @@ export default async function Informacoes({
                 maxLength={60}
               />
             </div>
-            <div className="w-20">
+            <div className="w-14 shrink-0">
               <Texto
                 id="estado"
                 rotulo="UF"
@@ -242,15 +250,17 @@ export default async function Informacoes({
                 pattern="[A-Za-z]{2}"
               />
             </div>
+            <div className="w-28 shrink-0">
+              <Texto
+                id="cep"
+                rotulo="CEP"
+                valor={negocio.cep}
+                inputMode="numeric"
+                maxLength={9}
+                autoComplete="postal-code"
+              />
+            </div>
           </div>
-          <Texto
-            id="cep"
-            rotulo="CEP"
-            valor={negocio.cep}
-            inputMode="numeric"
-            maxLength={9}
-            autoComplete="postal-code"
-          />
           <Texto
             id="mapsUrl"
             rotulo="Link do Google Maps"
@@ -258,7 +268,7 @@ export default async function Informacoes({
             valor={negocio.mapsUrl}
             inputMode="url"
           />
-        </GrupoRecolhivel>
+        </EscolhaDoEndereco>
 
         <BarraSalvar>
           <Botao type="submit">Salvar</Botao>

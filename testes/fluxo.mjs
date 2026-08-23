@@ -380,7 +380,10 @@ passo(
 await p.fill("#novo-titulo", "Brigadeiro de colher");
 await p.fill("#novo-preco", "12,50");
 await p.click('button:has-text("Acrescentar ao catálogo")');
-await p.waitForURL(/acrescentado=1/);
+// O caminho de volta carrega o id do item recém-criado, e não um "acrescentado=1":
+// é por ele que a tela sabe qual linha abrir, marcar e receber o cursor. Ver o
+// comentário no topo de app/painel/catalogo/page.tsx.
+await p.waitForURL(/novo=[0-9a-f-]+#item-/);
 const ultimo = itensAntes;
 passo(
   "acrescentar põe o item no fim da lista, com o preço em reais",
@@ -489,7 +492,7 @@ await p.fill("#novo-rotulo", "Ver a agenda completa");
 await p.fill("#novo-url", "helena-vasques.com.br/agenda");
 await p.selectOption("#novo-icone", "site");
 await p.click('button:has-text("Acrescentar à página")');
-await p.waitForURL(/acrescentado=1/);
+await p.waitForURL(/novo=[0-9a-f-]+#link-/);
 passo(
   "endereço sem https é aceito e completado no link novo",
   (await p.inputValue(`#link-${linksAntes}-url`)) ===

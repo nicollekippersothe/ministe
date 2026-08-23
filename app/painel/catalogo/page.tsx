@@ -6,6 +6,7 @@ import {
   salvarItens,
   subirItem,
 } from "./acoes";
+import { AtalhoDeAcrescentar, IconeMais } from "@/componentes/painel/Acrescentar";
 import { Aviso } from "@/componentes/painel/Aviso";
 import {
   AreaTexto,
@@ -14,9 +15,12 @@ import {
   Marcar,
   Texto,
 } from "@/componentes/painel/Campos";
+import { FocarNoNovo } from "@/componentes/painel/FocarNoNovo";
 import { Cartao } from "@/componentes/painel/Ordem";
+import { PreviaDoItem } from "@/componentes/painel/PreviaDoItem";
 import { doDono } from "@/lib/dados";
 import { preco, precoEditavel } from "@/lib/formato";
+import type { Item } from "@/lib/tipos";
 
 import { exigirLogin } from "@/app/painel/vitrine";
 
@@ -39,13 +43,36 @@ export const dynamic = "force-dynamic";
  *
  * O preço vive em centavos no banco e em reais na tela, que é como a pessoa
  * fala. A conversão nos dois sentidos mora em lib/formato.ts, com teste.
+ *
+ * ## O acrescentar precisa aparecer
+ *
+ * **Relato de uso, nas palavras da dona: "eu adiciono e ele some".** Três coisas
+ * se somavam. A linha nova nascia no fim de uma lista de vinte, igual a todas as
+ * outras; o recado de "Item acrescentado" ficava no alto da tela, três telas
+ * acima de onde a rolagem tinha parado; e o Salvar seguinte devolvia a pessoa
+ * para o topo com todas as linhas fechadas, inclusive a que ela estava
+ * escrevendo. Ela acrescentava, escrevia a descrição, salvava, e a tela voltava
+ * parecida com a de antes de tudo.
+ *
+ * Agora o acrescentar termina em `?novo=<id>`, e o id atravessa a tela inteira:
+ * a linha chega aberta, com selo e com a cor de confirmação que sai sozinha
+ * (componentes/painel/Ordem.tsx), a rolagem para nela e o cursor entra na
+ * descrição, que é o campo que sobrou para escrever. O id viaja num campo
+ * escondido, então o Salvar seguinte devolve a pessoa para a mesma linha, aberta
+ * (vira `?aberto=<id>`, sem o selo, porque a partir daí ela é uma linha comum).
+ *
+ * E o botão de acrescentar passou a existir também no alto, porque no fim de
+ * uma lista cheia ele estava a três telas de rolagem de quem acabou de chegar.
  */
 export default async function Catalogo({
   searchParams,
 }: {
   searchParams: Promise<{
     salvo?: string;
-    acrescentado?: string;
+    /** O id do item recém-criado: ele ganha o selo, a cor e o cursor. */
+    novo?: string;
+    /** O id do item que só precisa continuar aberto e à vista. */
+    aberto?: string;
     removido?: string;
     movido?: string;
     erro?: string;
@@ -58,7 +85,11 @@ export default async function Catalogo({
   const total = itens.length;
   const naPagina = itens.filter((i) => i.ativo).length;
 
-  const feito = params.acrescentado
+  // O recém-criado também fica aberto, então o alvo da abertura é um dos dois.
+  const emFoco = params.novo ?? params.aberto ?? null;
+  const indiceEmFoco = itens.findIndex((i) => i.id === emFoco);
+
+  const feito = params.novo
     ? "Item acrescentado ao catálogo."
     : params.removido
       ? "Item removido do catálogo."
@@ -67,6 +98,16 @@ export default async function Catalogo({
         : params.salvo
           ? "Alterações salvas."
           : null;
+
+  /** O esqueleto que o formulário de acrescentar mostra enquanto é digitado. */
+  const emBranco: Item = {
+    id: "acrescentando",
+    titulo: "",
+    descricao: null,
+    precoCentavos: null,
+    fotos: [],
+    ativo: true,
+  };
 
   return (
     <main className="mt-6">
@@ -105,18 +146,23 @@ export default async function Catalogo({
       <Aviso salvo={feito !== null} mensagem={feito ?? undefined} erro={params.erro} />
 
       {total > 0 ? (
-        <p className="mt-5 text-sm text-suave">
-          <span className="font-medium text-texto">
-            {total} {total === 1 ? "item" : "itens"}
-          </span>
-          {naPagina === total
-            ? " no catálogo, e todos aparecem na página."
-            : ` no catálogo, e ${naPagina} ${naPagina === 1 ? "aparece" : "aparecem"} na página.`}
-        </p>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-suave">
+            <span className="font-medium text-texto">
+              {total} {total === 1 ? "item" : "itens"}
+            </span>
+            {naPagina === total
+              ? " no catálogo, e todos aparecem na página."
+              : ` no catálogo, e ${naPagina} ${naPagina === 1 ? "aparece" : "aparecem"} na página.`}
+          </p>
+          <AtalhoDeAcrescentar href="#acrescentar">
+            Acrescentar item
+          </AtalhoDeAcrescentar>
+        </div>
       ) : (
         <p className="mt-5 max-w-prose rounded-2xl border border-borda bg-superficie px-4 py-3.5 text-sm leading-relaxed text-suave">
           A sua página mostra os itens que você acrescentar aqui. Comece pelo que
-          mais sai, escreva o preço, e a seção aparece na página no mesmo
+          você mais faz, escreva o preço, e a seção aparece na página no mesmo
           instante.
         </p>
       )}
@@ -129,6 +175,12 @@ export default async function Catalogo({
         pede.
       */}
       <form action={salvarItens} className="mt-4 flex flex-col gap-3 lg:max-w-xl">
+        {/*
+          O id da linha em foco viaja com o formulário para o Salvar saber para
+          onde devolver a pessoa. Ver o comentário no topo desta tela.
+        */}
+        <input type="hidden" name="novo" value={emFoco ?? ""} />
+
         {itens.map((item, i) => (
           <Cartao
             key={item.id}
@@ -141,46 +193,54 @@ export default async function Catalogo({
             }
             selo={item.ativo ? null : "Guardado"}
             prefixo="item"
-            aberto={Boolean(params.acrescentado) && i === total - 1}
+            aberto={item.id === emFoco}
+            novo={item.id === params.novo}
             subir={subirItem}
             descer={descerItem}
             remover={removerItem}
           >
             <input type="hidden" name={`item-${i}-id`} value={item.id} />
 
-            <Texto
-              id={`item-${i}-titulo`}
-              rotulo="Nome do item"
-              valor={item.titulo}
-              maxLength={80}
-            />
-            <AreaTexto
-              id={`item-${i}-descricao`}
-              rotulo="Descrição"
-              dica="Uma ou duas frases sobre o que a pessoa recebe."
-              valor={item.descricao}
-              maxLength={280}
-            />
-            {/*
-              Sem type="number" de propósito. Ele recusa a vírgula em boa parte
-              dos navegadores, e "74,90" é como o brasileiro escreve preço. O
-              inputMode abre o teclado numérico do celular, e quem confere é
-              lerPreco, que aceita vírgula e ponto.
-            */}
-            <Texto
-              id={`item-${i}-preco`}
-              rotulo="Preço em reais"
-              dica="Por exemplo 74,90. Em branco, o item aparece com nome e descrição."
-              valor={precoEditavel(item.precoCentavos)}
-              inputMode="decimal"
-              autoComplete="off"
-            />
-            <Marcar
-              id={`item-${i}-ativo`}
-              rotulo="Aparece na página"
-              dica="Desmarcado, o item fica guardado aqui com você."
-              marcado={item.ativo}
-            />
+            <PreviaDoItem
+              negocio={negocio}
+              prefixo={`item-${i}`}
+              item={item}
+              chamada="Na sua página, este item aparece assim:"
+            >
+              <Texto
+                id={`item-${i}-titulo`}
+                rotulo="Nome do item"
+                valor={item.titulo}
+                maxLength={80}
+              />
+              <AreaTexto
+                id={`item-${i}-descricao`}
+                rotulo="Descrição"
+                dica="Uma ou duas frases sobre o que a pessoa recebe."
+                valor={item.descricao}
+                maxLength={280}
+              />
+              {/*
+                Sem type="number" de propósito. Ele recusa a vírgula em boa parte
+                dos navegadores, e "74,90" é como o brasileiro escreve preço. O
+                inputMode abre o teclado numérico do celular, e quem confere é
+                lerPreco, que aceita vírgula e ponto.
+              */}
+              <Texto
+                id={`item-${i}-preco`}
+                rotulo="Preço em reais"
+                dica="Por exemplo 180,00. Em branco, o item aparece com nome e descrição."
+                valor={precoEditavel(item.precoCentavos)}
+                inputMode="decimal"
+                autoComplete="off"
+              />
+              <Marcar
+                id={`item-${i}-ativo`}
+                rotulo="Aparece na página"
+                dica="Desmarcado, o item fica guardado aqui com você."
+                marcado={item.ativo}
+              />
+            </PreviaDoItem>
           </Cartao>
         ))}
 
@@ -189,29 +249,49 @@ export default async function Catalogo({
           nome: é o único campo que o banco exige, e o resto se escreve na linha
           que acabou de nascer, já aberta. Pedir descrição e foto antes de o
           item existir é o que faz a pessoa desistir no primeiro.
+
+          A prévia ao lado é o que responde antes do toque. Quem escreve o nome
+          já vê o cartão que vai para a página, e o botão deixa de ser um pulo no
+          escuro.
         */}
-        <fieldset className="mt-2 flex flex-col gap-4 rounded-2xl border border-dashed border-borda bg-fundo p-4">
-          <legend className="px-1 text-sm font-semibold text-texto">
+        <fieldset
+          id="acrescentar"
+          className="mt-2 flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-dashed border-borda bg-fundo p-4 lg:scroll-mt-8"
+        >
+          <legend className="flex items-center gap-1.5 px-1 text-sm font-semibold text-texto">
+            <IconeMais className="h-4 w-4 text-destaque" />
             Acrescentar item
           </legend>
 
-          <Texto
-            id="novo-titulo"
-            rotulo="Nome do item"
-            dica="Por exemplo: Bolo de cenoura com brigadeiro."
-            valor={null}
-            maxLength={80}
-            autoComplete="off"
-          />
-          <Texto
-            id="novo-preco"
-            rotulo="Preço em reais"
-            valor={null}
-            inputMode="decimal"
-            autoComplete="off"
-          />
+          <PreviaDoItem
+            /* Chave pelo tamanho da lista: acrescentar devolve a tela com o
+               formulário em branco, e a prévia precisa nascer em branco junto. */
+            key={`novo-${total}`}
+            negocio={negocio}
+            prefixo="novo"
+            item={emBranco}
+            chamada="Assim que você salvar, ele entra na sua página deste jeito:"
+          >
+            <Texto
+              id="novo-titulo"
+              rotulo="Nome do item"
+              dica="Por exemplo: Sessão de terapia, 50 minutos."
+              valor={null}
+              maxLength={80}
+              autoComplete="off"
+            />
+            <Texto
+              id="novo-preco"
+              rotulo="Preço em reais"
+              valor={null}
+              inputMode="decimal"
+              autoComplete="off"
+            />
+          </PreviaDoItem>
 
-          <div className="lg:max-w-56">
+          {/* 64 e não 56: em 224 pixels o rótulo quebrava em duas linhas e
+              vazava da altura fixa do botão. */}
+          <div className="lg:max-w-64">
             <Botao type="submit" formAction={acrescentarItem} tom="leve">
               Acrescentar ao catálogo
             </Botao>
@@ -224,6 +304,18 @@ export default async function Catalogo({
           </BarraSalvar>
         ) : null}
       </form>
+
+      {/*
+        A rolagem e o cursor, depois de a tela existir. Só para o item recém
+        criado: no volta do Salvar a pessoa já está escrevendo, e mover o cursor
+        ali tiraria ela de onde ela estava.
+      */}
+      {params.novo && indiceEmFoco >= 0 ? (
+        <FocarNoNovo
+          cartao={`item-${indiceEmFoco}`}
+          campo={`item-${indiceEmFoco}-descricao`}
+        />
+      ) : null}
     </main>
   );
 }

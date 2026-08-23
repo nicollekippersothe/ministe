@@ -51,6 +51,15 @@ export function PaginaPublica({
   const temGaleria = negocio.galeria.length > 0;
   const temLinks = negocio.links.length > 0;
   /*
+   * O risco daqui e o mesmo do `Endereco`, e a conta precisa ser a mesma dele:
+   * a linha divisoria que separa horario de endereco era incondicional, entao
+   * quem tem os dois em branco ganhava um risco solto embaixo da frase, com
+   * nada depois. Isso e exatamente a gente da agenda: psicologa, professora de
+   * yoga e tatuador atendem com hora marcada e guardam o endereco de proposito,
+   * entao o defeito aparecia justo em quem o produto quer receber.
+   */
+  const temEndereco = Boolean(negocio.endereco || negocio.cidade);
+  /*
    * A letra e conferida no render, e nao so na hora de salvar.
    *
    * O gatilho protege_cobranca devolve a fonte antiga num UPDATE de quem esta
@@ -129,7 +138,7 @@ export function PaginaPublica({
           <div className="lg:sticky lg:top-8 lg:self-start lg:border-r lg:border-borda lg:pb-8">
             <Capa negocio={negocio} apenasIdentidade />
             <Horarios negocio={negocio} />
-            <Divisor />
+            {temEndereco ? <Divisor /> : null}
             <Endereco negocio={negocio} />
 
             {acoes.length > 0 ? (

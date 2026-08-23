@@ -3,6 +3,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { exigirLogin } from "@/app/painel/vitrine";
+import { IconeAvancar } from "@/componentes/Icones";
+import { IconeConferido, Passo } from "@/componentes/painel/PassoDaCompra";
 import { BotaoDeAcao } from "@/componentes/painel/BotaoDeAcao";
 import { AvisoCobranca } from "@/componentes/painel/AvisoCobranca";
 import { CamposCartao } from "@/componentes/painel/CamposCartao";
@@ -150,42 +152,74 @@ export default async function Plano({
 
 function Escolha({ ciclo }: { ciclo: Ciclo }) {
   const economia = preco(economiaAnualEmCentavos());
+  const escolhido = PLANOS[ciclo];
+  const valor = preco(escolhido.valorCentavos);
 
   return (
-    <div className="mt-6 flex flex-col gap-8">
-      <section>
-        <h2 className="text-lg font-semibold tracking-tight text-texto">
-          Escolha o período
-        </h2>
+    <div className="mt-6 flex flex-col gap-9">
+      <Passo
+        numero={1}
+        titulo="Período"
+        estado="feito"
+        marca={`${escolhido.rotulo}, ${valor}`}
+      >
         <div className="mt-3 flex flex-col gap-2">
-          {(["mensal", "anual"] as const).map((c) => (
-            <Link
-              key={c}
-              href={`/painel/plano?ciclo=${c}`}
-              aria-current={ciclo === c ? "true" : undefined}
-              className={`flex flex-col rounded-2xl border bg-superficie px-4 py-3.5 ${
-                ciclo === c ? "border-texto" : "border-borda"
-              }`}
-            >
-              <span className="text-[1.05rem] leading-snug text-texto">
-                {PLANOS[c].rotulo}
-              </span>
-              <span className="mt-0.5 text-sm leading-relaxed text-suave">
-                {PLANOS[c].descricao}
-                {c === "anual" ? ` Economia de ${economia} no ano.` : ""}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
+          {(["mensal", "anual"] as const).map((c) => {
+            const marcado = ciclo === c;
+            return (
+              <Link
+                key={c}
+                href={`/painel/plano?ciclo=${c}`}
+                aria-current={marcado ? "true" : undefined}
+                className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 ${
+                  marcado
+                    ? "border-texto bg-superficie shadow-[0_1px_2px_rgba(28,25,23,0.06)]"
+                    : "border-borda bg-superficie hover:border-texto/30"
+                }`}
+              >
+                {/*
+                  O visto ocupa lugar nos dois cartões, marcado ou não: assim a
+                  linha do texto começa na mesma coluna nos dois e o cartão
+                  escolhido some com a moldura vazia em vez de empurrar tudo.
+                */}
+                <span
+                  className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                    marcado
+                      ? "border-texto bg-texto text-superficie"
+                      : "border-borda"
+                  }`}
+                >
+                  {marcado ? <IconeConferido className="h-3 w-3" /> : null}
+                </span>
 
-      <section>
-        <h2 className="text-lg font-semibold tracking-tight text-texto">
-          Como pagar
-        </h2>
+                <span className="flex-1">
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="text-[1.05rem] leading-snug text-texto">
+                      {PLANOS[c].rotulo}
+                    </span>
+                    {marcado ? (
+                      <span className="text-xs font-semibold text-suave">
+                        Escolhido
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="mt-0.5 block text-sm leading-relaxed text-suave">
+                    {PLANOS[c].descricao}
+                    {c === "anual" ? ` Economia de ${economia} no ano.` : ""}
+                  </span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </Passo>
+
+      <Passo numero={2} titulo="Como pagar" estado="agora">
         <p className="mt-1 text-sm leading-relaxed text-suave">
-          O plano pago abre a escolha da letra, os números completos de visitas e
-          cliques, limites maiores e o rodapé só seu.
+          Os dois cobram os {valor} do plano {escolhido.rotulo.toLowerCase()} e
+          abrem a escolha da letra, os números completos de visitas e cliques,
+          limites maiores e o rodapé só seu. Escolha um deles para ir ao
+          pagamento.
         </p>
 
         <div className="mt-3 flex flex-col gap-2">
@@ -196,15 +230,15 @@ function Escolha({ ciclo }: { ciclo: Ciclo }) {
             titulo="Pix"
             dica={`Aprova na hora e compra ${
               ciclo === "anual" ? "o ano" : "o mês"
-            } inteiro. A renovação fica com você.`}
+            } inteiro por ${valor}. A renovação fica com você.`}
           />
           <Meio
             href={`/painel/plano?meio=credito&ciclo=${ciclo}`}
             titulo="Cartão de crédito"
-            dica={`${DIAS_DE_TESTE} dias de teste antes da primeira cobrança, e depois renova sozinho.`}
+            dica={`${DIAS_DE_TESTE} dias de teste antes da primeira cobrança de ${valor}, e depois renova sozinho.`}
           />
         </div>
-      </section>
+      </Passo>
 
       <p className="text-sm leading-relaxed text-suave">
         Tudo o que você já cadastrou permanece salvo, em qualquer plano. Voltar
@@ -221,6 +255,14 @@ function Escolha({ ciclo }: { ciclo: Ciclo }) {
   );
 }
 
+/**
+ * Um meio de pagamento, no passo 2.
+ *
+ * A seta é o que separa este cartão do cartão de período: ali o toque marca uma
+ * escolha e a tela continua a mesma, aqui ele abre a tela de pagar. Eram quatro
+ * retângulos iguais, e a diferença entre marcar e avançar ficava só na cabeça
+ * de quem já sabia.
+ */
 function Meio({
   href,
   titulo,
@@ -233,10 +275,17 @@ function Meio({
   return (
     <Link
       href={href}
-      className="flex flex-col rounded-2xl border border-borda bg-superficie px-4 py-3.5 hover:border-texto"
+      className="flex items-center gap-3 rounded-2xl border border-borda bg-superficie px-4 py-3.5 hover:border-texto"
     >
-      <span className="text-[1.05rem] leading-snug text-texto">{titulo}</span>
-      <span className="mt-0.5 text-sm leading-relaxed text-suave">{dica}</span>
+      <span className="flex-1">
+        <span className="block text-[1.05rem] leading-snug text-texto">
+          {titulo}
+        </span>
+        <span className="mt-0.5 block text-sm leading-relaxed text-suave">
+          {dica}
+        </span>
+      </span>
+      <IconeAvancar className="h-4 w-4 shrink-0 text-suave" />
     </Link>
   );
 }
@@ -250,7 +299,7 @@ function Cartao({ ciclo }: { ciclo: Ciclo }) {
 
   return (
     <div className="mt-6">
-      <Voltar />
+      <Voltar ciclo={ciclo} />
 
       <h2 className="mt-4 text-lg font-semibold tracking-tight text-texto">
         Cartão de crédito
@@ -313,7 +362,7 @@ async function Pix({
   if (!mostrarCodigo) {
     return (
       <div className="mt-6">
-        <Voltar />
+        <Voltar ciclo={ciclo} />
         <h2 className="mt-4 text-lg font-semibold tracking-tight text-texto">
           Pix
         </h2>
@@ -344,7 +393,7 @@ async function Pix({
   if (!consulta.ok) {
     return (
       <div className="mt-6">
-        <Voltar />
+        <Voltar ciclo={ciclo} />
         <p className="mt-4 rounded-xl border border-borda bg-superficie px-4 py-3.5 text-sm leading-relaxed text-suave">
           {mensagemDeRecusa(consulta.motivo)}
         </p>
@@ -370,7 +419,7 @@ async function Pix({
 
   return (
     <div className="mt-6">
-      <Voltar />
+      <Voltar ciclo={ciclo} />
       <h2 className="mt-4 text-lg font-semibold tracking-tight text-texto">
         Pague {preco(cobranca.valorCentavos)} pelo Pix
       </h2>
@@ -537,12 +586,19 @@ function PrecisaEntrar() {
   );
 }
 
-function Voltar() {
+/**
+ * A volta para a escolha, levando o período junto.
+ *
+ * Ia para `/painel/plano` puro, e o `cicloDaBusca` lê ausência como mensal:
+ * quem escolhia o anual, abria o Pix e voltava para conferir, voltava com o
+ * mensal marcado e o passo 1 dizendo outra coisa do que ela tinha escolhido.
+ */
+function Voltar({ ciclo }: { ciclo: Ciclo }) {
   return (
     <p className="text-sm">
       <Link
-        href="/painel/plano"
-        className="text-suave underline-offset-4 hover:underline"
+        href={`/painel/plano?ciclo=${ciclo}`}
+        className="inline-flex min-h-11 items-center text-suave underline-offset-4 hover:underline"
       >
         Voltar para os planos
       </Link>

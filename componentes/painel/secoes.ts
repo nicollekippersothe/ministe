@@ -13,6 +13,14 @@ import {
  * Em arquivo próprio porque a lista é lida do servidor (a coluna do painel) e
  * do navegador (a marcação da seção aberta). Deixá-la junto de um dos dois
  * arrastaria o outro para o mesmo lado por acidente.
+ *
+ * **Cada resumo diz ONDE aquilo cai na página.** Duas seções desta lista põem
+ * botão com link, e por isso pareciam a mesma coisa: "WhatsApp, iFood, agenda ou
+ * o link que você quiser" e "Instagram, cardápio, catálogo, o que você apontar"
+ * são duas listas de destino, e nenhuma das duas dizia o que separa uma da
+ * outra. O que separa é a posição: uma fica presa no rodapé o tempo todo, a
+ * outra é uma seção no corpo. As telas mostram isso desenhado, em
+ * componentes/painel/MapaDaPagina.tsx, e aqui a linha de resumo já adianta.
  */
 export const SECOES = [
   {
@@ -36,13 +44,13 @@ export const SECOES = [
   {
     href: "/painel/acoes-botoes",
     titulo: "Botões da página",
-    resumo: "WhatsApp, iFood, agenda ou o link que você quiser",
+    resumo: "O botão de falar com você, preso no rodapé",
     Icone: IconeWhatsapp,
   },
   {
     href: "/painel/links",
     titulo: "Links extras",
-    resumo: "Instagram, cardápio, catálogo, o que você apontar",
+    resumo: "A lista de links no corpo da página, perto do fim",
     Icone: IconeElo,
   },
   {

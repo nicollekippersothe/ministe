@@ -93,6 +93,36 @@ function Botoes({
 }
 
 /**
+ * A cor que confirma o acrescentar e sai sozinha.
+ *
+ * Mora aqui, e não em app/globals.css, porque é o único lugar que a usa: a
+ * folha global é lida por toda página pública, e uma animação que só o painel
+ * enxerga não tem por que viajar junto. O React 19 leva a tag para o topo do
+ * documento e junta as repetições pelo `href`, então vinte linhas na tela
+ * continuam com uma regra só.
+ *
+ * O `prefers-reduced-motion` de app/globals.css já derruba a duração para quase
+ * zero, e aí a linha nova nasce direto no estado final, com o selo de pé.
+ */
+function Pulso() {
+  return (
+    <style href="painel-nasceu" precedence="default">{`
+      @keyframes nasceu {
+        from {
+          background-color: var(--c-aberto-fundo);
+          border-color: var(--c-aberto-texto);
+        }
+        to {
+          background-color: var(--c-superficie);
+          border-color: var(--c-borda);
+        }
+      }
+      .nasceu { animation: nasceu 2.6s ease-out; }
+    `}</style>
+  );
+}
+
+/**
  * Uma linha da lista, fechada, com os campos dela dentro.
  *
  * Fechada é o que faz a lista caber no celular e o que faz a ordem existir: com
@@ -103,6 +133,14 @@ function Botoes({
  *
  * O `details` fechado continua enviando os campos de dentro, então salvar,
  * mover e remover valem para a lista toda, aberta ou fechada.
+ *
+ * **`novo` é o retorno de quem acabou de acrescentar.** A lista é longa, a linha
+ * nova nasce no fim dela e a tela recarrega inteira: sem marca nenhuma, a
+ * pessoa volta para uma lista parecida com a de antes e conclui que o toque se
+ * perdeu. Então a linha recém-criada chega aberta, com o selo ao lado do número
+ * e com dois segundos e meio de fundo na cor de confirmação, que é a mesma do
+ * recado de sucesso. A cor sai sozinha; o selo fica até a próxima gravação, que
+ * é o tempo em que ela ainda é "a que eu acabei de fazer".
  */
 export function Cartao({
   id,
@@ -113,6 +151,7 @@ export function Cartao({
   selo,
   prefixo,
   aberto,
+  novo,
   subir,
   descer,
   remover,
@@ -126,6 +165,8 @@ export function Cartao({
   selo?: string | null;
   prefixo: string;
   aberto?: boolean;
+  /** Linha recém-acrescentada: ganha o selo e a cor que somem sozinhas. */
+  novo?: boolean;
   subir: Alvo;
   descer: Alvo;
   remover: Alvo;
@@ -134,8 +175,11 @@ export function Cartao({
   return (
     <fieldset
       id={id}
-      className="scroll-mt-4 rounded-2xl border border-borda bg-superficie"
+      className={`scroll-mt-20 rounded-2xl border bg-superficie lg:scroll-mt-8 ${
+        novo ? "nasceu border-aberto-texto" : "border-borda"
+      }`}
     >
+      {novo ? <Pulso /> : null}
       {/* O leitor de tela anuncia "Item 3, Bolo de chocolate" ao entrar no
           grupo, que é o que dá contexto aos campos e aos botões de dentro. */}
       <legend className="sr-only">
@@ -149,7 +193,14 @@ export function Cartao({
           </span>
 
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-medium text-texto">{nome}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 truncate font-medium text-texto">{nome}</span>
+              {novo ? (
+                <span className="shrink-0 rounded-full bg-aberto-fundo px-2 py-0.5 text-[0.7rem] font-semibold text-aberto-texto">
+                  Novo
+                </span>
+              ) : null}
+            </span>
             {detalhe || selo ? (
               <span className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-suave">
                 {detalhe ? <span className="tabular-nums">{detalhe}</span> : null}

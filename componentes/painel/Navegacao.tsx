@@ -46,7 +46,19 @@ export function CartaoEstado({
   const emMontagem = !noAr && passos.length > 0;
   const proximo = passos[0];
 
-  const publicar = provisoria ? "Entrar e publicar" : "Publicar";
+  /**
+   * O rótulo de publicar, e por que ele parou de começar com "Entrar".
+   *
+   * "Entrar e publicar" descrevia o mecanismo pela porta errada: quem lê está
+   * dentro do painel, editando a própria página, e "entrar" ali soa como um
+   * login que ela já fez. A conta provisória é verdadeira, e nasceu sozinha no
+   * primeiro clique de montar a página, então a palavra que faltava é a de
+   * quem guarda: o Google. "Publicar com o Google" mantém o verbo do
+   * resultado na frente, nomeia o único passo do meio e continua sendo a mesma
+   * palavra do começo ao fim do caminho, inclusive na frase de baixo e na tela
+   * do plano, que já tinha resolvido esta mesma confusão.
+   */
+  const publicar = provisoria ? "Publicar com o Google" : "Publicar";
 
   return (
     <div className="rounded-2xl border border-borda bg-superficie p-4">
@@ -110,10 +122,17 @@ export function CartaoEstado({
         </div>
       )}
 
+      {/*
+        A frase nomeia o estado em que a pessoa está, em vez de pedir uma coisa
+        que ela acha que já fez. Mesma explicação da tela do plano, com as
+        mesmas palavras: uma conta provisória que nasceu no começo da montagem,
+        e o Google como o lugar onde a página passa a ser dela.
+      */}
       {!noAr && provisoria ? (
         <p className="mt-3 text-xs leading-relaxed text-suave">
-          Publicar pede uma entrada com o Google, e aí a página passa a ser sua
-          em qualquer aparelho.
+          A sua página está numa conta provisória, criada quando você começou a
+          montar. O Google guarda ela na sua conta de sempre, e aí o endereço
+          abre para qualquer pessoa.
         </p>
       ) : null}
     </div>

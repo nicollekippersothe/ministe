@@ -67,6 +67,16 @@ export function Horarios({ negocio }: { negocio: Negocio }) {
               <li
                 key={dia}
                 data-dia={dia}
+                /*
+                 * O script acima marca `data-hoje` na linha de hoje antes de o
+                 * React hidratar, então o atributo que o navegador tem difere
+                 * do que veio do servidor e o React reclama no console. A
+                 * diferença é o recurso funcionando: o HTML fica em cache e
+                 * envelhece, e quem sabe o dia certo é o navegador. Silenciar
+                 * aqui deixa o console limpo para o aviso que for defeito de
+                 * verdade.
+                 */
+                suppressHydrationWarning
                 className="flex items-start justify-between gap-4 text-suave"
               >
                 <span>{DIAS_LONGO[dia]}</span>

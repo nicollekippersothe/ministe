@@ -14,12 +14,17 @@ import type { IconeLink } from "@/lib/tipos";
  * exportação precisa ser função assíncrona: uma lista exportada de lá vira erro
  * de compilação do próprio Next.
  */
+/*
+ * A ordem é a de quem procura, e não a do banco: o Instagram é o primeiro link
+ * de quase toda profissional autônoma que chega aqui, e o genérico fecha a
+ * lista porque ele é a escolha de quem já olhou os outros quatro.
+ */
 export const ICONES_DE_LINK: Array<{ valor: IconeLink; rotulo: string }> = [
-  { valor: "link", rotulo: "Genérico" },
   { valor: "instagram", rotulo: "Instagram" },
-  { valor: "site", rotulo: "Site" },
-  { valor: "ifood", rotulo: "iFood ou delivery" },
+  { valor: "site", rotulo: "Site ou portfólio" },
   { valor: "mapa", rotulo: "Mapa" },
+  { valor: "ifood", rotulo: "iFood ou delivery" },
+  { valor: "link", rotulo: "Link, para qualquer destino" },
 ];
 
 const CONHECIDOS = new Set<string>(ICONES_DE_LINK.map((i) => i.valor));

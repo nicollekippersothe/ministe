@@ -7,7 +7,7 @@ import { IconeAvancar } from "@/componentes/Icones";
 import { AreaTexto } from "./Campos";
 import { acoesDoRodape } from "@/lib/acoes";
 import { mensagemDoItem } from "@/lib/formato";
-import type { Negocio } from "@/lib/tipos";
+import type { Item, Negocio } from "@/lib/tipos";
 
 /**
  * Os dois campos de mensagem, com o botão de verdade e a conversa ao lado.
@@ -30,10 +30,60 @@ import type { Negocio } from "@/lib/tipos";
  * mesma função que a página pública chama. É o truque da prévia do cadastro, e
  * é o que faz o campo se explicar sozinho: a pessoa vê a chave virar o nome do
  * item enquanto digita, e ninguém precisa escrever uma frase sobre isso.
+ *
+ * ## O desenho aparece antes do dado
+ *
+ * A primeira versão disto trocava a prévia inteira por uma frase enquanto o
+ * número do WhatsApp estava em branco, que é justamente quando a pessoa mais
+ * precisa ver o que o campo faz. A dona da página leu a frase e continuou sem
+ * saber o que ia acontecer, e foi assim que ela contou. Agora o botão é
+ * desenhado sempre, com um selo dizendo o que ele está esperando, e o desenho
+ * vai ganhando o número e o texto conforme eles chegam.
  */
 
+/**
+ * O que entra no lugar do número, e no lugar do modelo, enquanto eles vêm.
+ *
+ * O `BotaoAcao` e o `Catalogo` só desenham o botão quando o negócio tem
+ * WhatsApp e o item tem mensagem, e essa regra está certa: na página pública um
+ * botão que não leva a lugar nenhum é pior que nenhum botão. Aqui dentro ela
+ * deixava a prévia muda justamente para quem ainda ia preencher.
+ *
+ * Um espaço passa nessas duas conferências, e o `linkWhatsapp` descarta tudo
+ * que não é dígito, então o endereço que sai é o `wa.me` solto: o mesmo link de
+ * compartilhar que o WhatsApp já publica, e nunca um número inventado. O bloco
+ * inteiro é `inert` de qualquer forma, então ninguém chega a esse endereço nem
+ * pelo dedo nem pelo Tab.
+ */
+const ENQUANTO_O_DADO_VEM = " ";
+
+/**
+ * O item que o desenho usa enquanto o catálogo está vazio.
+ *
+ * O título é a própria chave que a pessoa digita no campo, e não um produto
+ * inventado: ela vê `{item}` no cartão e `{item}` dentro da conversa, e no
+ * minuto em que cadastrar o primeiro item o nome dele toma esse lugar nos dois.
+ */
+const ITEM_DE_DESENHO: Item = {
+  id: "desenho",
+  titulo: "{item}",
+  descricao: null,
+  precoCentavos: null,
+  fotos: [],
+  ativo: true,
+};
+
 /** O modelo do WhatsApp: o texto chega digitado, e o cliente decide enviar. */
-function Conversa({ nome, texto }: { nome: string; texto: string }) {
+function Conversa({
+  nome,
+  texto,
+  vazio,
+}: {
+  nome: string;
+  texto: string;
+  /** O que a bolha diz enquanto o campo está em branco. */
+  vazio: string;
+}) {
   return (
     <div className="overflow-hidden rounded-xl border border-borda bg-superficie">
       <p className="truncate bg-zap px-3 py-1 text-[0.75rem] font-medium text-white">
@@ -45,9 +95,7 @@ function Conversa({ nome, texto }: { nome: string; texto: string }) {
             texto === "" ? "text-suave" : "text-texto"
           }`}
         >
-          {texto === ""
-            ? "Em branco, o cliente escreve a primeira mensagem do jeito dele."
-            : texto}
+          {texto === "" ? vazio : texto}
         </p>
         <span
           aria-hidden
@@ -64,10 +112,17 @@ function Moldura({
   gatilho,
   conversa,
   chamada,
+  espera,
 }: {
   gatilho: React.ReactNode;
   conversa: React.ReactNode;
   chamada: string;
+  /**
+   * O que ainda está chegando, escrito em duas palavras, ou nulo quando o
+   * desenho já mostra o resultado final. Enquanto tem valor, o botão sai com a
+   * cor abaixada e o selo em cima dele.
+   */
+  espera: string | null;
 }) {
   return (
     /*
@@ -81,13 +136,41 @@ function Moldura({
      */
     <div inert className="mt-2.5 rounded-xl border border-borda bg-fundo p-2.5">
       <p className="text-xs leading-relaxed text-suave">{chamada}</p>
+
+      {espera ? (
+        <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-destaque/10 px-2.5 py-1 text-[0.7rem] font-semibold text-destaque">
+          {/* Ampulheta desenhada, e nunca emoji, que é a regra de layout. */}
+          <svg viewBox="0 0 16 16" aria-hidden="true" className="h-3.5 w-3.5">
+            <path
+              d="M4.5 2h7M4.5 14h7M5.5 2v2.2c0 1.5 2.5 2.4 2.5 3.8s-2.5 2.3-2.5 3.8V14M10.5 2v2.2c0 1.5-2.5 2.4-2.5 3.8s2.5 2.3 2.5 3.8V14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+          </svg>
+          {espera}
+        </p>
+      ) : null}
+
       {/*
         Uma coluna só, sempre. O `Catalogo` de verdade abre em duas a partir de
         640px de tela, que é a medida certa na página pública e a errada aqui
         dentro: numa moldura de 17rem a segunda coluna parte o cartão ao meio e
         o título do item sai quebrado em três linhas.
+
+        A cor abaixada enquanto falta dado é a única diferença entre este
+        desenho e o botão que vai para a página: mesma forma, mesma altura,
+        mesmo texto, e a cor cheia chegando junto com o número.
       */}
-      <div className="mt-1.5 max-w-[17rem] [&_ul]:grid-cols-1">{gatilho}</div>
+      <div
+        className={`mt-1.5 max-w-[17rem] transition-opacity duration-200 [&_ul]:grid-cols-1 ${
+          espera ? "opacity-55" : ""
+        }`}
+      >
+        {gatilho}
+      </div>
+
       <p className="mt-2 mb-1.5 text-xs leading-relaxed text-suave">
         E o WhatsApp abre assim:
       </p>
@@ -98,18 +181,26 @@ function Moldura({
 
 export function MensagemDoBotao({
   negocio,
+  whatsapp,
   rotulo,
   dica,
 }: {
   negocio: Negocio;
+  /** O número digitado agora no campo acima, em dígitos, ou nulo. */
+  whatsapp: string | null;
   rotulo: string;
   dica: string;
 }) {
   const [texto, setTexto] = useState(negocio.mensagemPadrao ?? "");
 
-  // O botão de verdade, resolvido pela função de verdade, com a mensagem que
-  // está sendo digitada agora no lugar da gravada.
-  const acao = acoesDoRodape({ ...negocio, mensagemPadrao: texto })[0] ?? null;
+  // O botão de verdade, resolvido pela função de verdade, com o número e a
+  // mensagem que estão sendo digitados agora no lugar dos gravados.
+  const acao =
+    acoesDoRodape({
+      ...negocio,
+      whatsapp: whatsapp ?? ENQUANTO_O_DADO_VEM,
+      mensagemPadrao: texto,
+    })[0] ?? null;
 
   return (
     <div className="lg:col-span-2">
@@ -124,26 +215,35 @@ export function MensagemDoBotao({
 
       {acao ? (
         <Moldura
-          chamada="Na sua página, quem toca neste botão:"
+          chamada={
+            whatsapp
+              ? "Na sua página, quem toca neste botão:"
+              : "Este é o botão que vai para a sua página:"
+          }
+          espera={whatsapp ? null : "Esperando o número acima"}
           gatilho={<BotaoAcao acao={acao} principal compacto interativo={false} />}
-          conversa={<Conversa nome={negocio.nome} texto={texto} />}
+          conversa={
+            <Conversa
+              nome={negocio.nome}
+              texto={texto}
+              vazio="Em branco, o cliente escreve a primeira mensagem do jeito dele."
+            />
+          }
         />
-      ) : (
-        <p className="mt-3 rounded-xl border border-borda bg-fundo px-3 py-2.5 text-xs leading-relaxed text-suave">
-          Preencha o número do WhatsApp acima e o botão aparece aqui, com esta
-          mensagem dentro da conversa.
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }
 
 export function MensagemDosItens({
   negocio,
+  whatsapp,
   rotulo,
   dica,
 }: {
   negocio: Negocio;
+  /** O número digitado agora no campo acima, em dígitos, ou nulo. */
+  whatsapp: string | null;
   rotulo: string;
   dica: string;
 }) {
@@ -154,18 +254,30 @@ export function MensagemDosItens({
    * chave `{item}` numa coisa que ela reconhece. As fotos saem da cópia porque
    * a foto do item ocupa a moldura inteira e o assunto aqui é a mensagem; o
    * resto do cartão continua sendo o `Catalogo` de verdade, com o título, o
-   * preço e o botão que a página pública desenha.
+   * preço e o botão que a página pública desenha. Com o catálogo ainda vazio,
+   * entra o `ITEM_DE_DESENHO`, que carrega a própria chave como título.
    */
-  const primeiro = negocio.itens.find((i) => i.ativo);
-  const exemplo: Negocio | null = primeiro
-    ? {
-        ...negocio,
-        mensagemItem: texto,
-        itens: [{ ...primeiro, fotos: [] }],
-      }
-    : null;
+  const primeiro = negocio.itens.find((i) => i.ativo) ?? null;
+  const item = primeiro ?? ITEM_DE_DESENHO;
 
-  const mostrar = exemplo !== null && Boolean(negocio.whatsapp) && texto !== "";
+  const exemplo: Negocio = {
+    ...negocio,
+    whatsapp: whatsapp ?? ENQUANTO_O_DADO_VEM,
+    // O `Catalogo` só desenha o botão do item quando existe modelo, e o rótulo
+    // dele é fixo, então o espaço aqui muda o desenho e nunca o que se lê. A
+    // conversa embaixo continua lendo o texto de verdade, e é ela que fica em
+    // branco enquanto o campo está em branco.
+    mensagemItem: texto === "" ? ENQUANTO_O_DADO_VEM : texto,
+    itens: [{ ...item, fotos: [] }],
+  };
+
+  const espera = !whatsapp
+    ? "Esperando o número acima"
+    : texto === ""
+      ? "Esperando a mensagem acima"
+      : primeiro === null
+        ? "Esperando o primeiro item"
+        : null;
 
   return (
     <div className="lg:col-span-2">
@@ -178,24 +290,18 @@ export function MensagemDosItens({
         onChange={(e) => setTexto(e.target.value)}
       />
 
-      {mostrar && exemplo && primeiro ? (
-        <Moldura
-          chamada={`No seu ${negocio.tituloCatalogo.toLowerCase()}, quem toca no botão deste item:`}
-          gatilho={<Catalogo negocio={exemplo} />}
-          conversa={
-            <Conversa
-              nome={negocio.nome}
-              texto={mensagemDoItem(texto, primeiro.titulo) ?? ""}
-            />
-          }
-        />
-      ) : (
-        <p className="mt-3 rounded-xl border border-borda bg-fundo px-3 py-2.5 text-xs leading-relaxed text-suave">
-          {primeiro
-            ? `Escreva a mensagem acima e ela aparece aqui, com "${primeiro.titulo}" no lugar do {item}.`
-            : "Cadastre o primeiro item do catálogo e ele aparece aqui, com o nome dele no lugar do {item}."}
-        </p>
-      )}
+      <Moldura
+        chamada={`No seu ${negocio.tituloCatalogo.toLowerCase()}, quem toca no botão deste item:`}
+        espera={espera}
+        gatilho={<Catalogo negocio={exemplo} />}
+        conversa={
+          <Conversa
+            nome={negocio.nome}
+            texto={mensagemDoItem(texto, item.titulo) ?? ""}
+            vazio="Em branco, cada item da sua página fica com o nome, o preço e a foto."
+          />
+        }
+      />
     </div>
   );
 }

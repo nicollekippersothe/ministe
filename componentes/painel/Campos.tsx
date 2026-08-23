@@ -120,7 +120,19 @@ export function Escolha({
         name={id}
         defaultValue={valor}
         aria-describedby={dica ? `${id}-dica` : undefined}
-        className={BASE}
+        /*
+         * A altura vem escrita, e é o que põe o select na linha do campo de
+         * digitar.
+         *
+         * Os dois já usavam a mesma classe de base, e mesmo assim saíam com
+         * alturas diferentes: medido em 45 pixels contra 50. A diferença é a
+         * entrelinha, que o navegador calcula sozinho dentro de um `select` e
+         * devolve como `normal`, ignorando a classe de entrelinha que o resto
+         * do formulário respeita. 3.125rem são os mesmos 50 pixels que o
+         * `px-3.5 py-3` de cima produz num `input`, com a borda contada, e a
+         * conta continua valendo se a caixa de base mudar de medida.
+         */
+        className={`${BASE} h-[3.125rem]`}
       >
         {opcoes.map((o) => (
           <option key={o.valor} value={o.valor}>
@@ -155,6 +167,16 @@ export function Marcar({
   return (
     <label
       htmlFor={id}
+      /*
+       * A altura vem da linha da grade, e é por isso que o `Grupo` deixou de
+       * usar `items-start`.
+       *
+       * Ao lado do "Nome dessa seção na página" este cartão começava 4 pixels
+       * acima do rótulo do vizinho e terminava 25 acima do campo dele, porque
+       * um cartão de marcar tem o rótulo dentro e um select tem o rótulo em
+       * cima. Item de grade estica sozinho até a altura da linha, então as duas
+       * caixas passam a começar e a terminar juntas sem nenhuma classe aqui.
+       */
       className="flex cursor-pointer items-start gap-3 rounded-xl border border-borda bg-superficie p-3.5"
     >
       <input
@@ -202,8 +224,17 @@ export function Grupo({
 }) {
   return (
     <fieldset
+      /*
+       * A grade fica em `stretch`, que é o padrão dela.
+       *
+       * Com `items-start` cada caixa da linha ficava na altura do próprio
+       * conteúdo, e uma linha com um select de um lado e um cartão de marcar do
+       * outro saía com quatro bordas em quatro alturas. Em `stretch` as caixas
+       * da mesma linha começam e terminam juntas, e quem tem conteúdo curto
+       * simplesmente sobra espaço embaixo, sem mexer no desenho.
+       */
       className={`flex flex-col gap-4 ${
-        duplo ? "lg:grid lg:grid-cols-2 lg:items-start lg:gap-4" : ""
+        duplo ? "lg:grid lg:grid-cols-2 lg:gap-4" : ""
       }`}
     >
       <legend className="mb-1 text-lg font-semibold tracking-tight text-texto">
@@ -284,7 +315,7 @@ export function GrupoRecolhivel({
 
       <div
         className={`flex flex-col gap-4 ${
-          duplo ? "lg:grid lg:grid-cols-2 lg:items-start lg:gap-4" : ""
+          duplo ? "lg:grid lg:grid-cols-2 lg:gap-4" : ""
         }`}
       >
         {children}

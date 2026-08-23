@@ -77,10 +77,36 @@ async function lista(f: FormData): Promise<{ negocio: Negocio; itens: Item[] }> 
 /** Para onde a tela volta depois de mexer numa linha. Ver o comentário da tela. */
 const naLinha = (i: number) => `#item-${i}`;
 
+/**
+ * O caminho de volta que devolve a pessoa para a linha em que ela estava.
+ *
+ * **É metade do conserto de "eu adiciono e ele some".** Antes disto, salvar
+ * terminava num `?salvo=1` pelado: o navegador voltava para o topo, todas as
+ * linhas fechavam, e a que estava sendo escrita ficava três telas abaixo,
+ * fechada, sem nada dizendo qual era. Quem tinha acabado de acrescentar um item
+ * e escrito a descrição dele salvava e encontrava a mesma lista de antes.
+ *
+ * O id vem do campo escondido que a tela manda junto, e é conferido contra a
+ * lista: item removido, ou id que nunca existiu, cai no caminho comum em vez de
+ * mandar a tela para uma âncora que não existe. Sai como `aberto`, e nunca como
+ * `novo`, porque o selo e a cor são do instante do acrescentar e não se repetem
+ * a cada gravação.
+ */
+function linhaAberta(
+  itens: Item[],
+  formData: FormData,
+): { pedaco: string; ancora: string } {
+  const alvo = texto(formData, "novo");
+  const i = alvo === null ? -1 : itens.findIndex((item) => item.id === alvo);
+  if (alvo === null || i < 0) return { pedaco: "", ancora: "" };
+  return { pedaco: `&aberto=${encodeURIComponent(alvo)}`, ancora: naLinha(i) };
+}
+
 export async function salvarItens(formData: FormData) {
   const { negocio, itens } = await lista(formData);
   await guardar({ ...negocio, itens }, TELA);
-  redirect(`${TELA}?salvo=1`);
+  const volta = linhaAberta(itens, formData);
+  redirect(`${TELA}?salvo=1${volta.pedaco}${volta.ancora}`);
 }
 
 /**
@@ -116,7 +142,14 @@ export async function acrescentarItem(formData: FormData) {
   };
 
   await guardar({ ...negocio, itens: [...itens, novo] }, TELA);
-  redirect(`${TELA}?acrescentado=1${naLinha(itens.length)}`);
+  /*
+   * O id do item, e não só um "acrescentado=1". A tela precisa saber QUAL linha
+   * nasceu agora para abrir ela, marcar ela e pôr o cursor dentro dela, e o
+   * número da posição sozinho se perde no primeiro subir ou descer.
+   */
+  redirect(
+    `${TELA}?novo=${encodeURIComponent(novo.id)}${naLinha(itens.length)}`,
+  );
 }
 
 /**
@@ -149,7 +182,12 @@ async function mover(alvo: number, formData: FormData, passo: number) {
   [novos[alvo], novos[destino]] = [novos[destino], novos[alvo]];
 
   await guardar({ ...negocio, itens: novos }, TELA);
-  redirect(`${TELA}?movido=1${naLinha(destino)}`);
+  // A âncora é a linha que acabou de mudar de lugar, que é o que a pessoa está
+  // olhando. O `aberto` continua sendo o id da linha em edição, e sem âncora
+  // própria: com duas, a última venceria e a rolagem cairia no lugar errado.
+  redirect(
+    `${TELA}?movido=1${linhaAberta(novos, formData).pedaco}${naLinha(destino)}`,
+  );
 }
 
 export async function subirItem(alvo: number, formData: FormData) {
@@ -166,5 +204,9 @@ export async function removerItem(alvo: number, formData: FormData) {
 
   const novos = itens.filter((_, i) => i !== alvo);
   await guardar({ ...negocio, itens: novos }, TELA);
-  redirect(`${TELA}?removido=1${naLinha(Math.max(0, alvo - 1))}`);
+  // O `aberto` some quando a linha aberta era justamente a removida: `linhaAberta`
+  // procura o id na lista já sem ele e devolve vazio.
+  redirect(
+    `${TELA}?removido=1${linhaAberta(novos, formData).pedaco}${naLinha(Math.max(0, alvo - 1))}`,
+  );
 }

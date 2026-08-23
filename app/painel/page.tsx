@@ -68,9 +68,14 @@ function Linha({
     <li>
       <Link
         href={href}
-        className="flex items-start gap-4 px-5 py-4 hover:bg-fundo active:bg-fundo"
+        className="flex items-start gap-3 px-4 py-4 hover:bg-fundo active:bg-fundo sm:gap-4 sm:px-5"
       >
-        <span className="w-28 shrink-0 text-sm text-suave">{rotulo}</span>
+        {/* Coluna de rótulo mais estreita no celular: com 28 fixos sobravam
+            pouco mais de 180 pixels para o valor, e endereço quebrava em
+            quatro linhas numa tela de 390. */}
+        <span className="w-20 shrink-0 text-sm text-suave sm:w-28">
+          {rotulo}
+        </span>
         <span
           className={`flex-1 leading-relaxed ${
             valor ? "text-texto" : "font-medium text-destaque"
@@ -87,15 +92,15 @@ function Linha({
 /**
  * A abertura do painel, nas duas larguras.
  *
- * No celular ela é a navegação inteira: o estado da página primeiro, as seis
- * partes logo abaixo. No computador esses dois já moram na coluna da esquerda,
- * então repeti-los aqui seria a mesma lista duas vezes na mesma tela.
+ * O que a página diz hoje aparece nas duas, linha por linha, e é a peça
+ * principal desta tela: quem chega vê num relance o endereço, se ele está
+ * aberto para todo mundo, e o conteúdo inteiro sem abrir seção nenhuma.
  *
- * O que sobra para o computador é o que a coluna estreita comporta mal: o
- * endereço em tamanho de ler em voz alta, e o conteúdo de verdade da página,
- * linha por linha. Assim quem chega vê num relance se a página está no ar, qual
- * é o endereço dela e por onde continuar, sem abrir as seções para
- * lembrar o que já preencheu.
+ * O que muda entre as larguras é o resto. No computador o estado da página vem
+ * em tamanho de ler em voz alta, porque a coluna da esquerda já carrega a
+ * versão curta e a lista de seções. No celular essa coluna some, então o
+ * cartão de estado e a lista de seções vivem aqui, uma no topo e a outra no
+ * fim.
  */
 /**
  * O recado de quem acabou de entrar numa conta que já existia.
@@ -196,6 +201,89 @@ export default async function Painel({
     </>
   );
 
+  /*
+   * O resumo do que a página diz hoje, nas duas larguras.
+   *
+   * **Ele morava só no bloco de computador, e isso era o defeito.** A dona
+   * relatou abrir o painel no computador e a tela geral aparecer sem nenhuma
+   * informação da página dela. Medido no navegador: abaixo de 1024 pixels de
+   * janela, que é qualquer navegador em meia tela ou com zoom de 125 por
+   * cento, o painel caía no desenho de celular e ali o resumo simplesmente
+   * não existia. Sobravam o endereço, o plano e seis nomes de seção, e para
+   * lembrar o que tinha escrito ela precisava abrir uma por uma.
+   *
+   * Agora ele sai nas duas, e continua sendo a mesma peça: no computador
+   * embaixo do endereço grande, no celular logo abaixo do cartão de estado. A
+   * lista de seções segue embaixo, no celular, porque ela é a navegação e traz
+   * o que o resumo não é (as Letras da página, que são aparência e nunca
+   * conteúdo).
+   */
+  const resumo = (
+    <>
+      <h2 className="text-lg font-semibold tracking-tight text-texto">
+        O que a página mostra hoje
+      </h2>
+      <p className="mt-1 text-sm text-suave">
+        Cada linha leva direto para o lugar de editar.
+      </p>
+
+      <ul className="mt-4 divide-y divide-borda overflow-hidden rounded-2xl border border-borda bg-superficie">
+        <Linha
+          rotulo="Nome"
+          valor={negocio.nome}
+          convite="Escrever o nome do negócio"
+          href="/painel/negocio"
+        />
+        <Linha
+          rotulo="Frase"
+          valor={negocio.frase}
+          convite="Escrever uma frase curta"
+          href="/painel/negocio"
+        />
+        <Linha
+          rotulo="WhatsApp"
+          valor={negocio.whatsapp ? telefoneVisivel(negocio.whatsapp) : null}
+          convite="Informar o WhatsApp"
+          href="/painel/negocio"
+        />
+        <Linha
+          rotulo="Endereço"
+          valor={enderecoVisivel}
+          convite="Informar o endereço"
+          href="/painel/negocio"
+        />
+        <Linha
+          rotulo="Catálogo"
+          valor={resumoItens(negocio.itens)}
+          convite="Acrescentar o primeiro item"
+          href="/painel/catalogo"
+        />
+        <Linha
+          rotulo="Horários"
+          valor={resumoHorarios(negocio.horarios)}
+          convite="Dizer quando você atende"
+          href="/painel/horarios"
+        />
+        <Linha
+          rotulo="Botões"
+          valor={botoes || null}
+          convite="Escolher o botão principal"
+          href="/painel/acoes-botoes"
+        />
+        <Linha
+          rotulo="Links extras"
+          valor={
+            negocio.links.length > 0
+              ? negocio.links.map((l) => l.rotulo).join(", ")
+              : null
+          }
+          convite="Apontar para o seu Instagram"
+          href="/painel/links"
+        />
+      </ul>
+    </>
+  );
+
   return (
     <main className="mt-6">
       <h1 className="text-2xl font-bold tracking-tight text-texto lg:text-3xl">
@@ -212,7 +300,9 @@ export default async function Painel({
           <CartaoEstado negocio={negocio} provisoria={provisoria} />
         </div>
 
-        {emMontagem ? null : <div className="mt-4">{plano}</div>}
+        <div className="mt-8">{resumo}</div>
+
+        {emMontagem ? null : <div className="mt-8">{plano}</div>}
 
         <h2 className="mt-8 mb-3 text-lg font-semibold tracking-tight text-texto">
           Editar
@@ -237,67 +327,7 @@ export default async function Painel({
 
         {emMontagem ? null : <div className="mt-6">{plano}</div>}
 
-        <h2 className="mt-10 text-lg font-semibold tracking-tight text-texto">
-          O que a página mostra hoje
-        </h2>
-        <p className="mt-1 text-sm text-suave">
-          Cada linha leva direto para o lugar de editar.
-        </p>
-
-        <ul className="mt-4 divide-y divide-borda overflow-hidden rounded-2xl border border-borda bg-superficie">
-          <Linha
-            rotulo="Nome"
-            valor={negocio.nome}
-            convite="Escrever o nome do negócio"
-            href="/painel/negocio"
-          />
-          <Linha
-            rotulo="Frase"
-            valor={negocio.frase}
-            convite="Escrever uma frase curta"
-            href="/painel/negocio"
-          />
-          <Linha
-            rotulo="WhatsApp"
-            valor={negocio.whatsapp ? telefoneVisivel(negocio.whatsapp) : null}
-            convite="Informar o WhatsApp"
-            href="/painel/negocio"
-          />
-          <Linha
-            rotulo="Endereço"
-            valor={enderecoVisivel}
-            convite="Informar o endereço"
-            href="/painel/negocio"
-          />
-          <Linha
-            rotulo="Catálogo"
-            valor={resumoItens(negocio.itens)}
-            convite="Acrescentar o primeiro item"
-            href="/painel/catalogo"
-          />
-          <Linha
-            rotulo="Horários"
-            valor={resumoHorarios(negocio.horarios)}
-            convite="Marcar os horários da semana"
-            href="/painel/horarios"
-          />
-          <Linha
-            rotulo="Botões"
-            valor={botoes || null}
-            convite="Escolher o botão principal"
-            href="/painel/acoes-botoes"
-          />
-          <Linha
-            rotulo="Links extras"
-            valor={
-              negocio.links.length > 0
-                ? negocio.links.map((l) => l.rotulo).join(", ")
-                : null
-            }
-            convite="Apontar para o seu Instagram"
-            href="/painel/links"
-          />
-        </ul>
+        <div className="mt-10">{resumo}</div>
 
         {emMontagem ? <div className="mt-10">{plano}</div> : null}
       </div>

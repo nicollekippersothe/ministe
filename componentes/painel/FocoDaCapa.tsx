@@ -219,6 +219,20 @@ export function FocoDaCapa({
         </span>
       </button>
 
+      {/*
+        Centralizar é ação de texto, e não mais um botão de pílula.
+
+        Ele estava desenhado igual ao "Trocar imagem" e ao "Remover" do cartão,
+        e caía encostado na borda direita uma linha acima deles, que estão
+        encostados na esquerda: duas pílulas do mesmo peso em bordas opostas,
+        em linhas seguidas. Medido, cada uma está alinhada com a sua própria
+        borda, e mesmo assim o par lê torto, porque ninguém lê duas bordas.
+
+        Voltar o ponto para o meio é desfazer, e desfazer é ação secundária.
+        Como texto ele para de disputar com a linha de baixo, e o alvo continua
+        com os 44 de altura: o respiro vem de dentro e a margem negativa devolve
+        o alinhamento, que é o mesmo arranjo do "Voltar" do painel.
+      */}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
         <p className="min-w-0 flex-1 text-xs leading-relaxed text-suave">
           Arraste o ponto para o que precisa aparecer. A área clara é o corte do
@@ -231,9 +245,9 @@ export function FocoDaCapa({
             setFoco(CENTRO);
             void guardar(CENTRO);
           }}
-          className="flex h-11 items-center justify-center rounded-full border border-borda bg-superficie px-4 text-sm font-semibold text-texto transition-transform duration-75 active:scale-[0.97] disabled:text-suave"
+          className="-mx-2 flex min-h-11 shrink-0 items-center px-2 text-sm font-semibold text-texto underline decoration-borda underline-offset-4 transition-colors hover:decoration-texto disabled:text-suave"
         >
-          Centralizar
+          Centralizar o ponto
         </button>
       </div>
 

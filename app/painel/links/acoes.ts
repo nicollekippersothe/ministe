@@ -67,10 +67,29 @@ async function lista(f: FormData): Promise<{
 
 const naLinha = (i: number) => `#link-${i}`;
 
+/**
+ * A linha que a tela pediu para manter aberta, quando ela ainda existe.
+ *
+ * Mesmo mecanismo do catálogo, e pelo mesmo motivo: sem ele, salvar devolvia a
+ * pessoa para o topo com todas as linhas fechadas, e o link que ela tinha
+ * acabado de acrescentar ficava indistinguível dos outros sete. O porquê por
+ * extenso está em app/painel/catalogo/acoes.ts.
+ */
+function linhaAberta(
+  links: LinkExtra[],
+  formData: FormData,
+): { pedaco: string; ancora: string } {
+  const alvo = texto(formData, "novo");
+  const i = alvo === null ? -1 : links.findIndex((l) => l.id === alvo);
+  if (alvo === null || i < 0) return { pedaco: "", ancora: "" };
+  return { pedaco: `&aberto=${encodeURIComponent(alvo)}`, ancora: naLinha(i) };
+}
+
 export async function salvarLinks(formData: FormData) {
   const { negocio, links } = await lista(formData);
   await guardar({ ...negocio, links }, TELA);
-  redirect(`${TELA}?salvo=1`);
+  const volta = linhaAberta(links, formData);
+  redirect(`${TELA}?salvo=1${volta.pedaco}${volta.ancora}`);
 }
 
 /**
@@ -98,7 +117,11 @@ export async function acrescentarLink(formData: FormData) {
   };
 
   await guardar({ ...negocio, links: [...links, novo] }, TELA);
-  redirect(`${TELA}?acrescentado=1${naLinha(links.length)}`);
+  // O id, e não só um "acrescentado=1": a tela precisa saber QUAL linha nasceu
+  // agora para abrir, marcar e parar a rolagem nela.
+  redirect(
+    `${TELA}?novo=${encodeURIComponent(novo.id)}${naLinha(links.length)}`,
+  );
 }
 
 /** O número da linha chega por `bind`. O porquê está em catalogo/acoes.ts. */
@@ -117,7 +140,9 @@ async function mover(alvo: number, formData: FormData, passo: number) {
   [novos[alvo], novos[destino]] = [novos[destino], novos[alvo]];
 
   await guardar({ ...negocio, links: novos }, TELA);
-  redirect(`${TELA}?movido=1${naLinha(destino)}`);
+  redirect(
+    `${TELA}?movido=1${linhaAberta(novos, formData).pedaco}${naLinha(destino)}`,
+  );
 }
 
 export async function subirLink(alvo: number, formData: FormData) {
@@ -132,6 +157,9 @@ export async function removerLink(alvo: number, formData: FormData) {
   const { negocio, links } = await lista(formData);
   if (!dentroDaLista(alvo, links.length)) redirect(`${TELA}?salvo=1`);
 
-  await guardar({ ...negocio, links: links.filter((_, i) => i !== alvo) }, TELA);
-  redirect(`${TELA}?removido=1${naLinha(Math.max(0, alvo - 1))}`);
+  const novos = links.filter((_, i) => i !== alvo);
+  await guardar({ ...negocio, links: novos }, TELA);
+  redirect(
+    `${TELA}?removido=1${linhaAberta(novos, formData).pedaco}${naLinha(Math.max(0, alvo - 1))}`,
+  );
 }
