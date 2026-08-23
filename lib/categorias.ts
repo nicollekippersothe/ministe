@@ -36,7 +36,7 @@ export type Receita = {
    */
   endereco: "esperado" | "opcional";
   /**
-   * Se quem trabalha é a marca.
+   * De quem é o nome que vai na página.
    *
    * Psicóloga, advogado, personal e fotógrafo assinam com o próprio nome, e o
    * cadastro que pergunta "nome do negócio" para eles pede uma coisa que não
@@ -44,10 +44,17 @@ export type Receita = {
    * desiste. Restaurante, salão e loja são o contrário: o nome é do lugar, e
    * perguntar "seu nome" ali soa como cadastro de cliente.
    *
+   * O terceiro valor existe porque a maioria dos ramos é genuinamente os dois.
+   * Yoga é a professora e também é o studio; costura é a costureira e também é
+   * o ateliê; limpeza é a diarista e também é a empresa. Chutar num ramo desses
+   * erra com metade das pessoas, e a pergunta neutra ("o nome que vai na
+   * página") é verdadeira para todas elas. Chutar só onde o chute acerta quase
+   * sempre é melhor do que chutar em tudo.
+   *
    * Muda o rótulo e o autocomplete do primeiro campo, e mais nada. O valor
-   * gravado é o mesmo campo `nome` dos dois jeitos.
+   * gravado é o mesmo campo `nome` nos três casos.
    */
-  nomeDePessoa: boolean;
+  nomeDe: "pessoa" | "lugar" | "qualquer";
 };
 
 export type Categoria = Receita & {
@@ -72,9 +79,9 @@ export const RECEITA_PADRAO: Receita = {
   mostrarPrecos: true,
   galeriaPrimeiro: false,
   endereco: "opcional",
-  // Falso na padrão porque ela atende quem escolheu "outro" e escreveu o ramo,
-  // e ali o rótulo neutro serve melhor do que chutar entre pessoa e lugar.
-  nomeDePessoa: false,
+  // Neutro na padrão porque ela atende quem escolheu "outro" e escreveu o ramo,
+  // e ali chutar entre pessoa e lugar erra na cara da pessoa.
+  nomeDe: "qualquer",
 };
 
 function cat(
@@ -103,7 +110,7 @@ export const CATEGORIAS: Categoria[] = [
     "filmagem", "vídeo", "casamento", "newborn", "gestante"
   ], {
     schema: "ProfessionalService",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Ensaios",
     mostrarPrecos: false,
     galeriaPrimeiro: true,
@@ -129,7 +136,7 @@ export const CATEGORIAS: Categoria[] = [
     "dados", "planilha", "integração", "wordpress", "landing page"
   ], {
     schema: "ProfessionalService",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Serviços",
     mostrarPrecos: false,
   }),
@@ -138,7 +145,7 @@ export const CATEGORIAS: Categoria[] = [
     "social media", "ilustração", "branding", "gráfico"
   ], {
     schema: "ProfessionalService",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Serviços",
     mostrarPrecos: false,
     galeriaPrimeiro: true,
@@ -149,7 +156,7 @@ export const CATEGORIAS: Categoria[] = [
     "mentoria", "marketing"
   ], {
     schema: "ProfessionalService",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Serviços",
     mostrarPrecos: false,
   }),
@@ -158,13 +165,13 @@ export const CATEGORIAS: Categoria[] = [
     "abertura de empresa", "mei", "folha de pagamento"
   ], {
     schema: "AccountingService",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Serviços",
     mostrarPrecos: false,
   }),
   cat("advocacia", "Advocacia", "Serviços", ["advocacia", "advogado", "advogada", "jurídico", "direito"], {
     schema: "LegalService",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Áreas de atuação",
     mostrarPrecos: false,
   }),
@@ -186,7 +193,7 @@ export const CATEGORIAS: Categoria[] = [
      * endereço e faixa de preço numa forma que o buscador não espera ali.
      */
     schema: "ProfessionalService",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Aulas",
   }),
   cat("assistencia", "Assistência técnica", "Serviços", [
@@ -229,11 +236,13 @@ export const CATEGORIAS: Categoria[] = [
     "progressiva", "penteado", "maquiagem"
   ], {
     schema: "BeautySalon",
+    nomeDe: "lugar",
     tituloCatalogo: "Serviços",
     endereco: "esperado",
   }),
   cat("barbearia", "Barbearia", "Beleza", ["barbearia", "barbeiro", "barba", "corte masculino", "navalha"], {
     schema: "HairSalon",
+    nomeDe: "lugar",
     tituloCatalogo: "Serviços",
     endereco: "esperado",
   }),
@@ -242,7 +251,7 @@ export const CATEGORIAS: Categoria[] = [
     "esmalteria", "fibra"
   ], {
     schema: "NailSalon",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Serviços",
     galeriaPrimeiro: true,
   }),
@@ -256,7 +265,7 @@ export const CATEGORIAS: Categoria[] = [
   }),
   cat("tatuagem", "Tatuagem e piercing", "Beleza", ["tatuagem", "tatuador", "tattoo", "piercing"], {
     schema: "TattooParlor",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Trabalhos",
     mostrarPrecos: false,
     galeriaPrimeiro: true,
@@ -269,7 +278,7 @@ export const CATEGORIAS: Categoria[] = [
     "psicanálise", "saúde mental"
   ], {
     schema: "MedicalBusiness",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Atendimentos",
     mostrarPrecos: false,
   }),
@@ -278,7 +287,7 @@ export const CATEGORIAS: Categoria[] = [
     "emagrecimento", "nutri"
   ], {
     schema: "MedicalBusiness",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Atendimentos",
     mostrarPrecos: false,
   }),
@@ -287,7 +296,7 @@ export const CATEGORIAS: Categoria[] = [
     "quiropraxia", "osteopatia"
   ], {
     schema: "Physiotherapy",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Atendimentos",
     mostrarPrecos: false,
   }),
@@ -296,6 +305,7 @@ export const CATEGORIAS: Categoria[] = [
     "clareamento", "implante"
   ], {
     schema: "Dentist",
+    nomeDe: "lugar",
     tituloCatalogo: "Tratamentos",
     mostrarPrecos: false,
     endereco: "esperado",
@@ -311,6 +321,7 @@ export const CATEGORIAS: Categoria[] = [
   }),
   cat("academia", "Academia", "Corpo e movimento", ["academia", "musculação", "crossfit", "funcional", "ginástica"], {
     schema: "ExerciseGym",
+    nomeDe: "lugar",
     tituloCatalogo: "Planos",
     endereco: "esperado",
   }),
@@ -319,7 +330,7 @@ export const CATEGORIAS: Categoria[] = [
     "preparador físico", "corrida", "assessoria esportiva"
   ], {
     schema: "SportsActivityLocation",
-    nomeDePessoa: true,
+    nomeDe: "pessoa",
     tituloCatalogo: "Planos",
   }),
   cat("danca", "Dança", "Corpo e movimento", [
@@ -354,6 +365,7 @@ export const CATEGORIAS: Categoria[] = [
     "plantas", "jardinagem", "paisagismo"
   ], {
     schema: "Florist",
+    nomeDe: "lugar",
     tituloCatalogo: "Arranjos",
     galeriaPrimeiro: true,
   }),
@@ -363,6 +375,7 @@ export const CATEGORIAS: Categoria[] = [
     "prato feito", "japonês", "pizzaria", "churrascaria"
   ], {
     schema: "Restaurant",
+    nomeDe: "lugar",
     tituloCatalogo: "Cardápio",
     endereco: "esperado",
   }),
@@ -371,11 +384,13 @@ export const CATEGORIAS: Categoria[] = [
     "salgado", "pastel", "açaí", "sorvete"
   ], {
     schema: "FastFoodRestaurant",
+    nomeDe: "lugar",
     tituloCatalogo: "Cardápio",
     endereco: "esperado",
   }),
   cat("cafeteria", "Cafeteria", "Comida e bebida", ["cafeteria", "café", "brunch", "coffee"], {
     schema: "CafeOrCoffeeShop",
+    nomeDe: "lugar",
     tituloCatalogo: "Cardápio",
     endereco: "esperado",
   }),
@@ -384,6 +399,7 @@ export const CATEGORIAS: Categoria[] = [
     "docinho", "cupcake", "padaria", "panificadora"
   ], {
     schema: "Bakery",
+    nomeDe: "lugar",
     tituloCatalogo: "Cardápio",
   }),
   // Quem cozinha em casa e vende por encomenda. Endereço opcional de
@@ -397,6 +413,7 @@ export const CATEGORIAS: Categoria[] = [
   }),
   cat("bar", "Bar", "Comida e bebida", ["bar", "boteco", "cervejaria", "pub", "choperia", "petiscaria"], {
     schema: "BarOrPub",
+    nomeDe: "lugar",
     tituloCatalogo: "Cardápio",
     endereco: "esperado",
   }),
@@ -406,6 +423,7 @@ export const CATEGORIAS: Categoria[] = [
     "acessórios", "semijoias", "bijuteria"
   ], {
     schema: "ClothingStore",
+    nomeDe: "lugar",
     tituloCatalogo: "Produtos",
   }),
   cat("mercado", "Mercado e hortifruti", "Comércio", [
@@ -413,6 +431,7 @@ export const CATEGORIAS: Categoria[] = [
     "empório", "adega", "conveniência"
   ], {
     schema: "GroceryStore",
+    nomeDe: "lugar",
     tituloCatalogo: "Produtos",
     endereco: "esperado",
   }),
@@ -421,6 +440,7 @@ export const CATEGORIAS: Categoria[] = [
     "veterinária", "ração", "adestramento", "hotel para pets"
   ], {
     schema: "PetStore",
+    nomeDe: "lugar",
     tituloCatalogo: "Produtos e serviços",
     endereco: "esperado",
   }),

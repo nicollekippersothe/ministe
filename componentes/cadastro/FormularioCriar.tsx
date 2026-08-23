@@ -183,19 +183,20 @@ export function FormularioCriar({
    * verdade nos dois casos, e é o que a prévia ao lado está mostrando.
    */
   const receita = categoriaPorId(categoria);
+  const nomeDe = receita?.nomeDe ?? "qualquer";
   const rotuloDoNome =
-    receita === null
-      ? "Que nome vai na página?"
-      : receita.nomeDePessoa
-        ? "Qual é o seu nome?"
-        : "Qual é o nome do negócio?";
+    nomeDe === "pessoa"
+      ? "Qual é o seu nome?"
+      : nomeDe === "lugar"
+        ? "Qual é o nome do negócio?"
+        : "Que nome vai na página?";
   /*
    * O exemplo acompanha o rótulo. No rótulo neutro ele puxa para pessoa, que é
    * quem está no centro do produto, e casa com o "camila reis" do endereço
    * logo abaixo: os dois juntos mostram como um vira o outro.
    */
   const exemploDoNome =
-    receita === null || receita.nomeDePessoa ? "Camila Reis" : "Aurora Massas";
+    nomeDe === "lugar" ? "Aurora Massas" : "Camila Reis";
 
   const ramoGuardado =
     (restaurado?.categoria ?? "") !== "" || (restaurado?.livre ?? "") !== "";
@@ -274,7 +275,7 @@ export function FormularioCriar({
             maxLength={80}
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            autoComplete={receita?.nomeDePessoa ? "name" : "organization"}
+            autoComplete={nomeDe === "pessoa" ? "name" : nomeDe === "lugar" ? "organization" : undefined}
             placeholder={exemploDoNome}
             aria-invalid={erroNome !== null}
             aria-describedby={erroNome ? "nome-erro" : undefined}

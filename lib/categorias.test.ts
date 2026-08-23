@@ -77,17 +77,26 @@ test("os grupos saem na ordem da lista, sem repetir", () => {
  * usa. Errar para o outro faz o restaurante achar que está preenchendo um
  * cadastro de cliente.
  */
-test("quem assina com o próprio nome está marcado, e quem é lugar fica de fora", () => {
+test("o nome é da pessoa, do lugar, ou de qualquer um dos dois", () => {
   for (const id of ["psicologia", "advocacia", "personal", "fotografia", "unhas"]) {
-    strictEqual(receitaDe(id).nomeDePessoa, true, id);
+    strictEqual(receitaDe(id).nomeDe, "pessoa", id);
   }
   for (const id of ["restaurante", "salao", "mercado", "academia", "bar"]) {
-    strictEqual(receitaDe(id).nomeDePessoa, false, id);
+    strictEqual(receitaDe(id).nomeDe, "lugar", id);
   }
-  // Quem escolheu "outro" e escreveu o ramo cai na receita padrão, e ali o
-  // rótulo neutro serve melhor do que chutar entre pessoa e lugar.
-  strictEqual(receitaDe(null).nomeDePessoa, false);
-  strictEqual(receitaDe("ramo-que-nao-existe").nomeDePessoa, false);
+  /*
+   * O terceiro estado é o que impede o produto de errar na cara da pessoa.
+   *
+   * Yoga é a professora e também é o studio, costura é a costureira e também é
+   * o ateliê. Num ramo desses, qualquer chute erra com metade de quem chega, e
+   * a pergunta neutra é verdadeira para todas. Achado ao percorrer o cadastro
+   * como uma professora de yoga: ela levava "Qual é o nome do negócio?".
+   */
+  for (const id of ["yoga-pilates", "costura", "limpeza", "comida-caseira"]) {
+    strictEqual(receitaDe(id).nomeDe, "qualquer", id);
+  }
+  strictEqual(receitaDe(null).nomeDe, "qualquer");
+  strictEqual(receitaDe("ramo-que-nao-existe").nomeDe, "qualquer");
 });
 
 test("acha pelo jeito que a pessoa fala, e não pelo nome que a gente deu", () => {
@@ -203,5 +212,5 @@ test("quem escreve software acha o próprio ramo pelas palavras dele", () => {
   // trabalha de onde estiver.
   strictEqual(receitaDe("tecnologia").mostrarPrecos, false);
   strictEqual(receitaDe("tecnologia").endereco, "opcional");
-  strictEqual(receitaDe("tecnologia").nomeDePessoa, true);
+  strictEqual(receitaDe("tecnologia").nomeDe, "pessoa");
 });
