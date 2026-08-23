@@ -50,7 +50,11 @@ next-env.d.ts
 # toda medição no navegador nasce um arquivo solto aqui na raiz. Ele é
 # descartável por definição: existe para rodar uma vez e sair. Ficar fora do git
 # evita que uma medição pela metade vire commit.
-/medir-*.mjs
-/conferir-*.mjs
-/*.tmp.mjs
-/_*.mjs
+# A lista por prefixo virou jogo de adivinhação: cada frente inventa um nome
+# novo (medida-tmp, prova, yoga), e o arquivo aparece como não versionado no
+# meio do trabalho. Então a regra passa a ser por lugar: nenhum .mjs mora na
+# raiz deste projeto, com a exceção da configuração do PostCSS, que é do Next e
+# está versionada. Script de medição continua precisando nascer aqui para o
+# pacote playwright resolver, e continua sendo descartável por definição.
+/*.mjs
+!/postcss.config.mjs
