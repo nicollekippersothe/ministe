@@ -78,7 +78,7 @@ export const massagem: Negocio = {
   nome: "Helena Vasques",
   frase: "Massoterapia e drenagem, com hora marcada, na Savassi.",
   logo: foto("spa-logo.jpg", "Retrato de Helena Vasques", 400),
-  capa: capa("spa-capa.jpg", "Mãos massageando o ombro durante a sessão"),
+  capa: capa("spa-capa.jpg", "Poltrona de madeira junto à cortina de linho, na sala de atendimento"),
   fonte: "moderno",
   whatsapp: "5531988886666",
   mensagemPadrao: "Olá! Vim pela página e gostaria de marcar uma sessão.",
@@ -118,8 +118,8 @@ export const massagem: Negocio = {
       "Óleo morno de amêndoa, pressão média e música baixa. Para quem chega do trabalho com o ombro travado.",
       18000,
       [
-        foto("spa-1.jpg", "Cliente deitada na maca durante a massagem nas costas"),
-        foto("spa-2.jpg", "Mãos apoiadas no ombro, no fim da manobra"),
+        foto("spa-1.jpg", "Maca arrumada com lençol branco, ao lado da janela"),
+        foto("spa-2.jpg", "Toalha enrolada, sal de banho e vela acesa sobre a madeira"),
       ],
     ),
     item(
@@ -127,21 +127,21 @@ export const massagem: Negocio = {
       "Drenagem linfática, 60 minutos",
       "Manobras lentas de perna e abdome, para retenção de líquido e pós operatório liberado pelo médico.",
       17000,
-      [foto("spa-3.jpg", "Cliente deitada na maca, com velas acesas ao fundo")],
+      [foto("spa-3.jpg", "Sabonetes naturais e escova de madeira sobre o linho")],
     ),
     item(
       "miofascial",
       "Liberação miofascial, 50 minutos",
       "Trabalho ponto a ponto em pescoço, ombro e lombar, com alongamento no fim.",
       19000,
-      [foto("spa-4.jpg", "Massagem na cabeça e na nuca")],
+      [foto("spa-4.jpg", "Vela acesa sobre a pilha de livros, ao lado da planta")],
     ),
     item(
       "pedras",
       "Pedras quentes, 80 minutos",
       "Basalto aquecido em água, apoiado ao longo da coluna e das pernas.",
       24000,
-      [foto("spa-5.jpg", "Pedras de basalto ao lado das toalhas enroladas")],
+      [foto("spa-5.jpg", "Pedras lisas empilhadas na areia")],
     ),
     item(
       "pacote",
@@ -160,10 +160,10 @@ export const massagem: Negocio = {
     ),
   ],
   galeria: [
-    foto("spa-g1.jpg", "Toalhas dobradas sobre o banco da sala"),
-    foto("spa-g2.jpg", "Óleo essencial e flores sobre a mesa"),
-    foto("spa-g3.jpg", "Pedras, flores e sabonete prontos para a sessão"),
-    foto("spa-g4.jpg", "Orquídea branca ao lado das pedras"),
+    foto("spa-g1.jpg", "Tecido de linho cor de barro, de perto"),
+    foto("spa-g2.jpg", "Maço de lavanda seca amarrado com barbante"),
+    foto("spa-g3.jpg", "Fileira de vasos de cerâmica verde"),
+    foto("spa-g4.jpg", "Chá de gengibre e limão servido na tigela"),
   ],
   links: [
     { id: "insta", rotulo: "Instagram", url: "https://instagram.com/", icone: "instagram" },
@@ -232,7 +232,7 @@ export const psicologia: Negocio = {
       "Orientação de pais",
       "Encontros pontuais para dúvidas sobre desenvolvimento infantil.",
       null,
-      [foto("psi-3.jpg", "Planta sobre a mesa junto à janela")],
+      [foto("psi-3.jpg", "Ramo na garrafa de vidro ao lado do livro aberto")],
     ),
   ],
   galeria: [
@@ -305,7 +305,7 @@ export const astrologia: Negocio = {
       "Sinastria, dois mapas lado a lado",
       "Para casal ou dupla de trabalho. Uma sessão de duas horas, com as duas pessoas na chamada.",
       null,
-      [foto("astro-3.jpg", "Duas velas acesas sobre a mesa escura")],
+      [foto("astro-3.jpg", "Velas acesas em copinhos sobre a mesa")],
     ),
     item(
       "mapa-crianca",
@@ -518,7 +518,7 @@ export const ilustracao: Negocio = {
       "Série de posts ilustrados",
       "Quatro peças por mês, no formato da sua rede, com os arquivos abertos.",
       null,
-      [foto("ilustra-4.jpg", "Ilustração colorida ao lado do celular")],
+      [foto("ilustra-4.jpg", "Ateliê com as telas apoiadas e o cavalete junto à janela")],
     ),
   ],
   galeria: [
@@ -702,7 +702,7 @@ export const doceria: Negocio = {
       6800,
       [
         foto("bolo-3.jpg", "Fatia de bolo de chocolate com ganache"),
-        foto("galeria-7.jpg", "Chocolate meio amargo servido no prato"),
+        foto("galeria-7.jpg", "Barras de chocolate meio amargo empilhadas"),
       ],
     ),
     item(
@@ -741,10 +741,10 @@ export const doceria: Negocio = {
   galeria: [
     foto("galeria-1.jpg", "Balcão com os bolos do dia"),
     foto("galeria-2.jpg", "Xícara de café com desenho na espuma"),
-    foto("galeria-3.jpg", "Salão visto do fundo"),
+    foto("galeria-3.jpg", "Balcão da confeitaria com o quadro do cardápio"),
     foto("galeria-4.jpg", "Plantas na prateleira do salão"),
     foto("galeria-5.jpg", "Macarons coloridos empilhados"),
-    foto("galeria-6.jpg", "Bolo de andares decorado com morangos"),
+    foto("galeria-6.jpg", "Bolo de andares decorado com flores e folhas"),
   ],
   links: [
     { id: "insta", rotulo: "Instagram", url: "https://instagram.com/", icone: "instagram" },

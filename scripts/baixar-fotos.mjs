@@ -304,10 +304,12 @@ const BUSCAS = [
    *
    * Os quadrados aqui são menores porque avatar aparece com 88px de lado.
    *
-   * Quatro pessoas diferentes, de três buscas diferentes: a busca "portrait"
-   * sozinha devolvia o mesmo enquadramento de estúdio quatro vezes, e o corte
-   * por atenção ainda achava a boca no lugar dos olhos. Rosto de perfil, luz
-   * de fim de tarde e fundo aberto sobrevivem melhor ao círculo de 88px.
+   * Quatro pessoas diferentes, de duas buscas. A busca "portrait" saiu daqui:
+   * devolvia o mesmo enquadramento de estúdio para todo mundo, e o corte por
+   * atenção ainda achava a boca no lugar dos olhos. Rosto de perfil, luz de
+   * fim de tarde e fundo aberto sobrevivem melhor ao círculo de 88px, e vale
+   * conferir cada avatar nesse tamanho: o que decide é a leitura com 88px de
+   * lado, e não o arquivo de 400.
    */
   {
     consulta: "woman profile",
