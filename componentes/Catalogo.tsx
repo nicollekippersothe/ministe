@@ -19,10 +19,10 @@ import type { Item, Negocio } from "@/lib/tipos";
  *    conteudo e o resto da tela em branco no monitor.
  *
  * Agora cada item e um cartao fechado: moldura, fundo do tema, foto encostada
- * no topo quando existe, e uma barra embaixo com o preco de um lado e a acao do
- * outro. O preco passa a ser a peca de maior peso do cartao, que e a ordem em
- * que a pessoa le uma lista de servico, e o botao continua inteiro no alcance
- * do dedo com 44 pixels de altura.
+ * no topo quando existe, e uma barra embaixo com o preco e a acao, separada do
+ * texto por um fio. O preco passa a ser a peca de maior peso do cartao, que e a
+ * ordem em que a pessoa le uma lista de servico, e o botao continua inteiro no
+ * alcance do dedo com 44 pixels de altura.
  *
  * Tudo em CSS. A pagina publica continua com o mesmo JavaScript proprio de
  * antes, que e so o selo de horario.

@@ -17,10 +17,11 @@ import {
 import { planoValido } from "./plano";
 import { MODO_VITRINE } from "./site";
 import { configurado } from "./supabase/config";
+import { caminhoGuardado } from "./supabase/imagens";
 import { paraLinha, paraNegocio, TUDO } from "./supabase/mapa";
 import { publico } from "./supabase/publico";
 import { garantirConta, servidor, usuarioAtual } from "./supabase/servidor";
-import type { Intervalo, Item, LinkExtra, Negocio, Plano } from "./tipos";
+import type { Foto, Intervalo, Item, LinkExtra, Negocio, Plano } from "./tipos";
 
 /**
  * Camada de dados.
@@ -262,8 +263,9 @@ export async function salvar(negocio: Negocio): Promise<void> {
  * Catálogo e links seguem logo abaixo, com o mesmo guarda e outro jeito de
  * escrever. O porquê da diferença está escrito lá.
  *
- * Galeria e fotos de item continuam de fora até existir tela que as edite.
- * Escrita sem chamador é código que ninguém exercita.
+ * A galeria continua de fora até existir tela que a edite. Escrita sem chamador
+ * é código que ninguém exercita. As fotos de item saíram dessa fila quando a
+ * tela de catálogo passou a enviar foto, e vão junto do catálogo logo abaixo.
  */
 async function gravarHorarios(
   sb: Awaited<ReturnType<typeof servidor>>,
@@ -345,6 +347,13 @@ async function gravarHorarios(
  * O id vem pronto de quem chamou, e não do `gen_random_uuid()` da coluna. É o
  * que permite reconhecer, na volta, qual linha é qual: item novo é o que ainda
  * não está no banco, e o resto é atualização. Ver `app/painel/catalogo/acoes.ts`.
+ *
+ * **As fotos dos itens vão junto, e vão pela mesma receita.** Elas entram na
+ * leitura de cima, entram no guarda de igualdade e são escritas em
+ * `gravarFotosDoItem`, uma linha por vez, depois de os itens existirem. A
+ * cascata continua sendo o motivo de tudo isto: enquanto a tabela filha era
+ * escrita por ninguém, o guarda protegia foto que só o banco de exemplo tinha;
+ * agora ele protege a foto que a dona da página acabou de mandar do celular.
  */
 type Cliente = Awaited<ReturnType<typeof servidor>>;
 
@@ -359,47 +368,225 @@ function linhaDoItem(item: Item, ordem: number) {
   };
 }
 
+/**
+ * A linha de `itens_fotos`, do jeito que ela vai e volta.
+ *
+ * **A coluna guarda o CAMINHO do bucket, e nunca a URL inteira.** É a mesma
+ * regra de `logo_url` e `capa_url`, escrita na correção 008 e explicada por
+ * extenso em `caminhoGuardado`, e a `url_formato` de `itens_fotos` recusa a
+ * linha toda quando ela chega como endereço. A passada por `caminhoGuardado`
+ * acontece aqui, e não em quem chama, porque este é o único lugar por onde a
+ * tabela filha é escrita: qualquer tela que mande uma foto lida de volta pela
+ * leitura entra por esta porta e sai no formato da coluna.
+ *
+ * **A legenda é o título do item, e a decisão é essa mesma.** `alt_preenchido`
+ * exige texto, e o produto exige alt em toda imagem (regra 4 do AGENTS.md). As
+ * duas imagens da página derivam a legenda do nome do negócio, em
+ * lib/supabase/mapa.ts; aqui o candidato equivalente é o título, que é o único
+ * texto que a dona da página escreveu sobre aquela foto. Ele nasce obrigatório
+ * e cabe de sobra: `titulo_preenchido` vai até 80 caracteres e `alt_preenchido`
+ * até 160, então título válido é sempre legenda válida.
+ *
+ * E ela acompanha o título a cada gravação, de propósito. Legenda que mente é
+ * pior do que legenda genérica, e a que envelhece é justamente a que mente: a
+ * foto do item renomeado continuaria anunciada pelo nome antigo para quem lê a
+ * página com leitor de tela. Enquanto tela nenhuma oferece campo de legenda,
+ * toda legenda desta tabela saiu daqui, então acompanhar não sobrescreve texto
+ * de ninguém. O dia em que existir esse campo, este é o lugar de parar.
+ *
+ * Largura e altura são nulas quando a linha não tem medida, que é o que a
+ * coluna aceita, e vêm da convenção de `MEDIDAS` quando o envio as escreve.
+ */
+function linhaDaFoto(foto: Foto, titulo: string, ordem: number) {
+  return {
+    ordem,
+    url: caminhoGuardado(foto.url) ?? foto.url,
+    alt: titulo.trim().slice(0, 160),
+    largura: foto.largura > 0 ? foto.largura : null,
+    altura: foto.altura > 0 ? foto.altura : null,
+  };
+}
+
 /** Uma linha virada em texto, para comparar guardado com o que chegou. */
 const textoDaLinha = (l: Record<string, unknown>): string =>
   JSON.stringify(Object.keys(l).sort().map((c) => [c, l[c] ?? null]));
+
+/** As fotos de um item viradas em texto, na mesma ordem dos dois lados. */
+const textoDasFotos = (linhas: string[]): string =>
+  JSON.stringify([...linhas].sort());
+
+/** Uma foto guardada: o id, que é do banco, e a linha dela em texto. */
+type FotoGuardada = { id: string; texto: string };
+
+/**
+ * As fotos que o banco já tem para um item, indexadas pelo caminho.
+ *
+ * O caminho é a identidade aqui, e não o id: `Foto` de lib/tipos.ts não carrega
+ * id, porque é o mesmo tipo que a página pública usa, e o caminho já é único
+ * por envio (uuid novo a cada arquivo, do jeito que a 008 pede). Foto trocada é
+ * caminho novo, então a comparação enxerga a troca sem precisar de id nenhum.
+ */
+function fotosGuardadas(linhas: unknown): Map<string, FotoGuardada> {
+  const fotos = new Map<string, FotoGuardada>();
+
+  for (const f of (Array.isArray(linhas) ? linhas : []) as Record<
+    string,
+    unknown
+  >[]) {
+    fotos.set(String(f.url), {
+      id: String(f.id),
+      texto: textoDaLinha({
+        ordem: Number(f.ordem ?? 0),
+        url: String(f.url),
+        alt: String(f.alt ?? ""),
+        largura: f.largura === null || f.largura === undefined ? null : Number(f.largura),
+        altura: f.altura === null || f.altura === undefined ? null : Number(f.altura),
+      }),
+    });
+  }
+
+  return fotos;
+}
+
+/**
+ * As fotos de um item, pela mesma receita do catálogo: apaga só o que saiu,
+ * atualiza só o que mudou, insere só o que é novo.
+ *
+ * A ordem das três é o que faz a troca de foto caber no plano gratuito.
+ * `checa_limite_fotos_item` é `before insert` e conta o que já está na tabela,
+ * com teto de 3 fotos por item no gratuito e 10 no pago (supabase/schema.sql):
+ * inserir antes de apagar recusaria justamente a troca da terceira foto, que é
+ * a mais comum de todas para quem já encheu o item.
+ *
+ * Apaga em `itens_fotos`, e nunca no item. O `delete` em `itens` cascateia, e
+ * isso serve para o item que a pessoa removeu de verdade, com as fotos dele
+ * junto; para trocar uma foto, o que sai de cena é a linha da foto.
+ */
+async function gravarFotosDoItem(
+  sb: Cliente,
+  negocioId: string,
+  item: Item,
+  guardadas: Map<string, FotoGuardada>,
+): Promise<void> {
+  const chegaram = item.fotos.map((foto, ordem) =>
+    linhaDaFoto(foto, item.titulo, ordem),
+  );
+  const ficaram = new Set(chegaram.map((l) => l.url));
+
+  const sairam = [...guardadas.entries()]
+    .filter(([url]) => !ficaram.has(url))
+    .map(([, f]) => f.id);
+
+  if (sairam.length > 0) {
+    const { error } = await sb
+      .from("itens_fotos")
+      .delete()
+      .eq("negocio_id", negocioId)
+      .in("id", sairam);
+    if (error) throw recusaDoBanco(error);
+  }
+
+  const novas: ReturnType<typeof linhaDaFoto>[] = [];
+
+  for (const linha of chegaram) {
+    const antes = guardadas.get(linha.url);
+    if (antes === undefined) {
+      novas.push(linha);
+      continue;
+    }
+    if (antes.texto === textoDaLinha(linha)) continue;
+
+    const { error } = await sb
+      .from("itens_fotos")
+      .update(linha)
+      .eq("id", antes.id)
+      .eq("negocio_id", negocioId);
+    if (error) throw recusaDoBanco(error);
+  }
+
+  if (novas.length === 0) return;
+
+  const { error } = await sb
+    .from("itens_fotos")
+    .insert(
+      novas.map((linha) => ({
+        item_id: item.id,
+        negocio_id: negocioId,
+        ...linha,
+      })),
+    );
+
+  if (error) throw recusaDoBanco(error);
+}
 
 async function gravarItens(
   sb: Cliente,
   negocioId: string,
   itens: Item[],
 ): Promise<void> {
+  // As fotos vêm na mesma viagem, que é o mesmo desenho do `TUDO` da leitura.
+  // Sem elas aqui, o guarda de igualdade não teria como enxergar a foto que
+  // chegou, e a única mudança da tela de catálogo passaria em branco.
   const { data, error: erroDaLeitura } = await sb
     .from("itens")
-    .select("id, ordem, titulo, descricao, preco_centavos, ativo")
+    .select(
+      "id, ordem, titulo, descricao, preco_centavos, ativo, itens_fotos(id, ordem, url, alt, largura, altura)",
+    )
     .eq("negocio_id", negocioId);
 
   if (erroDaLeitura) throw recusaDoBanco(erroDaLeitura);
 
-  const guardados = new Map<string, string>(
-    (data ?? []).map((i) => [
-      String(i.id),
-      textoDaLinha({
-        ordem: Number(i.ordem ?? 0),
-        titulo: String(i.titulo ?? ""),
-        descricao: i.descricao === null ? null : String(i.descricao),
-        preco_centavos:
-          i.preco_centavos === null ? null : Number(i.preco_centavos),
-        ativo: i.ativo !== false,
-      }),
-    ]),
+  const guardados = new Map(
+    (data ?? []).map((i) => {
+      const fotos = fotosGuardadas(i.itens_fotos);
+      return [
+        String(i.id),
+        {
+          linha: textoDaLinha({
+            ordem: Number(i.ordem ?? 0),
+            titulo: String(i.titulo ?? ""),
+            descricao: i.descricao === null ? null : String(i.descricao),
+            preco_centavos:
+              i.preco_centavos === null ? null : Number(i.preco_centavos),
+            ativo: i.ativo !== false,
+          }),
+          fotos,
+          textoDasFotos: textoDasFotos([...fotos.values()].map((f) => f.texto)),
+        },
+      ];
+    }),
   );
 
   const chegaram = itens.map((item, ordem) => ({
     item,
     linha: linhaDoItem(item, ordem),
     texto: textoDaLinha(linhaDoItem(item, ordem)),
+    textoDasFotos: textoDasFotos(
+      item.fotos.map((foto, i) => textoDaLinha(linhaDaFoto(foto, item.titulo, i))),
+    ),
   }));
 
-  // O guarda de igualdade. Ver o comentário acima: sem ele, salvar a letra da
-  // página apaga a foto dos produtos.
+  /*
+   * O guarda de igualdade. Ver o comentário acima: sem ele, salvar a letra da
+   * página apaga a foto dos produtos.
+   *
+   * As fotos entram na comparação pelos dois lados da mesma propriedade. Uma
+   * tela que nem edita catálogo devolve os itens do jeito que os leu, fotos
+   * inclusive, e sai daqui sem escrever nada, que é o que protege a tabela
+   * filha da cascata. E a tela que trocou só a foto, sem tocar em título nem em
+   * preço, deixa de ser vista como "nada mudou": era o que aconteceria com a
+   * comparação de antes, e o envio de foto terminaria em silêncio.
+   */
   const igual =
     chegaram.length === guardados.size &&
-    chegaram.every((c) => guardados.get(c.item.id) === c.texto);
+    chegaram.every((c) => {
+      const antes = guardados.get(c.item.id);
+      return (
+        antes !== undefined &&
+        antes.linha === c.texto &&
+        antes.textoDasFotos === c.textoDasFotos
+      );
+    });
   if (igual) return;
 
   const ficaram = new Set(chegaram.map((c) => c.item.id));
@@ -416,7 +603,7 @@ async function gravarItens(
 
   for (const c of chegaram) {
     const antes = guardados.get(c.item.id);
-    if (antes === undefined || antes === c.texto) continue;
+    if (antes === undefined || antes.linha === c.texto) continue;
     const { error } = await sb
       .from("itens")
       .update(c.linha)
@@ -426,15 +613,30 @@ async function gravarItens(
   }
 
   const novos = chegaram.filter((c) => !guardados.has(c.item.id));
-  if (novos.length === 0) return;
 
-  const { error } = await sb
-    .from("itens")
-    .insert(
-      novos.map((c) => ({ id: c.item.id, negocio_id: negocioId, ...c.linha })),
-    );
+  if (novos.length > 0) {
+    const { error } = await sb
+      .from("itens")
+      .insert(
+        novos.map((c) => ({ id: c.item.id, negocio_id: negocioId, ...c.linha })),
+      );
 
-  if (error) throw recusaDoBanco(error);
+    if (error) throw recusaDoBanco(error);
+  }
+
+  /*
+   * As fotos depois dos itens, e só as dos itens cujas fotos mudaram.
+   *
+   * Depois porque `itens_fotos` aponta para `itens` pela chave composta: a foto
+   * de um item que acabou de nascer precisa da linha dele já no banco. E só as
+   * que mudaram porque reordenar seis itens é seis atualizações de `ordem` e
+   * nenhuma mexida em foto nenhuma.
+   */
+  for (const c of chegaram) {
+    const antes = guardados.get(c.item.id);
+    if (antes !== undefined && antes.textoDasFotos === c.textoDasFotos) continue;
+    await gravarFotosDoItem(sb, negocioId, c.item, antes?.fotos ?? new Map());
+  }
 }
 
 /**

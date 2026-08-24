@@ -12,10 +12,11 @@ import {
   caminhoValido,
   conferirArquivo,
   ehPasta,
+  ehPastaDoBucket,
   limitarFoco,
   MEDIDAS,
   MOTIVOS_IMAGEM,
-  type PastaDeImagem,
+  PASTA_DO_ITEM,
   type RecusaImagem,
 } from "@/lib/supabase/imagens";
 import { contaProvisoria, servidor, usuarioAtual } from "@/lib/supabase/servidor";
@@ -307,6 +308,11 @@ export async function alternarPublicacao() {
  *
  * Sem Supabase configurado as duas colunas já vêm como endereço local com
  * barra, e a função devolve o que recebeu.
+ *
+ * As fotos dos itens dão essa mesma volta, e não aqui: `linhaDaFoto` de
+ * lib/dados.ts faz isso na hora de escrever a tabela filha, que é a única porta
+ * dela. Assim o cuidado fica na porta em vez de ficar em cada tela que passa
+ * uma lista de itens adiante.
  */
 function comCaminhoDeImagem(negocio: Negocio): Negocio {
   const volta = (foto: Foto | null): Foto | null =>
@@ -353,13 +359,20 @@ export type GravacaoDeImagem =
  *
  * O tipo e o tamanho passam pela mesma conferência da tela. A tela confere para
  * a pessoa saber na hora; aqui confere porque Server Action é endereço público.
+ *
+ * As três pastas do bucket passam por aqui, e o caminho de cada uma sai com o
+ * nome que a restrição da 008 exige para a coluna daquela pasta. Quem separa o
+ * que cada pasta pode virar é a gravação, logo abaixo: esta função entrega um
+ * lugar no Storage, e nunca uma linha.
  */
 export async function prepararEnvioDeImagem(
   pasta: string,
   tipo: string,
   bytes: number,
 ): Promise<RespostaDeImagem> {
-  if (!ehPasta(pasta)) return { ok: false, recusa: "imagem", motivo: "envio" };
+  if (!ehPastaDoBucket(pasta)) {
+    return { ok: false, recusa: "imagem", motivo: "envio" };
+  }
 
   const conferido = conferirArquivo({ type: tipo, size: bytes });
   if (!conferido.ok) {
@@ -426,6 +439,81 @@ export async function salvarImagemDoNegocio(
   // pública que a leitura montou passaria longe do arquivo e deixaria a imagem
   // trocada ocupando o bucket.
   const anterior = caminhoGuardado(atual?.url ?? null);
+  return {
+    ok: true,
+    anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,
+  };
+}
+
+/**
+ * A foto de um item do catálogo, gravada na tabela filha.
+ *
+ * Mesmo molde de `salvarImagemDoNegocio`, e as duas diferenças são de destino.
+ * Lá o caminho vira coluna da linha do negócio; aqui vira linha de
+ * `itens_fotos`, que `gravarItens` escreve a partir do `Negocio` inteiro. Por
+ * isso a ação mexe no item dentro da lista e manda a lista inteira para o
+ * `salvar`: é o mesmo caminho que a tela de catálogo já usa em todo botão dela,
+ * e o guarda de igualdade de lib/dados.ts deixa passar só o que mudou.
+ *
+ * O item chega por `bind`, e o id é conferido contra a lista de quem está
+ * logado antes de qualquer coisa: Server Action é endereço público, e sem essa
+ * conferência um id de outra pessoa entraria aqui. A RLS recusaria do outro
+ * lado de qualquer jeito, e esta é a primeira porta.
+ *
+ * **Uma foto por item, e é escolha de escopo.** A tabela aceita 3 no gratuito e
+ * 10 no pago, e `componentes/Catalogo.tsx` já desenha a faixa que corre de lado
+ * quando há mais de uma. O que falta para as três é tela: escolher a ordem,
+ * remover a do meio e mostrar quantas ainda cabem no plano. Enquanto isso, o
+ * envio troca a foto do item, que é o pedido que chegou.
+ *
+ * A legenda sai do título do item, e o porquê está por extenso em `linhaDaFoto`
+ * de lib/dados.ts, que é quem a escreve na coluna.
+ */
+export async function salvarFotoDoItem(
+  itemId: string,
+  caminho: string | null,
+): Promise<GravacaoDeImagem> {
+  const negocio = await doDono();
+  const alvo = negocio.itens.find((i) => i.id === itemId);
+  if (alvo === undefined) {
+    return { ok: false, recusa: "imagem", motivo: "guardar" };
+  }
+
+  let fotos: Foto[] = [];
+  if (caminho !== null) {
+    const id = await idDoNegocio();
+    if (id === null || !caminhoValido(caminho, id, PASTA_DO_ITEM)) {
+      return { ok: false, recusa: "imagem", motivo: "guardar" };
+    }
+    fotos = [{ url: caminho, alt: alvo.titulo, ...MEDIDAS[PASTA_DO_ITEM] }];
+  }
+
+  const itens = negocio.itens.map((i) =>
+    i.id === itemId ? { ...i, fotos } : i,
+  );
+
+  try {
+    await salvar(comCaminhoDeImagem({ ...negocio, itens }));
+  } catch (erro) {
+    const motivo = motivoDaRecusa(erro);
+    if (motivo === null) throw erro;
+    return { ok: false, recusa: "banco", motivo };
+  }
+
+  revalidatePath(`/${negocio.slug}`);
+  revalidatePath("/painel");
+
+  /*
+   * O caminho anterior volta para a tela apagar o arquivo do bucket, igual ao
+   * da logo e ao da capa. Endereço que começa com barra é arquivo do projeto,
+   * das páginas de exemplo, e fica de fora: ele não mora no bucket.
+   *
+   * A rede embaixo é do banco: `itens_fotos_enfileira_removida`, o gatilho que
+   * a 008 cria, escreve em `imagens_para_apagar` o caminho de toda linha
+   * removida, então o arquivo continua com destino marcado quando a aba fecha
+   * no meio.
+   */
+  const anterior = caminhoGuardado(alvo.fotos[0]?.url ?? null);
   return {
     ok: true,
     anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,

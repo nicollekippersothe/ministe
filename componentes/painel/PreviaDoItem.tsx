@@ -99,10 +99,24 @@ export function PreviaDoItem({
   }
 
   /*
-   * As fotos saem da cópia porque a foto do item ocupa a moldura inteira e o
-   * assunto aqui é o texto. O envio de foto de produto tem tela própria pela
-   * frente, e quando ela existir esta linha é o lugar de mostrar a foto junto.
+   * **As fotos vêm da prop, e nunca do estado daqui.** Elas eram descartadas na
+   * cópia, e a prévia mostrava o cartão sem a foto que a página já mostrava.
+   *
+   * Vir da prop é o que mantém a prévia certa depois de o envio gravar: o
+   * cartão de imagem termina em `router.refresh()`, o servidor manda a linha
+   * nova, e o `useState` daqui continuaria com a lista de fotos do primeiro
+   * render. Título, descrição e preço são o contrário disso, porque quem está
+   * digitando é a pessoa e o servidor ainda não sabe.
+   *
+   * A legenda acompanha o nome que está sendo digitado, que é a mesma conta que
+   * `linhaDaFoto` de lib/dados.ts faz na hora de gravar. Assim o que o leitor de
+   * tela ouve na prévia é o que a página vai dizer.
    */
+  const fotos = item.fotos.map((foto) => ({
+    ...foto,
+    alt: atual.titulo.trim() === "" ? foto.alt : atual.titulo.trim(),
+  }));
+
   const recorte: Negocio = {
     ...negocio,
     /*
@@ -115,7 +129,7 @@ export function PreviaDoItem({
       {
         ...atual,
         precoCentavos: combinado ? null : atual.precoCentavos,
-        fotos: [],
+        fotos,
       },
     ],
   };

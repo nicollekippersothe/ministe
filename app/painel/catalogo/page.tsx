@@ -7,6 +7,7 @@ import {
   salvarItens,
   subirItem,
 } from "./acoes";
+import { salvarFotoDoItem } from "@/app/painel/acoes";
 import { AtalhoDeAcrescentar, IconeMais } from "@/componentes/painel/Acrescentar";
 import { Aviso } from "@/componentes/painel/Aviso";
 import {
@@ -17,12 +18,15 @@ import {
   Opcoes,
   Texto,
 } from "@/componentes/painel/Campos";
+import { EnvioDeImagem } from "@/componentes/painel/EnvioDeImagem";
 import { FocarNoNovo } from "@/componentes/painel/FocarNoNovo";
 import { Cartao } from "@/componentes/painel/Ordem";
 import { PreviaDoItem } from "@/componentes/painel/PreviaDoItem";
 import { FaixaDeRecado } from "@/componentes/painel/Sinais";
 import { doDono } from "@/lib/dados";
 import { preco, precoEditavel } from "@/lib/formato";
+import { configurado } from "@/lib/supabase/config";
+import { PASTA_DO_ITEM } from "@/lib/supabase/imagens";
 import type { Item } from "@/lib/tipos";
 
 import { exigirLogin } from "@/app/painel/vitrine";
@@ -434,6 +438,27 @@ export default async function Catalogo({
                   rotulo="Aparece na página"
                   dica="Desmarcado, o item fica guardado aqui com você."
                   marcado={item.ativo}
+                />
+
+                {/*
+                  A foto deste item, no mesmo cartão de imagem da tela de
+                  informações. É o componente de lá inteiro, com a pasta do
+                  catálogo e com a gravação amarrada a este item: um segundo
+                  enviador escrito à mão acertaria hoje e divergiria no primeiro
+                  ajuste, e são nove passos até o arquivo virar coluna.
+
+                  O envio grava sozinho, fora do Salvar da linha, que é como o
+                  painel inteiro trata imagem: quem escolhe uma foto está
+                  olhando a prévia mudar, e esperar um botão poria um segundo
+                  momento no meio de uma coisa que já se explica na tela.
+                */}
+                <EnvioDeImagem
+                  pasta={PASTA_DO_ITEM}
+                  chave={`item-${i}`}
+                  atual={item.fotos[0]?.url ?? null}
+                  nome={item.titulo}
+                  ligado={configurado}
+                  gravar={salvarFotoDoItem.bind(null, item.id)}
                 />
               </PreviaDoItem>
             </Cartao>

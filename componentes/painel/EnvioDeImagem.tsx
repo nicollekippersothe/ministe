@@ -11,12 +11,15 @@ import { MOTIVOS_DADOS } from "@/lib/dados/erros";
 import {
   ACCEPT,
   BUCKET,
+  caminhoGuardado,
   conferirArquivo,
   enderecoPublico,
+  LADO_DO_ITEM,
   LIMITE_MB,
   MOTIVOS_IMAGEM,
+  PASTA_DO_ITEM,
   ROTULOS,
-  type PastaDeImagem,
+  type PastaDoBucket,
 } from "@/lib/supabase/imagens";
 import { navegador } from "@/lib/supabase/navegador";
 import type { Foco } from "@/lib/tipos";
@@ -54,15 +57,51 @@ import { FaixaDeRecado, type Tom } from "./Sinais";
  * cena em `imagens_para_apagar` mesmo quando a aba fecha no meio.
  */
 
-const DICAS: Record<PastaDeImagem, string> = {
+const DICAS: Record<PastaDoBucket, string> = {
   logo: "Aparece redonda, no topo da página. Uma imagem quadrada fica perfeita.",
   capa: "É a faixa larga do topo da página. Uma imagem deitada fica perfeita.",
+  [PASTA_DO_ITEM]:
+    "Aparece no cartão deste item, na sua página. Uma imagem deitada fica perfeita.",
 };
 
-const VAZIOS: Record<PastaDeImagem, string> = {
+const VAZIOS: Record<PastaDoBucket, string> = {
   logo: "A página abre com o nome em destaque. Escolha uma imagem para pôr a sua marca junto.",
   capa: "A página abre direto no nome. Escolha uma imagem para dar um topo a ela.",
+  [PASTA_DO_ITEM]:
+    "O cartão sai com o nome, a descrição e o preço. Escolha uma imagem para mostrar o que a pessoa recebe.",
 };
+
+/**
+ * A moldura de cada uma, com a proporção que a página dá para ela.
+ *
+ * A do item é 4 por 3 porque é a moldura que componentes/Catalogo.tsx desenha
+ * no cartão, e ela fica pequena e ao lado dos botões: a tela de catálogo tem um
+ * cartão desses por item, e uma faixa larga por linha empurraria o Salvar de
+ * cada item para fora da tela do celular.
+ */
+const MOLDURAS: Record<PastaDoBucket, string> = {
+  logo: "h-20 w-20 rounded-full",
+  capa: "aspect-[16/9] w-full rounded-lg",
+  [PASTA_DO_ITEM]: "aspect-[4/3] h-20 rounded-lg",
+};
+
+/** A frase dentro da moldura vazia, do tamanho que ela tem. */
+const NA_MOLDURA: Record<PastaDoBucket, string> = {
+  logo: "Sua marca aqui",
+  capa: "Sua capa aqui",
+  [PASTA_DO_ITEM]: "Sua foto aqui",
+};
+
+/**
+ * O maior lado de cada imagem antes de subir.
+ *
+ * As duas do negócio vêm do `LADO_MAXIMO` de ./reduzirImagem.ts, que é o mapa
+ * delas; a do item vem de lib/supabase/imagens.ts, junto das outras medidas do
+ * catálogo. Duas origens porque são dois assuntos: coluna da linha do negócio,
+ * e linha da tabela de fotos do item.
+ */
+const ladoDe = (pasta: PastaDoBucket): number =>
+  pasta === PASTA_DO_ITEM ? LADO_DO_ITEM : LADO_MAXIMO[pasta];
 
 /**
  * As duas frases de quando o Supabase ainda está de fora.
@@ -123,13 +162,29 @@ function frase(gravado: Extract<GravacaoDeImagem, { ok: false }>): string {
 
 export function EnvioDeImagem({
   pasta,
+  chave,
   atual,
   foco,
   nome,
   ligado,
+  gravar,
 }: {
-  pasta: PastaDeImagem;
-  /** O valor cru da coluna: caminho do bucket, ou endereço local com barra. */
+  pasta: PastaDoBucket;
+  /**
+   * O que separa este cartão dos outros da mesma tela.
+   *
+   * A tela de informações tem um cartão por pasta, então a pasta basta; a de
+   * catálogo tem um por item, todos na pasta `catalogo`, e o id do campo de
+   * arquivo precisa continuar único para o `label` levar ao arquivo certo.
+   */
+  chave?: string;
+  /**
+   * A imagem de agora: caminho do bucket, endereço local com barra, ou o
+   * endereço público que a leitura montou. As três entram, porque as telas
+   * pegam esse valor do `Negocio` e lib/supabase/mapa.ts monta o endereço de
+   * umas e devolve o caminho cru de outras. A volta é `caminhoGuardado`, e daí
+   * o endereço sai montado uma vez só.
+   */
   atual: string | null;
   /**
    * O ponto da capa que precisa aparecer, quando já existe um gravado. Só a
@@ -141,6 +196,17 @@ export function EnvioDeImagem({
   nome: string;
   /** Se o Supabase está configurado, e portanto se existe bucket para receber. */
   ligado: boolean;
+  /**
+   * Quem grava o caminho depois de o arquivo chegar ao bucket, e quem limpa no
+   * Remover.
+   *
+   * Vem de fora porque o destino muda: a logo e a capa são coluna da linha do
+   * negócio, e a foto de item é linha de `itens_fotos`, amarrada a um item. O
+   * padrão continua sendo a gravação do negócio, então os dois cartões da tela
+   * de informações seguem escritos do mesmo jeito de sempre. Ação de servidor
+   * atravessa de página para cá como qualquer prop.
+   */
+  gravar?: (caminho: string | null) => Promise<GravacaoDeImagem>;
 }) {
   const router = useRouter();
   const cliente = useRef<ReturnType<typeof navegador> | null>(null);
@@ -214,9 +280,13 @@ export function EnvioDeImagem({
     setRecado(frase);
   }
 
-  const id = `imagem-${pasta}`;
-  const redonda = pasta === "logo";
-  const mostrada = previa ?? enderecoPublico(caminho);
+  const id = `imagem-${chave ?? pasta}`;
+  /* Só a capa escolhe ponto focal. Ver ./FocoDaCapa.tsx: a moldura dela é fixa
+     e larga, e a foto quase nunca tem a proporção dela. A do item cai na
+     moldura de 4 por 3 do cartão, e o `object-cover` corta pelo centro. */
+  const focavel = pasta === "capa";
+  const mostrada = previa ?? enderecoPublico(caminhoGuardado(caminho));
+  const gravarCaminho = gravar ?? ((c: string | null) => salvarImagemDoNegocio(pasta, c));
 
   function sb() {
     cliente.current ??= navegador();
@@ -256,7 +326,7 @@ export function EnvioDeImagem({
         return;
       }
 
-      const arquivo = await reduzirImagem(escolhido, LADO_MAXIMO[pasta]);
+      const arquivo = await reduzirImagem(escolhido, ladoDe(pasta));
 
       // O tamanho é conferido no arquivo que vai subir, e não no que saiu da
       // câmera: é ele que o bucket vai medir do outro lado.
@@ -294,7 +364,7 @@ export function EnvioDeImagem({
         return;
       }
 
-      const gravado = await salvarImagemDoNegocio(pasta, preparo.caminho);
+      const gravado = await gravarCaminho(preparo.caminho);
       if (!gravado.ok) {
         // O arquivo subiu e a coluna ficou como estava, então ele já nasceu
         // órfão: sai agora, em vez de esperar a varredura de imagens_orfas.
@@ -318,7 +388,7 @@ export function EnvioDeImagem({
     setOcupado("remocao");
     contar("Atualizando a sua página.");
     try {
-      const gravado = await salvarImagemDoNegocio(pasta, null);
+      const gravado = await gravarCaminho(null);
       if (!gravado.ok) {
         recusar(frase(gravado));
         return;
@@ -350,12 +420,15 @@ export function EnvioDeImagem({
       </p>
 
       {/*
-        A logo é um selo pequeno e a capa é uma faixa larga, então uma fica ao
-        lado dos botões e a outra fica em cima deles. É a medida de cada assunto
-        mandando no bloco, e não uma grade igual para as duas.
+        A logo é um selo pequeno, a foto do item é um retângulo pequeno, e a capa
+        é uma faixa larga: as duas primeiras ficam ao lado dos botões e a terceira
+        fica em cima deles. É a medida de cada assunto mandando no bloco, e não
+        uma grade igual para as três.
       */}
       <div
-        className={`mt-3 flex gap-4 ${redonda ? "items-center" : "flex-col"}`}
+        className={`mt-3 flex gap-4 ${
+          pasta === "capa" ? "flex-col" : "items-center"
+        }`}
       >
         {/*
           A capa com imagem vira o escolhedor do ponto focal, em vez de uma
@@ -369,7 +442,7 @@ export function EnvioDeImagem({
           linha ainda aponta para a capa anterior. O ajuste ali diria "ponto
           guardado" para uma foto que a página nem recebeu.
         */}
-        {!redonda && mostrada && (ligado || previa === null) ? (
+        {focavel && mostrada && (ligado || previa === null) ? (
           <FocoDaCapa
             src={mostrada}
             alt={nome}
@@ -378,9 +451,7 @@ export function EnvioDeImagem({
           />
         ) : (
           <div
-            className={`shrink-0 overflow-hidden border border-borda bg-fundo ${
-              redonda ? "h-20 w-20 rounded-full" : "aspect-[16/9] w-full rounded-lg"
-            }`}
+            className={`shrink-0 overflow-hidden border border-borda bg-fundo ${MOLDURAS[pasta]}`}
           >
             {mostrada ? (
               /*
@@ -398,7 +469,7 @@ export function EnvioDeImagem({
               />
             ) : (
               <span className="flex h-full w-full items-center justify-center px-3 text-center text-xs leading-snug text-suave">
-                {redonda ? "Sua marca aqui" : "Sua capa aqui"}
+                {NA_MOLDURA[pasta]}
               </span>
             )}
           </div>
@@ -456,6 +527,20 @@ export function EnvioDeImagem({
               className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-borda bg-superficie px-4 text-sm font-semibold text-texto transition-transform duration-75 active:scale-[0.97] disabled:text-suave"
             >
               Remover
+              {/*
+                Qual Remover é este, para quem ouve a tela.
+
+                Na tela de catálogo o cartão de imagem mora dentro do cartão do
+                item, e o rodapé do item tem o Remover dele a poucos pixels
+                daqui: dois controles com o mesmo nome, um que tira a foto e
+                outro que tira o produto inteiro. O sufixo dá nome a cada um,
+                do mesmo jeito que componentes/painel/Ordem.tsx faz com
+                "Remover este item, <nome>".
+              */}
+              <span className="sr-only">
+                {" "}
+                {ROTULOS[pasta].toLowerCase()}, {nome}
+              </span>
             </button>
           ) : null}
         </div>
