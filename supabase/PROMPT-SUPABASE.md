@@ -452,8 +452,10 @@ UMA PARADA DE VERDADE, e ela é só na 015
 A conferência 3 da 015 pergunta se algum link JÁ GRAVADO seria recusado pela
 regra nova. Rode-a ANTES do bloco `begin` do arquivo:
 
-  select id, slug, url from public.links
-   where not public.endereco_de_link_valido(url);
+  select l.id, n.slug, l.url
+    from public.links l
+    join public.negocios n on n.id = l.negocio_id
+   where not public.endereco_de_link_valido(l.url);
 
 (a função precisa existir para essa consulta rodar, então na prática: rode o
 arquivo inteiro; se o `alter table` falhar, a transação desfaz sozinha e nada

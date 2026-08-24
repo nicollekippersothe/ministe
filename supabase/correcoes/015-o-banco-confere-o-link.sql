@@ -35,7 +35,7 @@
 -- -----------------------------------------------------------------------------
 -- O que muda
 -- -----------------------------------------------------------------------------
--- Uma função de conferência, espelhando as quatro regras de lib/links.ts, e as
+-- Uma função de conferência, espelhando as cinco regras de lib/links.ts, e as
 -- três constraints passando a usá-la. A lista de encurtadores fica curta de
 -- propósito: ela nunca vai estar completa, e o comentário de lib/links.ts
 -- explica por que isso está certo. Encurtador novo tem tráfego zero, e o
@@ -72,6 +72,28 @@ $$;
 
 comment on function public.endereco_de_link_valido(text) is
   'Espelho das regras de lib/links.ts, para o banco recusar o que a tela recusa. Ver correção 015.';
+
+-- O revoke escrito na mão, que toda função nova de arquivo de correção precisa.
+--
+-- O Postgres dá EXECUTE a PUBLIC em toda função nova, e na ACL isso aparece
+-- como "=X/postgres", com o grantee vazio. Quem fecha isso no schema.sql é o
+-- "revoke execute on all functions in schema public from public", que roda no
+-- fim do arquivo e não passa por aqui. Sem estas linhas a função nasce
+-- chamável em /rest/v1/rpc por qualquer pessoa com a chave pública, e a
+-- asserção "nenhuma função de public fica aberta para PUBLIC", em
+-- supabase/testes-rls.sql, falha.
+revoke execute on function public.endereco_de_link_valido(text)
+  from public, anon, authenticated;
+
+-- E volta nominalmente para quem escreve. Expressão de CHECK constraint é
+-- avaliada com o privilégio de quem está gravando: medido, não deduzido. Sem
+-- este grant, o painel — que escreve pelo PostgREST com o token da própria
+-- pessoa — passa a receber "permission denied for function
+-- endereco_de_link_valido" ao salvar link ou botão.
+--
+-- anon fica de fora porque anon não escreve em links nem em negocios, e a
+-- bateria confere isso.
+grant execute on function public.endereco_de_link_valido(text) to authenticated;
 
 -- Os links extras.
 alter table public.links drop constraint if exists url_http;
@@ -125,8 +147,10 @@ commit;
 --    conferir primeiro, porque um alter table com dado violando a restrição
 --    falha e desfaz a transação inteira, sem estrago:
 --
---   select id, slug, url from public.links
---    where not public.endereco_de_link_valido(url);
+--   select l.id, n.slug, l.url
+--     from public.links l
+--     join public.negocios n on n.id = l.negocio_id
+--    where not public.endereco_de_link_valido(l.url);
 --
 --   select id, slug, acao_principal ->> 'url', acao_secundaria ->> 'url'
 --     from public.negocios

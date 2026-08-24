@@ -718,14 +718,15 @@ select testes.ok('visitante chama exatamente as quatro funções que ele precisa
   = array['endereco_livre', 'negocio_publico',
           'registrar_denuncia', 'registrar_evento']::name[]);
 
-select testes.ok('quem está logado chama essas quatro, mais plano_de e os números',
+select testes.ok('quem está logado chama essas quatro, mais plano_de, os números e o conferidor de link',
   (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('authenticated', p.oid, 'EXECUTE'))
-  = array['endereco_livre', 'negocio_publico', 'numeros_do_negocio',
-          'plano_de', 'registrar_denuncia', 'registrar_evento']::name[]);
+  = array['endereco_de_link_valido', 'endereco_livre', 'negocio_publico',
+          'numeros_do_negocio', 'plano_de', 'registrar_denuncia',
+          'registrar_evento']::name[]);
 
 select testes.ok('toda função de public tem search_path fixo',
   not exists (
