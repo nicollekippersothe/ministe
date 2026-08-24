@@ -44,15 +44,18 @@ const BUSCAS = [
     consulta: "cafe",
     arquivos: [
       ["capa", CAPA, 0],
-      ["galeria-3", QUADRADA, 9],
+      ["galeria-3", QUADRADA, 15],
     ],
   },
   {
     consulta: "cake",
+    arquivos: [["galeria-6", QUADRADA, 13]],
+  },
+  {
+    consulta: "cheesecake",
     arquivos: [
-      ["bolo-1", QUADRADA, 0],
-      ["bolo-2", QUADRADA, 8],
-      ["galeria-6", QUADRADA, 9],
+      ["bolo-2", QUADRADA, 6],
+      ["bolo-1", QUADRADA, 5],
     ],
   },
   {
@@ -60,7 +63,7 @@ const BUSCAS = [
     arquivos: [
       ["bolo-3", QUADRADA, 8],
       ["brigadeiro-1", QUADRADA, 6],
-      ["galeria-7", QUADRADA, 7],
+      ["galeria-7", QUADRADA, 2],
     ],
   },
   {
@@ -95,7 +98,7 @@ const BUSCAS = [
     consulta: "living room",
     arquivos: [
       ["psi-capa", CAPA, 5],
-      ["psi-1", QUADRADA, 10],
+      ["psi-1", QUADRADA, 9],
       ["psi-2", QUADRADA, 8],
       ["psi-g1", QUADRADA, 4],
     ],
@@ -103,32 +106,69 @@ const BUSCAS = [
   {
     consulta: "plant",
     arquivos: [
-      ["psi-3", QUADRADA, 0],
       ["psi-g2", QUADRADA, 3],
       ["galeria-4", QUADRADA, 1],
     ],
   },
-
-  // Helena Vasques, massoterapeuta. É a página que abre em /demo.
   {
-    consulta: "massage",
+    consulta: "cozy",
+    arquivos: [["psi-3", QUADRADA, 11]],
+  },
+
+  /*
+   * Helena Vasques, massoterapeuta. É a página que abre em /demo, então é a
+   * que mais gente vê.
+   *
+   * As consultas "massage", "spa" e "wellness" saíram daqui inteiras. Nas três
+   * o que o StockSnap tem em CC0 é a mesma série de estúdio: a mesma modelo
+   * deitada na maca, luz fria, rosto em close e sorriso de banco de imagem. É
+   * foto que envelhece rápido e diz "exemplo" antes de dizer "massagem".
+   *
+   * No lugar delas vieram termos concretos, do material e do ambiente: linho,
+   * vela, lavanda seca, cerâmica, madeira, chá. Rende luz natural, quadro
+   * limpo e uma paleta que convive com o areia (#f4f0e8) e o barro (#7a4a2b)
+   * do produto, em vez de brigar com eles.
+   */
+  {
+    consulta: "curtain",
+    arquivos: [["spa-capa", CAPA, 7]],
+  },
+  {
+    consulta: "linen",
+    arquivos: [["spa-1", QUADRADA, 9]],
+  },
+  {
+    consulta: "candle",
     arquivos: [
-      ["spa-capa", CAPA, 1],
-      ["spa-1", QUADRADA, 2],
-      ["spa-2", QUADRADA, 3],
-      ["spa-3", QUADRADA, 5],
+      ["spa-2", QUADRADA, 19],
       ["spa-4", QUADRADA, 4],
-      ["spa-5", QUADRADA, 11],
+      // Nara Bittencourt também tira daqui, ver mais abaixo.
+      ["astro-3", QUADRADA, 13],
     ],
   },
   {
-    consulta: "spa",
-    arquivos: [
-      ["spa-g1", QUADRADA, 0],
-      ["spa-g2", QUADRADA, 1],
-      ["spa-g3", QUADRADA, 4],
-      ["spa-g4", QUADRADA, 8],
-    ],
+    consulta: "aromatherapy",
+    arquivos: [["spa-3", QUADRADA, 8]],
+  },
+  {
+    consulta: "smooth stones",
+    arquivos: [["spa-5", QUADRADA, 4]],
+  },
+  {
+    consulta: "towel",
+    arquivos: [["spa-g1", QUADRADA, 0]],
+  },
+  {
+    consulta: "lavender",
+    arquivos: [["spa-g2", QUADRADA, 1]],
+  },
+  {
+    consulta: "ceramic",
+    arquivos: [["spa-g3", QUADRADA, 11]],
+  },
+  {
+    consulta: "hot tea",
+    arquivos: [["spa-g4", QUADRADA, 1]],
   },
 
   // Nara Bittencourt, astróloga. Céu, lua e a mesa da leitura.
@@ -142,7 +182,7 @@ const BUSCAS = [
   {
     consulta: "stars sky",
     arquivos: [
-      ["astro-1", QUADRADA, 3],
+      ["astro-1", QUADRADA, 13],
       ["astro-4", QUADRADA, 5],
     ],
   },
@@ -154,12 +194,8 @@ const BUSCAS = [
     ],
   },
   {
-    consulta: "candle",
-    arquivos: [["astro-3", QUADRADA, 3]],
-  },
-  {
     consulta: "crystals",
-    arquivos: [["astro-g2", QUADRADA, 4]],
+    arquivos: [["astro-g2", QUADRADA, 14]],
   },
 
   /*
@@ -208,7 +244,6 @@ const BUSCAS = [
     arquivos: [
       ["ilustra-1", QUADRADA, 0],
       ["ilustra-2", QUADRADA, 2],
-      ["ilustra-4", QUADRADA, 1],
     ],
   },
   {
@@ -222,6 +257,7 @@ const BUSCAS = [
   {
     consulta: "art studio",
     arquivos: [
+      ["ilustra-4", QUADRADA, 7],
       ["ilustra-g2", QUADRADA, 3],
       ["ilustra-logo", AVATAR, 0],
     ],
@@ -231,16 +267,22 @@ const BUSCAS = [
   {
     consulta: "microphone",
     arquivos: [
-      ["canto-capa", CAPA, 0],
+      ["canto-capa", CAPA, 14],
       ["canto-g1", QUADRADA, 3],
     ],
   },
   {
+    consulta: "recording studio",
+    arquivos: [["canto-1", QUADRADA, 1]],
+  },
+  {
+    consulta: "singer stage",
+    arquivos: [["canto-3", QUADRADA, 12]],
+  },
+  {
     consulta: "singing",
     arquivos: [
-      ["canto-1", QUADRADA, 4],
-      ["canto-3", QUADRADA, 5],
-      ["canto-4", QUADRADA, 1],
+      ["canto-4", QUADRADA, 18],
       ["canto-g3", QUADRADA, 10],
     ],
   },
@@ -261,18 +303,26 @@ const BUSCAS = [
    * única que continua com monograma, desenhado em scripts/gerar-logos.mjs.
    *
    * Os quadrados aqui são menores porque avatar aparece com 88px de lado.
+   *
+   * Quatro pessoas diferentes, de três buscas diferentes: a busca "portrait"
+   * sozinha devolvia o mesmo enquadramento de estúdio quatro vezes, e o corte
+   * por atenção ainda achava a boca no lugar dos olhos. Rosto de perfil, luz
+   * de fim de tarde e fundo aberto sobrevivem melhor ao círculo de 88px.
    */
   {
-    consulta: "portrait",
+    consulta: "woman profile",
+    arquivos: [["spa-logo", AVATAR, 17]],
+  },
+  {
+    consulta: "smiling woman",
     arquivos: [
-      ["psi-logo", AVATAR, 10],
-      ["spa-logo", AVATAR, 9],
-      ["canto-logo", AVATAR, 4],
+      ["psi-logo", AVATAR, 14],
+      ["canto-logo", AVATAR, 16],
     ],
   },
   {
-    consulta: "woman",
-    arquivos: [["astro-logo", AVATAR, 7]],
+    consulta: "portrait",
+    arquivos: [["astro-logo", AVATAR, 14]],
   },
 ];
 

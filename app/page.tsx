@@ -99,7 +99,7 @@ const PASSOS = [
  * rua e mostra preço à vista.
  */
 const SALA_CRIADOR: Sala = {
-  publico: "Para quem vende o próprio trabalho",
+  publico: "Vende o próprio trabalho",
   titulo: "A galeria abre a página.",
   itens: [
     "As suas fotos em tamanho grande, na ordem que você escolher.",
@@ -111,7 +111,7 @@ const SALA_CRIADOR: Sala = {
 };
 
 const SALA_LOJA: Sala = {
-  publico: "Para quem tem porta na rua",
+  publico: "Tem porta na rua",
   titulo: "O endereço abre a página.",
   itens: [
     "Endereço com o mapa a um toque, e o aberto agora calculado na hora.",
@@ -199,9 +199,9 @@ export default async function Home() {
           cartaz. É o único movimento orquestrado da página; o resto da rolagem
           usa o `surge`, que já existia.
         */}
-        <section className="parede mx-auto w-full max-w-6xl px-6 pt-4 pb-16 sm:pt-10 sm:pb-24">
-          <div className="grid items-start gap-10 lg:grid-cols-[1fr_20rem] lg:gap-16">
-            <div className="max-w-xl">
+        <section className="parede mx-auto w-full max-w-6xl px-6 pt-4 pb-12 sm:pt-10 sm:pb-24">
+          <div className="grid items-start gap-6 lg:grid-cols-[1fr_19rem] lg:gap-14">
+            <div className="max-w-2xl">
               {/*
                 A cartela do próprio nome da marca. O trocadilho fica debaixo do
                 nariz do produto: entrais é o que se diz na porta, e a tela
@@ -212,19 +212,19 @@ export default async function Home() {
                 className="acende border-t border-borda pt-3 text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase"
                 style={{ "--atraso": "80ms" } as React.CSSProperties}
               >
-                {NOME_PRODUTO}, verbo: segunda pessoa do plural de entrar
+                {NOME_PRODUTO}, verbo: o que se diz na porta
               </p>
 
               <h1
-                className="acende titulo mt-5 text-[3.05rem] leading-[0.94] text-balance text-texto sm:text-[4.2rem]"
+                className="acende titulo mt-5 text-[2.5rem] leading-[0.96] text-balance text-texto sm:text-[3.4rem] lg:text-[4.1rem]"
                 style={{ "--atraso": "160ms" } as React.CSSProperties}
               >
                 <span className="block text-destaque">Entrai.</span>
-                O seu trabalho em exposição, num endereço com o seu nome.
+                O seu trabalho exposto num endereço só.
               </h1>
 
               <p
-                className="acende mt-6 max-w-md text-[1.05rem] leading-relaxed text-suave"
+                className="acende mt-6 max-w-md text-[1.05rem] leading-relaxed text-suave lg:text-[1.15rem]"
                 style={{ "--atraso": "240ms" } as React.CSSProperties}
               >
                 As fotos, o que você vende e por quanto, o horário, e o botão
@@ -283,9 +283,8 @@ export default async function Home() {
               Duas salas, duas montagens.
             </h2>
             <p className="mt-4 max-w-xl leading-relaxed text-suave">
-              A página se arruma pelo seu ramo. Quem vive do que faz com as
-              mãos abre pela galeria; quem tem balcão abre pelo endereço e pelo
-              horário.
+              A página se arruma pelo ramo que você escolhe: uma abre pela
+              galeria, a outra abre pelo endereço e pelo horário.
             </p>
 
             <div className="mt-10 sm:mt-14">

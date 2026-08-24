@@ -95,12 +95,12 @@ export function CampoAbertura({
           na inspeção do navegador junto com o resto do produto.
         */}
         <span
-          className="placa flex flex-1 items-center rounded-2xl border border-borda bg-superficie px-5 py-4"
+          className="placa flex flex-1 items-center rounded-2xl border border-suave/35 bg-superficie px-5 py-4"
           data-livre={estado === "livre" ? "1" : "0"}
         >
           <span
             aria-hidden
-            className="text-[1.05rem] tracking-[-0.01em] text-suave"
+            className="text-[1.05rem] tracking-[-0.01em] text-texto/60"
           >
             {DOMINIO_PUBLICO}/
           </span>
@@ -134,7 +134,7 @@ export function CampoAbertura({
         {estado === "conferindo" ? "conferindo..." : null}
         {estado === "livre" ? (
           <span className="font-semibold text-aberto-texto">
-            {DOMINIO_PUBLICO}/{slug} está livre. É sua.
+            {DOMINIO_PUBLICO}/{slug} está disponível
           </span>
         ) : null}
         {estado === "ocupado" ? (

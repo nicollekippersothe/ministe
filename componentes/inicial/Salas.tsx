@@ -69,7 +69,7 @@ function Quadro({ sala, largo }: { sala: Sala; largo: boolean }) {
         nome, frase e o selo de aberto agora. Quem quiser o resto abre a página,
         e o link fica logo abaixo.
       */}
-      <div className="h-[17rem] overflow-hidden px-6 sm:px-8" aria-hidden>
+      <div className="janela h-[19rem] px-6 sm:px-8" aria-hidden>
         <Telefone negocio={sala.negocio} prioridade={false} leve />
       </div>
 
@@ -77,7 +77,7 @@ function Quadro({ sala, largo }: { sala: Sala; largo: boolean }) {
         <Cartela negocio={sala.negocio} tipo={sala.tipo} />
         <Link
           href={`/${sala.negocio.slug}`}
-          className="inline-flex items-center gap-2 self-start py-1 text-[0.95rem] font-semibold text-destaque underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center gap-2 self-start text-[0.95rem] font-semibold text-destaque underline-offset-4 hover:underline"
         >
           Abrir a página
           <IconeSeta className="h-4 w-4" />

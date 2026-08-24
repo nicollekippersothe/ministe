@@ -117,7 +117,12 @@ export function Mosaico({
     .slice(0, 4);
 
   return (
-    <ul className="trilho -mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-3">
+        /*
+     * scroll-px-6 acompanha o px-6. Sem ele o encaixe alinha a primeira peça na
+     * borda de dentro da caixa e o navegador rola 24px sozinho assim que a
+     * página abre, o que fazia a peça nascer colada na lateral da tela.
+     */
+    <ul className="trilho -mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto px-6 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-3">
       <Cartao
         className="lg:col-span-2"
         titulo="Catálogo com foto e preço"
@@ -142,8 +147,8 @@ export function Mosaico({
                   {preco(item.precoCentavos)}
                 </p>
               ) : null}
-              <p className="flex items-center gap-1.5 text-[0.78rem] font-medium whitespace-nowrap text-zap">
-                <IconeWhatsapp className="h-3.5 w-3.5 shrink-0" />
+              <p className="flex items-start gap-1.5 text-[0.78rem] leading-snug font-medium text-zap">
+                <IconeWhatsapp className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 Pedir pelo WhatsApp
               </p>
             </div>

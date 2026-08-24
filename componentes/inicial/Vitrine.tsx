@@ -11,7 +11,7 @@ import { VITRINE } from "@/lib/exemplos";
  */
 export function Vitrine() {
   return (
-    <ul className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
+    <ul className="trilho -mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
       {VITRINE.map(({ negocio, tipo }) => (
         <li key={negocio.slug} className="w-[15rem] shrink-0 snap-start sm:w-auto">
           <Link
