@@ -587,6 +587,29 @@ Duas coisas que ele pede na primeira vez, e as duas são interativas: aprovar o
 servidor do projeto, e completar o OAuth escolhendo o país. Sessão sem navegador
 alcança nenhum dos dois passos.
 
+### Um comando no lugar de meia hora de cliques
+
+`npm run pagamento` exercita o caminho inteiro contra o sandbox de verdade, sem
+navegador. Ele cria o token do cartão pela mesma chamada que os Secure Fields
+fazem, e daí em diante chama as nossas funções de `lib/pagamento/`, e nunca a
+API deles por fora: se o adaptador montar o corpo errado, o script quebra do
+mesmo jeito que a tela quebraria.
+
+    npm run pagamento                 os quatro desfechos do cartão, e o Pix
+    npm run pagamento -- --usuarios   cria o par de contas de teste
+    npm run pagamento -- --so-pix     só o Pix
+    npm run pagamento -- --cancelar ID  encerra uma assinatura de teste
+
+Ele lê `MERCADOPAGO_ACCESS_TOKEN` e `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` do
+ambiente ou do `.env.local`, e avisa quando a credencial parece ser de produção,
+porque cartão de teste com chave de produção volta recusado sempre e a recusa se
+parece com defeito nosso.
+
+O que ele deixa de fora, e por quê: os três iframes dos Secure Fields, que só
+existem no navegador, e o webhook, que o Mercado Pago alcança na Vercel e nunca
+na máquina. Para o webhook existe `npm run aviso`, e o script imprime a linha
+pronta com o id da cobrança que ele acabou de criar.
+
 ### No sandbox do Mercado Pago
 
 Usuários de teste por `POST /users/test_user`. **O desfecho do cartão é decidido

@@ -10,6 +10,7 @@
     "fluxo": "node testes/fluxo.mjs",
     "supabase": "node testes/supabase.mjs",
     "aviso": "node scripts/aviso-falso.mjs",
+    "pagamento": "node scripts/testar-pagamento.mjs",
     "mockup": "node scripts/mockup.mjs",
     "revisao": "node scripts/exportar-telas.mjs",
     "fotos": "node scripts/baixar-fotos.mjs",
