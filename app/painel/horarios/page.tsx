@@ -20,8 +20,15 @@ export const dynamic = "force-dynamic";
  * Aponta para baixo, e nunca para o lado: seta de lado quer dizer "leva para
  * outra tela", e estes dois abrem ali mesmo. É o mesmo desenho do "Horários da
  * semana" da página pública, de propósito, porque é a mesma promessa.
+ *
+ * **O `giro` vem de fora porque as dobras se aninham.** A dobra dos turnos de
+ * um dia mora dentro da dobra "Mostrar quando abre e quando fecha", e o
+ * `group-open` do Tailwind casa com QUALQUER `.group[open]` acima, e não com o
+ * mais próximo: com o nome genérico, abrir a de fora virava a seta e trocava o
+ * texto de todas as sete de dentro ao mesmo tempo. Cada dobra tem grupo com
+ * nome próprio, e quem desenha a seta diz de qual delas ela é.
  */
-function Chevron() {
+function Chevron({ giro }: { giro: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -31,7 +38,7 @@ function Chevron() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+      className={`h-3.5 w-3.5 transition-transform ${giro}`}
     >
       <path d="m6 9 6 6 6-6" />
     </svg>
@@ -188,18 +195,20 @@ function Dia({ dia, intervalos }: { dia: number; intervalos: Intervalo[] }) {
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <Par dia={dia} slot={0} intervalo={intervalos[0]} />
 
-          <details className="group" open={extras.length > 0}>
+          <details className="group/turno" open={extras.length > 0}>
             {/* Alvo de 44: no celular isto é um toque de dedo, e as vinte
                 pixels de altura do texto sozinho ficavam abaixo da medida. */}
             <summary className="-my-1.5 inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm text-destaque">
               {/* O mesmo resumo dizia "Adicionar outro horário" com os outros
                   horários já abertos embaixo dele. Duas palavras, e quem manda
                   na troca é o estado da dobra. */}
-              <span className="group-open:hidden">Adicionar outro horário</span>
-              <span className="hidden group-open:inline">
+              <span className="group-open/turno:hidden">
+                Adicionar outro horário
+              </span>
+              <span className="hidden group-open/turno:inline">
                 Outros horários deste dia
               </span>
-              <Chevron />
+              <Chevron giro="group-open/turno:rotate-180" />
             </summary>
             <div className="mt-2 flex flex-col gap-2">
               {Array.from({ length: extrasNaTela }, (_, i) => (
@@ -259,10 +268,10 @@ function Semana({ horarios }: { horarios: Intervalo[] }) {
  */
 function VirarHoraMarcada() {
   return (
-    <details className="group mt-8 rounded-xl border border-borda bg-fundo p-4 lg:max-w-xl">
+    <details className="group/saida mt-8 rounded-xl border border-borda bg-fundo p-4 lg:max-w-xl">
       <summary className="-my-2 inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium text-destaque">
         Você atende com hora marcada?
-        <Chevron />
+        <Chevron giro="group-open/saida:rotate-180" />
       </summary>
       <p className="mt-2 text-sm leading-relaxed text-suave">
         A sua página passa a mostrar só o botão do rodapé. Os horários da semana
@@ -418,10 +427,10 @@ export default async function Horarios({
         <>
           <HoraMarcada negocio={negocio} />
 
-          <details className="group mt-8">
+          <details className="group/semana mt-8">
             <summary className="-my-2 inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-[1.05rem] font-medium text-destaque">
               Mostrar quando abre e quando fecha, dia por dia
-              <Chevron />
+              <Chevron giro="group-open/semana:rotate-180" />
             </summary>
             <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
               Dia em branco fica marcado como fechado. Para turno que passa da
