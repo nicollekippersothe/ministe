@@ -111,6 +111,14 @@ export function PreviaDoItem({
    * A legenda acompanha o nome que está sendo digitado, que é a mesma conta que
    * `linhaDaFoto` de lib/dados.ts faz na hora de gravar. Assim o que o leitor de
    * tela ouve na prévia é o que a página vai dizer.
+   *
+   * A imagem que a pessoa acabou de escolher e que ainda não subiu fica na
+   * moldura do cartão de envio, e chega aqui no giro seguinte, com a gravação
+   * feita. É o `next/image` quem manda nisso: o recorte é o `Catalogo` da página
+   * pública, e o otimizador atende o endereço local e o host do bucket
+   * (next.config.ts), enquanto a prévia local é um `blob:` do próprio
+   * navegador. O cartão de envio mostra a escolhida com `img` cru justamente
+   * por isso, e a frase dele aponta para lá.
    */
   const fotos = item.fotos.map((foto) => ({
     ...foto,
@@ -136,12 +144,26 @@ export function PreviaDoItem({
 
   const temNome = atual.titulo.trim() !== "";
 
+  /*
+   * O recorte deixa de ser estreito quando o item tem foto, e isto é medida.
+   *
+   * O cartão de um item só deita a partir de 640 pixels de tela, e deitado a
+   * foto forra 38 por cento da largura dele (componentes/Catalogo.tsx). Dentro
+   * da moldura estreita de 17rem sobram 169 pixels para o texto, e medido no
+   * monitor de 1440 o preço aparecia com 27 pixels dos 77 que ele ocupa: "R$
+   * 170,00" saía "R$ 17" e o botão do WhatsApp quebrava em duas linhas. A
+   * prévia existe justamente para a pessoa conferir isso antes de publicar.
+   *
+   * Sem foto a moldura continua estreita, que é a medida em que o cartão se lê
+   * e a que esta tela sempre mostrou.
+   */
+
   return (
     <div onInput={ler} onChange={ler} className="flex flex-col gap-4">
       {children}
 
       {temNome && atual.ativo ? (
-        <Vitrine chamada={chamada}>
+        <Vitrine chamada={chamada} estreita={fotos.length === 0}>
           <Catalogo negocio={recorte} />
         </Vitrine>
       ) : (

@@ -8,7 +8,7 @@ import { test } from "node:test";
 process.env.NEXT_PUBLIC_SUPABASE_URL = "https://projeto.supabase.co";
 process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_teste";
 
-const { paraLinha } = await import("./mapa.ts");
+const { paraLinha, paraNegocio } = await import("./mapa.ts");
 const { caminhoValido, enderecoPublico } = await import("./imagens.ts");
 const { massagem } = await import("../exemplos.ts");
 
@@ -48,4 +48,62 @@ test("página sem imagem continua gravando nulo nas duas colunas", () => {
   const linha = paraLinha({ ...massagem, capa: null, logo: null });
   assert.equal(linha.capa_url, null);
   assert.equal(linha.logo_url, null);
+});
+
+/*
+ * O buraco que a leitura tinha: a foto de item e a da galeria voltavam com o
+ * caminho cru do bucket, enquanto a logo e a capa voltavam como endereço. Com
+ * o Supabase ligado, isso é a foto do produto saindo quebrada na página com o
+ * arquivo inteiro no lugar certo do Storage.
+ */
+test("a foto do item volta da leitura como endereço, e não como caminho", () => {
+  const linha = {
+    id: ID,
+    slug: "teste",
+    nome: "Teste",
+    itens: [
+      {
+        id: "44444444-4444-4444-8444-444444444444",
+        titulo: "Bolo",
+        ordem: 0,
+        ativo: true,
+        itens_fotos: [
+          {
+            url: `${ID}/catalogo/55555555-5555-4555-8555-555555555555.webp`,
+            alt: "Bolo",
+            largura: 800,
+            altura: 600,
+            ordem: 0,
+          },
+        ],
+      },
+    ],
+  };
+
+  const negocio = paraNegocio(linha);
+  assert.equal(
+    negocio.itens[0].fotos[0].url,
+    `https://projeto.supabase.co/storage/v1/object/public/imagens/${ID}/catalogo/55555555-5555-4555-8555-555555555555.webp`,
+  );
+});
+
+test("a foto de exemplo, que já é endereço local, atravessa inteira", () => {
+  const linha = {
+    id: ID,
+    slug: "teste",
+    nome: "Teste",
+    itens: [
+      {
+        id: "44444444-4444-4444-8444-444444444444",
+        titulo: "Bolo",
+        ordem: 0,
+        ativo: true,
+        itens_fotos: [
+          { url: "/exemplo/bolo-1.jpg", alt: "Bolo", largura: 800, altura: 800, ordem: 0 },
+        ],
+      },
+    ],
+  };
+
+  assert.equal(paraNegocio(linha).itens[0].fotos[0].url, "/exemplo/bolo-1.jpg");
 });

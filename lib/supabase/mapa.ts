@@ -82,7 +82,18 @@ const porOrdem = <T extends Linha>(l: T[]): T[] =>
 
 function fotosDe(linhas: Linha[]): Foto[] {
   return porOrdem(linhas).map((f) => ({
-    url: String(f.url),
+    /*
+     * O endereço público montado aqui, do mesmo jeito que `foto()` faz com a
+     * logo e a capa logo abaixo.
+     *
+     * As tabelas filhas guardam o CAMINHO do bucket, que é o que a restrição
+     * da correção 008 exige, e caminho cru é endereço de lugar nenhum: o
+     * `next/image` recusa endereço sem barra inicial, e a foto do item sairia
+     * quebrada na página com o arquivo inteiro no lugar certo do Storage.
+     * O `??` deixa passar o endereço local dos exemplos, que já começa com
+     * barra e atravessa a função intacto.
+     */
+    url: enderecoPublico(String(f.url)) ?? String(f.url),
     alt: String(f.alt ?? ""),
     largura: Number(f.largura ?? 0),
     altura: Number(f.altura ?? 0),

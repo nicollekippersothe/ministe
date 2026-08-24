@@ -115,9 +115,17 @@ const ladoDe = (pasta: PastaDoBucket): number =>
  * a imagem que a pessoa acabou de escolher entrou, e `SO_PREVIA_PARADA` é o
  * relato do cartão em repouso. A mesma frase nos dois lugares dizia "imagem
  * escolhida" para um cartão em que ninguém tinha escolhido nada ainda.
+ *
+ * A primeira aponta para o cartão, e não para a prévia da página, por causa da
+ * tela de catálogo: ali o cartão de imagem tem ao lado o recorte do item, e o
+ * recorte mostra a foto que está gravada. Enquanto o bucket estiver de fora, a
+ * imagem escolhida aparece na moldura daqui e o recorte segue com a de antes,
+ * então prometer que "a prévia já mostra como ela fica na página" seria mandar
+ * a pessoa olhar para o lugar onde a foto nova ainda não está. Ver
+ * componentes/painel/PreviaDoItem.tsx.
  */
 const SO_PREVIA_PRONTA =
-  "Imagem escolhida, e a prévia já mostra como ela fica na página. O arquivo entra na página assim que o banco de imagens estiver ligado.";
+  "Imagem escolhida, e ela já aparece aqui no cartão. O arquivo entra na página assim que o banco de imagens estiver ligado.";
 
 const SO_PREVIA_PARADA =
   "A prévia mostra como a imagem fica na página. O envio guarda o arquivo assim que o banco de imagens estiver ligado.";

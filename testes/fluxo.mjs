@@ -334,11 +334,21 @@ await p.fill("#h-6-0-fecha", "02:00");
 await p.click('form button[type="submit"]');
 await p.waitForURL(/salvo=1/);
 
+/*
+ * Só os turnos que a tela desenhou.
+ *
+ * O dia deixou de nascer com os três pares em branco pendurados: agora aparece
+ * o que está em uso mais uma sobra. Perguntar pelos três de cabeça devolvia
+ * nulo no terceiro e derrubava a bateria inteira num passo que passa.
+ */
 const sabado = await p.evaluate(() =>
-  [0, 1, 2].map((i) => [
-    document.querySelector(`#h-6-${i}-abre`).value,
-    document.querySelector(`#h-6-${i}-fecha`).value,
-  ]),
+  [0, 1, 2]
+    .map((i) => [
+      document.querySelector(`#h-6-${i}-abre`),
+      document.querySelector(`#h-6-${i}-fecha`),
+    ])
+    .filter(([a, f]) => a !== null && f !== null)
+    .map(([a, f]) => [a.value, f.value]),
 );
 passo(
   "turno que vira a madrugada é guardado",
