@@ -161,9 +161,20 @@ function Cartao({
       </div>
 
       {temBarra ? (
+        /*
+         * A barra empilha por padrao e so deita quando cabe.
+         *
+         * Preco e botao lado a lado dependiam do tamanho do preco: R$ 74,00
+         * cabia na mesma linha e R$ 180,00 empurrava o botao para baixo, entao
+         * a mesma pagina saia com uns cartoes de um jeito e outros de outro. A
+         * coluna e o arranjo que vale para qualquer preco, e a linha fica para
+         * o cartao deitado, que tem a largura da coluna inteira.
+         */
         <div
-          className={`mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-borda py-2.5 ${
-            deitado ? "px-5" : "px-4"
+          className={`mt-auto flex flex-col items-start gap-2 border-t border-borda py-2.5 ${
+            deitado
+              ? "px-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+              : "px-4"
           }`}
         >
           {etiqueta ? (

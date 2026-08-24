@@ -53,7 +53,15 @@ export type TipoAceito = keyof typeof TIPOS_ACEITOS;
 /** O `accept` do campo de arquivo, para o celular já abrir na galeria certa. */
 export const ACCEPT = Object.keys(TIPOS_ACEITOS).join(",");
 
-/** As duas pastas que esta tela escreve. Galeria e catálogo chegam depois. */
+/**
+ * As duas pastas que moram numa coluna da linha do negócio, uma imagem cada.
+ *
+ * Continuam sendo duas de propósito, e o tipo continua com este nome: quem
+ * escreve `Record<PastaDeImagem, ...>` está descrevendo as imagens da própria
+ * página, uma por coluna, e é isso que `MEDIDAS` e o `LADO_MAXIMO` de
+ * componentes/painel/reduzirImagem.ts fazem. A foto de item entra logo abaixo,
+ * por outra porta, porque ela é linha de tabela filha e não coluna.
+ */
 export type PastaDeImagem = "logo" | "capa";
 
 export function ehPasta(valor: unknown): valor is PastaDeImagem {
@@ -61,19 +69,57 @@ export function ehPasta(valor: unknown): valor is PastaDeImagem {
 }
 
 /**
- * A medida de cada uma, igual à convenção de lib/supabase/mapa.ts: avatar
- * quadrado, capa em 16 por 9.
+ * A pasta da foto de produto.
+ *
+ * **O nome dela é `catalogo`, e quem decide isso é o banco.** A restrição
+ * `url_formato` de `itens_fotos`, na correção 008, exige
+ * `{negocio_id}/catalogo/{uuid}.{ext}` palavra por palavra, do mesmo jeito que
+ * exige `/logo/` e `/capa/` nas duas colunas do negócio e `/galeria/` em
+ * `fotos`. Qualquer outro nome de pasta sobe para o bucket e é recusado na hora
+ * de virar linha, com o arquivo já ocupando o Storage. O cabeçalho deste
+ * arquivo diz a regra: quando o código e o banco divergirem, quem se mexe é o
+ * código.
  */
-export const MEDIDAS: Record<PastaDeImagem, { largura: number; altura: number }> = {
+export const PASTA_DO_ITEM = "catalogo";
+
+/** Toda pasta que o bucket recebe hoje: as duas do negócio, e a do catálogo. */
+export type PastaDoBucket = PastaDeImagem | typeof PASTA_DO_ITEM;
+
+export function ehPastaDoBucket(valor: unknown): valor is PastaDoBucket {
+  return ehPasta(valor) || valor === PASTA_DO_ITEM;
+}
+
+/**
+ * A medida de cada uma, igual à convenção de lib/supabase/mapa.ts: avatar
+ * quadrado, capa em 16 por 9, foto de produto em 4 por 3.
+ *
+ * O 4 por 3 da foto de item é a moldura que componentes/Catalogo.tsx desenha
+ * para ela, e `largura` e `altura` de `itens_fotos` aceitam nulo: elas dizem ao
+ * next/image a proporção do cartão, e o corte fino fica com o `object-cover`.
+ */
+export const MEDIDAS: Record<PastaDoBucket, { largura: number; altura: number }> = {
   logo: { largura: 400, altura: 400 },
   capa: { largura: 1200, altura: 675 },
+  [PASTA_DO_ITEM]: { largura: 1200, altura: 900 },
 };
 
 /** Como cada uma se chama na tela. */
-export const ROTULOS: Record<PastaDeImagem, string> = {
+export const ROTULOS: Record<PastaDoBucket, string> = {
   logo: "Foto de perfil",
   capa: "Capa da página",
+  [PASTA_DO_ITEM]: "Foto do item",
 };
+
+/**
+ * O maior lado da foto de item antes de ela subir.
+ *
+ * Mora aqui, e não junto do `LADO_MAXIMO` de componentes/painel/reduzirImagem.ts,
+ * porque aquele mapa é das imagens da linha do negócio e o arquivo dele é de
+ * outra frente. O número vem da moldura: o cartão do catálogo tem 340 pixels no
+ * monitor e 92 por cento da tela no celular, então 1200 cobre retina com folga
+ * e ainda cabe nos 3 MB do bucket com sobra.
+ */
+export const LADO_DO_ITEM = 1200;
 
 export type RecusaImagem = "tipo" | "tamanho" | "envio" | "guardar";
 
@@ -113,7 +159,7 @@ const EXTENSOES = "webp|jpg|jpeg|png";
 /** O caminho novo, no padrão que a restrição da 008 exige. */
 export function caminhoDeImagem(
   negocioId: string,
-  pasta: PastaDeImagem,
+  pasta: PastaDoBucket,
   tipo: TipoAceito,
 ): string {
   return `${negocioId}/${pasta}/${crypto.randomUUID()}.${TIPOS_ACEITOS[tipo]}`;

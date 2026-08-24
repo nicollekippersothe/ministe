@@ -113,7 +113,7 @@ function Par({
   const nome = DIAS_LONGO[dia];
 
   return (
-    <div className="flex items-center rounded-xl border border-borda bg-superficie transition-colors focus-within:border-destaque">
+    <div className="flex max-w-[21rem] items-center rounded-xl border border-borda bg-superficie transition-colors focus-within:border-destaque">
       <label htmlFor={abre} className="sr-only">
         {nome}, hora de abrir
       </label>
@@ -198,7 +198,14 @@ function Dia({ dia, intervalos }: { dia: number; intervalos: Intervalo[] }) {
           <details className="group/turno" open={extras.length > 0}>
             {/* Alvo de 44: no celular isto é um toque de dedo, e as vinte
                 pixels de altura do texto sozinho ficavam abaixo da medida. */}
-            <summary className="-my-1.5 inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm text-destaque">
+            <summary
+              className={`-my-1.5 inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm ${
+                /* No dia fechado a oferta de um segundo turno fica em meio
+                   tom: cinco linhas na cor da marca, uma embaixo da outra,
+                   puxavam o olho para o que ainda não tem nem o primeiro. */
+                fechado ? "text-suave" : "text-destaque"
+              }`}
+            >
               {/* O mesmo resumo dizia "Adicionar outro horário" com os outros
                   horários já abertos embaixo dele. Duas palavras, e quem manda
                   na troca é o estado da dobra. */}
