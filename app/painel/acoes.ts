@@ -8,6 +8,7 @@ import { guardar } from "./guardar";
 import { configurado } from "@/lib/supabase/config";
 import {
   caminhoDeImagem,
+  caminhoGuardado,
   caminhoValido,
   conferirArquivo,
   ehPasta,
@@ -287,6 +288,26 @@ export async function alternarPublicacao() {
  * coluna depois que ele chegou.
  */
 
+/**
+ * O negócio pronto para a gravação, com as duas colunas de imagem de volta ao
+ * caminho do bucket.
+ *
+ * A leitura monta o endereço público em `lib/supabase/mapa.ts`, e a gravação
+ * escreve o `Negocio` inteiro de volta: sem esta passada, `logo_url` e
+ * `capa_url` sairiam daqui como URL inteira e a restrição `capa_url_formato` da
+ * correção 008 recusaria a linha toda, inclusive o ponto da capa que a pessoa
+ * acabou de arrastar. O porquê por extenso está em `caminhoGuardado`.
+ *
+ * Sem Supabase configurado as duas colunas já vêm como endereço local com
+ * barra, e a função devolve o que recebeu.
+ */
+function comCaminhoDeImagem(negocio: Negocio): Negocio {
+  const volta = (foto: Foto | null): Foto | null =>
+    foto === null ? null : { ...foto, url: caminhoGuardado(foto.url) ?? foto.url };
+
+  return { ...negocio, logo: volta(negocio.logo), capa: volta(negocio.capa) };
+}
+
 /** Quem manda no caminho é o id da linha, e ele mora só no banco. */
 async function idDoNegocio(): Promise<string | null> {
   if (!configurado) return null;
@@ -382,7 +403,7 @@ export async function salvarImagemDoNegocio(
     pasta === "logo" ? { ...negocio, logo: foto } : { ...negocio, capa: foto };
 
   try {
-    await salvar(atualizado);
+    await salvar(comCaminhoDeImagem(atualizado));
   } catch (erro) {
     const motivo = motivoDaRecusa(erro);
     if (motivo === null) throw erro;
@@ -393,8 +414,11 @@ export async function salvarImagemDoNegocio(
   revalidatePath("/painel");
 
   // Endereço que começa com barra é arquivo do projeto (as páginas de exemplo),
-  // e não do bucket: só o caminho do bucket volta para a tela apagar.
-  const anterior = atual?.url ?? null;
+  // e não do bucket: só o caminho do bucket volta para a tela apagar. E volta
+  // como CAMINHO, que é o que a API do Storage recebe em `remove`: a URL
+  // pública que a leitura montou passaria longe do arquivo e deixaria a imagem
+  // trocada ocupando o bucket.
+  const anterior = caminhoGuardado(atual?.url ?? null);
   return {
     ok: true,
     anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,
@@ -427,7 +451,7 @@ export async function salvarFocoDaCapa(
   };
 
   try {
-    await salvar({ ...negocio, capa });
+    await salvar(comCaminhoDeImagem({ ...negocio, capa }));
   } catch (erro) {
     const motivo = motivoDaRecusa(erro);
     if (motivo === null) throw erro;

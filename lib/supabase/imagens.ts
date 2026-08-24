@@ -156,6 +156,39 @@ export function enderecoPublico(caminho: string | null | undefined): string | nu
 }
 
 /**
+ * O caminho de volta: o que a coluna precisa guardar, a partir do que a leitura
+ * devolveu.
+ *
+ * **Isto existe porque a volta estava faltando, e a falta dela era gravação
+ * recusada pelo banco.** `lib/supabase/mapa.ts` monta o endereço público na
+ * leitura, então o `Negocio` que toda tela do painel tem na mão traz
+ * `logo.url` e `capa.url` como URL inteira. Toda gravação do painel é ler,
+ * mexer num campo e escrever o resto de volta, e o resto inclui essas duas
+ * colunas. A restrição `capa_url_formato` da correção 008 aceita duas formas, o
+ * caminho do bucket e o endereço local com barra, e uma URL inteira fica fora
+ * das duas: o Postgres recusa a linha inteira, inclusive o campo que a pessoa
+ * acabou de mexer.
+ *
+ * Medido com `caminhoValido`, que é a mesma restrição escrita em JavaScript: o
+ * caminho guardado passa, e o endereço que `enderecoPublico` devolve para ele
+ * volta falso.
+ *
+ * Três formas entram e cada uma sai do jeito que a coluna aceita: a URL pública
+ * do nosso bucket volta a ser caminho, o endereço local com barra segue
+ * inteiro, e o caminho do bucket já está no formato final.
+ */
+export function caminhoGuardado(
+  valor: string | null | undefined,
+): string | null {
+  if (typeof valor !== "string" || valor.trim() === "") return null;
+  const prefixo = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+  if (SUPABASE_URL !== "" && valor.startsWith(prefixo)) {
+    return valor.slice(prefixo.length);
+  }
+  return valor;
+}
+
+/**
  * O ponto da capa que precisa aparecer, virando CSS.
  *
  * `object-position` é o que faz o `object-cover` cortar por onde a dona da

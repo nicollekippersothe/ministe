@@ -22,7 +22,7 @@ import { navegador } from "@/lib/supabase/navegador";
 import type { Foco } from "@/lib/tipos";
 import { FocoDaCapa } from "./FocoDaCapa";
 import { LADO_MAXIMO, reduzirImagem } from "./reduzirImagem";
-import { IconeConfirmado, IconeGirando } from "./Sinais";
+import { FaixaDeRecado, type Tom } from "./Sinais";
 
 /**
  * O campo de imagem do painel: mostra a que existe, troca e remove.
@@ -168,14 +168,14 @@ export function EnvioDeImagem({
    * que ficou "sem saber se salvou", e é isso: uma linha cinza que troca de
    * texto duas vezes em meio segundo passa por decoração.
    *
-   * Agora são quatro tons, e cada um tem forma própria: andamento roda, pronto
-   * traz o certo em verde, recusa vira `alert` na cor de destaque, e o repouso
-   * continua sendo a linha cinza que descreve o cartão. Nenhum deles some
-   * sozinho: o que apaga um recado é a próxima ação da pessoa.
+   * Agora cada tom tem forma própria: andamento roda, pronto traz o certo em
+   * verde, recusa vira `alert` na cor de destaque, nota é a caixa neutra do que
+   * aconteceu só nesta tela, e o repouso continua sendo a linha cinza que
+   * descreve o cartão. Nenhum deles some sozinho: o que apaga um recado é a
+   * próxima ação da pessoa. O desenho dos cinco mora em ./Sinais.tsx, junto do
+   * ponto da capa, para a tela inteira falar a mesma língua.
    */
-  const [tom, setTom] = useState<"repouso" | "andamento" | "pronto" | "recusa">(
-    "repouso",
-  );
+  const [tom, setTom] = useState<Tom>("repouso");
 
   /** Recusa: a frase aparece como aviso, e o passo para sair dele vem junto. */
   function recusar(frase: string) {
@@ -192,6 +192,25 @@ export function EnvioDeImagem({
   /** Fim de linha: a escrita chegou ao destino, e o certo fica na tela. */
   function confirmar(frase: string) {
     setTom("pronto");
+    setRecado(frase);
+  }
+
+  /**
+   * O que aconteceu só aqui dentro, e o certo verde fica de fora.
+   *
+   * **Isto é conserto de defeito medido.** Sem o Supabase configurado, escolher
+   * uma foto parava no passo 5 dos nove, que é a prévia local, e a faixa saía
+   * com o mesmo verde e o mesmo certo de um envio que chegou ao banco. Medido
+   * no iPhone 13: a capa virava a foto nova na tela, a faixa dizia pronto, e a
+   * recarga trazia de volta a capa anterior. A dona da página leu o verde como
+   * "salvou", e o relato dela foi exatamente esse: "salvei a foto e não salvou
+   * no celular".
+   *
+   * A caixa neutra é o que separa os dois: o verde com o certo fica reservado
+   * para o que atravessou o passo 8 e virou coluna.
+   */
+  function anotar(frase: string) {
+    setTom("nota");
     setRecado(frase);
   }
 
@@ -251,7 +270,7 @@ export function EnvioDeImagem({
       setPontoInicial(null);
 
       if (!ligado) {
-        confirmar(SO_PREVIA_PRONTA);
+        anotar(SO_PREVIA_PRONTA);
         return;
       }
 
@@ -311,6 +330,8 @@ export function EnvioDeImagem({
 
       trocarPrevia(null);
       setCaminho(null);
+      // A remoção grava nos dois destinos, o banco e o arquivo local, então ela
+      // termina em confirmação de verdade mesmo com o bucket de fora.
       confirmar(`Pronto. ${VAZIOS[pasta]}`);
       router.refresh();
     } finally {
@@ -342,8 +363,13 @@ export function EnvioDeImagem({
           foto quase nunca tem a proporção dela, então alguém precisa dizer o que
           fica dentro do corte, e esse alguém é a dona da página. A logo continua
           com a prévia de sempre, porque redonda e quadrada cortam igual.
+
+          A prévia que existe só aqui dentro, que é o cartão sem bucket ligado,
+          fica com a prévia parada: o ponto focal grava na linha do banco, e a
+          linha ainda aponta para a capa anterior. O ajuste ali diria "ponto
+          guardado" para uma foto que a página nem recebeu.
         */}
-        {!redonda && mostrada ? (
+        {!redonda && mostrada && (ligado || previa === null) ? (
           <FocoDaCapa
             src={mostrada}
             alt={nome}
@@ -443,34 +469,14 @@ export function EnvioDeImagem({
         acabou de mandar uma foto precisa ver a diferença entre "está indo" e
         "chegou" de longe, e do canto do olho, com o dedo ainda no botão.
       */}
-      <p
-        role={tom === "recusa" ? "alert" : "status"}
-        aria-live="polite"
-        className={`mt-3 flex items-start gap-2 text-xs leading-relaxed ${
-          tom === "recusa"
-            ? "rounded-lg border border-destaque/30 bg-destaque/8 px-3 py-2 font-medium text-destaque"
-            : tom === "pronto"
-              ? "rounded-lg border border-aberto-texto/25 bg-aberto-fundo px-3 py-2 font-medium text-aberto-texto"
-              : tom === "andamento"
-                ? "rounded-lg border border-borda bg-fundo px-3 py-2 font-medium text-texto"
-                : "text-suave"
-        }`}
-      >
-        {tom === "andamento" ? (
-          <IconeGirando className="mt-px h-4 w-4 shrink-0 motion-reduce:hidden" />
-        ) : null}
-        {tom === "pronto" ? (
-          <IconeConfirmado className="mt-px h-4 w-4 shrink-0" />
-        ) : null}
-        <span className="min-w-0">
-          {recado ??
-            (mostrada
-              ? ligado
-                ? "Imagem no ar na sua página."
-                : SO_PREVIA_PARADA
-              : VAZIOS[pasta])}
-        </span>
-      </p>
+      <FaixaDeRecado tom={tom} className="mt-3">
+        {recado ??
+          (mostrada
+            ? ligado
+              ? "Imagem no ar na sua página."
+              : SO_PREVIA_PARADA
+            : VAZIOS[pasta])}
+      </FaixaDeRecado>
     </div>
   );
 }

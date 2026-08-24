@@ -1,5 +1,5 @@
-import { planoValido } from "@/lib/plano";
-import { enderecoPublico, limitarFoco } from "./imagens";
+import { planoValido } from "../plano.ts";
+import { caminhoGuardado, enderecoPublico, limitarFoco } from "./imagens.ts";
 import type {
   Acao,
   Foco,
@@ -8,7 +8,7 @@ import type {
   Item,
   LinkExtra,
   Negocio,
-} from "@/lib/tipos";
+} from "../tipos.ts";
 
 /**
  * Tradução entre a linha do banco e o Negocio que as telas usam.
@@ -183,8 +183,20 @@ export function paraLinha(n: Negocio): Linha {
     slug: n.slug,
     nome: n.nome,
     frase: n.frase,
-    logo_url: n.logo?.url ?? null,
-    capa_url: n.capa?.url ?? null,
+    /*
+     * As duas colunas de imagem voltam a ser caminho antes de entrar no banco.
+     *
+     * A leitura monta o endereço público, então o `Negocio` que toda tela do
+     * painel tem na mão traz a URL inteira. Toda gravação daqui é ler, mexer
+     * num campo e escrever o resto de volta, e o resto inclui estas duas. A
+     * restrição `capa_url_formato` da correção 008 aceita o caminho do bucket
+     * e o endereço local com barra, e uma URL inteira fica fora das duas: o
+     * Postgres recusaria a linha toda, inclusive o campo que a pessoa acabou
+     * de mexer. Ou seja, a primeira capa enviada travava todo salvamento
+     * seguinte do painel.
+     */
+    logo_url: caminhoGuardado(n.logo?.url),
+    capa_url: caminhoGuardado(n.capa?.url),
     /*
      * As duas colunas do ponto focal só entram no update quando existe um ponto
      * gravado, e é proteção contra a ordem das coisas: a correção 014 é aplicada
