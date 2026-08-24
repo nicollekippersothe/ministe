@@ -37,6 +37,7 @@ import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 
 import { gateway } from "../lib/pagamento/index.ts";
+import { mensagemDeRecusa } from "../lib/pagamento/erros.ts";
 
 const API = "https://api.mercadopago.com";
 
@@ -205,8 +206,18 @@ async function tokenizar(titular) {
   return { ok: true, id: corpo.id };
 }
 
-const emailDoPagador =
-  valor("--email") ?? `test_user_${Date.now()}@testuser.com`;
+/*
+ * O pagador, e a armadilha que custou uma rodada inteira para descobrir.
+ *
+ * E-mail terminado em `@testuser.com`, que é o formato das contas de teste que
+ * `--usuarios` cria, volta com 403 "Payer email forbidden" em `/v1/payments`.
+ * Medido, com conta de teste recém-criada pela API deles. O que passa é um
+ * e-mail comum de mentira, e é ele que fica de padrão aqui.
+ *
+ * As contas de teste continuam servindo para OLHAR o outro lado, entrando em
+ * mercadopago.com.br com elas, e nunca para preencher este campo.
+ */
+const emailDoPagador = valor("--email") ?? "comprador@example.com";
 
 /*
  * Uma referência de mentira, e ela precisa ser uuid.
@@ -247,8 +258,8 @@ async function correrCartao() {
         `         cancelar depois com: npm run pagamento -- --cancelar ${r.valor.idExterno}`,
       );
     } else {
-      console.log(`  ${titular}  voltou recusa`);
-      console.log(`         a frase que a pessoa lê: ${r.motivo}`);
+      console.log(`  ${titular}  voltou recusa, motivo ${r.motivo}`);
+      console.log(`         a frase que a pessoa lê: ${mensagemDeRecusa(r.motivo)}`);
       console.log(`         esperado: ${esperado}`);
     }
     console.log("");
@@ -268,7 +279,8 @@ async function correrPix() {
   });
 
   if (!r.ok) {
-    console.log(`  voltou recusa: ${r.motivo}`);
+    console.log(`  voltou recusa, motivo ${r.motivo}`);
+    console.log(`  a frase que a pessoa lê: ${mensagemDeRecusa(r.motivo)}`);
     return;
   }
 
