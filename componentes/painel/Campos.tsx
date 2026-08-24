@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { IconeAbrirLista } from "@/componentes/Icones";
 import { BotaoDeAcao } from "./BotaoDeAcao";
 
 /**
@@ -115,6 +116,7 @@ export function Escolha({
       <Rotulo htmlFor={id} dica={dica}>
         {rotulo}
       </Rotulo>
+      <div className="relative">
       <select
         id={id}
         name={id}
@@ -132,7 +134,16 @@ export function Escolha({
          * `px-3.5 py-3` de cima produz num `input`, com a borda contada, e a
          * conta continua valendo se a caixa de base mudar de medida.
          */
-        className={`${BASE} h-[3.125rem]`}
+        /*
+         * `appearance-none` mais a seta desenhada por nós.
+         *
+         * A seta nativa fica encostada na borda direita, e a folga dela é
+         * decisão do navegador: a classe de respiro do campo vale para o texto
+         * e passa longe dela. Desenhando a seta, a distância até a borda passa
+         * a ser a mesma dos outros campos, e o `pr-11` guarda o lugar dela para
+         * um rótulo comprido parar antes em vez de correr por baixo.
+         */
+        className={`${BASE} h-[3.125rem] appearance-none pr-11`}
       >
         {opcoes.map((o) => (
           <option key={o.valor} value={o.valor}>
@@ -140,6 +151,8 @@ export function Escolha({
           </option>
         ))}
       </select>
+      <IconeAbrirLista className="pointer-events-none absolute top-1/2 right-3.5 h-5 w-5 -translate-y-1/2 text-suave" />
+      </div>
     </div>
   );
 }

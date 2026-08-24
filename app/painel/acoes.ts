@@ -86,7 +86,14 @@ export async function salvarBasico(formData: FormData) {
       frase: texto(formData, "frase"),
       whatsapp,
       mensagemPadrao: texto(formData, "mensagemPadrao"),
-      mensagemItem: texto(formData, "mensagemItem"),
+      /*
+       * A mensagem dos itens continua sendo a que já está gravada.
+       *
+       * O painel parou de perguntar por ela, então o formulário não manda mais
+       * esse campo, e ler `formData` aqui apagaria o texto de quem já tinha um.
+       * `negocio` vem de `doDono()` logo acima, ou seja da linha do banco,
+       * então o valor atravessa o Salvar intacto.
+       */
       mostrarPrecos: marcado(formData, "mostrarPrecos"),
       tituloCatalogo: texto(formData, "tituloCatalogo") ?? "Catálogo",
       endereco: enderecoNaPagina ? texto(formData, "endereco") : null,

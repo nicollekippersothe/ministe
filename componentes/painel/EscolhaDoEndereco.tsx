@@ -37,13 +37,13 @@ import { useState, type ReactNode } from "react";
 const OPCOES = [
   {
     valor: "sim",
-    rotulo: "Sim, quero o endereço na página",
+    rotulo: "Quero o endereço na minha página",
     dica: "Rua, cidade e link do mapa aparecem para quem abrir a sua página.",
   },
   {
     valor: "nao",
-    rotulo: "Prefiro deixar de fora",
-    dica: "Para quem atende online, vai até o cliente ou trabalha de casa.",
+    rotulo: "Prefiro deixar o endereço de fora",
+    dica: "A página segue com o resto inteiro. Serve para quem atende online, vai até o cliente ou trabalha de casa.",
   },
 ] as const;
 

@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { BotaoAcao } from "@/componentes/BarraAcoes";
-import { Catalogo } from "@/componentes/Catalogo";
 import { IconeAvancar } from "@/componentes/Icones";
 import { AreaTexto } from "./Campos";
 import { acoesDoRodape } from "@/lib/acoes";
-import { mensagemDoItem } from "@/lib/formato";
-import type { Item, Negocio } from "@/lib/tipos";
+import type { Negocio } from "@/lib/tipos";
 
 /**
  * Os dois campos de mensagem, com o botão de verdade e a conversa ao lado.
@@ -20,16 +18,16 @@ import type { Item, Negocio } from "@/lib/tipos";
  *
  * Então ela mostra. O gatilho aqui é o componente de verdade, e não um desenho
  * parecido com ele: `BotaoAcao`, o mesmo do rodapé da página pública, resolvido
- * pela mesma `acoesDoRodape`; e `Catalogo`, o mesmo da seção de itens, com o
- * item que a pessoa mesma cadastrou. É a regra do AGENTS.md sobre as peças
- * mostradas serem as do produto, e ela vale aqui pelo mesmo motivo que vale na
- * tela inicial: assim a prévia fica impedida de divergir da página.
+ * pela mesma `acoesDoRodape`. É a regra do AGENTS.md sobre as peças mostradas
+ * serem as do produto, e ela vale aqui pelo mesmo motivo que vale na tela
+ * inicial: assim a prévia fica impedida de divergir da página.
  *
- * E atualiza a cada tecla. O texto digitado desce direto para o modelo, e a
- * troca do `{item}` pelo nome do produto acontece pela `mensagemDoItem`, que é a
- * mesma função que a página pública chama. É o truque da prévia do cadastro, e
- * é o que faz o campo se explicar sozinho: a pessoa vê a chave virar o nome do
- * item enquanto digita, e ninguém precisa escrever uma frase sobre isso.
+ * E atualiza a cada tecla, o que faz o campo se explicar sozinho: a pessoa vê a
+ * conversa se montar enquanto digita, e ninguém precisa escrever uma frase
+ * sobre isso.
+ *
+ * A prévia da mensagem dos itens morava aqui e saiu junto com o campo dela. O
+ * porquê está em `BlocoDoWhatsapp`.
  *
  * ## O desenho aparece antes do dado
  *
@@ -57,21 +55,6 @@ import type { Item, Negocio } from "@/lib/tipos";
  */
 const ENQUANTO_O_DADO_VEM = " ";
 
-/**
- * O item que o desenho usa enquanto o catálogo está vazio.
- *
- * O título é a própria chave que a pessoa digita no campo, e não um produto
- * inventado: ela vê `{item}` no cartão e `{item}` dentro da conversa, e no
- * minuto em que cadastrar o primeiro item o nome dele toma esse lugar nos dois.
- */
-const ITEM_DE_DESENHO: Item = {
-  id: "desenho",
-  titulo: "{item}",
-  descricao: null,
-  precoCentavos: null,
-  fotos: [],
-  ativo: true,
-};
 
 /** O modelo do WhatsApp: o texto chega digitado, e o cliente decide enviar. */
 function Conversa({
@@ -231,77 +214,6 @@ export function MensagemDoBotao({
           }
         />
       ) : null}
-    </div>
-  );
-}
-
-export function MensagemDosItens({
-  negocio,
-  whatsapp,
-  rotulo,
-  dica,
-}: {
-  negocio: Negocio;
-  /** O número digitado agora no campo acima, em dígitos, ou nulo. */
-  whatsapp: string | null;
-  rotulo: string;
-  dica: string;
-}) {
-  const [texto, setTexto] = useState(negocio.mensagemItem ?? "");
-
-  /*
-   * O primeiro item do catálogo da própria pessoa, que é o que transforma a
-   * chave `{item}` numa coisa que ela reconhece. As fotos saem da cópia porque
-   * a foto do item ocupa a moldura inteira e o assunto aqui é a mensagem; o
-   * resto do cartão continua sendo o `Catalogo` de verdade, com o título, o
-   * preço e o botão que a página pública desenha. Com o catálogo ainda vazio,
-   * entra o `ITEM_DE_DESENHO`, que carrega a própria chave como título.
-   */
-  const primeiro = negocio.itens.find((i) => i.ativo) ?? null;
-  const item = primeiro ?? ITEM_DE_DESENHO;
-
-  const exemplo: Negocio = {
-    ...negocio,
-    whatsapp: whatsapp ?? ENQUANTO_O_DADO_VEM,
-    // O `Catalogo` só desenha o botão do item quando existe modelo, e o rótulo
-    // dele é fixo, então o espaço aqui muda o desenho e nunca o que se lê. A
-    // conversa embaixo continua lendo o texto de verdade, e é ela que fica em
-    // branco enquanto o campo está em branco.
-    mensagemItem: texto === "" ? ENQUANTO_O_DADO_VEM : texto,
-    itens: [{ ...item, fotos: [] }],
-  };
-
-  const espera = !whatsapp
-    ? "Esperando o número acima"
-    : texto === ""
-      ? "Esperando a mensagem acima"
-      : primeiro === null
-        ? "Esperando o primeiro item"
-        : null;
-
-  return (
-    <div className="lg:col-span-2">
-      <AreaTexto
-        id="mensagemItem"
-        rotulo={rotulo}
-        dica={dica}
-        valor={negocio.mensagemItem}
-        maxLength={200}
-        onChange={(e) => setTexto(e.target.value)}
-      />
-
-      <Moldura
-        chamada={`No seu ${negocio.tituloCatalogo.toLowerCase()}, quem toca no botão deste item:`}
-        espera={espera}
-        gatilho={<Catalogo negocio={exemplo} />}
-        conversa={
-          <Conversa
-            nome={negocio.nome}
-            texto={mensagemDoItem(texto, item.titulo) ?? ""}
-            vazio="Em branco, cada item da sua página fica com o nome, o preço e a foto."
-          />
-        }
-      />
     </div>
   );
 }

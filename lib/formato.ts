@@ -45,10 +45,24 @@ export function linkWhatsapp(digitos: string, mensagem?: string | null): string 
   return `${base}?text=${encodeURIComponent(mensagem)}`;
 }
 
-/** Troca {item} pelo nome do produto na mensagem padrao do catalogo. */
-export function mensagemDoItem(modelo: string | null, titulo: string): string | null {
-  if (!modelo) return null;
-  return modelo.replace(/\{item\}/g, titulo);
+/**
+ * O modelo que vale quando ninguem escreveu um.
+ *
+ * O painel perguntava por este texto, e a dona da pagina pediu para tirar a
+ * pergunta: dois campos de mensagem seguidos, um deles um modelo com uma chave
+ * dentro, confundiam mais do que serviam. O comportamento fica, e so a
+ * pergunta sai, porque e este texto que faz o botao do item converter: quem
+ * chega no WhatsApp com o nome do item ja escrito responde na hora, e quem
+ * chega com a conversa em branco precisa contar de novo o que queria.
+ *
+ * As paginas de exemplo tem modelo proprio, com o verbo do ramo delas, e
+ * continuam usando o que tem gravado.
+ */
+export const MODELO_DO_ITEM = "Olá! Queria saber sobre: {item}";
+
+/** Troca {item} pelo nome do produto na mensagem do catalogo. */
+export function mensagemDoItem(modelo: string | null, titulo: string): string {
+  return (modelo ?? MODELO_DO_ITEM).replace(/\{item\}/g, titulo);
 }
 
 /**

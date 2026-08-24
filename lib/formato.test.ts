@@ -72,7 +72,13 @@ test("o modelo aplicado a todos troca o nome do item", () => {
     mensagemDoItem("Oi! Queria saber sobre: {item}", "Bolo de cenoura"),
     "Oi! Queria saber sobre: Bolo de cenoura",
   );
-  assert.equal(mensagemDoItem(null, "Bolo"), null);
+  // Sem modelo gravado vale o padrão, porque o painel parou de perguntar por
+  // ele e a conversa em branco tira do botão do item justamente o que faz ele
+  // converter: o nome do item já escrito.
+  assert.equal(
+    mensagemDoItem(null, "Bolo"),
+    "Olá! Queria saber sobre: Bolo",
+  );
 });
 
 test("o preço volta para o campo em reais, com vírgula", () => {

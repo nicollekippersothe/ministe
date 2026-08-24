@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { Texto } from "./Campos";
-import { MensagemDoBotao, MensagemDosItens } from "./PreviaDaMensagem";
+import { MensagemDoBotao } from "./PreviaDaMensagem";
 import { normalizarWhatsapp, telefoneVisivel } from "@/lib/formato";
 import type { Negocio } from "@/lib/tipos";
 
 /**
- * O número do WhatsApp e as duas prévias que dependem dele.
+ * O número do WhatsApp e a prévia que depende dele.
  *
- * ## Por que os três moram juntos
+ * ## Por que os dois moram juntos
  *
  * A dona da página contou assim: "o botão do whats apareceu agora, mas
  * demorou". Cronometrado, a demora tinha um motivo só, e nenhum deles era
@@ -22,6 +22,19 @@ import type { Negocio } from "@/lib/tipos";
  * Com o campo e as prévias no mesmo estado, o número vale na hora em que é
  * digitado, do mesmo jeito que o texto das mensagens já valia. O Salvar
  * continua sendo quem grava, e continua sendo a mesma ida e volta.
+ *
+ * ## A mensagem dos itens saiu daqui
+ *
+ * Eram dois campos de mensagem seguidos, e a dona da página leu os dois e
+ * disse: "a mensagem dos itens eu tiraria, ficou confuso no cadastro, e
+ * perfumaria total". Ela está certa nas duas coisas. Perguntar duas vezes por
+ * um texto de WhatsApp, sendo que um deles é um modelo com uma chave `{item}`
+ * dentro, é pedir trabalho de programador a quem quer só pôr o preço da aula.
+ *
+ * A mensagem continua existindo na página pública, montada por
+ * `mensagemDoItem` com o modelo padrão. Quem toca no botão de um item segue
+ * chegando ao WhatsApp com o nome do item já escrito, que é o que faz aquele
+ * botão converter. O que saiu foi a pergunta, e nunca o comportamento.
  *
  * ## O que este componente cuida
  *
@@ -63,13 +76,6 @@ export function BlocoDoWhatsapp({ negocio }: { negocio: Negocio }) {
         whatsapp={whatsapp}
         rotulo="Mensagem que já vem escrita"
         dica="É o que o cliente vê digitado quando toca no botão."
-      />
-
-      <MensagemDosItens
-        negocio={negocio}
-        whatsapp={whatsapp}
-        rotulo="Mensagem dos itens"
-        dica="Vale para todos os itens de uma vez. O {item} vira o nome do produto."
       />
     </>
   );

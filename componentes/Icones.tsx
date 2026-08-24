@@ -278,6 +278,23 @@ export function IconeDescer({ className }: Props) {
   );
 }
 
+/**
+ * A ponta de seta que abre a lista de um campo de escolha.
+ *
+ * Existe porque o desenho nativo do `select` põe a seta encostada na borda
+ * direita, e a distância dela até a borda é do navegador, e nunca da nossa
+ * classe de respiro. Com `appearance-none` mais esta seta desenhada por nós, a
+ * folga passa a ser a mesma dos outros campos do formulário.
+ */
+export function IconeAbrirLista({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
 /** Dois elos de corrente, para a seção dos links extras da página. */
 export function IconeElo({ className }: Props) {
   return (
