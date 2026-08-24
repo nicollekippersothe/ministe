@@ -81,12 +81,20 @@ export function MapaDaPagina({
   children,
 }: {
   negocio: Negocio;
-  /** Qual pedaço acende: a barra presa embaixo, ou a lista de links. */
-  zona: "barra" | "links";
+  /**
+   * Qual pedaço acende: a barra presa embaixo, a lista de links, ou nenhum.
+   *
+   * Com "nenhuma" o desenho sai inteiro em silhueta, e aí ele deixa de
+   * responder "onde fica isto que estou editando" e passa a responder "o que é
+   * isto que eu tenho". É a forma que a tela inicial usa: quem volta ao painel
+   * com a página já montada vê o formato dela ao lado do endereço, e a tela se
+   * apresenta como a casa da página em vez de uma lista de campos.
+   */
+  zona: "barra" | "links" | "nenhuma";
   /** A frase acima do desenho. */
   chamada: string;
   /** O componente de verdade que entra no pedaço aceso. */
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   return (
     /*

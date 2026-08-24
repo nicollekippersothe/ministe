@@ -25,6 +25,16 @@ import type { Negocio } from "@/lib/tipos";
  * Os tamanhos são desiguais de propósito. Grade de cartões iguais é a forma
  * mais rápida de uma seção virar decoração, e o catálogo merece mais espaço
  * que o resto porque é onde a decisão de compra acontece.
+ *
+ * No celular a grade deita e vira uma faixa que corre com o polegar. Empilhada,
+ * ela ocupava três mil pixels de cartão atrás de cartão, e era metade da queixa
+ * de "muito texto" da tela inicial. Deitada, cada peça ocupa uma tela e a
+ * seguinte espia pela direita.
+ *
+ * Cada peça é mostrada acesa, na claridade do tema areia, dentro de um cartão
+ * que fica na parede escura. É o desenho de galeria, e ele também é o mais
+ * honesto: o que está ali dentro é a página de um cliente, e a página do
+ * cliente tem a cor que o dono escolheu, e não a da parede.
  */
 
 function Cartao({
@@ -40,14 +50,23 @@ function Cartao({
 }) {
   return (
     <li
-      className={`surge flex flex-col overflow-hidden rounded-3xl border border-borda bg-superficie ${className}`}
+      /*
+       * Sem `surge` aqui. A revelação na rolagem se pendura no eixo vertical da
+       * caixa de rolagem mais próxima, e no celular essa caixa passou a ser a
+       * faixa horizontal, que não rola para baixo. O cartão ficaria preso no
+       * começo da animação, invisível. A seção inteira já entra com respiro.
+       */
+      className={`flex w-[17rem] shrink-0 snap-start flex-col overflow-hidden rounded-3xl border border-borda bg-superficie sm:w-auto ${className}`}
     >
-      <div className="flex flex-1 flex-col justify-center px-6 pt-7 pb-6 sm:px-7 sm:pt-8">
+      <div
+        data-tema="areia"
+        className="flex flex-1 flex-col justify-center bg-superficie px-6 pt-7 pb-6 sm:px-7 sm:pt-8"
+      >
         {children}
       </div>
       <div className="border-t border-borda px-6 py-5 sm:px-7">
         <h3 className="font-semibold tracking-[-0.015em] text-texto">{titulo}</h3>
-        <p className="mt-1 text-[0.95rem] leading-relaxed text-suave text-pretty">
+        <p className="mt-1 text-[0.9rem] leading-relaxed text-suave text-pretty">
           {texto}
         </p>
       </div>
@@ -98,11 +117,11 @@ export function Mosaico({
     .slice(0, 4);
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="trilho -mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-3">
       <Cartao
         className="lg:col-span-2"
         titulo="Catálogo com foto e preço"
-        texto="Peça, prato, plano ou sessão. Quem chega vê o que você vende, por quanto, e chama no WhatsApp ali mesmo."
+        texto="Quem chega vê o que você vende, por quanto, e chama no WhatsApp ali mesmo."
       >
         <div className="grid grid-cols-2 gap-4 sm:gap-5" aria-hidden>
           {vitrine.map((item) => (
@@ -134,7 +153,7 @@ export function Mosaico({
 
       <Cartao
         titulo="Botões que levam para onde você vende"
-        texto="WhatsApp, agenda, loja, iFood, Instagram. Você monta os botões do seu jeito, e cada um leva para onde o pedido acontece."
+        texto="WhatsApp, agenda, iFood, Instagram. Cada botão leva para onde o pedido acontece."
       >
         <div className="flex flex-col gap-2.5" aria-hidden>
           {acoes.map((acao) => (
@@ -175,7 +194,7 @@ export function Mosaico({
       */}
       <Cartao
         titulo="Pronta numa sentada"
-        texto="São perguntas, uma de cada vez, respondidas pelo celular. Publique com o essencial hoje e complete o resto quando sobrar tempo."
+        texto="Perguntas, uma de cada vez, respondidas pelo celular."
       >
         <div className="flex flex-col gap-2.5" aria-hidden>
           <div className="flex items-center gap-2 rounded-full border border-borda bg-fundo px-4 py-2.5 text-[0.92rem]">
@@ -205,7 +224,7 @@ export function Mosaico({
 
       <Cartao
         titulo="Aberto agora, no seu fuso"
-        texto="A página calcula pelo horário que você cadastrou, no seu fuso, e mostra quando você volta a abrir."
+        texto="A página calcula pelo horário que você cadastrou e mostra quando você volta a abrir."
       >
         <div className="flex flex-col gap-3" aria-hidden>
           <SeloHorario estado={estado} />
@@ -227,7 +246,7 @@ export function Mosaico({
 
       <Cartao
         titulo="Escrita para o Google entender"
-        texto="Nome, categoria, cidade, horário e serviços saem na marcação que o buscador lê. A parte técnica já vem pronta."
+        texto="Nome, categoria, cidade e horário saem na marcação que o buscador lê."
       >
         <div
           className="rounded-2xl border border-borda bg-fundo px-4 py-4"
@@ -253,7 +272,7 @@ export function Mosaico({
 
       <Cartao
         titulo="O link já chega mostrando quem é você"
-        texto="Colado no WhatsApp ou na bio, ele abre com a sua capa, o seu nome e a sua frase, antes de alguém tocar nele."
+        texto="Colado no WhatsApp ou na bio, ele abre com a sua capa, o seu nome e a sua frase."
       >
         <div
           data-fonte={fonte.chave}
@@ -296,7 +315,7 @@ export function Mosaico({
       <Cartao
         className="lg:col-span-2"
         titulo="A galeria do seu trabalho"
-        texto="As suas fotos em tamanho grande, na ordem que você escolher. É aqui que quem chega se convence, antes de perguntar preço."
+        texto="As suas fotos em tamanho grande, na ordem que você escolher."
       >
         <div className="grid grid-cols-3 gap-2 sm:gap-3" aria-hidden>
           {paraGaleria.galeria.slice(0, 6).map((foto) => (

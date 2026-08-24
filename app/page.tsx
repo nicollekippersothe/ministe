@@ -2,14 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
+import { Cartela } from "@/componentes/inicial/Cartela";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
+import { Salas, type Sala } from "@/componentes/inicial/Salas";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
+import { IconeEntrar } from "@/componentes/Icones";
+import { combinacao } from "@/lib/fontes";
 import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
 import { CADASTRO_ABERTO } from "@/lib/site";
-import { atelie, canto, tatuagem, VITRINE } from "@/lib/exemplos";
+import {
+  atelie,
+  canto,
+  doceria,
+  ilustracao,
+  psicologia,
+  tatuagem,
+} from "@/lib/exemplos";
 
 export const revalidate = 3600;
 
@@ -22,34 +33,33 @@ export const metadata: Metadata = {
 /*
  * Benefícios.
  *
- * Nenhum destes é sobre o que a página tem: isso já está no mosaico logo
- * acima, mostrado com as peças de verdade. Aqui é o que muda para o dono
- * depois de publicada, que é a parte que não dá para ver na tela.
+ * Nenhum destes é sobre o que a página tem: isso já está no mosaico, mostrado
+ * com as peças de verdade. Aqui é o que muda para o dono depois de publicada,
+ * que é a parte que não dá para ver na tela.
  *
- * Os dois primeiros são a diferença para o que a pessoa já usa hoje, dita
- * sem citar ninguém: uma lista de links só atende quem já chegou, e catálogo
- * dentro de aplicativo de mensagem não existe fora dele.
+ * Os dois primeiros são a diferença para o que a pessoa já usa hoje, dita sem
+ * citar ninguém: uma lista de links só atende quem já chegou.
+ *
+ * Eram cinco e numerados de 01 a 05. A numeração saiu porque a lista não tem
+ * ordem nenhuma, e numerar o que não é sequência é enfeite com cara de método.
+ * O quinto saiu porque "você responde e a página se monta" já é um cartão do
+ * mosaico, com o cadastro de verdade à vista.
  */
 const BENEFICIOS = [
   {
-    titulo: "Encontrada por quem está procurando agora",
+    titulo: "Encontrada por quem procura agora",
     texto:
-      "A página sai com a marcação que o Google lê: nome, categoria, cidade, horário e o que você oferece. Uma lista de links atende quem já chegou até você. Esta atende também quem ainda está atrás do serviço.",
+      "A marcação que o Google lê sai pronta: nome, categoria, cidade, horário e o que você oferece. Uma lista de links atende quem já chegou até você. Esta atende também quem ainda está atrás do serviço.",
   },
   {
     titulo: "Um endereço para colocar em tudo",
     texto:
-      "Bio, anúncio pago, cartão, assinatura de e-mail. Quem clica cai direto no seu catálogo, que abre em qualquer navegador do celular.",
-  },
-  {
-    titulo: "Você responde, e a página se monta",
-    texto:
-      "A página já vem desenhada. Você responde perguntas em vez de escolher fonte, margem e cor, e o resultado sai no mesmo padrão em qualquer aparelho.",
+      "Bio, anúncio pago, cartão, assinatura de e-mail. Quem toca cai direto no seu catálogo.",
   },
   {
     titulo: "Editou, já está no ar",
     texto:
-      "Entrou peça nova, ou o horário do feriado é outro? Você altera do celular e quem abrir em seguida já vê.",
+      "Peça nova, ou o horário do feriado é outro? Você altera do celular e quem abrir em seguida já vê.",
   },
   {
     titulo: "O endereço é seu",
@@ -60,20 +70,70 @@ const BENEFICIOS = [
 
 const PASSOS = [
   {
-    titulo: "Escolha o seu endereço",
-    texto:
-      "Escreva o nome do negócio. Se o endereço estiver livre, ele passa a ser seu.",
+    titulo: "Escreva o nome na placa",
+    texto: "Se o endereço estiver livre, ele passa a ser seu na mesma hora.",
   },
   {
     titulo: "Responda o essencial",
     texto:
-      "O que o cliente precisa saber antes de chamar você: o que você vende, por quanto, quando atende e por onde falam com você.",
+      "O que você vende, por quanto, quando atende e por onde falam com você.",
   },
   {
-    titulo: "Publique e compartilhe",
+    titulo: "Abra a porta",
     texto:
       "O endereço fica pronto para colar na bio, no anúncio, no cartão e em toda conversa que termina com alguém pedindo o seu contato.",
   },
+];
+
+/*
+ * As duas salas.
+ *
+ * A separação é a mesma que o produto já faz sozinho: a categoria escolhida no
+ * cadastro decide se a página abre pela galeria ou pelo endereço, e decide se o
+ * preço aparece à vista (ver lib/categorias.ts). Aqui isso vira duas portas,
+ * para cada pessoa reconhecer a dela em vez de ler uma promessa dividida com
+ * alguém que faz outra coisa da vida.
+ *
+ * Os exemplos são de ramos com receita oposta na tabela: `design` abre pela
+ * galeria e trata o endereço como opcional, `confeitaria` espera endereço na
+ * rua e mostra preço à vista.
+ */
+const SALA_CRIADOR: Sala = {
+  publico: "Para quem vende o próprio trabalho",
+  titulo: "A galeria abre a página.",
+  itens: [
+    "As suas fotos em tamanho grande, na ordem que você escolher.",
+    "Catálogo com preço, e um botão de WhatsApp em cada peça.",
+    "Atendimento por chamada, com o horário calculado no seu fuso.",
+  ],
+  negocio: ilustracao,
+  tipo: "Ilustradora",
+};
+
+const SALA_LOJA: Sala = {
+  publico: "Para quem tem porta na rua",
+  titulo: "O endereço abre a página.",
+  itens: [
+    "Endereço com o mapa a um toque, e o aberto agora calculado na hora.",
+    "Cardápio com foto e preço, e a encomenda saindo pelo WhatsApp.",
+    "Botão principal apontado para o iFood, para a agenda ou para a loja.",
+  ],
+  negocio: doceria,
+  tipo: "Confeitaria",
+};
+
+/*
+ * Quem fica pendurado na abertura.
+ *
+ * Três, e não quatro: as outras duas páginas aparecem inteiras logo abaixo,
+ * nas duas salas, e repetir negócio na mesma tela gasta imagem sem responder
+ * nada de novo. Os três são de ofícios bem distantes entre si, porque a
+ * pergunta dos dois primeiros segundos é "serve para mim".
+ */
+const EM_CARTAZ = [
+  { negocio: tatuagem, tipo: "Tatuador" },
+  { negocio: canto, tipo: "Professora de canto" },
+  { negocio: psicologia, tipo: "Psicóloga" },
 ];
 
 export default async function Home() {
@@ -84,83 +144,165 @@ export default async function Home() {
    */
   const negocio = (await porSlug("lia-prado")) ?? atelie;
 
-  /* Quatro no carrossel. O quinto ninguém chega a ver. */
-  const naAbertura = VITRINE.slice(0, 4).map((v) => v.negocio);
-
   /*
-   * O campo de endereço fica na abertura em qualquer situação: é ele que
-   * transforma visita em intenção, porque a pessoa vê o próprio nome no
-   * endereço e passa a querer aquele endereço. Enquanto o cadastro está
-   * fechado, muda o rótulo do botão e a tela seguinte diz o que acontece, em
-   * vez de prometer uma criação que ainda não existe.
+   * A placa fica na abertura em qualquer situação: é ela que transforma visita
+   * em intenção, porque a pessoa vê o próprio nome no endereço e passa a querer
+   * aquele endereço. Enquanto o cadastro está fechado, muda o rótulo do botão e
+   * a tela seguinte diz o que acontece, em vez de prometer uma criação que
+   * ainda não existe.
    */
   const rotulo = CADASTRO_ABERTO ? "Criar meu endereço" : "Continuar";
 
+  /*
+   * A letra dos títulos da tela inicial é a mesma que o plano gratuito entrega
+   * a todo mundo. Duas razões, e as duas são do produto.
+   *
+   * A primeira é honestidade: a propaganda escreve com a letra que ela vende.
+   * A segunda é peso. A prévia de celular aqui do lado já baixa essa
+   * combinação, porque os exemplos usam ela; aplicar a mesma no título custa
+   * zero arquivo novo, e o teste de fluxo continua contando duas fontes na
+   * rota. Escolher qualquer outra letra baixaria uma terceira.
+   */
+  const letra = combinacao("moderno");
+
   return (
-    <div data-tema="areia" className="min-h-dvh bg-fundo">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
+    /*
+     * A parede da sala.
+     *
+     * O tema noite existe no produto pelo motivo de museu, escrito no
+     * globals.css: parede escura faz a foto avançar e a parede recuar. A tela
+     * inicial passa a ser essa sala, e cada página de cliente mostrada nela
+     * aparece acesa, com a cor que o dono dela escolheu.
+     */
+    <div
+      data-tema="noite"
+      data-fonte={letra.chave}
+      className={`min-h-dvh bg-fundo ${letra.classe}`}
+    >
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Marca href={null} />
         {CADASTRO_ABERTO ? (
           <Link
             href="/entrar"
-            className="text-[0.95rem] font-medium text-texto underline-offset-4 hover:underline"
+            className="-mr-3 flex h-11 items-center gap-2 rounded-full px-3 text-[0.95rem] font-medium text-texto hover:text-destaque"
           >
+            <IconeEntrar className="h-5 w-5" />
             Entrar
           </Link>
         ) : null}
       </header>
 
       <main>
-        {/* O produto aparece junto com a promessa, não depois dela. */}
-        <section className="mx-auto w-full max-w-6xl px-6 pt-6 pb-20 sm:pt-14">
-          <div className="grid items-center gap-14 lg:grid-cols-[1fr_auto] lg:gap-20">
+        {/*
+          A abertura. A luz sobe uma vez e as quatro peças entram atrás dela, na
+          ordem em que se lê: o verbo, o convite, a placa, e o que está em
+          cartaz. É o único movimento orquestrado da página; o resto da rolagem
+          usa o `surge`, que já existia.
+        */}
+        <section className="parede mx-auto w-full max-w-6xl px-6 pt-4 pb-16 sm:pt-10 sm:pb-24">
+          <div className="grid items-start gap-10 lg:grid-cols-[1fr_20rem] lg:gap-16">
             <div className="max-w-xl">
-              <h1 className="text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.038em] text-balance text-texto sm:text-[3.4rem]">
-                <span className="block text-destaque">Presença profissional.</span>
-                O endereço do seu negócio na internet.
-              </h1>
-              <p className="mt-6 max-w-lg text-lg leading-relaxed text-suave">
-                O seu trabalho numa página só: as fotos, o que você vende, o
-                horário e o caminho para falar com você. Com o seu nome no
-                endereço, e escrita para aparecer na busca de quem procura o
-                seu serviço na cidade.
+              {/*
+                A cartela do próprio nome da marca. O trocadilho fica debaixo do
+                nariz do produto: entrais é o que se diz na porta, e a tela
+                inicial passava longe disso. Dito uma vez, em letra pequena,
+                ele arma o "Entrai" que vem logo abaixo em tamanho grande.
+              */}
+              <p
+                className="acende border-t border-borda pt-3 text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase"
+                style={{ "--atraso": "80ms" } as React.CSSProperties}
+              >
+                {NOME_PRODUTO}, verbo: segunda pessoa do plural de entrar
               </p>
 
-              {/*
-                Uma linha de comando antes do campo. Sem ela o campo fica
-                parecendo caixa de busca, e a pessoa lê tudo de novo tentando
-                entender o que digitar ali.
-              */}
-              <div className="mt-9 max-w-lg">
+              <h1
+                className="acende titulo mt-5 text-[3.05rem] leading-[0.94] text-balance text-texto sm:text-[4.2rem]"
+                style={{ "--atraso": "160ms" } as React.CSSProperties}
+              >
+                <span className="block text-destaque">Entrai.</span>
+                O seu trabalho em exposição, num endereço com o seu nome.
+              </h1>
+
+              <p
+                className="acende mt-6 max-w-md text-[1.05rem] leading-relaxed text-suave"
+                style={{ "--atraso": "240ms" } as React.CSSProperties}
+              >
+                As fotos, o que você vende e por quanto, o horário, e o botão
+                que já abre a conversa no WhatsApp.
+              </p>
+
+              <div
+                className="acende mt-9"
+                style={{ "--atraso": "320ms" } as React.CSSProperties}
+              >
                 <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-                  Comece agora: escolha o seu endereço.
+                  Escreva o nome que vai na placa.
                 </p>
                 <CampoAbertura rotulo={rotulo} />
               </div>
             </div>
 
-            <div className="lg:pl-4">
+            {/*
+              O que está pendurado, com a etiqueta embaixo. No celular ele vem
+              logo depois da placa, e o vão entre os dois é de respiro, e não
+              mais de meia tela vazia.
+            */}
+            <div
+              className="acende"
+              style={{ "--atraso": "400ms" } as React.CSSProperties}
+            >
+              <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase">
+                Em cartaz agora
+              </p>
               <Carrossel>
-                {naAbertura.map((n, i) => (
-                  <Telefone key={n.slug} negocio={n} prioridade={i === 0} leve />
+                {EM_CARTAZ.map(({ negocio: n, tipo }, i) => (
+                  <div key={n.slug}>
+                    <Telefone negocio={n} prioridade={i === 0} leve />
+                    <Cartela negocio={n} tipo={tipo} className="mt-5" />
+                  </div>
                 ))}
               </Carrossel>
             </div>
           </div>
         </section>
 
+        {/*
+          As duas salas. A queixa era que os dois públicos vinham amontoados
+          numa promessa só; aqui cada um tem porta, nome e uma página do ramo
+          dele pendurada dentro.
+        */}
         <section
-          aria-labelledby="mosaico"
-          className="border-t border-borda bg-superficie"
+          aria-labelledby="salas"
+          className="border-t border-borda"
         >
-          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+            <h2
+              id="salas"
+              className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
+            >
+              Duas salas, duas montagens.
+            </h2>
+            <p className="mt-4 max-w-xl leading-relaxed text-suave">
+              A página se arruma pelo seu ramo. Quem vive do que faz com as
+              mãos abre pela galeria; quem tem balcão abre pelo endereço e pelo
+              horário.
+            </p>
+
+            <div className="mt-10 sm:mt-14">
+              <Salas criador={SALA_CRIADOR} loja={SALA_LOJA} />
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="mosaico" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
             <h2
               id="mosaico"
-              className="max-w-2xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+              className="titulo max-w-2xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Tudo o que o seu negócio precisa mostrar.
+              O que cabe numa sala só.
             </h2>
-            <div className="mt-12 sm:mt-14">
+            <div className="mt-10 sm:mt-14">
               <Mosaico
                 negocio={negocio}
                 paraCatalogo={canto}
@@ -171,20 +313,23 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-labelledby="exemplos" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
+        <section
+          aria-labelledby="exemplos"
+          className="border-t border-borda"
+        >
+          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
             <h2
               id="exemplos"
-              className="max-w-xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+              className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Confira um exemplo de verdade.
+              Salas abertas agora.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Todas estas estão no ar. Abra a que mais parece com o seu e
+              Todas estas estão no ar. Abra a que mais parece com a sua e
               percorra até o fim.
             </p>
 
-            <div className="mt-12">
+            <div className="mt-10 sm:mt-12">
               <Vitrine />
             </div>
           </div>
@@ -194,42 +339,34 @@ export default async function Home() {
           Editorial: o título fica preso na coluna da esquerda enquanto a lista
           corre na direita. É o desenho de revista, e serve a um propósito
           prático: o "o que muda" continua à vista enquanto a pessoa lê os
-          cinco itens, então cada um se lê como resposta à pergunta do título.
+          itens, então cada um se lê como resposta à pergunta do título.
         */}
-        <section
-          aria-labelledby="beneficios"
-          className="border-t border-borda bg-superficie"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-24">
+        <section aria-labelledby="beneficios" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
             <div className="lg:grid lg:grid-cols-[20rem_1fr] lg:gap-16">
               <div className="lg:sticky lg:top-16 lg:self-start">
                 <h2
                   id="beneficios"
-                  className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+                  className="titulo text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
                 >
-                  O que muda quando o endereço é seu.
+                  O que muda depois que a porta abre.
                 </h2>
                 <p className="mt-4 max-w-sm leading-relaxed text-suave">
-                  Cinco coisas que só aparecem depois de publicar.
+                  Quatro coisas que só aparecem depois de publicar.
                 </p>
               </div>
 
-              <dl className="mt-12 lg:mt-0">
-                {BENEFICIOS.map((b, i) => (
+              <dl className="mt-10 lg:mt-0">
+                {BENEFICIOS.map((b) => (
                   <div
                     key={b.titulo}
-                    className="surge grid gap-2 border-t border-borda py-7 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[2.5rem_1fr] sm:gap-6 lg:py-8"
+                    className="surge border-t border-borda py-6 first:border-t-0 first:pt-0 last:pb-0 lg:py-8"
                   >
-                    <dt className="text-[0.95rem] font-semibold tabular-nums text-destaque sm:pt-1">
-                      {String(i + 1).padStart(2, "0")}
+                    <dt className="titulo text-[1.35rem] leading-tight text-balance text-texto sm:text-[1.6rem]">
+                      {b.titulo}
                     </dt>
-                    <dd>
-                      <h3 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-balance text-texto">
-                        {b.titulo}
-                      </h3>
-                      <p className="mt-2 max-w-xl leading-relaxed text-suave text-pretty">
-                        {b.texto}
-                      </p>
+                    <dd className="mt-2 max-w-xl leading-relaxed text-suave text-pretty">
+                      {b.texto}
                     </dd>
                   </div>
                 ))}
@@ -238,30 +375,33 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-labelledby="passos" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
+        <section
+          aria-labelledby="passos"
+          className="border-t border-borda"
+        >
+          <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24">
             <h2
               id="passos"
-              className="max-w-lg text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
+              className="titulo max-w-lg text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Do nome ao endereço no ar, em três passos.
+              Do nome à porta aberta, em três passos.
             </h2>
 
             {/*
-              Numeral grande em Barro, fio em cima, texto embaixo. O número
-              carrega a ordem sozinho, então o rótulo "passo 1" some e sobra
+              Numeral grande em latão, fio em cima, texto embaixo. Aqui o número
+              carrega ordem de verdade, então o rótulo "passo 1" some e sobra
               espaço para o que interessa.
             */}
-            <ol className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
+            <ol className="mt-10 grid gap-8 sm:mt-14 sm:grid-cols-3 sm:gap-8">
               {PASSOS.map((passo, i) => (
-                <li key={passo.titulo} className="surge border-t border-borda pt-6">
+                <li key={passo.titulo} className="surge border-t border-borda pt-5">
                   <span
-                    className="titulo block text-[2.6rem] leading-none text-destaque tabular-nums"
+                    className="titulo block text-[2.4rem] leading-none tabular-nums text-destaque"
                     aria-hidden
                   >
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-balance text-texto">
+                  <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-balance text-texto">
                     {passo.titulo}
                   </h3>
                   <p className="mt-2 leading-relaxed text-suave text-pretty">
@@ -271,10 +411,10 @@ export default async function Home() {
               ))}
             </ol>
 
-            {/* O mesmo campo da abertura, ao alcance de quem leu até aqui. */}
-            <div className="mt-16 max-w-lg">
+            {/* A mesma placa da abertura, ao alcance de quem leu até aqui. */}
+            <div className="mt-14 max-w-xl">
               <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-                Comece agora: escolha o seu endereço.
+                Escreva o nome que vai na placa.
               </p>
               <CampoAbertura rotulo={rotulo} />
             </div>
@@ -286,7 +426,11 @@ export default async function Home() {
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-suave">
           <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
           {CADASTRO_ABERTO ? (
-            <Link href="/entrar" className="underline underline-offset-2">
+            <Link
+              href="/entrar"
+              className="-mx-2 flex h-11 items-center gap-2 rounded-full px-2 font-medium text-texto hover:text-destaque"
+            >
+              <IconeEntrar className="h-4 w-4" />
               Entrar
             </Link>
           ) : null}

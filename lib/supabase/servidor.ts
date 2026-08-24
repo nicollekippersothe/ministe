@@ -131,3 +131,28 @@ export async function emailDoUsuario(): Promise<string | null> {
   const email = (await quemEstaPedindo())?.email;
   return typeof email === "string" && email !== "" ? email : null;
 }
+
+/**
+ * O nome de quem está pedindo, do jeito que o provedor de login devolveu.
+ *
+ * O login com o Google grava `full_name` e `name` em `user_metadata`, e os dois
+ * costumam trazer o nome inteiro ("Helena Vasques de Andrade"). Quem recorta o
+ * primeiro nome é `app/painel/sessao.ts`, porque isso é decisão de texto de
+ * tela e muda com o tom do produto, enquanto isto aqui é só a leitura da
+ * sessão.
+ *
+ * `user_metadata` é escrito pelo provedor e pode vir vazio: conta provisória
+ * nasce sem nome nenhum, e é o caso mais comum do produto até a pessoa entrar
+ * com o Google. Devolve nulo, e quem chama trata.
+ */
+export async function nomeDoUsuario(): Promise<string | null> {
+  const dados = (await quemEstaPedindo())?.user_metadata;
+  if (!dados) return null;
+
+  for (const chave of ["full_name", "name"] as const) {
+    const valor = dados[chave];
+    if (typeof valor === "string" && valor.trim() !== "") return valor.trim();
+  }
+
+  return null;
+}
