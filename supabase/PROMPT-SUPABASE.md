@@ -399,3 +399,84 @@ rodou. Se alguma devolver diferente do que o comentário promete, me diga o que
 veio e siga: divergência de texto de comentário eu conserto depois, e só
 divergência que abra acesso é motivo de parar.
 ```
+
+---
+
+# Prompt 7: as três que faltam, numa passada só
+
+**Este substitui os Prompts 5 e 6.** São três correções pendentes, e colar uma
+vez resolve as três. A ordem importa: a 015 muda restrição de coluna, e rodar
+ela por último deixa as outras duas fora do caminho se algo travar.
+
+Copie daqui até o fim.
+
+```
+Projeto Supabase: niekaszanicnrciuixnb (Entrais, São Paulo).
+
+Só SQL. No SQL Editor, NESTA ORDEM, o conteúdo de cada arquivo do repositório
+nicollekippersothe/ministe, branch main:
+
+  a) supabase/correcoes/013-enderecos-dos-exemplos-novos.sql
+  b) supabase/correcoes/014-foco-da-capa.sql
+  c) supabase/correcoes/015-o-banco-confere-o-link.sql
+
+As três são idempotentes. Cada uma tem, no próprio topo, o que faz e por quê, e
+as consultas de conferência no fim. Rode as conferências de cada uma e me mande
+o resultado, em vez de só dizer que rodou.
+
+O QUE CADA UMA É
+
+  013  Os endereços das páginas de exemplo novas entram na lista de reservados.
+       Insert, sem delete. Sem ela, alguém registra o endereço de um exemplo e
+       fica com uma página que endereço nenhum alcança.
+
+  014  Duas colunas para o ponto focal da capa, com restrição de faixa de 0 a
+       100. O app já está no ar sem ela e continua funcionando: coluna ausente
+       vira nulo, e nulo vale centro.
+
+  015  A IMPORTANTE. É conserto de segurança.
+
+       As regras de link do produto (só https, sem encurtador, sem usuário antes
+       do arroba, sem IP puro) moravam só na tela. O painel escreve direto pelo
+       PostgREST com o token da própria pessoa, e nesse caminho a conferência da
+       tela é enfeite: um PATCH à mão põe
+
+         https://nubank.com.br@golpe.net/pix
+
+       no botão principal de uma página publicada, que é o mais clicado e fica
+       fixo no rodapé. A 015 espelha as quatro regras em função de banco e
+       amarra as três constraints nela.
+
+UMA PARADA DE VERDADE, e ela é só na 015
+
+A conferência 3 da 015 pergunta se algum link JÁ GRAVADO seria recusado pela
+regra nova. Rode-a ANTES do bloco `begin` do arquivo:
+
+  select id, slug, url from public.links
+   where not public.endereco_de_link_valido(url);
+
+(a função precisa existir para essa consulta rodar, então na prática: rode o
+arquivo inteiro; se o `alter table` falhar, a transação desfaz sozinha e nada
+fica pela metade, e aí rode a consulta acima para ver quais linhas atrapalham.)
+
+Se aparecer alguma linha, PARE e me avise com o resultado. Existe link de gente
+de verdade que a regra nova recusaria, e reescrever ou apagar o link de uma
+pessoa é decisão dela, e não nossa.
+
+Divergência de texto de comentário eu conserto depois: siga e me conte. Só
+divergência que abra acesso é motivo de parar.
+
+DEPOIS DAS TRÊS
+
+  supabase/testes-rls.sql
+
+A bateria roda em transação e termina em rollback. O SQL Editor vai avisar de
+operações destrutivas e de tabela sem RLS: escolha "Run without RLS", pelo
+motivo escrito no topo do arquivo. Me mande a última linha, com a contagem.
+
+O QUE EU PRECISO DE VOLTA
+
+  1. As conferências das três, uma a uma.
+  2. Se a parada da 015 aconteceu, e o que apareceu.
+  3. A última linha da bateria, com a contagem de asserções.
+```
