@@ -42,10 +42,11 @@ const BUSCAS = [
   // Alecrim Confeitaria, o único exemplo de comida.
   {
     consulta: "cafe",
-    arquivos: [
-      ["capa", CAPA, 0],
-      ["galeria-3", QUADRADA, 15],
-    ],
+    arquivos: [["capa", CAPA, 0]],
+  },
+  {
+    consulta: "coffee shop",
+    arquivos: [["galeria-3", QUADRADA, 12]],
   },
   {
     consulta: "cake",
@@ -135,7 +136,10 @@ const BUSCAS = [
   },
   {
     consulta: "linen",
-    arquivos: [["spa-1", QUADRADA, 9]],
+    arquivos: [
+      ["spa-1", QUADRADA, 9],
+      ["spa-g1", QUADRADA, 12],
+    ],
   },
   {
     consulta: "candle",
@@ -153,10 +157,6 @@ const BUSCAS = [
   {
     consulta: "smooth stones",
     arquivos: [["spa-5", QUADRADA, 4]],
-  },
-  {
-    consulta: "towel",
-    arquivos: [["spa-g1", QUADRADA, 0]],
   },
   {
     consulta: "lavender",
@@ -311,7 +311,10 @@ const BUSCAS = [
    */
   {
     consulta: "woman profile",
-    arquivos: [["spa-logo", AVATAR, 17]],
+    arquivos: [
+      ["spa-logo", AVATAR, 17],
+      ["astro-logo", AVATAR, 13],
+    ],
   },
   {
     consulta: "smiling woman",
@@ -320,14 +323,15 @@ const BUSCAS = [
       ["canto-logo", AVATAR, 16],
     ],
   },
-  {
-    consulta: "portrait",
-    arquivos: [["astro-logo", AVATAR, 14]],
-  },
 ];
 
-/** Quantos candidatos a folha de contato mostra por busca. */
-const CANDIDATOS = 12;
+/**
+ * Quantos candidatos a folha de contato mostra por busca. É o mesmo 20 que a
+ * API devolve: com 12, as oito últimas posições ficavam escolhíveis sem que
+ * ninguém tivesse visto, e é justamente onde mora a foto boa que sobrou de
+ * fora do resultado óbvio.
+ */
+const CANDIDATOS = 20;
 
 async function buscar(consulta) {
   const cache = `${CACHE}busca-${consulta.replace(/\W+/g, "-")}.json`;
