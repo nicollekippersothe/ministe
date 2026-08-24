@@ -286,3 +286,170 @@ body {
     transform: translateY(calc(-100% + var(--janela)));
   }
 }
+
+/* ==========================================================================
+ * A tela inicial: a sala de exposicao.
+ *
+ * O nome da marca e a segunda pessoa do plural do imperativo de entrar, o que
+ * se diz na porta de uma loja ou de uma mostra. A tela inicial passa a ser
+ * essa sala: parede escura (o tema noite, que existe no produto pelo motivo
+ * de museu, ver o comentario dele acima), os trabalhos pendurados e acesos, e
+ * uma placa na porta.
+ *
+ * Tudo aqui vale so na tela inicial. A pagina publica do negocio continua
+ * intocada, com o tema que o dono escolheu.
+ * ========================================================================== */
+
+/*
+ * O foco de luz da sala.
+ *
+ * Uma parede chapada le como fundo escuro de painel. Um foco quente atras do
+ * que esta pendurado le como sala, e faz trabalho de hierarquia: o olho cai no
+ * produto antes de cair no texto.
+ *
+ * Fica em ::before com z-index negativo e sem eventos de ponteiro, entao ele
+ * nunca rouba toque de nada. E uma pintura so, sem custo de layout.
+ */
+.parede {
+  position: relative;
+  isolation: isolate;
+}
+
+.parede::before {
+  content: "";
+  position: absolute;
+  top: -8rem;
+  left: 50%;
+  z-index: -1;
+  width: min(120vw, 68rem);
+  height: 46rem;
+  translate: -50% 0;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 50% 40%,
+    color-mix(in srgb, var(--c-destaque) 17%, transparent),
+    transparent 72%
+  );
+}
+
+/*
+ * A placa da porta.
+ *
+ * O dominio ja vem gravado e o nome aparece depois da barra enquanto a pessoa
+ * digita. Quando o endereco esta livre a placa acende em latao, e esse e o
+ * unico brilho da pagina: e o estado que importa no momento em que ele
+ * aparece, entao ele merece corpo em vez de so uma linha de texto.
+ */
+.placa {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent);
+  transition:
+    border-color 240ms ease,
+    box-shadow 240ms ease;
+}
+
+/*
+ * O foco cai na placa inteira, e nao no campo dentro dela.
+ *
+ * A regra global desenha o contorno em quem recebe o teclado, e ali dentro
+ * isso virava um retangulo arredondado dentro de outro. Com a placa vestindo o
+ * foco, o objeto que se ve e o objeto que esta ativo, e a marca de foco
+ * continua com a mesma espessura e a mesma cor do resto do produto.
+ */
+.placa:has(input:focus-visible) {
+  outline: 3px solid var(--c-destaque);
+  outline-offset: 3px;
+}
+
+.placa input:focus-visible {
+  outline: none;
+}
+
+.placa[data-livre="1"] {
+  border-color: var(--c-destaque);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--c-destaque) 16%, transparent);
+}
+
+/*
+ * A luz subindo, uma vez, na primeira pintura.
+ *
+ * Um momento so, e orquestrado: o foco acende e as quatro pecas da abertura
+ * entram atras dele, na ordem em que se le. Cinco efeitos soltos espalhados
+ * pela pagina e o que faz um desenho parecer gerado; isto e um movimento com
+ * comeco e fim.
+ *
+ * A opacidade zero vive dentro do keyframe, e nunca no estado base: onde a
+ * animacao nao roda, o elemento nasce visivel. Quem pediu menos movimento no
+ * sistema cai na regra de cima, que zera a duracao, e a peca aparece pronta.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .acende {
+    animation: acender 620ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--atraso, 0ms);
+  }
+
+  .parede::before {
+    animation: acender-luz 1400ms ease-out both;
+  }
+}
+
+@keyframes acender {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes acender-luz {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * A faixa que corre de lado no celular e vira grade no monitor.
+ *
+ * No celular o mosaico empilhado virava tres mil pixels de cartao atras de
+ * cartao, que e a queixa de "muito texto" em forma de layout. Deitado, cada
+ * peca ocupa uma tela e a proxima espia pela direita convidando o polegar.
+ */
+.trilho {
+  scrollbar-width: none;
+}
+
+.trilho::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * A janela das duas salas: o quadro pendurado passando da borda de baixo.
+ *
+ * A pagina do exemplo e bem mais alta que o cartao. Cortada no seco, a frase
+ * do negocio ficava partida no meio e lia como defeito. Com o esmaecido, o
+ * corte vira desenho: a peca continua para baixo e o link para abrir ela
+ * inteira fica logo em seguida.
+ *
+ * A cor do esmaecido e a da propria superficie do cartao, entao ele acompanha
+ * o tema sem uma linha a mais.
+ */
+.janela {
+  position: relative;
+  overflow: hidden;
+}
+
+.janela::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 3.5rem;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--c-superficie));
+}

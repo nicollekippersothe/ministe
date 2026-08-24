@@ -67,6 +67,36 @@ export function IconeAvancar({ className }: Props) {
   );
 }
 
+/**
+ * Entrar. A porta aberta e a seta atravessando ela.
+ *
+ * O desenho rima com o símbolo da marca de propósito: lá é o arco entreaberto
+ * de quem recebe, aqui é a mesma porta vista de quem chega. O símbolo em si
+ * fica intocado em `lib/simbolo.ts`, porque ele vem do guia de marca e tem
+ * um lugar só.
+ *
+ * A seta entra pela esquerda e para na soleira, e não atravessa o batente: a
+ * ponta encostando na linha é o que faz o glifo dizer "entra aqui" em 20px.
+ */
+export function IconeEntrar({ className }: Props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <path d="M14 4h3.5A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5H14" />
+      <path d="m9.5 8.5 3.5 3.5-3.5 3.5" />
+      <path d="M13 12H4" />
+    </svg>
+  );
+}
+
 export function IconeSeta({ className }: Props) {
   return (
     <svg

@@ -59,7 +59,7 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
         janela para o próximo aparelho aparecer. O botão fica FORA deste div,
         senão o overflow corta a metade dele que passa da borda.
       */}
-      <div className="overflow-hidden py-8">
+      <div className="overflow-hidden pt-3 pb-5">
         <div
           className="flex transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
           style={{ transform: `translateX(-${atual * 100}%)` }}
@@ -98,8 +98,14 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
             <IconeAvancar className="h-5 w-5" />
           </button>
 
-          {/* Onde estou e quantos faltam, sem precisar esperar para descobrir. */}
-          <div className="-mt-2 flex justify-center gap-2">
+          {/*
+            Onde estou e quantos faltam, sem precisar esperar para descobrir.
+
+            O risco visível continua com 6px de altura, e quem recebe o toque é
+            o botão em volta dele, com 44 de lado. Antes o alvo era o próprio
+            risco, e o dedo errava.
+          */}
+          <div className="flex justify-center">
             {quadros.map((_, i) => (
               <button
                 key={i}
@@ -107,10 +113,15 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
                 onClick={() => setAtual(i)}
                 aria-label={`Ver o exemplo ${i + 1} de ${total}`}
                 aria-current={i === atual}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === atual ? "w-5 bg-texto" : "w-1.5 bg-texto/25"
-                }`}
-              />
+                className="flex h-11 w-11 items-center justify-center"
+              >
+                <span
+                  aria-hidden
+                  className={`block h-1.5 rounded-full transition-all ${
+                    i === atual ? "w-5 bg-texto" : "w-1.5 bg-texto/30"
+                  }`}
+                />
+              </button>
             ))}
           </div>
         </>
