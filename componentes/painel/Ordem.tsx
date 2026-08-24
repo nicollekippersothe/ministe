@@ -35,6 +35,7 @@ function Botoes({
   subir,
   descer,
   remover,
+  salvar,
 }: {
   indice: number;
   total: number;
@@ -45,6 +46,8 @@ function Botoes({
   subir: Alvo;
   descer: Alvo;
   remover: Alvo;
+  /** O Salvar desta linha, já amarrado a ela. Ver o comentário do `Cartao`. */
+  salvar?: (formData: FormData) => void;
 }) {
   const quadrado =
     "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-borda bg-fundo text-texto disabled:opacity-40";
@@ -75,19 +78,55 @@ function Botoes({
         {indice + 1} de {total}
       </p>
 
-      <details className="ml-auto">
-        <summary className="flex h-11 cursor-pointer list-none items-center rounded-full px-3 text-sm font-medium text-suave">
-          Remover
-        </summary>
-        <BotaoDeAcao
-          type="submit"
-          formAction={remover.bind(null, indice)}
-          className="mt-1 h-11 rounded-full border border-borda bg-fundo px-4 text-sm font-semibold text-texto"
-        >
-          Remover este {prefixo}
-          <span className="sr-only">, {nome}</span>
-        </BotaoDeAcao>
-      </details>
+      <div className="ml-auto flex items-center gap-1">
+        {salvar ? (
+          /*
+            **O Salvar da própria linha, e ele mora aqui de propósito.**
+
+            A dona do produto salvou um item pelo botão do rodapé da tela e
+            contou que ele "ficou em cima, sem dar a entender que é sobre esse
+            item". No monitor a barra de Salvar deixa de ser presa e vira o fim
+            do formulário: medido em 1440, o único Salvar da tela nascia a 1640
+            pixels do topo, depois de seis cartões e do bloco de acrescentar.
+            Quem estava escrevendo o item 2 lia um botão longe de tudo que ele
+            tinha acabado de escrever.
+
+            Fica fora da dobra, e não dentro dela, porque a linha fechada
+            também é uma linha editável: subir, descer e remover já valem com o
+            cartão fechado, e o Salvar é da mesma família. E é o que mantém uma
+            resposta só para o dedo em qualquer estado do cartão.
+
+            Ele grava a lista inteira, igual ao do rodapé, porque é o mesmo
+            formulário: o que muda é o endereço de volta, que reabre esta linha
+            com a confirmação dentro dela.
+          */
+          <BotaoDeAcao
+            type="submit"
+            formAction={salvar}
+            className="flex h-11 items-center rounded-full border border-texto/25 bg-fundo px-4 text-sm font-semibold text-texto"
+          >
+            Salvar
+            <span className="sr-only">
+              {" "}
+              este {prefixo}, {nome}
+            </span>
+          </BotaoDeAcao>
+        ) : null}
+
+        <details>
+          <summary className="flex h-11 cursor-pointer list-none items-center rounded-full px-3 text-sm font-medium text-suave">
+            Remover
+          </summary>
+          <BotaoDeAcao
+            type="submit"
+            formAction={remover.bind(null, indice)}
+            className="mt-1 h-11 rounded-full border border-borda bg-fundo px-4 text-sm font-semibold text-texto"
+          >
+            Remover este {prefixo}
+            <span className="sr-only">, {nome}</span>
+          </BotaoDeAcao>
+        </details>
+      </div>
     </div>
   );
 }
@@ -155,6 +194,7 @@ export function Cartao({
   subir,
   descer,
   remover,
+  salvar,
   children,
 }: {
   id: string;
@@ -170,6 +210,13 @@ export function Cartao({
   subir: Alvo;
   descer: Alvo;
   remover: Alvo;
+  /**
+   * O Salvar desta linha, quando a tela oferece um. Chega pronto, amarrado ao
+   * id da linha por quem sabe qual ela é, e some quando a tela deixa de mandar:
+   * a lista de links extras continua com um Salvar só, no rodapé, porque ali
+   * são duas colunas por linha e o formulário inteiro cabe numa tela.
+   */
+  salvar?: (formData: FormData) => void;
   children: ReactNode;
 }) {
   return (
@@ -228,6 +275,7 @@ export function Cartao({
         subir={subir}
         descer={descer}
         remover={remover}
+        salvar={salvar}
       />
     </fieldset>
   );

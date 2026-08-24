@@ -453,3 +453,44 @@ body {
   pointer-events: none;
   background: linear-gradient(to bottom, transparent, var(--c-superficie));
 }
+
+/* ==========================================================================
+ * O catalogo em cartoes.
+ *
+ * O desenho inteiro esta em componentes/Catalogo.tsx, com as classes do
+ * Tailwind. Aqui ficam as duas coisas que o utilitario resolve pior: o encaixe
+ * da faixa de fotos e a cor de passagem do mouse no botao de cada item.
+ * ========================================================================== */
+
+/*
+ * A faixa de fotos dentro do cartao encaixa pelo comeco, e a de fora encaixa
+ * pelo centro. A diferenca e o que a moldura pede: solta na pagina, a foto
+ * centralizada fica no meio da tela; dentro do cartao, ela precisa encostar na
+ * borda esquerda, com a proxima espiando pela direita.
+ *
+ * Vem depois da regra de `.faixa` de proposito: mesma forca, e a ultima vale.
+ */
+.faixa-do-cartao > * {
+  scroll-snap-align: start;
+}
+
+/*
+ * O botao de cada item.
+ *
+ * A cor forte saiu do texto e ficou so no simbolo do WhatsApp, entao a
+ * passagem do mouse e o que confirma que ali e um botao: a moldura e a letra
+ * assumem o verde da conversa, sobre um fundo que e a propria superficie com
+ * um vestigio dele. Em qualquer um dos tres temas, porque tudo sai de token.
+ */
+.acao-do-item {
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.acao-do-item:hover {
+  border-color: var(--c-zap);
+  color: var(--c-zap);
+  background: color-mix(in srgb, var(--c-zap) 8%, var(--c-superficie));
+}

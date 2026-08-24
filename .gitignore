@@ -58,3 +58,6 @@ next-env.d.ts
 # pacote playwright resolver, e continua sendo descartável por definição.
 /*.mjs
 !/postcss.config.mjs
+
+# Capturas de tela que as frentes tiram para olhar antes e depois.
+.capturas*/

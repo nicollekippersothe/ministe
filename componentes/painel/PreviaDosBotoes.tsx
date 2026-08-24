@@ -130,7 +130,7 @@ function Bloco({
           <Texto
             id={`${prefixo}-rotulo`}
             rotulo="Texto do botão"
-            dica={`Diga o que acontece ao tocar. Por exemplo: ${exemploRotulo}.`}
+            dica={`Por exemplo: ${exemploRotulo}.`}
             valor={escrita.rotulo}
             maxLength={40}
           />
@@ -146,7 +146,7 @@ function Bloco({
               <Texto
                 id={`${prefixo}-url`}
                 rotulo="Endereço do link"
-                dica="O endereço completo, do jeito que ele abre no navegador. Use o link direto, porque o encurtado esconde para onde leva."
+                dica="O endereço completo, do jeito que ele abre no navegador. Use o link direto."
                 valor={escrita.url}
                 inputMode="url"
               />
@@ -253,7 +253,7 @@ export function BotoesDaPagina({ negocio }: { negocio: Negocio }) {
     <MapaDaPagina
       negocio={negocio}
       zona="barra"
-      chamada="Na sua página, os botões ficam presos embaixo, por cima do que estiver rolando:"
+      chamada="Na sua página eles ficam presos embaixo, por cima do que estiver rolando:"
     >
       {acoes.length > 0 ? (
         acoes.map((a, i) => (
@@ -298,14 +298,14 @@ export function BotoesDaPagina({ negocio }: { negocio: Negocio }) {
         <Bloco
           prefixo="principal"
           titulo="Botão principal"
-          explicacao="Aparece preenchido, com destaque. É onde a maioria vai tocar."
+          explicacao="Aparece preenchido, com destaque."
           exemploRotulo="Marcar uma sessão"
           escrita={principal}
         />
         <Bloco
           prefixo="secundaria"
           titulo="Botão secundário"
-          explicacao="Aparece contornado, embaixo do principal. Deixe de fora se um botão já basta."
+          explicacao="Aparece contornado, embaixo do principal."
           exemploRotulo="Ver os horários livres"
           escrita={secundaria}
         />

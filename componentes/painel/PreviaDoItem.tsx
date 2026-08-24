@@ -39,6 +39,7 @@ export function PreviaDoItem({
   prefixo,
   item,
   chamada,
+  sobConsulta,
   children,
 }: {
   negocio: Negocio;
@@ -47,9 +48,18 @@ export function PreviaDoItem({
   item: Item;
   /** A frase acima do recorte. Muda entre a linha da lista e o acrescentar. */
   chamada: string;
+  /**
+   * Qual das duas respostas de preço chega marcada, do jeito que a tela a
+   * desenhou. Vem de fora porque a linha da lista e o formulário de acrescentar
+   * abrem em respostas diferentes, e a prévia precisa começar na mesma que o
+   * rádio mostra: item guardado sem preço abre em "sob consulta", e item novo
+   * abre em "preço em reais", que é o caminho de quase todo mundo.
+   */
+  sobConsulta: boolean;
   children: ReactNode;
 }) {
   const [atual, setAtual] = useState<Item>(item);
+  const [combinado, setCombinado] = useState(sobConsulta);
 
   function ler(evento: React.FormEvent<HTMLDivElement>) {
     const alvo = evento.target;
@@ -63,6 +73,16 @@ export function PreviaDoItem({
     if (!alvo.name.startsWith(`${prefixo}-`)) return;
     const campo = alvo.name.slice(prefixo.length + 1);
     const valor = alvo.value;
+
+    /*
+     * A resposta de preço é um grupo de rádios, e o evento chega dos dois: o
+     * que acabou de ser marcado e o que acabou de ser solto. Só o marcado
+     * responde, senão a prévia obedeceria à opção que a pessoa largou.
+     */
+    if (campo === "preco-modo" && alvo instanceof HTMLInputElement) {
+      if (alvo.checked) setCombinado(valor === "consulta");
+      return;
+    }
 
     setAtual((a) => {
       if (campo === "titulo") return { ...a, titulo: valor };
@@ -85,7 +105,19 @@ export function PreviaDoItem({
    */
   const recorte: Negocio = {
     ...negocio,
-    itens: [{ ...atual, fotos: [] }],
+    /*
+     * Preço sob consulta chega na prévia como preço nulo, que é o que ele é no
+     * banco e o que a página pública já entende: o item sai com nome e
+     * descrição, e o valor fica para a conversa. Assim a pessoa marca a opção e
+     * vê na hora o cartão que a página dela vai mostrar.
+     */
+    itens: [
+      {
+        ...atual,
+        precoCentavos: combinado ? null : atual.precoCentavos,
+        fotos: [],
+      },
+    ],
   };
 
   const temNome = atual.titulo.trim() !== "";

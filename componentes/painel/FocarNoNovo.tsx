@@ -35,8 +35,33 @@ export function FocarNoNovo({
   useEffect(() => {
     document.getElementById(cartao)?.scrollIntoView({ block: "start" });
     if (campo === undefined) return;
-    const alvo = document.getElementById(campo);
-    if (alvo instanceof HTMLElement) alvo.focus({ preventScroll: true });
+
+    const mirar = () => {
+      const alvo = document.getElementById(campo);
+      if (alvo instanceof HTMLElement) alvo.focus({ preventScroll: true });
+      return document.activeElement === alvo;
+    };
+
+    if (mirar()) return;
+
+    /*
+     * Uma segunda tentativa, um quadro depois, e ela tem dois motivos concretos.
+     *
+     * `app/painel/PreservarDigitado.tsx` devolve o que foi digitado num quadro
+     * seguinte a este, e o campo que o servidor recusou pode estar escondido até
+     * lá: no catálogo, o preço em reais só aparece com a resposta "preço em
+     * reais" marcada, e quem marca de volta é aquela devolução. Elemento
+     * escondido recusa o foco em silêncio, e a pessoa chegaria ao cartão certo
+     * com o cursor no `body`.
+     *
+     * A segunda tentativa só acontece com o cursor ainda no `body`, ou seja com
+     * ninguém tendo mirado em nada nesse meio quadro. É o que impede o foco de
+     * passar por cima do dedo de quem foi mais rápido.
+     */
+    const quadro = requestAnimationFrame(() => {
+      if (document.activeElement === document.body) mirar();
+    });
+    return () => cancelAnimationFrame(quadro);
   }, [cartao, campo]);
 
   return null;

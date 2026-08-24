@@ -3,6 +3,7 @@ import {
   acrescentarItem,
   descerItem,
   removerItem,
+  salvarItem,
   salvarItens,
   subirItem,
 } from "./acoes";
@@ -13,11 +14,13 @@ import {
   BarraSalvar,
   Botao,
   Marcar,
+  Opcoes,
   Texto,
 } from "@/componentes/painel/Campos";
 import { FocarNoNovo } from "@/componentes/painel/FocarNoNovo";
 import { Cartao } from "@/componentes/painel/Ordem";
 import { PreviaDoItem } from "@/componentes/painel/PreviaDoItem";
+import { FaixaDeRecado } from "@/componentes/painel/Sinais";
 import { doDono } from "@/lib/dados";
 import { preco, precoEditavel } from "@/lib/formato";
 import type { Item } from "@/lib/tipos";
@@ -63,7 +66,134 @@ export const dynamic = "force-dynamic";
  *
  * E o botão de acrescentar passou a existir também no alto, porque no fim de
  * uma lista cheia ele estava a três telas de rolagem de quem acabou de chegar.
+ *
+ * ## A recusa e a confirmação moram dentro do item
+ *
+ * **Segunda leitura da mesma tela, pela mesma pessoa: "o botão de salvar ficou
+ * em cima, sem dar a entender que é sobre esse item", e "essa página precisa
+ * rever bem a usabilidade, não tem feedback de retorno".** Três coisas, e as
+ * três eram de endereço:
+ *
+ * 1. A recusa saía no alto. Medido no monitor de 1440: a frase a 222 pixels do
+ *    topo, o item que a levantou a 1133, fechado, fora da janela de 900. Agora a
+ *    ação diz qual linha (`?erro=titulo&emItem=3`), o cartão chega aberto, a
+ *    frase sai dentro dele e o cursor entra no campo recusado.
+ * 2. O Salvar era um só, no fim de tudo. Agora cada linha tem o dela, no rodapé
+ *    do cartão, junto de subir, descer e remover. Ver componentes/painel/Ordem.tsx.
+ * 3. Gravar terminava numa frase cinza no alto, que quem estava no meio da lista
+ *    nunca via. Agora a confirmação sai dentro do cartão salvo, no mesmo verde e
+ *    com o mesmo certo dos cartões de imagem, pela `FaixaDeRecado` de
+ *    componentes/painel/Sinais.tsx: o painel inteiro fala a mesma língua.
+ *
+ * ## Preço sob consulta
+ *
+ * "Ali teria que ter alguma opção sob consulta, ou pra pessoa que não quer
+ * preencher o preço." Campo vazio dizia duas coisas ao mesmo tempo, e a pessoa
+ * ficava sem saber qual delas tinha salvado. Agora a pergunta está escrita, com
+ * as duas respostas à vista, e a resposta escolhida some ou traz o campo de
+ * reais. O banco continua igual: sob consulta é a mesma coluna nula que a página
+ * pública já entende. Ver `precoDoItem` em ./acoes.ts.
+ *
+ * `mostrarPrecos` é a outra pergunta, a que vale para todos os itens de uma vez,
+ * e ela passou a aparecer também aqui: "eu sei que ela preenche isso na outra
+ * tela, mas eu traria pra tela de catálogo pra ficar mais clara a navegação".
+ * É a mesma coluna da tela de informações, lida e escrita pelas duas.
  */
+
+/**
+ * As duas frases de recusa de um item, do jeito que elas aparecem dentro dele.
+ *
+ * São as mesmas de componentes/painel/Aviso.tsx, que é quem responde pela recusa
+ * que vale para a tela toda (limite do plano, escrita recusada pelo banco).
+ * Ficam escritas aqui porque só esta tela tem para onde apontar: recusa de item
+ * conhece a linha, e a frase sai dentro dela.
+ */
+const RECUSA_NO_ITEM: Record<string, string> = {
+  titulo: "Escreva o nome do item para salvar. Ele é o que aparece na página.",
+  preco: "Confira o preço. Escreva só o número, por exemplo 74,90.",
+};
+
+/**
+ * O campo de reais aparece com a resposta "preço em reais" marcada, e some com
+ * a outra.
+ *
+ * CSS puro, e não estado no React, pelo mesmo motivo do `details` das linhas:
+ * funciona com o JavaScript ainda a caminho, o teclado já alcança o rádio e o
+ * leitor de tela já anuncia o grupo. O React 19 leva a tag para o topo do
+ * documento e junta as repetições pelo `href`, então vinte itens na tela
+ * continuam com uma regra só. Mesmo desenho do `Pulso` de
+ * componentes/painel/Ordem.tsx.
+ */
+function RegraDoPreco() {
+  return (
+    <style href="painel-preco-sob-consulta" precedence="default">{`
+      .preco-escolha:has(input[value="consulta"]:checked) .preco-valor {
+        display: none;
+      }
+    `}</style>
+  );
+}
+
+/**
+ * A pergunta do preço: as duas respostas, e o campo de reais embaixo.
+ *
+ * A resposta marcada sai do que está gravado, porque é ela que descreve a
+ * página de hoje: item com valor abre em "preço em reais", item sem valor abre
+ * em "preço sob consulta", que é exatamente o que a página dele já mostra. O
+ * formulário de acrescentar é o único que chega com a resposta escolhida por
+ * nós, e chega em reais: quem está criando um item quase sempre tem um valor
+ * para escrever, e a outra resposta fica a um toque.
+ */
+function EscolhaDoPreco({
+  prefixo,
+  centavos,
+  sobConsulta,
+}: {
+  /** O começo do `name` dos campos: "item-3", ou "novo". */
+  prefixo: string;
+  centavos: number | null;
+  sobConsulta: boolean;
+}) {
+  return (
+    <div className="preco-escolha flex flex-col gap-3">
+      <Opcoes
+        nome={`${prefixo}-preco-modo`}
+        rotulo="Preço"
+        valor={sobConsulta ? "consulta" : "reais"}
+        opcoes={[
+          {
+            valor: "reais",
+            rotulo: "Preço em reais",
+            dica: "O valor sai junto do item, na sua página.",
+          },
+          {
+            valor: "consulta",
+            rotulo: "Preço sob consulta",
+            dica: "O item sai com nome e descrição, e o valor você combina na conversa.",
+          },
+        ]}
+      />
+
+      {/*
+        Sem type="number" de propósito. Ele recusa a vírgula em boa parte dos
+        navegadores, e "74,90" é como o brasileiro escreve preço. O inputMode
+        abre o teclado numérico do celular, e quem confere é lerPreco, que
+        aceita vírgula e ponto.
+      */}
+      <div className="preco-valor">
+        <Texto
+          id={`${prefixo}-preco`}
+          rotulo="Quanto custa, em reais"
+          dica="Por exemplo 180,00."
+          valor={precoEditavel(centavos)}
+          inputMode="decimal"
+          autoComplete="off"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default async function Catalogo({
   searchParams,
 }: {
@@ -76,6 +206,8 @@ export default async function Catalogo({
     removido?: string;
     movido?: string;
     erro?: string;
+    /** A linha que levantou a recusa: o número dela, ou "novo". */
+    emItem?: string;
   }>;
 }) {
   exigirLogin();
@@ -89,13 +221,34 @@ export default async function Catalogo({
   const emFoco = params.novo ?? params.aberto ?? null;
   const indiceEmFoco = itens.findIndex((i) => i.id === emFoco);
 
+  /*
+   * A recusa que tem endereço: a linha que a levantou, e a frase que vai dentro
+   * dela. Recusa sem endereço (o limite do plano, a escrita recusada pelo banco)
+   * continua no `Aviso` do alto, que é onde ela pertence: ela é da tela toda.
+   */
+  const linhaExiste =
+    params.emItem === "novo" || itens[Number(params.emItem)] !== undefined;
+
+  const recusaDoItem =
+    params.erro !== undefined &&
+    params.emItem !== undefined &&
+    linhaExiste &&
+    params.erro in RECUSA_NO_ITEM
+      ? { onde: params.emItem, frase: RECUSA_NO_ITEM[params.erro], campo: params.erro }
+      : null;
+
   const feito = params.novo
     ? "Item acrescentado ao catálogo."
     : params.removido
       ? "Item removido do catálogo."
       : params.movido
         ? "Nova ordem guardada."
-        : params.salvo
+        : /*
+           * "Alterações salvas" só quando nenhum cartão carrega a confirmação.
+           * Com a linha aberta na tela, a frase do alto seria a segunda cópia do
+           * mesmo recado, e a que a pessoa não está olhando.
+           */
+          params.salvo && indiceEmFoco < 0
           ? "Alterações salvas."
           : null;
 
@@ -111,6 +264,7 @@ export default async function Catalogo({
 
   return (
     <main className="mt-6">
+      <RegraDoPreco />
       {/*
         No computador a coluna da esquerda fica sempre à vista, com as seções e
         o estado da página, então o Voltar seria um segundo caminho para onde já
@@ -131,19 +285,27 @@ export default async function Catalogo({
       <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
         É a lista do que você vende. Na sua página ela aparece com o título{" "}
         <span className="font-medium text-texto">{negocio.tituloCatalogo}</span>,
-        e a ordem daqui é a ordem de lá.{" "}
-        {negocio.mostrarPrecos
-          ? "Os preços aparecem para quem visita."
-          : "Hoje a página guarda os preços aqui com você, e mostra de cada item o nome e a descrição."}{" "}
-        <Link
-          href="/painel/negocio"
-          className="font-medium text-destaque underline-offset-4 hover:underline"
-        >
-          Mudar o título e os preços
-        </Link>
+        e a ordem daqui é a ordem de lá.
       </p>
+      {/*
+        O link sai da frase e vira alvo próprio.
 
-      <Aviso salvo={feito !== null} mensagem={feito ?? undefined} erro={params.erro} />
+        Dentro do parágrafo ele media 342 por 39 no celular, e o dedo pede 44 de
+        altura. O respiro vem de dentro do alvo e a margem negativa devolve o
+        alinhamento com o texto de cima, que é a mesma solução do Voltar.
+      */}
+      <Link
+        href="/painel/negocio"
+        className="-ml-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-destaque underline-offset-4 hover:underline"
+      >
+        Mudar o título desta seção
+      </Link>
+
+      <Aviso
+        salvo={feito !== null}
+        mensagem={feito ?? undefined}
+        erro={recusaDoItem === null ? params.erro : undefined}
+      />
 
       {total > 0 ? (
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -181,68 +343,102 @@ export default async function Catalogo({
         */}
         <input type="hidden" name="novo" value={emFoco ?? ""} />
 
-        {itens.map((item, i) => (
-          <Cartao
-            key={item.id}
-            id={`item-${i}`}
-            numero={i + 1}
-            total={total}
-            nome={item.titulo}
-            detalhe={
-              item.precoCentavos === null ? null : preco(item.precoCentavos)
-            }
-            selo={item.ativo ? null : "Guardado"}
-            prefixo="item"
-            aberto={item.id === emFoco}
-            novo={item.id === params.novo}
-            subir={subirItem}
-            descer={descerItem}
-            remover={removerItem}
-          >
-            <input type="hidden" name={`item-${i}-id`} value={item.id} />
+        {/*
+          A chave de mostrar preço, ao lado da lista de preços que ela comanda.
 
-            <PreviaDoItem
-              negocio={negocio}
-              prefixo={`item-${i}`}
-              item={item}
-              chamada="Na sua página, este item aparece assim:"
+          O campo escondido é a marca de presença: caixa de marcar em repouso
+          some do envio, e sem ele toda gravação daqui apagaria a escolha feita
+          na tela de informações. Ver `mostrarPrecos` em ./acoes.ts.
+        */}
+        <input type="hidden" name="mostrarPrecos-escolhido" value="1" />
+        <Marcar
+          id="mostrarPrecos"
+          rotulo="Mostrar os preços na página"
+          dica={
+            negocio.mostrarPrecos
+              ? "Cada item leva para a sua página o valor que você escreveu aqui."
+              : "Hoje os preços ficam guardados aqui com você, e a página mostra de cada item o nome e a descrição."
+          }
+          marcado={negocio.mostrarPrecos}
+        />
+
+        {itens.map((item, i) => {
+          const recusado = recusaDoItem?.onde === String(i);
+          const confirmado = params.salvo !== undefined && item.id === params.aberto;
+
+          return (
+            <Cartao
+              key={item.id}
+              id={`item-${i}`}
+              numero={i + 1}
+              total={total}
+              nome={item.titulo}
+              detalhe={
+                item.precoCentavos === null
+                  ? "Preço sob consulta"
+                  : preco(item.precoCentavos)
+              }
+              selo={item.ativo ? null : "Guardado"}
+              prefixo="item"
+              aberto={item.id === emFoco || recusado}
+              novo={item.id === params.novo}
+              subir={subirItem}
+              descer={descerItem}
+              remover={removerItem}
+              salvar={salvarItem.bind(null, item.id)}
             >
-              <Texto
-                id={`item-${i}-titulo`}
-                rotulo="Nome do item"
-                valor={item.titulo}
-                maxLength={80}
-              />
-              <AreaTexto
-                id={`item-${i}-descricao`}
-                rotulo="Descrição"
-                dica="Uma ou duas frases sobre o que a pessoa recebe."
-                valor={item.descricao}
-                maxLength={280}
-              />
+              <input type="hidden" name={`item-${i}-id`} value={item.id} />
+
               {/*
-                Sem type="number" de propósito. Ele recusa a vírgula em boa parte
-                dos navegadores, e "74,90" é como o brasileiro escreve preço. O
-                inputMode abre o teclado numérico do celular, e quem confere é
-                lerPreco, que aceita vírgula e ponto.
+                A resposta da gravação, dentro da linha que a pessoa está
+                olhando. Mesmo vocabulário dos cartões de imagem: o certo verde
+                para o que chegou ao destino, a caixa de destaque para a recusa.
               */}
-              <Texto
-                id={`item-${i}-preco`}
-                rotulo="Preço em reais"
-                dica="Por exemplo 180,00. Em branco, o item aparece com nome e descrição."
-                valor={precoEditavel(item.precoCentavos)}
-                inputMode="decimal"
-                autoComplete="off"
-              />
-              <Marcar
-                id={`item-${i}-ativo`}
-                rotulo="Aparece na página"
-                dica="Desmarcado, o item fica guardado aqui com você."
-                marcado={item.ativo}
-              />
-            </PreviaDoItem>
-          </Cartao>
-        ))}
+              {recusado ? (
+                <FaixaDeRecado tom="recusa">{recusaDoItem?.frase}</FaixaDeRecado>
+              ) : confirmado ? (
+                <FaixaDeRecado tom="pronto">
+                  {item.ativo
+                    ? "Pronto. Este item está salvo e aparece na sua página."
+                    : "Pronto. Este item está salvo, e fica aqui com você."}
+                </FaixaDeRecado>
+              ) : null}
+
+              <PreviaDoItem
+                negocio={negocio}
+                prefixo={`item-${i}`}
+                item={item}
+                sobConsulta={item.precoCentavos === null}
+                chamada="Na sua página, este item aparece assim:"
+              >
+                <Texto
+                  id={`item-${i}-titulo`}
+                  rotulo="Nome do item"
+                  valor={item.titulo}
+                  maxLength={80}
+                />
+                <AreaTexto
+                  id={`item-${i}-descricao`}
+                  rotulo="Descrição"
+                  dica="Uma ou duas frases sobre o que a pessoa recebe."
+                  valor={item.descricao}
+                  maxLength={280}
+                />
+                <EscolhaDoPreco
+                  prefixo={`item-${i}`}
+                  centavos={item.precoCentavos}
+                  sobConsulta={item.precoCentavos === null}
+                />
+                <Marcar
+                  id={`item-${i}-ativo`}
+                  rotulo="Aparece na página"
+                  dica="Desmarcado, o item fica guardado aqui com você."
+                  marcado={item.ativo}
+                />
+              </PreviaDoItem>
+            </Cartao>
+          );
+        })}
 
         {/*
           O acrescentar mora dentro do mesmo formulário, e por isso pede só o
@@ -263,6 +459,10 @@ export default async function Catalogo({
             Acrescentar item
           </legend>
 
+          {recusaDoItem?.onde === "novo" ? (
+            <FaixaDeRecado tom="recusa">{recusaDoItem.frase}</FaixaDeRecado>
+          ) : null}
+
           <PreviaDoItem
             /* Chave pelo tamanho da lista: acrescentar devolve a tela com o
                formulário em branco, e a prévia precisa nascer em branco junto. */
@@ -270,6 +470,7 @@ export default async function Catalogo({
             negocio={negocio}
             prefixo="novo"
             item={emBranco}
+            sobConsulta={false}
             chamada="Assim que você salvar, ele entra na sua página deste jeito:"
           >
             <Texto
@@ -280,13 +481,7 @@ export default async function Catalogo({
               maxLength={80}
               autoComplete="off"
             />
-            <Texto
-              id="novo-preco"
-              rotulo="Preço em reais"
-              valor={null}
-              inputMode="decimal"
-              autoComplete="off"
-            />
+            <EscolhaDoPreco prefixo="novo" centavos={null} sobConsulta={false} />
           </PreviaDoItem>
 
           {/* 64 e não 56: em 224 pixels o rótulo quebrava em duas linhas e
@@ -300,17 +495,33 @@ export default async function Catalogo({
 
         {total > 0 ? (
           <BarraSalvar>
-            <Botao type="submit">Salvar</Botao>
+            <Botao type="submit">Salvar o catálogo</Botao>
           </BarraSalvar>
         ) : null}
       </form>
 
       {/*
-        A rolagem e o cursor, depois de a tela existir. Só para o item recém
-        criado: no volta do Salvar a pessoa já está escrevendo, e mover o cursor
-        ali tiraria ela de onde ela estava.
+        A rolagem e o cursor, depois de a tela existir.
+
+        Dois momentos pedem isso, e os dois são o mesmo problema: a pessoa está
+        no meio de uma lista longa e a tela recarregou inteira. O item recém
+        criado, que nasce no fim e precisa ser encontrado; e o item recusado, que
+        precisa mostrar qual campo o servidor devolveu. No caminho de volta de um
+        Salvar comum o cursor fica onde está: ali ela já está escrevendo, e mover
+        o foco tiraria ela de onde ela estava.
       */}
-      {params.novo && indiceEmFoco >= 0 ? (
+      {recusaDoItem !== null ? (
+        <FocarNoNovo
+          cartao={
+            recusaDoItem.onde === "novo" ? "acrescentar" : `item-${recusaDoItem.onde}`
+          }
+          campo={
+            recusaDoItem.onde === "novo"
+              ? `novo-${recusaDoItem.campo}`
+              : `item-${recusaDoItem.onde}-${recusaDoItem.campo}`
+          }
+        />
+      ) : params.novo && indiceEmFoco >= 0 ? (
         <FocarNoNovo
           cartao={`item-${indiceEmFoco}`}
           campo={`item-${indiceEmFoco}-descricao`}

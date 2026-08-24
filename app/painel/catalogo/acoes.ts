@@ -31,7 +31,60 @@ function texto(f: FormData, campo: string): string | null {
   return limpo === "" ? null : limpo;
 }
 
-type Leitura = { ok: true; itens: Item[] } | { ok: false; erro: string };
+/**
+ * A recusa carrega o endereço dela, e é isso que a tira do alto da tela.
+ *
+ * **Relato de uso, nas palavras da dona: "o aviso ficou em cima, sem dar a
+ * entender que é sobre esse item".** Ela salvou uma lista de seis itens, um
+ * deles chegou torto, e a frase saiu no topo da página. Medido no monitor de
+ * 1440: a frase nasceu a 222 pixels do topo e o item que a levantou estava a
+ * 1133, fechado, fora da janela de 900. Numa lista, aviso no alto conta que
+ * algo deu errado e esconde qual.
+ *
+ * Então a recusa passa a dizer QUAL linha, e a tela usa isso para abrir aquele
+ * cartão, pôr a frase dentro dele e levar o cursor ao campo recusado. `onde` é
+ * o índice da linha, ou "novo" para o formulário de acrescentar, que é a outra
+ * origem de recusa desta tela.
+ */
+type Recusa = { erro: string; onde: string };
+
+type Leitura = { ok: true; itens: Item[] } | ({ ok: false } & Recusa);
+
+/** O caminho de volta de uma recusa: a linha aberta, com a frase dentro dela. */
+function paraRecusa({ erro, onde }: Recusa): string {
+  const ancora = onde === "novo" ? "#acrescentar" : `#item-${onde}`;
+  return `${TELA}?erro=${erro}&emItem=${encodeURIComponent(onde)}${ancora}`;
+}
+
+/**
+ * O preço do item, com a escolha de "sob consulta" mandando na frente.
+ *
+ * **Preço em branco e preço sob consulta eram a mesma coisa na tela, e são duas
+ * coisas para quem escreve.** A dona do produto pediu "alguma opção sob
+ * consulta ou pra pessoa que não quer preencher o preço": o campo vazio parecia
+ * esquecimento, e ela salvava sem saber se o item tinha ficado do jeito que ela
+ * queria.
+ *
+ * O banco continua igual, e é de propósito: `preco_centavos` já aceita nulo, e
+ * nulo já significa que a linha do preço sai de cena na página pública. O que
+ * faltava era a pergunta ficar escrita na tela. A escolha vira a mesma coluna
+ * nula, então nenhuma correção de SQL entra no caminho e o catálogo de quem já
+ * tem item sem preço abre com "sob consulta" marcado, que é o que a página dele
+ * já mostra hoje.
+ *
+ * `mostrarPrecos` é outra pergunta, e continua sendo: ela esconde o preço de
+ * todos os itens de uma vez, e vive na linha do negócio.
+ */
+function precoDoItem(
+  f: FormData,
+  prefixo: string,
+): { ok: true; centavos: number | null } | { ok: false } {
+  if (f.get(`${prefixo}-preco-modo`) === "consulta") {
+    return { ok: true, centavos: null };
+  }
+  const lido = lerPreco(String(f.get(`${prefixo}-preco`) ?? ""));
+  return lido.ok ? { ok: true, centavos: lido.centavos } : { ok: false };
+}
 
 /**
  * A lista inteira, do jeito que ela está na tela agora.
@@ -48,10 +101,10 @@ function lerItens(f: FormData, atuais: Item[]): Leitura {
   for (let i = 0; f.has(`item-${i}-id`); i++) {
     const id = String(f.get(`item-${i}-id`));
     const titulo = texto(f, `item-${i}-titulo`);
-    if (titulo === null) return { ok: false, erro: "titulo" };
+    if (titulo === null) return { ok: false, erro: "titulo", onde: String(i) };
 
-    const preco = lerPreco(String(f.get(`item-${i}-preco`) ?? ""));
-    if (!preco.ok) return { ok: false, erro: "preco" };
+    const preco = precoDoItem(f, `item-${i}`);
+    if (!preco.ok) return { ok: false, erro: "preco", onde: String(i) };
 
     itens.push({
       id,
@@ -66,12 +119,33 @@ function lerItens(f: FormData, atuais: Item[]): Leitura {
   return { ok: true, itens };
 }
 
+/**
+ * A chave de mostrar preço, agora respondida também aqui.
+ *
+ * Ela mora na linha do negócio e a tela de informações continua perguntando por
+ * ela. A dona do produto pediu para ela aparecer junto do catálogo: "eu sei que
+ * ela preenche isso na outra tela mas eu traria pra tela de catálogo pra ficar
+ * mais clara a navegação". É a mesma coluna nas duas telas, então as duas leem
+ * e escrevem o mesmo valor.
+ *
+ * O campo escondido é o que separa "a pessoa desmarcou" de "este formulário nem
+ * pergunta isso": caixa de marcar em repouso simplesmente some do envio, e sem a
+ * marca de presença toda gravação daqui apagaria a escolha feita na outra tela.
+ */
+function mostrarPrecos(f: FormData, negocio: Negocio): boolean {
+  if (!f.has("mostrarPrecos-escolhido")) return negocio.mostrarPrecos;
+  return f.get("mostrarPrecos") === "on";
+}
+
 /** A lista lida, ou o desvio pronto quando o formulário veio com algo torto. */
 async function lista(f: FormData): Promise<{ negocio: Negocio; itens: Item[] }> {
   const negocio = await doDono();
   const lido = lerItens(f, negocio.itens);
-  if (!lido.ok) redirect(`${TELA}?erro=${lido.erro}`);
-  return { negocio, itens: lido.itens };
+  if (!lido.ok) redirect(paraRecusa(lido));
+  return {
+    negocio: { ...negocio, mostrarPrecos: mostrarPrecos(f, negocio) },
+    itens: lido.itens,
+  };
 }
 
 /** Para onde a tela volta depois de mexer numa linha. Ver o comentário da tela. */
@@ -91,22 +165,55 @@ const naLinha = (i: number) => `#item-${i}`;
  * mandar a tela para uma âncora que não existe. Sai como `aberto`, e nunca como
  * `novo`, porque o selo e a cor são do instante do acrescentar e não se repetem
  * a cada gravação.
+ *
+ * `escolhido` é o Salvar que mora dentro de um cartão: ele diz de qual item se
+ * trata, e passa na frente do campo escondido, que aponta para a linha que
+ * estava aberta antes do toque.
  */
 function linhaAberta(
   itens: Item[],
   formData: FormData,
+  escolhido?: string,
 ): { pedaco: string; ancora: string } {
-  const alvo = texto(formData, "novo");
-  const i = alvo === null ? -1 : itens.findIndex((item) => item.id === alvo);
-  if (alvo === null || i < 0) return { pedaco: "", ancora: "" };
+  const alvo = escolhido ?? texto(formData, "novo");
+  const i = alvo === null || alvo === undefined ? -1 : itens.findIndex((item) => item.id === alvo);
+  if (alvo === null || alvo === undefined || i < 0) return { pedaco: "", ancora: "" };
   return { pedaco: `&aberto=${encodeURIComponent(alvo)}`, ancora: naLinha(i) };
 }
 
-export async function salvarItens(formData: FormData) {
+/** Grava a lista e devolve a pessoa para a linha que ela estava olhando. */
+async function gravarLista(formData: FormData, escolhido?: string) {
   const { negocio, itens } = await lista(formData);
   await guardar({ ...negocio, itens }, TELA);
-  const volta = linhaAberta(itens, formData);
+  const volta = linhaAberta(itens, formData, escolhido);
   redirect(`${TELA}?salvo=1${volta.pedaco}${volta.ancora}`);
+}
+
+export async function salvarItens(formData: FormData) {
+  await gravarLista(formData);
+}
+
+/**
+ * O Salvar que mora dentro de um item.
+ *
+ * **É o pedido da dona do produto, e ele é do computador antes de ser do
+ * celular.** No celular o Salvar fica preso na base da tela, a um toque de
+ * qualquer campo. No monitor a barra vira o fim do formulário: medido em 1440,
+ * o único Salvar da tela nascia a 1640 pixels do topo, depois dos seis cartões
+ * e do bloco de acrescentar, e quem estava escrevendo a descrição do item 2
+ * lia um botão que parecia responder pela página inteira.
+ *
+ * Ele grava a lista inteira, igual ao de baixo, porque é o mesmo formulário e é
+ * isso que mantém intacto o que foi digitado nos outros cartões. O que muda é o
+ * endereço de volta: a tela reabre no item em que a pessoa tocou, com a
+ * confirmação dentro dele.
+ *
+ * O id chega por `bind`, e nunca por `name` no botão, pelo mesmo motivo de
+ * componentes/painel/Ordem.tsx: o React reserva o `name` de um botão com
+ * `formAction` de função para codificar qual ação chamar.
+ */
+export async function salvarItem(id: string, formData: FormData) {
+  await gravarLista(formData, id);
 }
 
 /**
@@ -127,10 +234,10 @@ export async function acrescentarItem(formData: FormData) {
   const { negocio, itens } = await lista(formData);
 
   const titulo = texto(formData, "novo-titulo");
-  if (titulo === null) redirect(`${TELA}?erro=titulo`);
+  if (titulo === null) redirect(paraRecusa({ erro: "titulo", onde: "novo" }));
 
-  const preco = lerPreco(String(formData.get("novo-preco") ?? ""));
-  if (!preco.ok) redirect(`${TELA}?erro=preco`);
+  const preco = precoDoItem(formData, "novo");
+  if (!preco.ok) redirect(paraRecusa({ erro: "preco", onde: "novo" }));
 
   const novo: Item = {
     id: crypto.randomUUID(),

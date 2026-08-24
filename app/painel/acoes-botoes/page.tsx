@@ -59,12 +59,15 @@ export default async function Acoes({
         Botões da página
       </h1>
       <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
-        É o botão de falar com você, preso no rodapé e à vista o tempo todo. O
-        WhatsApp é o mais comum; quem atende com hora marcada aponta para a
-        agenda, e quem vende por link de parceiro aponta para lá.{" "}
+        O botão de falar com você. Aponte para o WhatsApp, para a sua agenda ou
+        para o link que você quiser.
+      </p>
+      {/* Alvo de 44, e por isso em linha própria: dentro do parágrafo o link
+          media 39 pixels de altura, que é menos do que um dedo acerta. */}
+      <p className="text-sm">
         <Link
           href="/painel/links"
-          className="font-medium text-destaque underline-offset-4 hover:underline"
+          className="-mx-1 inline-flex min-h-11 items-center px-1 font-medium text-destaque underline-offset-4 hover:underline"
         >
           A lista de links do fim da página fica em Links extras
         </Link>

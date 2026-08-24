@@ -215,6 +215,74 @@ export function Marcar({
 }
 
 /**
+ * Uma pergunta com duas ou três respostas à vista, e uma delas marcada.
+ *
+ * **Existe porque campo em branco é uma resposta ambígua.** No catálogo, preço
+ * vazio queria dizer duas coisas ao mesmo tempo: "ainda vou preencher" e "este
+ * eu combino na conversa". A dona do produto leu a própria tela e ficou em
+ * dúvida sobre o que tinha salvado. Rádio resolve porque a escolha fica escrita:
+ * uma das opções está sempre marcada, e a marcada é a resposta.
+ *
+ * Cartão inteiro como alvo, igual ao `Marcar` logo acima: o círculo tem 20
+ * pixels e o dedo pede 44, e envolver tudo num `label` entrega os 44 sem mexer
+ * num pixel do desenho. A opção marcada ganha borda e fundo próprios pelo
+ * `has-[:checked]`, então a resposta se lê de longe, sem JavaScript nenhum.
+ */
+export function Opcoes({
+  nome,
+  rotulo,
+  dica,
+  valor,
+  opcoes,
+  className = "",
+}: {
+  /** O `name` do grupo. Um só para todas as opções, que é o que as junta. */
+  nome: string;
+  rotulo: string;
+  dica?: string;
+  /** A opção que chega marcada. */
+  valor: string;
+  opcoes: Array<{ valor: string; rotulo: string; dica?: string }>;
+  className?: string;
+}) {
+  return (
+    <fieldset className={className}>
+      <legend className="text-sm font-medium text-texto">{rotulo}</legend>
+      {dica ? (
+        <p className="mt-0.5 text-xs leading-relaxed text-suave">{dica}</p>
+      ) : null}
+
+      <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
+        {opcoes.map((o) => (
+          <label
+            key={o.valor}
+            className="flex cursor-pointer items-start gap-3 rounded-xl border border-borda bg-superficie p-3.5 has-[:checked]:border-texto/35 has-[:checked]:bg-texto/5"
+          >
+            <input
+              type="radio"
+              name={nome}
+              value={o.valor}
+              defaultChecked={o.valor === valor}
+              className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--c-destaque)]"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-texto">
+                {o.rotulo}
+              </span>
+              {o.dica ? (
+                <span className="mt-0.5 block text-xs leading-relaxed text-suave">
+                  {o.dica}
+                </span>
+              ) : null}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+/**
  * Um bloco de campos com título.
  *
  * `duplo` põe os campos lado a lado no computador. Vale para grupo de campo
