@@ -163,3 +163,73 @@ O QUE EU PRECISO DE VOLTA
 Nenhuma dessas respostas é segredo. Chave de acesso, senha e assinatura secreta
 ficam fora desta conversa.
 ```
+
+---
+
+# Prompt 3: destravar o cartão, com o diagnóstico já pronto
+
+Este substitui o Prompt 2, e ele nasce de medida e não de suspeita. O script
+`npm run pagamento` rodou contra o sandbox de verdade e separou o que passa do
+que trava. O trabalho da extensão aqui é resolver no painel deles, e nunca
+adivinhar.
+
+Copie daqui até o fim.
+
+```
+Conta Mercado Pago: apelido KINI4438918, id 279580015, site MLB.
+Aplicação: id 441427646604840.
+
+CONTEXTO, TUDO MEDIDO CONTRA A API DELES, e nada suposto:
+
+  Passa
+    POST /v1/payments com pix          cria, devolve copia e cola e QR
+    POST /preapproval sem cartão       cria, devolve init_point
+    POST /v1/card_tokens               cria o token do cartão sem erro
+
+  Trava
+    POST /v1/payments com cartão       400 excludes_by_rule, código 10113,
+                                       "The Payment Method is excluded by a rule"
+    POST /preapproval com card_token   404 "Card token service not found"
+
+  Testado nas duas bandeiras de teste, com e sem payment_method_id declarado,
+  com uma e com duas parcelas. Sempre igual. GET /v1/payment_methods lista
+  master e visa como "active", então a lista de meios não é o problema.
+
+  GET /users/me devolve:
+    mercadopago_account_type: personal
+    billing.allow: false, codes: ['address_pending']
+    user_type: normal
+    tags: ['normal', 'messages_as_seller']
+
+A LEITURA: o token do cartão é criado, então a chave pública e os campos
+seguros estão certos. O que falha é a conta aceitar cobrança no cartão, e a
+própria API aponta o endereço pendente. Pix e boleto passam porque não dependem
+disso.
+
+O QUE EU PRECISO QUE VOCÊ FAÇA, NESTA ORDEM
+
+  1. Complete o endereço da conta em mercadopago.com.br, no perfil. É o
+     `address_pending` que a API devolve. Me diga quais campos faltavam.
+
+  2. Descubra o que essa conta precisa para receber no cartão sem presença
+     física. Procure por "conta de vendedor", "vender online", "receber
+     pagamentos", ou o nome que o painel usar hoje. Me diga o que o painel
+     pede, e se CNPJ aparece como exigência.
+
+  3. No painel de desenvolvedores, dentro da aplicação 441427646604840,
+     confira e me relate:
+       a) o modelo de integração escolhido, e quais meios ele habilita
+       b) se existe passo de homologação pendente, e o que ele exige
+       c) se as credenciais de teste e de produção estão as duas emitidas
+
+  4. Não mude modelo de integração nem apague credencial. Relate e pare: trocar
+     o modelo pode derrubar o webhook que já está conferido e funcionando.
+
+O QUE EU PRECISO DE VOLTA
+
+  1. Os campos que faltavam no endereço, e se ficou completo.
+  2. O que o painel exige para receber no cartão, com as palavras dele.
+  3. Os três itens do passo 3.
+  4. Qualquer aviso vermelho ou pendência que apareça no caminho, mesmo que
+     pareça sem relação.
+```
