@@ -347,6 +347,23 @@ body {
     box-shadow 240ms ease;
 }
 
+/*
+ * O foco cai na placa inteira, e nao no campo dentro dela.
+ *
+ * A regra global desenha o contorno em quem recebe o teclado, e ali dentro
+ * isso virava um retangulo arredondado dentro de outro. Com a placa vestindo o
+ * foco, o objeto que se ve e o objeto que esta ativo, e a marca de foco
+ * continua com a mesma espessura e a mesma cor do resto do produto.
+ */
+.placa:has(input:focus-visible) {
+  outline: 3px solid var(--c-destaque);
+  outline-offset: 3px;
+}
+
+.placa input:focus-visible {
+  outline: none;
+}
+
 .placa[data-livre="1"] {
   border-color: var(--c-destaque);
   box-shadow:
