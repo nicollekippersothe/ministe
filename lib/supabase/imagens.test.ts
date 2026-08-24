@@ -15,8 +15,10 @@ const {
   caminhoValido,
   conferirArquivo,
   ehPasta,
+  ehPastaDoBucket,
   enderecoPublico,
   LIMITE_BYTES,
+  PASTA_DO_ITEM,
 } = await import("./imagens.ts");
 
 const ID = "11111111-1111-4111-8111-111111111111";
@@ -116,10 +118,68 @@ test("coluna vazia vira nulo, e a tela mostra o lugar da imagem", () => {
   assert.equal(enderecoPublico("   "), null);
 });
 
-test("as duas pastas de hoje são logo e capa", () => {
+test("as duas pastas da linha do negócio são logo e capa", () => {
   assert.equal(ehPasta("logo"), true);
   assert.equal(ehPasta("capa"), true);
   assert.equal(ehPasta("galeria"), false);
   assert.equal(ehPasta("../.."), false);
   assert.equal(ehPasta(null), false);
+  // A foto de item é linha de tabela filha, e a ação que grava coluna do
+  // negócio precisa continuar recusando ela.
+  assert.equal(ehPasta(PASTA_DO_ITEM), false);
+});
+
+test("o bucket recebe as duas do negócio e a do catálogo", () => {
+  assert.equal(ehPastaDoBucket("logo"), true);
+  assert.equal(ehPastaDoBucket("capa"), true);
+  assert.equal(ehPastaDoBucket("catalogo"), true);
+  assert.equal(ehPastaDoBucket("galeria"), false);
+  assert.equal(ehPastaDoBucket("item"), false);
+  assert.equal(ehPastaDoBucket("../.."), false);
+  assert.equal(ehPastaDoBucket(null), false);
+});
+
+/*
+ * A pasta da foto de produto é a que a restrição `url_formato` de `itens_fotos`
+ * exige na correção 008, e o nome dela é `catalogo`. Este teste é o que segura
+ * isso: trocar a palavra aqui quebra antes de o arquivo subir para o bucket e
+ * ser recusado só na hora de virar linha.
+ */
+test("a foto de item nasce em {negocio}/catalogo/{uuid}.{ext}", () => {
+  assert.equal(PASTA_DO_ITEM, "catalogo");
+
+  const caminho = caminhoDeImagem(ID, PASTA_DO_ITEM, "image/webp");
+  assert.match(
+    caminho,
+    /^[0-9a-f-]{36}\/catalogo\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/,
+  );
+  assert.equal(caminhoValido(caminho, ID, PASTA_DO_ITEM), true);
+
+  // As três pastas continuam separadas, como no banco: cada restrição tem a
+  // pasta escrita dentro dela.
+  assert.equal(caminhoValido(caminho, ID, "capa"), false);
+  assert.equal(caminhoValido(caminho, OUTRO, PASTA_DO_ITEM), false);
+  assert.equal(caminhoValido(`${ID}/item/${ID}.webp`, ID, PASTA_DO_ITEM), false);
+});
+
+/*
+ * A mesma ida e volta da capa, agora na coluna `itens_fotos.url`. A gravação do
+ * catálogo passa por `caminhoGuardado` antes de escrever, e sem essa passada a
+ * URL inteira chegaria na coluna e a restrição recusaria a linha.
+ */
+test("a foto de item também guarda caminho, e nunca a URL inteira", () => {
+  const guardado = `${ID}/catalogo/${ID}.jpg`;
+  const publico = enderecoPublico(guardado);
+
+  assert.equal(
+    publico,
+    `https://projeto.supabase.co/storage/v1/object/public/imagens/${guardado}`,
+  );
+  assert.equal(caminhoValido(String(publico), ID, PASTA_DO_ITEM), false);
+  assert.equal(caminhoGuardado(publico), guardado);
+  assert.equal(caminhoValido(String(caminhoGuardado(publico)), ID, PASTA_DO_ITEM), true);
+
+  // A foto de exemplo continua sendo um endereço local, que a restrição aceita
+  // pelo outro lado do `or`.
+  assert.equal(caminhoGuardado("/exemplo/spa-1.jpg"), "/exemplo/spa-1.jpg");
 });

@@ -174,11 +174,15 @@ export function caminhoDeImagem(
  * qualquer texto na coluna. O banco recusaria depois, com a 008 aplicada, e é
  * justamente por isso que a conferência daqui repete a de lá palavra por
  * palavra, incluindo a primeira pasta ter que ser o id da própria linha.
+ *
+ * Vale igual para `itens_fotos`: a restrição de lá é a mesma, com `/catalogo/`
+ * no lugar de `/logo/`, e é por isso que a pasta é parâmetro em vez de estar
+ * escrita no meio do padrão.
  */
 export function caminhoValido(
   caminho: string,
   negocioId: string,
-  pasta: PastaDeImagem,
+  pasta: PastaDoBucket,
 ): boolean {
   const padrao = new RegExp(`^${UUID}/${pasta}/${UUID}\\.(${EXTENSOES})$`);
   return padrao.test(caminho) && caminho.split("/")[0] === negocioId;
