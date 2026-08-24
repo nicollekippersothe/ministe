@@ -192,16 +192,15 @@ function Escolha({ ciclo }: { ciclo: Ciclo }) {
                   {marcado ? <IconeConferido className="h-3 w-3" /> : null}
                 </span>
 
+                {/*
+                  O nome sozinho, sem repetir "Escolhido" ao lado: quem diz
+                  isso aqui é o visto preenchido, e o cabeçalho do passo já
+                  carrega o nome e o preço escolhidos. Com as três coisas a
+                  mesma informação aparecia três vezes em duas linhas.
+                */}
                 <span className="flex-1">
-                  <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="text-[1.05rem] leading-snug text-texto">
-                      {PLANOS[c].rotulo}
-                    </span>
-                    {marcado ? (
-                      <span className="text-xs font-semibold text-suave">
-                        Escolhido
-                      </span>
-                    ) : null}
+                  <span className="block text-[1.05rem] leading-snug text-texto">
+                    {PLANOS[c].rotulo}
                   </span>
                   <span className="mt-0.5 block text-sm leading-relaxed text-suave">
                     {PLANOS[c].descricao}

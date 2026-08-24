@@ -230,7 +230,10 @@ export default async function Painel({
       <ul className="mt-4 divide-y divide-borda overflow-hidden rounded-2xl border border-borda bg-superficie">
         <Linha
           rotulo="Nome"
-          valor={negocio.nome}
+          /* `|| null`, e não o valor cru: nome em branco é string vazia, que o
+             `??` da Linha deixa passar. A linha saía muda, com rótulo e seta e
+             nada no meio, justo na página recém criada. */
+          valor={negocio.nome || null}
           convite="Escrever o nome do negócio"
           href="/painel/negocio"
         />

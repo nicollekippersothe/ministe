@@ -96,7 +96,14 @@ export function EscolhaDoEndereco({
           return (
             <label
               key={o.valor}
-              className={`flex cursor-pointer items-start gap-3 rounded-xl border bg-superficie p-3.5 transition-colors ${
+              /*
+                O rádio de verdade fica só para o leitor de tela e para o
+                teclado, e quem desenha o estado é a marca ao lado. O contorno
+                de foco vem do `has-[:focus-visible]`, que põe no cartão inteiro
+                o anel que o rádio escondido levaria: foco visível é regra do
+                projeto, e um rádio em `sr-only` some com ele sem isto.
+              */
+              className={`flex cursor-pointer items-start gap-3 rounded-xl border bg-superficie p-3.5 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-destaque ${
                 escolhida ? "border-destaque" : "border-borda"
               }`}
             >

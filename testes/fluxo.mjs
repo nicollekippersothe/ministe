@@ -743,16 +743,19 @@ passo(
 await p.goto(`${BASE}/painel/negocio`, { waitUntil: "networkidle" });
 
 /*
- * O endereço mora numa dobra, e ela começa fechada para quem tem categoria de
- * ramo que costuma atender sem ponto na rua. Ver app/painel/negocio/page.tsx: a
- * regra vem da receita de lib/categorias.ts, e não da tela. O CEP daqui de
- * baixo é um campo de dentro dessa dobra, então abrir vem antes de digitar.
+ * O endereço é uma pergunta com duas respostas, e ela já vem respondida: quem
+ * tem categoria de ramo que costuma atender de outro jeito abre a tela com
+ * "prefiro deixar de fora" marcado. Ver app/painel/negocio/page.tsx, e o
+ * comentário no topo de componentes/painel/EscolhaDoEndereco.tsx: a regra vem da
+ * receita de lib/categorias.ts, e não da tela. O CEP daqui de baixo é um campo
+ * que só existe do lado do "sim", então responder vem antes de digitar.
+ *
+ * O clique é forçado porque o rádio de verdade fica escondido embaixo do cartão
+ * que a pessoa toca, e é o cartão inteiro que é o alvo.
  */
 async function abrirEndereco() {
-  const dobra = p.locator("details:has(#cep)");
-  if ((await dobra.getAttribute("open")) === null) {
-    await dobra.locator("summary").click();
-  }
+  const sim = p.locator("input[name=enderecoNaPagina][value=sim]");
+  if (!(await sim.isChecked())) await sim.click({ force: true });
 }
 
 const fraseDoBanco = await p.inputValue("#frase");
@@ -765,8 +768,9 @@ await p.waitForURL(/erro=cep/, { timeout: 20000 });
 await p.waitForTimeout(1200);
 
 passo(
-  "a recusa de um campo do endereço volta com a dobra dele aberta",
-  await p.locator("#cep").isVisible(),
+  "a recusa de um campo do endereço volta com o endereço à mostra",
+  (await p.locator("#cep").isVisible()) &&
+    (await p.locator("input[name=enderecoNaPagina][value=sim]").isChecked()),
 );
 
 passo(
