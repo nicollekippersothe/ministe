@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { alternarPublicacao } from "@/app/painel/acoes";
+import { BotaoCopiar } from "./BotaoCopiar";
 import { BotaoDeAcao } from "./BotaoDeAcao";
 import { EstadoDaPagina } from "./EstadoDaPagina";
 import { ListaSecoes } from "./ListaSecoes";
 import { nomesDosPassos, passosParaOAr } from "./prontidao";
 import { IconeAvancar, IconeSeta } from "@/componentes/Icones";
+import { DOMINIO_PUBLICO } from "@/lib/marca";
 import type { Negocio } from "@/lib/tipos";
 
 /**
@@ -64,6 +66,16 @@ export function CartaoEstado({
     <div className="rounded-2xl border border-borda bg-superficie p-4">
       <EstadoDaPagina negocio={negocio} />
 
+      {/*
+        O mesmo endereço que está escrito logo acima, inteiro e com o esquema,
+        que é o que cola num aplicativo de conversa e abre. O que a tela mostra
+        vem do mesmo `DOMINIO_PUBLICO` do `EstadoDaPagina`, então o botão copia
+        o endereço que a pessoa está lendo.
+      */}
+      <div className="mt-3">
+        <BotaoCopiar endereco={`https://${DOMINIO_PUBLICO}/${negocio.slug}`} />
+      </div>
+
       {emMontagem && proximo ? (
         <div className="mt-4 flex flex-col gap-3">
           <p className="text-sm leading-relaxed text-suave">
@@ -98,27 +110,49 @@ export function CartaoEstado({
             </form>
           </div>
         </div>
-      ) : (
-        <div className="mt-4 flex flex-col gap-2.5">
+      ) : noAr ? (
+        /*
+          Página no ar: quem manda é abrir a página, e tirar do ar desce para
+          peso de texto.
+
+          **Os dois vinham em botão de altura cheia, um debaixo do outro**, e a
+          tela abria oferecendo duas decisões do mesmo tamanho, uma delas sendo
+          desfazer a publicação. Quem volta ao painel com a página no ar quer
+          ver como ela ficou, ou pegar o endereço para mandar para alguém. Tirar
+          do ar é decisão rara, e rara continua a um toque de distância, com o
+          mesmo rótulo, embaixo.
+        */
+        <div className="mt-4 flex flex-col gap-3">
           <Link
-            href={noAr ? `/${negocio.slug}` : "/painel/previa"}
+            href={`/${negocio.slug}`}
             className="flex h-12 items-center justify-center gap-2 rounded-full border border-borda bg-fundo px-5 font-semibold text-texto transition-transform duration-75 active:scale-[0.97]"
           >
-            {noAr ? "Ver a página" : "Ver a prévia"}
+            Ver a página
             <IconeSeta className="h-4 w-4" />
           </Link>
 
           <form action={alternarPublicacao}>
-            <BotaoDeAcao
-              className={`flex h-12 w-full items-center justify-center rounded-full px-5 font-semibold ${
-                noAr
-                  ? "border border-borda bg-superficie text-texto"
-                  : "bg-texto text-superficie"
-              }`}
-            >
-              {noAr ? "Tirar do ar" : publicar}
+            <BotaoDeAcao className="inline-flex min-h-11 items-center text-sm font-medium text-suave underline decoration-borda underline-offset-4 hover:decoration-current">
+              Tirar do ar
             </BotaoDeAcao>
           </form>
+        </div>
+      ) : (
+        /* Página inteira e guardada: publicar é a resposta, e a prévia
+           acompanha em peso de texto. */
+        <div className="mt-4 flex flex-col gap-3">
+          <form action={alternarPublicacao}>
+            <BotaoDeAcao className="flex h-12 w-full items-center justify-center rounded-full bg-texto px-5 font-semibold text-superficie transition-transform duration-75 active:scale-[0.97]">
+              {publicar}
+            </BotaoDeAcao>
+          </form>
+
+          <Link
+            href="/painel/previa"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-suave underline decoration-borda underline-offset-4 hover:decoration-current"
+          >
+            Ver a prévia
+          </Link>
         </div>
       )}
 

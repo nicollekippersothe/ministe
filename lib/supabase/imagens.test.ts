@@ -11,6 +11,7 @@ process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_teste";
 
 const {
   caminhoDeImagem,
+  caminhoGuardado,
   caminhoValido,
   conferirArquivo,
   ehPasta,
@@ -80,6 +81,29 @@ test("o endereço público sai do caminho guardado", () => {
     enderecoPublico(`${ID}/capa/${ID}.webp`),
     `https://projeto.supabase.co/storage/v1/object/public/imagens/${ID}/capa/${ID}.webp`,
   );
+});
+
+/*
+ * A ida e a volta, que é o que a gravação do painel faz a cada salvamento: a
+ * leitura monta o endereço público, e a gravação precisa devolver o caminho.
+ * Enquanto a volta faltou, a coluna recebia a URL inteira e a restrição
+ * `capa_url_formato` recusava a linha toda.
+ */
+test("o endereço público volta a ser o caminho que a coluna aceita", () => {
+  const guardado = `${ID}/capa/${ID}.webp`;
+  const publico = enderecoPublico(guardado);
+
+  assert.equal(caminhoValido(guardado, ID, "capa"), true);
+  assert.equal(caminhoValido(String(publico), ID, "capa"), false);
+  assert.equal(caminhoGuardado(publico), guardado);
+  assert.equal(caminhoValido(String(caminhoGuardado(publico)), ID, "capa"), true);
+});
+
+test("a volta do caminho deixa passar o que já está no formato da coluna", () => {
+  assert.equal(caminhoGuardado("/exemplo/spa-capa.jpg"), "/exemplo/spa-capa.jpg");
+  assert.equal(caminhoGuardado(`${ID}/logo/${ID}.png`), `${ID}/logo/${ID}.png`);
+  assert.equal(caminhoGuardado(null), null);
+  assert.equal(caminhoGuardado(""), null);
 });
 
 test("endereço local continua sendo ele mesmo", () => {

@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
 import { ListaSecoes } from "@/componentes/painel/ListaSecoes";
+import { MapaDaPagina } from "@/componentes/painel/MapaDaPagina";
 import { CartaoEstado } from "@/componentes/painel/Navegacao";
 import { Aviso } from "@/componentes/painel/Aviso";
 import { CartaoPlano } from "@/componentes/painel/CartaoPlano";
-import { EstadoDaPagina } from "@/componentes/painel/EstadoDaPagina";
-import { passosParaOAr } from "@/componentes/painel/prontidao";
-import { acoesDoRodape } from "@/lib/acoes";
 import { cobrancaDoDono, doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
+import { acoesDoRodape } from "@/lib/acoes";
 import { contaProvisoria } from "@/lib/supabase/servidor";
 import type { Intervalo, Item } from "@/lib/tipos";
 
+import { saudacao } from "@/app/painel/sessao";
 import { exigirLogin } from "@/app/painel/vitrine";
 
 export const dynamic = "force-dynamic";
@@ -76,8 +76,14 @@ function Linha({
         <span className="w-20 shrink-0 text-sm text-suave sm:w-28">
           {rotulo}
         </span>
+        {/* Duas linhas no máximo, e só no celular. Numa tela de 390 pixels o
+            endereço inteiro ocupava quatro linhas, a lista de oito itens
+            virava uma parede, e encontrar a linha de Horários dava mais
+            trabalho do que abrir a seção. O resto do texto fica no editor, do
+            outro lado do clique. Da largura de tablet para cima sobra espaço
+            para a linha inteira, e aí cortar seria esconder por hábito. */}
         <span
-          className={`flex-1 leading-relaxed ${
+          className={`line-clamp-2 flex-1 leading-relaxed sm:line-clamp-none ${
             valor ? "text-texto" : "font-medium text-destaque"
           }`}
         >
@@ -90,18 +96,18 @@ function Linha({
 }
 
 /**
- * A abertura do painel, nas duas larguras.
+ * O rótulo de uma parte da tela.
  *
- * O que a página diz hoje aparece nas duas, linha por linha, e é a peça
- * principal desta tela: quem chega vê num relance o endereço, se ele está
- * aberto para todo mundo, e o conteúdo inteiro sem abrir seção nenhuma.
- *
- * O que muda entre as larguras é o resto. No computador o estado da página vem
- * em tamanho de ler em voz alta, porque a coluna da esquerda já carrega a
- * versão curta e a lista de seções. No celular essa coluna some, então o
- * cartão de estado e a lista de seções vivem aqui, uma no topo e a outra no
- * fim.
+ * Miúdo e em caixa alta, de propósito. Os títulos aqui vinham em 18 pixels
+ * semibold, o mesmo peso do conteúdo que eles anunciam e quase o mesmo do
+ * título da tela, e com três deles empilhados a tela ficava com quatro coisas
+ * disputando o primeiro lugar. Rótulo é placa, e placa se lê de canto de olho:
+ * encolhendo ele, o endereço, o cumprimento e as linhas da página passam a ter
+ * cada um um degrau só para si.
  */
+const ROTULO =
+  "text-xs font-semibold tracking-[0.1em] text-suave uppercase";
+
 /**
  * O recado de quem acabou de entrar numa conta que já existia.
  *
@@ -141,26 +147,27 @@ export default async function Painel({
 }) {
   exigirLogin();
   /*
-   * As quatro de uma vez, e não uma esperando a outra.
+   * As cinco de uma vez, e não uma esperando a outra.
    *
    * Nenhuma delas precisa da resposta da anterior, e cada uma é uma ida ao
-   * banco em São Paulo. Em fila, esta tela levava o tempo das quatro somado; em
+   * banco em São Paulo. Em fila, esta tela levava o tempo das cinco somado; em
    * paralelo, o da mais lenta. A pergunta de quem está pedindo sai uma vez só
-   * para as três, pelo `cache` de lib/supabase/servidor.ts.
+   * para as que dependem da sessão, inclusive o nome do cumprimento, pelo
+   * `cache` de lib/supabase/servidor.ts.
    */
-  const [{ rascunho, erro }, negocio, provisoria, cobranca] = await Promise.all([
-    searchParams,
-    doDono(),
-    // Conta provisória monta e guarda, e o Google é que põe no ar. A tela diz
-    // isso antes do clique, em vez de deixar a pessoa descobrir no erro.
-    contaProvisoria(),
-    // O estado da cobrança vem separado do negócio porque o `Negocio` não
-    // carrega nem o uuid nem a validade do plano, de propósito: ele é o tipo que
-    // a página pública também usa.
-    cobrancaDoDono(),
-  ]);
-
-  const noAr = negocio.publicado;
+  const [{ rascunho, erro }, negocio, provisoria, cobranca, ola] =
+    await Promise.all([
+      searchParams,
+      doDono(),
+      // Conta provisória monta e guarda, e o Google é que põe no ar. A tela diz
+      // isso antes do clique, em vez de deixar a pessoa descobrir no erro.
+      contaProvisoria(),
+      // O estado da cobrança vem separado do negócio porque o `Negocio` não
+      // carrega nem o uuid nem a validade do plano, de propósito: ele é o tipo
+      // que a página pública também usa.
+      cobrancaDoDono(),
+      saudacao(),
+    ]);
 
   // Rua, cidade e UF numa linha só, na ordem em que a página pública mostra. O
   // CEP fica fora: numa linha de resumo ele ocupa espaço sem ajudar ninguém a
@@ -176,16 +183,18 @@ export default async function Painel({
     .join(" e ");
 
   /*
-   * Enquanto a página ainda estiver crua, o plano e a contagem de visitas saem
-   * da frente e vão para depois da lista de seções.
+   * O plano e a contagem de visitas saíram do meio do celular.
    *
    * Os dois falam de uma página que já tem público: o plano vende letra e
-   * números, e a contagem conta quem abriu. Numa página que ninguém abriu
-   * ainda, eles se enfileiravam entre a pessoa e o lugar de escrever, e a
-   * primeira tela do produto virava uma oferta em cima de outra. Continuam na
-   * mesma tela, e continuam a um rolar de distância.
+   * números, e a contagem conta quem abriu. Numa coluna só eles se enfileiravam
+   * entre a pessoa e o lugar de escrever, e a primeira coisa lida depois do
+   * endereço era uma oferta. Agora fecham a tela, a um rolar de distância.
+   *
+   * A exceção é o cartão que voltou do banco. Ali o assunto deixa de ser oferta
+   * e passa a ser a página seguir no ar, com a saída à mão, então esse sobe
+   * para logo abaixo do endereço.
    */
-  const emMontagem = !noAr && passosParaOAr(negocio).length > 0;
+  const planoNoTopo = cobranca.assinatura?.status === "em_atraso";
 
   const plano = (
     <>
@@ -195,7 +204,7 @@ export default async function Painel({
           href="/painel/numeros"
           className="inline-flex min-h-11 items-center font-medium text-destaque underline-offset-4 hover:underline"
         >
-          Ver quantas pessoas abriram a sua página
+          Ver os números da sua página
         </Link>
       </p>
     </>
@@ -212,22 +221,17 @@ export default async function Painel({
    * não existia. Sobravam o endereço, o plano e seis nomes de seção, e para
    * lembrar o que tinha escrito ela precisava abrir uma por uma.
    *
-   * Agora ele sai nas duas, e continua sendo a mesma peça: no computador
-   * embaixo do endereço grande, no celular logo abaixo do cartão de estado. A
-   * lista de seções segue embaixo, no celular, porque ela é a navegação e traz
-   * o que o resumo não é (as Letras da página, que são aparência e nunca
-   * conteúdo).
+   * Agora ele sai nas duas, e continua sendo a mesma peça.
+   *
+   * A frase de apoio saiu. Ela dizia "Cada linha leva direto para o lugar de
+   * editar", que é o que a seta no fim de cada linha já diz, e num celular ela
+   * gastava uma linha inteira do primeiro rolar.
    */
   const resumo = (
     <>
-      <h2 className="text-lg font-semibold tracking-tight text-texto">
-        O que a página mostra hoje
-      </h2>
-      <p className="mt-1 text-sm text-suave">
-        Cada linha leva direto para o lugar de editar.
-      </p>
+      <h2 className={ROTULO}>Na sua página hoje</h2>
 
-      <ul className="mt-4 divide-y divide-borda overflow-hidden rounded-2xl border border-borda bg-superficie">
+      <ul className="mt-3 divide-y divide-borda overflow-hidden rounded-2xl border border-borda bg-superficie">
         <Linha
           rotulo="Nome"
           /* `|| null`, e não o valor cru: nome em branco é string vazia, que o
@@ -289,51 +293,85 @@ export default async function Painel({
 
   return (
     <main className="mt-6">
-      <h1 className="text-2xl font-bold tracking-tight text-texto lg:text-3xl">
-        Sua página
-      </h1>
+      {/*
+        A banda do topo, e o motivo dela.
 
-      <Rascunho estado={rascunho} />
+        **A dona do produto voltou ao painel com a página já criada e a tela
+        abria em "Sua página", seguida da lista de campos.** Ela dizia de que
+        assunto era, e nada mais: quem estava logado, onde tinha caído e o que
+        aquela tela era dentro do produto ficavam por conta de quem lia.
 
-      {/* Publicar é a única escrita que sai daqui, e o gatilho pode recusar. */}
-      <Aviso erro={erro} />
+        Agora a primeira linha cumprimenta pelo primeiro nome, a segunda nomeia
+        o lugar, e logo abaixo vem o que a pessoa costuma vir buscar: o
+        endereço, quem o enxerga, o botão de copiar e o próximo passo.
 
-      <div className="lg:hidden">
-        <div className="mt-4">
-          <CartaoEstado negocio={negocio} provisoria={provisoria} />
+        No computador a banda ganha o desenho da página à direita. É o mesmo
+        `MapaDaPagina` das telas de botões e de links, com nenhum pedaço aceso:
+        lá ele responde "onde fica isto que estou editando", e aqui, mudo, ele
+        responde "o que é isto que eu tenho". A sobra ao lado dele recebe o
+        cartão do plano, e as duas colunas terminam quase juntas.
+
+        **O desenho fica de fora do celular, e isso é medida e não gosto.** Numa
+        tela de 390 pixels ele custa 340 de altura e empurra a lista de seções
+        para fora do primeiro rolar, e em silhueta, sem nada aceso, ele se
+        parece mais com um carregamento do que com uma página.
+      */}
+      <div className="lg:flex lg:items-start lg:gap-10">
+        <div className="min-w-0 lg:flex-1">
+          <h1 className="text-[1.75rem] leading-tight font-bold tracking-tight text-texto lg:text-[2.25rem]">
+            {ola}
+          </h1>
+          <p className="mt-2 text-[0.95rem] leading-relaxed text-suave">
+            Esta é a sua tela inicial. A sua página inteira sai daqui.
+          </p>
+
+          <Rascunho estado={rascunho} />
+
+          {/* Publicar é a única escrita que sai daqui, e o gatilho pode
+              recusar. */}
+          <Aviso erro={erro} />
+
+          {/* No computador o cartão de estado mora na coluna da esquerda, à
+              vista em todas as telas do painel. Repetir o mesmo endereço aqui
+              era o que acontecia antes, com dois blocos a duzentos pixels um do
+              outro. */}
+          <div className="mt-5 lg:hidden">
+            <CartaoEstado negocio={negocio} provisoria={provisoria} />
+          </div>
+
+          {/* O plano fecha a tela no celular e acompanha o desenho no
+              computador, escondido de um lado por vez. Ele fala de uma página
+              que já tem público, então ele nunca é a primeira coisa a ler numa
+              coluna só. */}
+          <div className="mt-6 hidden lg:block">{plano}</div>
         </div>
 
-        <div className="mt-8">{resumo}</div>
-
-        {emMontagem ? null : <div className="mt-8">{plano}</div>}
-
-        <h2 className="mt-8 mb-3 text-lg font-semibold tracking-tight text-texto">
-          Editar
-        </h2>
-
-        <ListaSecoes />
-
-        {emMontagem ? <div className="mt-8">{plano}</div> : null}
+        <div className="hidden shrink-0 lg:block lg:w-[17rem]">
+          <MapaDaPagina
+            negocio={negocio}
+            zona="nenhuma"
+            chamada="A sua página, do topo ao rodapé."
+          />
+        </div>
       </div>
 
-      <div className="hidden lg:block">
-        <section className="mt-6 rounded-2xl border border-borda bg-superficie p-6">
-          {/*
-            O endereço em tamanho de ler em voz alta, e embaixo a frase de quem
-            o enxerga. Mesmo componente da coluna do lado, de propósito: uma
-            tela que dissesse "No ar" de um lado e outra coisa do outro seria
-            pior que ficar calada. O que muda é o corpo do texto e a frase a
-            mais que a coluna estreita comportaria mal.
-          */}
-          <EstadoDaPagina negocio={negocio} grande />
-        </section>
+      {/* Cartão que voltou do banco sobe: ali o assunto deixa de ser oferta e
+          passa a ser a página seguir no ar, com a saída à mão. */}
+      {planoNoTopo ? <div className="mt-6 lg:hidden">{plano}</div> : null}
 
-        {emMontagem ? null : <div className="mt-6">{plano}</div>}
+      {/* A navegação, e só no celular: no computador ela mora na coluna da
+          esquerda, e repetir a mesma lista a meia tela de distância seria a
+          mesma lista duas vezes. */}
+      <section className="mt-10 lg:hidden">
+        <h2 className={ROTULO}>Editar</h2>
+        <div className="mt-3">
+          <ListaSecoes />
+        </div>
+      </section>
 
-        <div className="mt-10">{resumo}</div>
+      <section className="mt-10">{resumo}</section>
 
-        {emMontagem ? <div className="mt-10">{plano}</div> : null}
-      </div>
+      {planoNoTopo ? null : <div className="mt-10 lg:hidden">{plano}</div>}
     </main>
   );
 }
