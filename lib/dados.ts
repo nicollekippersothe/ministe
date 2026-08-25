@@ -17,7 +17,7 @@ import {
 import { planoValido } from "./plano";
 import { MODO_VITRINE } from "./site";
 import { configurado } from "./supabase/config";
-import { caminhoGuardado } from "./supabase/imagens";
+import { caminhoGuardado, legendaDaFoto } from "./supabase/imagens";
 import { paraLinha, paraNegocio, TUDO } from "./supabase/mapa";
 import { publico } from "./supabase/publico";
 import { garantirConta, servidor, usuarioAtual } from "./supabase/servidor";
@@ -401,7 +401,7 @@ function linhaDaFoto(foto: Foto, titulo: string, ordem: number) {
   return {
     ordem,
     url: caminhoGuardado(foto.url) ?? foto.url,
-    alt: titulo.trim().slice(0, 160),
+    alt: legendaDaFoto(titulo),
     largura: foto.largura > 0 ? foto.largura : null,
     altura: foto.altura > 0 ? foto.altura : null,
   };

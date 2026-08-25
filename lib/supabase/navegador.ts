@@ -10,6 +10,12 @@ import { SUPABASE_CHAVE, SUPABASE_URL } from "./config";
  * longe disto: ela é renderizada no servidor e não baixa cliente de banco
  * nenhum, que é o que segura o Lighthouse onde ele está.
  */
+/**
+ * O tipo do cliente, para quem o carrega sob demanda poder declarar o `useRef`
+ * sem trazer o pacote junto no `import`.
+ */
+export type ClienteDoNavegador = ReturnType<typeof navegador>;
+
 export function navegador() {
   return createBrowserClient(SUPABASE_URL, SUPABASE_CHAVE);
 }

@@ -9,7 +9,7 @@ import {
 } from "./acoes";
 import { salvarFotoDoItem } from "@/app/painel/acoes";
 import { AtalhoDeAcrescentar, IconeMais } from "@/componentes/painel/Acrescentar";
-import { Aviso } from "@/componentes/painel/Aviso";
+import { Aviso, MENSAGENS } from "@/componentes/painel/Aviso";
 import {
   AreaTexto,
   BarraSalvar,
@@ -112,10 +112,8 @@ export const dynamic = "force-dynamic";
  * Ficam escritas aqui porque só esta tela tem para onde apontar: recusa de item
  * conhece a linha, e a frase sai dentro dela.
  */
-const RECUSA_NO_ITEM: Record<string, string> = {
-  titulo: "Escreva o nome do item para salvar. Ele é o que aparece na página.",
-  preco: "Confira o preço. Escreva só o número, por exemplo 74,90.",
-};
+/** Os dois campos do item que a tela sabe mostrar recusa por dentro. */
+const RECUSA_NO_ITEM = ["titulo", "preco"];
 
 /**
  * O campo de reais aparece com a resposta "preço em reais" marcada, e some com
@@ -226,6 +224,16 @@ export default async function Catalogo({
   const indiceEmFoco = itens.findIndex((i) => i.id === emFoco);
 
   /*
+   * Qual cartão carrega a confirmação de salvo, ou nenhum.
+   *
+   * A conta mora aqui porque ela era feita em dois lugares com variáveis
+   * diferentes: o alto da tela perguntava por `indiceEmFoco`, e o cartão
+   * perguntava pelo id. As duas dizem a mesma coisa hoje, e duas escritas da
+   * mesma regra divergem no dia em que uma delas mudar.
+   */
+  const confirmadoEm = params.salvo !== undefined ? indiceEmFoco : -1;
+
+  /*
    * A recusa que tem endereço: a linha que a levantou, e a frase que vai dentro
    * dela. Recusa sem endereço (o limite do plano, a escrita recusada pelo banco)
    * continua no `Aviso` do alto, que é onde ela pertence: ela é da tela toda.
@@ -237,8 +245,12 @@ export default async function Catalogo({
     params.erro !== undefined &&
     params.emItem !== undefined &&
     linhaExiste &&
-    params.erro in RECUSA_NO_ITEM
-      ? { onde: params.emItem, frase: RECUSA_NO_ITEM[params.erro], campo: params.erro }
+    params.erro !== undefined && RECUSA_NO_ITEM.includes(params.erro)
+      ? {
+          onde: params.emItem,
+          frase: MENSAGENS[params.erro],
+          campo: params.erro,
+        }
       : null;
 
   const feito = params.novo
@@ -252,7 +264,7 @@ export default async function Catalogo({
            * Com a linha aberta na tela, a frase do alto seria a segunda cópia do
            * mesmo recado, e a que a pessoa não está olhando.
            */
-          params.salvo && indiceEmFoco < 0
+          params.salvo && confirmadoEm < 0
           ? "Alterações salvas."
           : null;
 
@@ -368,7 +380,7 @@ export default async function Catalogo({
 
         {itens.map((item, i) => {
           const recusado = recusaDoItem?.onde === String(i);
-          const confirmado = params.salvo !== undefined && item.id === params.aberto;
+          const confirmado = i === confirmadoEm;
 
           return (
             <Cartao

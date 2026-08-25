@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import type { ClienteDoNavegador } from "@/lib/supabase/navegador";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -14,14 +16,12 @@ import {
   caminhoGuardado,
   conferirArquivo,
   enderecoPublico,
-  LADO_DO_ITEM,
   LIMITE_MB,
   MOTIVOS_IMAGEM,
   PASTA_DO_ITEM,
   ROTULOS,
   type PastaDoBucket,
 } from "@/lib/supabase/imagens";
-import { navegador } from "@/lib/supabase/navegador";
 import type { Foco } from "@/lib/tipos";
 import { FocoDaCapa } from "./FocoDaCapa";
 import { LADO_MAXIMO, reduzirImagem } from "./reduzirImagem";
@@ -93,17 +93,6 @@ const NA_MOLDURA: Record<PastaDoBucket, string> = {
 };
 
 /**
- * O maior lado de cada imagem antes de subir.
- *
- * As duas do negócio vêm do `LADO_MAXIMO` de ./reduzirImagem.ts, que é o mapa
- * delas; a do item vem de lib/supabase/imagens.ts, junto das outras medidas do
- * catálogo. Duas origens porque são dois assuntos: coluna da linha do negócio,
- * e linha da tabela de fotos do item.
- */
-const ladoDe = (pasta: PastaDoBucket): number =>
-  pasta === PASTA_DO_ITEM ? LADO_DO_ITEM : LADO_MAXIMO[pasta];
-
-/**
  * As duas frases de quando o Supabase ainda está de fora.
  *
  * O painel roda inteiro guardando num arquivo local, que é o que deixa o
@@ -124,6 +113,16 @@ const ladoDe = (pasta: PastaDoBucket): number =>
  * a pessoa olhar para o lugar onde a foto nova ainda não está. Ver
  * componentes/painel/PreviaDoItem.tsx.
  */
+/**
+ * Endereço servido pelo Storage, que é o que o otimizador de imagem alcança.
+ *
+ * O `blob:` da escolha recém feita e o endereço local das páginas de exemplo
+ * ficam de fora: o primeiro existe só dentro desta aba, e o segundo já é
+ * arquivo do projeto.
+ */
+const doBucket = (endereco: string): boolean =>
+  endereco.startsWith("http");
+
 const SO_PREVIA_PRONTA =
   "Imagem escolhida, e ela já aparece aqui no cartão. O arquivo entra na página assim que o banco de imagens estiver ligado.";
 
@@ -217,7 +216,7 @@ export function EnvioDeImagem({
   gravar?: (caminho: string | null) => Promise<GravacaoDeImagem>;
 }) {
   const router = useRouter();
-  const cliente = useRef<ReturnType<typeof navegador> | null>(null);
+  const cliente = useRef<ClienteDoNavegador | null>(null);
 
   const [caminho, setCaminho] = useState<string | null>(atual);
   const [previa, setPrevia] = useState<string | null>(null);
@@ -296,8 +295,15 @@ export function EnvioDeImagem({
   const mostrada = previa ?? enderecoPublico(caminhoGuardado(caminho));
   const gravarCaminho = gravar ?? ((c: string | null) => salvarImagemDoNegocio(pasta, c));
 
-  function sb() {
-    cliente.current ??= navegador();
+  /*
+   * O cliente do Supabase entra sob demanda, e não no pacote da tela.
+   *
+   * Ele é usado depois que a pessoa escolhe um arquivo, e são umas dezenas de
+   * quilobytes. Importado no topo, ele viajava no primeiro carregamento das
+   * três telas que mostram este cartão, e a de catálogo mostra um por item.
+   */
+  async function sb(): Promise<ClienteDoNavegador> {
+    cliente.current ??= (await import("@/lib/supabase/navegador")).navegador();
     return cliente.current;
   }
 
@@ -334,7 +340,7 @@ export function EnvioDeImagem({
         return;
       }
 
-      const arquivo = await reduzirImagem(escolhido, ladoDe(pasta));
+      const arquivo = await reduzirImagem(escolhido, LADO_MAXIMO[pasta]);
 
       // O tamanho é conferido no arquivo que vai subir, e não no que saiu da
       // câmera: é ele que o bucket vai medir do outro lado.
@@ -364,7 +370,7 @@ export function EnvioDeImagem({
         return;
       }
 
-      const { error } = await sb()
+      const { error } = await (await sb())
         .storage.from(BUCKET)
         .upload(preparo.caminho, arquivo, { contentType: arquivo.type });
       if (error) {
@@ -376,14 +382,14 @@ export function EnvioDeImagem({
       if (!gravado.ok) {
         // O arquivo subiu e a coluna ficou como estava, então ele já nasceu
         // órfão: sai agora, em vez de esperar a varredura de imagens_orfas.
-        await sb().storage.from(BUCKET).remove([preparo.caminho]);
+        await (await sb()).storage.from(BUCKET).remove([preparo.caminho]);
         recusar(frase(gravado));
         return;
       }
 
       setCaminho(preparo.caminho);
       if (gravado.anterior !== null) {
-        await sb().storage.from(BUCKET).remove([gravado.anterior]);
+        await (await sb()).storage.from(BUCKET).remove([gravado.anterior]);
       }
       confirmar("Pronto, a imagem está na sua página.");
       router.refresh();
@@ -403,7 +409,7 @@ export function EnvioDeImagem({
       }
 
       if (ligado && gravado.anterior !== null) {
-        await sb().storage.from(BUCKET).remove([gravado.anterior]);
+        await (await sb()).storage.from(BUCKET).remove([gravado.anterior]);
       }
 
       trocarPrevia(null);
@@ -462,19 +468,39 @@ export function EnvioDeImagem({
             className={`shrink-0 overflow-hidden border border-borda bg-fundo ${MOLDURAS[pasta]}`}
           >
             {mostrada ? (
-              /*
-                Imagem crua, e não next/image: aqui a fonte é ora um blob: do
-                próprio navegador, ora o endereço do Storage, que mora fora da
-                lista de domínios do otimizador. O painel é tela de trabalho e
-                carrega uma imagem por campo, então o otimizador seria peso sem
-                ganho. Quem passa pelo next/image é a página pública.
-              */
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={mostrada}
-                alt={nome}
-                className="h-full w-full object-cover"
-              />
+              doBucket(mostrada) ? (
+                /*
+                  Gravada no bucket, ela passa pelo otimizador.
+                  
+                  O comentário aqui dizia o contrário, e ele envelheceu por dois
+                  motivos ao mesmo tempo: o host do Storage entrou no
+                  `remotePatterns` de next.config.ts, e o cartão deixou de ser
+                  um por tela. Com a foto de item, a tela de catálogo mostra até
+                  vinte, e cada um baixava o WebP de 1200 pixels que o envio
+                  acabou de subir para pintar uma moldura de 107 por 80. Eram
+                  megabytes no celular de quem está só arrumando o catálogo.
+                */
+                <Image
+                  src={mostrada}
+                  alt={nome}
+                  width={256}
+                  height={256}
+                  sizes="256px"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                /*
+                  A escolhida agora, que é um `blob:` do próprio navegador, e o
+                  endereço local das páginas de exemplo. O otimizador alcança
+                  blob nenhum, então aqui a imagem é crua mesmo.
+                */
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={mostrada}
+                  alt={nome}
+                  className="h-full w-full object-cover"
+                />
+              )
             ) : (
               <span className="flex h-full w-full items-center justify-center px-3 text-center text-xs leading-snug text-suave">
                 {NA_MOLDURA[pasta]}

@@ -1,6 +1,6 @@
 "use client";
 
-import { TIPOS_ACEITOS, type PastaDeImagem } from "@/lib/supabase/imagens";
+import { TIPOS_ACEITOS, type PastaDoBucket } from "@/lib/supabase/imagens";
 
 /**
  * A foto do celular virando arquivo de página, no próprio celular.
@@ -23,13 +23,16 @@ import { TIPOS_ACEITOS, type PastaDeImagem } from "@/lib/supabase/imagens";
  */
 
 /** O maior lado que cada imagem precisa ter para a página. */
-export const LADO_MAXIMO: Record<PastaDeImagem, number> = {
+export const LADO_MAXIMO: Record<PastaDoBucket, number> = {
   // O avatar aparece em 88 pixels na página e em 400 no mapa de medidas. 800
   // cobre tela de retina com folga.
   logo: 800,
   // A capa atravessa a tela inteira no monitor, e 2000 é o dobro da largura
   // máxima do container.
   capa: 2000,
+  // O cartão do catálogo tem 340 pixels no monitor e 92 por cento da tela no
+  // celular, então 1200 cobre retina com folga e ainda cabe nos 3 MB do bucket.
+  catalogo: 1200,
 };
 
 /** Qualidade do WebP. 0.85 é o ponto em que a diferença some da tela. */

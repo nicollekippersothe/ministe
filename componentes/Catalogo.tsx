@@ -52,53 +52,54 @@ function Fotos({ item, deitado }: { item: Item; deitado: boolean }) {
     ? "sm:absolute sm:inset-y-0 sm:left-0 sm:aspect-auto sm:w-[38%]"
     : "";
 
-  if (item.fotos.length === 1) {
-    const foto = item.fotos[0];
-    return (
-      <div
-        className={`relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-borda ${moldura}`}
-      >
-        <Image
-          src={foto.url}
-          alt={foto.alt}
-          width={foto.largura}
-          height={foto.altura}
-          sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 340px"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      </div>
-    );
-  }
-
+  /*
+   * A moldura fica escrita uma vez, e o que muda por dentro e so o miolo: uma
+   * foto sozinha ocupa o quadro inteiro, e varias entram na faixa que corre de
+   * lado. As duas versoes ja tiveram a moldura copiada, e copia de moldura e o
+   * jeito de a proporcao mudar num lugar so.
+   */
   return (
     <div
       className={`relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-borda ${moldura}`}
     >
-      {/*
-        A segunda foto fica espiando pela direita: e o convite para arrastar, e
-        vale tanto no dedo quanto no mouse. Encaixe pelo comeco, para a foto
-        parar encostada na borda do cartao.
-      */}
-      <div className="faixa faixa-do-cartao absolute inset-0 flex gap-1 overflow-x-auto">
-        {item.fotos.map((foto, i) => (
-          <div
-            key={foto.url}
-            className="relative h-full w-[87%] shrink-0 overflow-hidden bg-borda"
-          >
-            <Image
-              src={foto.url}
-              alt={i === 0 ? foto.alt : `${foto.alt}, foto ${i + 1}`}
-              width={foto.largura}
-              height={foto.altura}
-              sizes="(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 300px"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+      {item.fotos.length === 1 ? (
+        <Image
+          src={item.fotos[0].url}
+          alt={item.fotos[0].alt}
+          width={item.fotos[0].largura}
+          height={item.fotos[0].altura}
+          sizes="(max-width: 640px) 92vw, (max-width: 1024px) 240px, 340px"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <>
+          {/*
+            A segunda foto fica espiando pela direita: e o convite para
+            arrastar, e vale tanto no dedo quanto no mouse. Encaixe pelo
+            comeco, para a foto parar encostada na borda do cartao.
+          */}
+          <div className="faixa faixa-do-cartao absolute inset-0 flex gap-1 overflow-x-auto">
+            {item.fotos.map((foto, i) => (
+              <div
+                key={foto.url}
+                className="relative h-full w-[87%] shrink-0 overflow-hidden bg-borda"
+              >
+                <Image
+                  src={foto.url}
+                  alt={i === 0 ? foto.alt : `${foto.alt}, foto ${i + 1}`}
+                  width={foto.largura}
+                  height={foto.altura}
+                  sizes="(max-width: 640px) 80vw, (max-width: 1024px) 210px, 300px"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <p className="sr-only">
-        {item.fotos.length} fotos, arraste para o lado para ver as outras.
-      </p>
+          <p className="sr-only">
+            {item.fotos.length} fotos, arraste para o lado para ver as outras.
+          </p>
+        </>
+      )}
     </div>
   );
 }

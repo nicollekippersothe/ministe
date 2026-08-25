@@ -4,7 +4,7 @@ import { Aviso } from "@/componentes/painel/Aviso";
 import { BotaoDeAcao } from "@/componentes/painel/BotaoDeAcao";
 import { BarraSalvar, Botao } from "@/componentes/painel/Campos";
 import { BotaoAcao } from "@/componentes/BarraAcoes";
-import { IconeAvancar } from "@/componentes/Icones";
+import { IconeAbrirLista, IconeAvancar } from "@/componentes/Icones";
 import { doDono } from "@/lib/dados";
 import { acoesDoRodape } from "@/lib/acoes";
 import { DIAS_LONGO, porDiaSemana } from "@/lib/horarios";
@@ -30,18 +30,7 @@ export const dynamic = "force-dynamic";
  */
 function Chevron({ giro }: { giro: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className={`h-3.5 w-3.5 transition-transform ${giro}`}
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
+    <IconeAbrirLista className={`h-3.5 w-3.5 transition-transform ${giro}`} />
   );
 }
 
@@ -404,6 +393,23 @@ export default async function Horarios({
    */
   const horaMarcada = negocio.horarios.length === 0;
 
+
+  /*
+   * A semana montada uma vez, porque os dois ramos abaixo mostram a mesma
+   * coisa: a diferença entre eles é a dobra por fora e o botão embaixo, e
+   * nunca o conteúdo. Escrita duas vezes, esta frase já foi editada em
+   * duplicata na mão.
+   */
+  const semana = (
+    <>
+      <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
+        Dia em branco fica marcado como fechado. Para turno que passa da meia
+        noite, use 19:00 às 00:30.
+      </p>
+      <Semana horarios={negocio.horarios} />
+    </>
+  );
+
   return (
     <main className="mt-6">
       {/*
@@ -439,20 +445,12 @@ export default async function Horarios({
               Mostrar quando abre e quando fecha, dia por dia
               <Chevron giro="group-open/semana:rotate-180" />
             </summary>
-            <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
-              Dia em branco fica marcado como fechado. Para turno que passa da
-              meia noite, use 19:00 às 00:30.
-            </p>
-            <Semana horarios={negocio.horarios} />
+            {semana}
           </details>
         </>
       ) : (
         <>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
-            Dia em branco fica marcado como fechado. Para turno que passa da
-            meia noite, use 19:00 às 00:30.
-          </p>
-          <Semana horarios={negocio.horarios} />
+          {semana}
           <VirarHoraMarcada />
         </>
       )}

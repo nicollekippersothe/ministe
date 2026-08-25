@@ -176,8 +176,8 @@ function linhaAberta(
   escolhido?: string,
 ): { pedaco: string; ancora: string } {
   const alvo = escolhido ?? texto(formData, "novo");
-  const i = alvo === null || alvo === undefined ? -1 : itens.findIndex((item) => item.id === alvo);
-  if (alvo === null || alvo === undefined || i < 0) return { pedaco: "", ancora: "" };
+  const i = alvo === null ? -1 : itens.findIndex((item) => item.id === alvo);
+  if (alvo === null || i < 0) return { pedaco: "", ancora: "" };
   return { pedaco: `&aberto=${encodeURIComponent(alvo)}`, ancora: naLinha(i) };
 }
 

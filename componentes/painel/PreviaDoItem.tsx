@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Vitrine, VitrineAvulsa } from "./Vitrine";
 import { Catalogo } from "@/componentes/Catalogo";
 import { lerPreco } from "@/lib/formato";
+import { legendaDaFoto } from "@/lib/supabase/imagens";
 import type { Item, Negocio } from "@/lib/tipos";
 
 /**
@@ -122,7 +123,7 @@ export function PreviaDoItem({
    */
   const fotos = item.fotos.map((foto) => ({
     ...foto,
-    alt: atual.titulo.trim() === "" ? foto.alt : atual.titulo.trim(),
+    alt: legendaDaFoto(atual.titulo) || foto.alt,
   }));
 
   const recorte: Negocio = {

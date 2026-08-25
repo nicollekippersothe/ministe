@@ -111,15 +111,24 @@ export const ROTULOS: Record<PastaDoBucket, string> = {
 };
 
 /**
- * O maior lado da foto de item antes de ela subir.
+ * A legenda da foto de um item, derivada do título dele.
  *
- * Mora aqui, e não junto do `LADO_MAXIMO` de componentes/painel/reduzirImagem.ts,
- * porque aquele mapa é das imagens da linha do negócio e o arquivo dele é de
- * outra frente. O número vem da moldura: o cartão do catálogo tem 340 pixels no
- * monitor e 92 por cento da tela no celular, então 1200 cobre retina com folga
- * e ainda cabe nos 3 MB do bucket com sobra.
+ * Uma regra, e um lugar só. Ela estava escrita em três: na ação que envia, na
+ * gravação do Postgres e na prévia do painel, com três recortes diferentes, e
+ * a da ação era descartada no caminho do banco e valia no caminho de arquivo.
+ * Ou seja, a mesma tela anunciava uma coisa para o leitor de tela e guardava
+ * outra, dependendo de onde o dado estava.
+ *
+ * O corte é o da coluna `alt_preenchido`, que aceita 160. Como `titulo` para em
+ * 80, título válido é sempre legenda válida, e o corte aqui é cinto.
+ *
+ * Enquanto tela nenhuma oferece campo de legenda, toda legenda desta tabela
+ * saiu daqui, então derivar de novo a cada gravação sobrescreve texto de
+ * ninguém. O dia em que existir esse campo, este é o lugar de parar.
  */
-export const LADO_DO_ITEM = 1200;
+export function legendaDaFoto(titulo: string): string {
+  return titulo.trim().slice(0, 160);
+}
 
 export type RecusaImagem = "tipo" | "tamanho" | "envio" | "guardar";
 

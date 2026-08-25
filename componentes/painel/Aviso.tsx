@@ -6,7 +6,14 @@ import {
 } from "@/lib/dados/erros";
 import { MOTIVOS_LINK, type RecusaLink } from "@/lib/links";
 
-const MENSAGENS: Record<string, string> = {
+/**
+ * As frases de campo recusado, escritas uma vez.
+ *
+ * Exportadas porque a tela de catálogo mostra a recusa dentro do item que a
+ * causou, em vez de no alto, e precisa da mesma frase. Duas cópias do mesmo
+ * texto na mesma tela é como uma delas envelhece sem ninguém ver.
+ */
+export const MENSAGENS: Record<string, string> = {
   nome: "Escreva o nome do negócio para salvar.",
   titulo: "Escreva o nome do item para salvar. Ele é o que aparece na página.",
   preco: "Confira o preço. Escreva só o número, por exemplo 74,90.",

@@ -18,6 +18,7 @@ import {
   MOTIVOS_IMAGEM,
   PASTA_DO_ITEM,
   type RecusaImagem,
+  legendaDaFoto,
 } from "@/lib/supabase/imagens";
 import { contaProvisoria, servidor, usuarioAtual } from "@/lib/supabase/servidor";
 import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
@@ -401,6 +402,47 @@ export async function prepararEnvioDeImagem(
  * texto dela; enquanto `mapa.ts` deriva o alt do nome, um campo de alt no
  * painel guardaria um texto que a página pública ignoraria.
  */
+/**
+ * O fim comum das duas ações de imagem: grava, revalida e devolve o caminho
+ * anterior para a tela apagar o arquivo trocado.
+ *
+ * As duas escreviam estas vinte linhas palavra por palavra, e o que muda entre
+ * elas é só o destino: a logo e a capa viram coluna da linha do negócio, e a
+ * foto do item vira linha de `itens_fotos`. Quem decide isso é quem chama, e
+ * daqui para baixo o caminho é um só.
+ *
+ * Endereço que começa com barra é arquivo do projeto, das páginas de exemplo, e
+ * fica de fora: ele mora no bucket nunca. E o que volta é o CAMINHO, que é o
+ * que a API do Storage recebe em `remove`: a URL pública que a leitura montou
+ * passaria longe do arquivo e deixaria a imagem trocada ocupando o bucket.
+ *
+ * A rede embaixo disto é do banco. Os gatilhos que a 008 cria escrevem em
+ * `imagens_para_apagar` o caminho de toda imagem que sai de cena, então o
+ * arquivo continua com destino marcado quando a aba fecha no meio.
+ */
+async function gravarComImagem(
+  negocio: Negocio,
+  atualizado: Negocio,
+  anteriorUrl: string | null,
+): Promise<GravacaoDeImagem> {
+  try {
+    await salvar(comCaminhoDeImagem(atualizado));
+  } catch (erro) {
+    const motivo = motivoDaRecusa(erro);
+    if (motivo === null) throw erro;
+    return { ok: false, recusa: "banco", motivo };
+  }
+
+  revalidatePath(`/${negocio.slug}`);
+  revalidatePath("/painel");
+
+  const anterior = caminhoGuardado(anteriorUrl);
+  return {
+    ok: true,
+    anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,
+  };
+}
+
 export async function salvarImagemDoNegocio(
   pasta: string,
   caminho: string | null,
@@ -422,27 +464,7 @@ export async function salvarImagemDoNegocio(
   const atualizado: Negocio =
     pasta === "logo" ? { ...negocio, logo: foto } : { ...negocio, capa: foto };
 
-  try {
-    await salvar(comCaminhoDeImagem(atualizado));
-  } catch (erro) {
-    const motivo = motivoDaRecusa(erro);
-    if (motivo === null) throw erro;
-    return { ok: false, recusa: "banco", motivo };
-  }
-
-  revalidatePath(`/${negocio.slug}`);
-  revalidatePath("/painel");
-
-  // Endereço que começa com barra é arquivo do projeto (as páginas de exemplo),
-  // e não do bucket: só o caminho do bucket volta para a tela apagar. E volta
-  // como CAMINHO, que é o que a API do Storage recebe em `remove`: a URL
-  // pública que a leitura montou passaria longe do arquivo e deixaria a imagem
-  // trocada ocupando o bucket.
-  const anterior = caminhoGuardado(atual?.url ?? null);
-  return {
-    ok: true,
-    anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,
-  };
+  return gravarComImagem(negocio, atualizado, atual?.url ?? null);
 }
 
 /**
@@ -485,39 +507,20 @@ export async function salvarFotoDoItem(
     if (id === null || !caminhoValido(caminho, id, PASTA_DO_ITEM)) {
       return { ok: false, recusa: "imagem", motivo: "guardar" };
     }
-    fotos = [{ url: caminho, alt: alvo.titulo, ...MEDIDAS[PASTA_DO_ITEM] }];
+    fotos = [
+      { url: caminho, alt: legendaDaFoto(alvo.titulo), ...MEDIDAS[PASTA_DO_ITEM] },
+    ];
   }
 
   const itens = negocio.itens.map((i) =>
     i.id === itemId ? { ...i, fotos } : i,
   );
 
-  try {
-    await salvar(comCaminhoDeImagem({ ...negocio, itens }));
-  } catch (erro) {
-    const motivo = motivoDaRecusa(erro);
-    if (motivo === null) throw erro;
-    return { ok: false, recusa: "banco", motivo };
-  }
-
-  revalidatePath(`/${negocio.slug}`);
-  revalidatePath("/painel");
-
-  /*
-   * O caminho anterior volta para a tela apagar o arquivo do bucket, igual ao
-   * da logo e ao da capa. Endereço que começa com barra é arquivo do projeto,
-   * das páginas de exemplo, e fica de fora: ele não mora no bucket.
-   *
-   * A rede embaixo é do banco: `itens_fotos_enfileira_removida`, o gatilho que
-   * a 008 cria, escreve em `imagens_para_apagar` o caminho de toda linha
-   * removida, então o arquivo continua com destino marcado quando a aba fecha
-   * no meio.
-   */
-  const anterior = caminhoGuardado(alvo.fotos[0]?.url ?? null);
-  return {
-    ok: true,
-    anterior: anterior !== null && !anterior.startsWith("/") ? anterior : null,
-  };
+  return gravarComImagem(
+    negocio,
+    { ...negocio, itens },
+    alvo.fotos[0]?.url ?? null,
+  );
 }
 
 /**
