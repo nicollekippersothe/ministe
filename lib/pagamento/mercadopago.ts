@@ -467,7 +467,16 @@ async function assinarComCartao(
   // paga e o plano fica no gratuito até a primeira renovação.
   if (p.urlDeAviso) corpo.notification_url = p.urlDeAviso;
 
-  const r = await pedir("POST", "/preapproval", corpo, p.idempotencia);
+  // O identificador do aparelho vai por cabeçalho, e é por isso que ele cabe
+  // aqui: o corpo do `/preapproval` aceita oito campos contados, e nenhum
+  // deles é este. Ver a nota sobre qualidade da integração, no topo.
+  const r = await pedir(
+    "POST",
+    "/preapproval",
+    corpo,
+    p.idempotencia,
+    p.idDoAparelho,
+  );
   if (!r.ok) return r;
   return { ok: true, valor: lerAssinatura(r.valor, p.ciclo, plano.valorCentavos) };
 }

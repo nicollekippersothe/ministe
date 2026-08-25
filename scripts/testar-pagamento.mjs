@@ -273,6 +273,10 @@ async function correrPix() {
     ciclo: "mensal",
     meio: "pix",
     emailDoPagador,
+    // O nome sai da sessão no produto de verdade, e aqui é de mentira como o
+    // e-mail e o CPF acima. Ele existe nesta chamada para o corpo sair igual
+    // ao da tela, com `additional_info` inteiro.
+    nomeDoPagador: "Comprador de Teste",
     referencia,
     descricao: "Entrais, plano mensal",
     documento: { tipo: "CPF", numero: CARTAO.cpf },
@@ -289,9 +293,51 @@ async function correrPix() {
   console.log(`  copia e cola: ${c.pixCopiaECola ? "veio" : "faltou"}`);
   console.log(`  imagem do QR: ${c.pixQrBase64 ? "veio" : "faltou"}`);
   console.log(`  expira em: ${c.expiraEm ?? "sem data"}`);
+
+  await conferirQualidade(c.idExterno);
+
   console.log("");
   console.log("  Para fechar o ciclo sem pagar de verdade, mande o aviso:");
   console.log(`    npm run aviso -- payment ${c.idExterno}`);
+}
+
+/**
+ * O que o Mercado Pago guardou dos campos que valem nota de qualidade.
+ *
+ * Lê a cobrança de volta, na fonte, em vez de acreditar no corpo que saiu
+ * daqui. É a diferença entre "mandamos" e "chegou": campo que a API deles
+ * ignora some sem erro nenhum, e a nota da integração continua parada sem
+ * ninguém entender por quê.
+ */
+async function conferirQualidade(id) {
+  const { status, corpo } = await chamar(`/v1/payments/${encodeURIComponent(id)}`);
+  console.log("");
+  console.log("  O que voltou dos campos de qualidade da integração:");
+
+  if (status >= 300) {
+    console.log(`    a leitura de volta falhou com ${status}`);
+    return;
+  }
+
+  const item = corpo.additional_info?.items?.[0];
+  // No Pix o descritor volta nulo, e é assim mesmo: `bank_transfer` não tem
+  // fatura de cartão para descrever. Ele continua indo porque o mesmo
+  // `/v1/payments` atende o débito, onde ele aparece na fatura.
+  console.log(
+    `    statement_descriptor: ${
+      corpo.statement_descriptor ?? `vazio, que é o esperado em ${corpo.payment_type_id}`
+    }`,
+  );
+  console.log(
+    item
+      ? `    item: ${item.id}, ${item.title}, ${item.category_id}, ${item.unit_price}`
+      : "    item: faltou",
+  );
+  console.log(
+    corpo.additional_info?.payer?.first_name
+      ? `    pagador: ${corpo.additional_info.payer.first_name} ${corpo.additional_info.payer.last_name ?? ""}`.trimEnd()
+      : "    pagador: faltou",
+  );
 }
 
 async function cancelar(id) {

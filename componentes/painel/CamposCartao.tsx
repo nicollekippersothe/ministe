@@ -56,7 +56,33 @@ declare global {
       chave: string,
       opcoes?: { locale?: string },
     ) => SdkMercadoPago;
+    /**
+     * O identificador do aparelho, publicado pelo próprio SDK do Mercado Pago.
+     *
+     * A documentação deles descreve um segundo script, o `security.js`, que
+     * cria esta variável global. E diz, na mesma página, que quem já carrega o
+     * SDK deles não precisa dele, porque o SDK obtém o identificador sozinho.
+     * É o caso desta tela, então aqui só se lê o valor: script de terceiro a
+     * mais no painel custa carregamento a cada abertura da tela do cartão, e
+     * este não compraria nada.
+     */
+    MP_DEVICE_SESSION_ID?: string;
   }
+}
+
+/**
+ * O identificador do aparelho, se o SDK já tiver publicado um.
+ *
+ * Sem valor, devolve nulo e o campo some do envio. Valor de mentira aqui seria
+ * pior que valor nenhum: o antifraude do Mercado Pago compara este
+ * identificador com o histórico do aparelho, e um número inventado é um
+ * aparelho que nunca comprou nada em lugar nenhum.
+ */
+function idDoAparelho(): string | null {
+  const bruto = window.MP_DEVICE_SESSION_ID;
+  if (typeof bruto !== "string") return null;
+  const limpo = bruto.trim();
+  return limpo === "" ? null : limpo;
 }
 
 export type FrasesDoCartao = {
@@ -232,7 +258,15 @@ export function CamposCartao({
    * Ela ganha uma coisa de graça, e é a melhor parte: o nome do titular e o CPF
    * são apagados do FormData antes de cruzar para o servidor. Eles servem ao
    * token e só a ele, e o `/preapproval` do Mercado Pago nem tem onde
-   * recebê-los.
+   * recebê-los. Continuam apagados de propósito: o corpo do `/preapproval`
+   * aceita oito campos, e `additional_info` fica de fora deles, então mandar o
+   * titular para o servidor seria guardar documento de terceiro em troca de
+   * nada.
+   *
+   * O que passa a cruzar é uma coisa só, e ela não descreve a pessoa: o
+   * identificador do aparelho que o SDK publica. Ele vale ponto na medição de
+   * qualidade da integração deles, e é o campo de maior peso do antifraude, o
+   * que aparece no fim do mês como cartão legítimo aprovado em vez de recusado.
    */
   async function enviar(dados: FormData) {
     const mp = mpRef.current;
@@ -270,6 +304,9 @@ export function CamposCartao({
     dados.delete("titular");
     dados.delete("documento");
     dados.set("tokenDoCartao", token);
+
+    const aparelho = idDoAparelho();
+    if (aparelho) dados.set("idDoAparelho", aparelho);
 
     await acao(dados);
     // A ação termina em redirect nos dois desfechos, então esta linha é a rede

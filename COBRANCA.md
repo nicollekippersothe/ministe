@@ -86,6 +86,87 @@ trimestral: custo que um produto de R$ 19,90 por mês não paga.
 O Pix não tem nem iframe. O servidor chama `POST /v1/payments`, recebe `qr_code`
 e `qr_code_base64`, e o QR é desenhado na nossa própria tela.
 
+## Qualidade da integração, e o que a nota compra
+
+O painel deles dá uma nota de 0 a 100 à integração, com 73 de mínimo, e mede o
+quanto o corpo da cobrança alimenta o antifraude. Ela vale dinheiro: integração
+magra recusa cartão de cliente legítimo, e recusa de cartão bom é venda perdida
+com o cliente achando que a culpa é dele.
+
+A documentação viva deles publica os cinco aspectos medidos (experiência de
+compra, conciliação financeira, aprovação de pagamentos, escalabilidade e
+segurança) e separa as tarefas em obrigatórias, recomendadas e boas práticas.
+**O peso item a item eles não publicam:** a nota e a lista do que ajustar
+aparecem só no painel, em Suas integrações, e a medição roda entre os dias 1 e 7
+de cada mês, com o resultado no dia 10.
+
+### O que sai daqui hoje
+
+| campo | onde | por quê |
+| --- | --- | --- |
+| `X-meli-session-id` | cabeçalho de `/v1/payments` e `/preapproval` | identificador do aparelho, o item de maior peso do antifraude |
+| `statement_descriptor` | corpo de `/v1/payments` | o nome que a pessoa lê na fatura, e reconhecer é o que evita estorno |
+| `additional_info.items` | corpo de `/v1/payments` | o que foi comprado: id, título, descrição, `category_id: "service"`, quantidade e preço |
+| `additional_info.payer` | corpo de `/v1/payments` | primeiro nome e resto, do nome que o login com o Google devolveu |
+| `external_reference` | os dois corpos | já existia, e é como o webhook acha o negócio |
+| `notification_url` | os dois corpos | já existia, e é o que faz o aviso chegar na prévia da branch |
+| `description` | corpo de `/v1/payments` | já existia |
+
+O identificador do aparelho vem do navegador. A documentação deles descreve um
+script separado, o `security.js`, que publica a variável global
+`MP_DEVICE_SESSION_ID`, e diz na mesma página que quem já carrega o SDK deles
+dispensa esse script, porque o SDK obtém o identificador sozinho. A tela do
+cartão já carrega o SDK, então ela só lê a variável. O caminho inteiro é
+`componentes/painel/CamposCartao.tsx`, campo `idDoAparelho` do FormData,
+`app/painel/plano/acoes.ts`, e cabeçalho em `lib/pagamento/mercadopago.ts`.
+
+O valor nasce em navegador e termina em cabeçalho HTTP, então ele passa por uma
+régua de formato antes de virar cabeçalho: letra, número, ponto, hífen e
+sublinhado passam, e o resto some. Sem essa régua, uma quebra de linha no valor
+vira um cabeçalho a mais no pedido, e o `fetch` levanta com cara de provedor
+fora do ar. Ver `idDeAparelhoLimpo`.
+
+### O que fica de fora, e por quê
+
+**Telefone e endereço do pagador.** O produto tem o e-mail do login, o nome do
+login e o CPF que a pessoa digita no formulário do cartão. Telefone e endereço
+dela, o produto nunca pediu. Campo vazio ou inventado é pior que campo ausente:
+piora a nota, porque a medição compara com o cadastro, e é mentira sobre uma
+pessoa.
+
+**O nome do titular e o CPF do cartão continuam apagados do FormData** antes de
+cruzar para o servidor, como sempre estiveram. Eles servem ao token e só a ele.
+O que mudou é que agora existe um motivo escrito: o corpo do `/preapproval`
+aceita oito campos contados, e `additional_info` fica fora da lista, então
+guardar documento de terceiro no nosso servidor compraria zero ponto.
+
+**`additional_info` e `statement_descriptor` no `/preapproval`.** A referência
+da API deles lista `preapproval_plan_id`, `reason`, `external_reference`,
+`payer_email`, `card_token_id`, `back_url`, `status` e `auto_recurring`, mais o
+`notification_url` que já mandamos. Os dois campos ficam de fora porque não
+existem ali. Quem faz o papel de descritor na assinatura é o `reason`.
+
+**O identificador do aparelho no Pix.** A tela do Pix é servidor puro, sem
+JavaScript nenhum, e é isso que a mantém em pé quando script de terceiro falha.
+Carregar o SDK deles ali só para colher o identificador custaria esse
+comportamento e um script novo no painel, e o Pix não passa por autorização de
+banco, que é onde o identificador paga. O campo existe em `DadosAvulso` e o
+caminho está pronto para o dia em que o débito voltar a ser possível na conta.
+
+### O que ficou medido, e o que ficou por medir
+
+Medido contra o sandbox, com `npm run pagamento`: o Pix cria a cobrança e a
+leitura de volta traz `additional_info` inteiro, com o item e o nome do pagador.
+O `statement_descriptor` volta nulo **no Pix**, que é `payment_type_id:
+bank_transfer` e não tem fatura de cartão para descrever; o campo continua indo
+porque o mesmo `/v1/payments` serve o débito.
+
+Por medir: o cartão inteiro. `POST /v1/payments` com cartão volta `400
+excludes_by_rule` nesta conta em modo de teste, e `/preapproval` com
+`card_token_id` volta 404, então nem a assinatura nem o cabeçalho do aparelho
+saindo numa cobrança de verdade puderam ser exercitados. Ver o prompt 3 em
+`PROMPT-MERCADOPAGO.md`, que é o que destrava a conta.
+
 ## O caminho de cada compra
 
 ### Crédito
@@ -96,7 +177,8 @@ e `qr_code_base64`, e o QR é desenhado na nossa própria tela.
 2. A Server Action chama `assinarComCartao`, que faz `POST /preapproval` com
    `status: "authorized"`, `free_trial` de 7 dias, e `external_reference` com o
    id do negócio. O `X-Idempotency-Key` é um uuid gerado antes da chamada, e é
-   ele que faz clique duplo e retry de rede cobrarem uma vez só.
+   ele que faz clique duplo e retry de rede cobrarem uma vez só. Junto vai o
+   `X-meli-session-id`, com o identificador do aparelho que a tela colheu.
 3. **A Server Action não escreve plano nenhum.** Ela termina ali.
 4. O Mercado Pago manda o aviso `subscription_preapproval`. O webhook consulta o
    preapproval, lê `external_reference`, e chama `abrir_assinatura` com o fim do
@@ -108,7 +190,9 @@ e `qr_code_base64`, e o QR é desenhado na nossa própria tela.
 
 ### Pix
 
-1. A Server Action chama `cobrarUmaVez` com `payment_method_id: "pix"`.
+1. A Server Action chama `cobrarUmaVez` com `payment_method_id: "pix"`, e leva
+   junto o `additional_info` com o item comprado e o nome de quem paga, e o
+   `statement_descriptor`. Ver a seção de qualidade da integração, acima.
 2. A resposta traz o código para colar e o QR em PNG base64, que a tela desenha
    como estado da própria página, e nunca num modal: modal morre a cada recarga,
    e esta tela se recarrega sozinha.

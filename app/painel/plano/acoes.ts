@@ -8,7 +8,12 @@ import { NOME_PRODUTO } from "@/lib/marca";
 import { PLANOS, gateway } from "@/lib/pagamento";
 import type { Ciclo } from "@/lib/pagamento";
 import { urlBase, urlDesteDeploy } from "@/lib/site";
-import { contaProvisoria, emailDoUsuario, servidor } from "@/lib/supabase/servidor";
+import {
+  contaProvisoria,
+  emailDoUsuario,
+  nomeDoUsuario,
+  servidor,
+} from "@/lib/supabase/servidor";
 import { COOKIE_DO_PIX, VIDA_DO_PIX_S } from "./cookie";
 
 /**
@@ -38,6 +43,22 @@ const URL_DO_AVISO = `${urlDesteDeploy}/api/pagamento/webhook`;
 function cicloDoFormulario(formData: FormData): Ciclo | null {
   const bruto = String(formData.get("ciclo") ?? "");
   return bruto === "mensal" || bruto === "anual" ? bruto : null;
+}
+
+/**
+ * O identificador do aparelho que veio do navegador, ou nulo.
+ *
+ * Quem coleta é `componentes/painel/CamposCartao.tsx`, lendo a variável que o
+ * SDK do Mercado Pago publica. Aqui ele só atravessa: o gateway confere o
+ * formato antes de transformar o valor em cabeçalho, que é onde a conferência
+ * importa de verdade.
+ *
+ * Vazio significa navegador que entregou nada, e o campo some da cobrança em
+ * vez de ir em branco.
+ */
+function aparelhoDoFormulario(formData: FormData): string | null {
+  const bruto = String(formData.get("idDoAparelho") ?? "").trim();
+  return bruto === "" ? null : bruto;
 }
 
 /**
@@ -109,6 +130,7 @@ export async function assinarComCartao(formData: FormData) {
     urlDeAviso: URL_DO_AVISO,
     referencia: negocioId,
     descricao: `${NOME_PRODUTO} ${PLANOS[escolhido].rotulo.toLowerCase()}`,
+    idDoAparelho: aparelhoDoFormulario(formData),
   });
 
   if (!r.ok) {
@@ -143,11 +165,26 @@ export async function pagarComPix(formData: FormData) {
     estado.assinatura !== null && estado.assinatura.status !== "encerrada";
   if (viva) redirect("/painel/plano?erro=assinatura_viva");
 
+  /*
+   * O nome de quem paga, quando o login trouxe um.
+   *
+   * Vai para o `additional_info` da cobrança, que é o bloco que a medição de
+   * qualidade da integração do Mercado Pago lê como informação do comprador.
+   * Sai da sessão, e não de campo novo na tela: pedir de novo um dado que a
+   * conta do Google já entregou seria trabalho para a pessoa e chance de erro.
+   *
+   * Nulo em conta que nasceu sem nome, e aí o bloco some da chamada. Telefone
+   * e endereço ficam de fora dos dois jeitos, porque o produto não tem nenhum
+   * dos dois, e campo preenchido no chute é mentira sobre uma pessoa.
+   */
+  const nome = await nomeDoUsuario();
+
   const r = await gateway.cobrarUmaVez({
     idempotencia: crypto.randomUUID(),
     ciclo: escolhido,
     meio: "pix",
     emailDoPagador: email,
+    nomeDoPagador: nome,
     urlDeAviso: URL_DO_AVISO,
     referencia: negocioId,
     descricao: `${NOME_PRODUTO} ${PLANOS[escolhido].rotulo.toLowerCase()}`,

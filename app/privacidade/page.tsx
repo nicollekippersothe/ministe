@@ -17,6 +17,13 @@ export const metadata: Metadata = {
  * sem cookie, sem identificador de aparelho. Se algum dia alguém acrescentar
  * uma coluna lá, este texto passa a mentir, e é por isso que o schema traz o
  * comentário avisando.
+ *
+ * O item 4 tem o identificador de aparelho, e os dois itens convivem porque
+ * falam de coisas diferentes: o do item 4 nasce na tela de pagamento, é criado
+ * pelo programa do Mercado Pago, vai junto com a cobrança e serve ao
+ * antifraude do cartão. Ele nunca entra em `eventos`, e nunca alcança quem
+ * visita uma página pública. Ver `componentes/painel/CamposCartao.tsx` e
+ * `lib/pagamento/mercadopago.ts`.
  */
 export default function Privacidade() {
   return (
@@ -56,11 +63,11 @@ export default function Privacidade() {
           tipo de evento, e quando. Nada mais.
         </p>
         <p>
-          Não existe endereço de IP, cookie, identificador de aparelho nem perfil
-          de comportamento. Nem nós nem o dono da página conseguem saber quem
-          visitou, voltar no tempo para identificar alguém, ou ligar duas visitas
-          à mesma pessoa. A contagem serve para o dono saber que a página está
-          trabalhando, e para nada além disso.
+          Nessa contagem não existe endereço de IP, cookie, identificador de
+          aparelho nem perfil de comportamento. Nem nós nem o dono da página
+          conseguem saber quem visitou, voltar no tempo para identificar alguém,
+          ou ligar duas visitas à mesma pessoa. A contagem serve para o dono
+          saber que a página está trabalhando, e para nada além disso.
         </p>
       </Artigo>
 
@@ -75,6 +82,20 @@ export default function Privacidade() {
           Do pagamento, guardamos o valor, a data, o meio usado, a situação e o
           código da transação no Mercado Pago. É o que permite mostrar seu
           histórico de cobranças e resolver uma disputa.
+        </p>
+        <p>
+          Na tela de pagamento, o programa do Mercado Pago cria um identificador
+          do aparelho que você está usando, e nós o repassamos junto com a
+          cobrança. Ele fica com o Mercado Pago, que o usa para reconhecer a
+          compra como sua e aprovar o cartão de quem é dono dele. O
+          identificador vale para aquela compra e para a análise de fraude dela,
+          e ele fica fora da contagem de visitas do item 3.
+        </p>
+        <p>
+          Junto com a cobrança vão ainda o seu e-mail, o seu nome, o plano
+          escolhido e o valor. No cartão, o CPF do titular é digitado nos campos
+          do Mercado Pago e segue direto para eles, do mesmo jeito que o número
+          do cartão.
         </p>
       </Artigo>
 
