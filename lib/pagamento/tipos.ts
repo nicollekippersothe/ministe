@@ -114,6 +114,20 @@ export type DadosCartao = {
   documento?: Documento | null;
   /** Para onde o provedor manda o aviso. Em branco, vale o painel do provedor. */
   urlDeAviso?: string | null;
+  /**
+   * O identificador do aparelho, colhido no navegador de quem paga.
+   *
+   * É o campo de maior peso da medição de qualidade da integração do Mercado
+   * Pago, e o antifraude deles usa ele para separar a compra comum da compra
+   * estranha: cliente antigo comprando de um aparelho de sempre passa, e é
+   * justamente esse pagamento legítimo que a recusa custa caro. Quem publica o
+   * valor é o SDK deles, já carregado na tela do cartão, na variável global
+   * `MP_DEVICE_SESSION_ID`. Ver `componentes/painel/CamposCartao.tsx`.
+   *
+   * Opcional porque vem do navegador, e navegador com bloqueador de conteúdo
+   * pode entregar nada. Ausente, o campo fica de fora da chamada.
+   */
+  idDoAparelho?: string | null;
 };
 
 /**
@@ -137,6 +151,19 @@ export type DadosAvulso = {
   idDoMeio?: string | null;
   /** Para onde o provedor manda o aviso. Em branco, vale o painel do provedor. */
   urlDeAviso?: string | null;
+  /**
+   * O nome de quem paga, do jeito que o login com o Google devolveu.
+   *
+   * Vira `additional_info.payer.first_name` e `last_name`, que a medição de
+   * qualidade conta como dado do comprador. O corte em primeiro e resto
+   * acontece dentro do adaptador, porque é formato de API e não do produto.
+   *
+   * Opcional porque a conta pode ter nascido sem nome. Nesse caso o campo fica
+   * de fora inteiro: pagador com nome vazio vale menos que pagador sem o campo.
+   */
+  nomeDoPagador?: string | null;
+  /** O identificador do aparelho. Mesma regra e mesma origem do crédito. */
+  idDoAparelho?: string | null;
 };
 
 /** Situação de uma assinatura recorrente, do jeito que o produto pensa nela. */

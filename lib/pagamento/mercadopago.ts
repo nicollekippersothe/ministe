@@ -4,6 +4,7 @@ import {
   lerCabecalhoDeAssinatura,
   montarManifesto,
 } from "./assinatura.ts";
+import { NOME_PRODUTO } from "../marca.ts";
 import { motivoDoStatusDetail } from "./erros.ts";
 import { DIAS_DE_TESTE, MESES_DO_CICLO, PLANOS } from "./precos.ts";
 import type {
@@ -52,6 +53,34 @@ import type {
  *      Pago. Isso existe porque a primeira falha de verdade em produção deixou
  *      uma tela dizendo "o banco demorou" e nada mais, e descobrir o motivo
  *      virou adivinhação. Ver `anotar`, logo abaixo de `pedir`.
+ *
+ * SOBRE A QUALIDADE DA INTEGRAÇÃO
+ *
+ * O painel deles dá uma nota de 0 a 100 à integração, com 73 de mínimo, e a
+ * nota mede o quanto o corpo da cobrança alimenta o antifraude. Ela paga em
+ * dinheiro: integração magra recusa cartão de cliente legítimo. O que este
+ * arquivo manda por causa disso, e onde:
+ *
+ *   `X-meli-session-id`   cabeçalho, nas duas chamadas que criam cobrança. É o
+ *                         identificador do aparelho, colhido no navegador. A
+ *                         documentação deles descreve exatamente este caminho,
+ *                         e é o item de maior peso.
+ *   `statement_descriptor` corpo do `/v1/payments`. O nome que sai na fatura.
+ *   `additional_info`     corpo do `/v1/payments`. Os itens da compra e o nome
+ *                         de quem paga.
+ *
+ * O `/preapproval` recebe menos: `reason`, `external_reference`, `payer_email`,
+ * `card_token_id`, `back_url`, `status`, `auto_recurring` e `notification_url`,
+ * e mais nada. `additional_info` e `statement_descriptor` ficam de fora dele
+ * porque a referência da API deles nem lista os dois ali, e campo que a API
+ * ignora só engorda o corpo. Quem faz o papel de descritor na assinatura é o
+ * `reason`, que já vai. O cabeçalho do aparelho vale nos dois, porque é
+ * transporte, e a cobrança recorrente vira pagamento do lado de lá.
+ *
+ * O que fica de fora de propósito: telefone e endereço do pagador. O produto
+ * tem o e-mail do login, o nome do login e o CPF que a pessoa digita no
+ * formulário do cartão, e mais nada sobre ela. Campo inventado é mentira sobre
+ * uma pessoa, e a medição deles pune dado que não bate com o cadastro.
  */
 
 const BASE = "https://api.mercadopago.com";
@@ -79,6 +108,26 @@ function texto(v: unknown): string | null {
   if (typeof v === "string") return v.trim() === "" ? null : v;
   if (typeof v === "number" && Number.isFinite(v)) return String(v);
   return null;
+}
+
+/**
+ * O identificador do aparelho, conferido antes de virar cabeçalho.
+ *
+ * O valor nasce no navegador de quem paga, e daqui ele vai para dentro de um
+ * cabeçalho HTTP. Texto de navegador entrando em cabeçalho é injeção de
+ * cabeçalho quando ninguém confere: basta uma quebra de linha para o pedido
+ * sair com um cabeçalho a mais. O `fetch` levantaria, e a chamada apareceria
+ * como provedor fora do ar, escondendo a causa.
+ *
+ * Por isso a régua é uma lista do que passa, e não uma lista do que barra: o
+ * valor deles é hexadecimal com pontos, então letra, número, ponto, hífen e
+ * sublinhado bastam. Qualquer outra coisa devolve nulo, e o campo some da
+ * chamada, que é o desfecho certo para um valor em que não dá para confiar.
+ */
+function idDeAparelhoLimpo(bruto: string | null | undefined): string | null {
+  if (typeof bruto !== "string") return null;
+  const limpo = bruto.trim();
+  return /^[A-Za-z0-9._-]{1,256}$/.test(limpo) ? limpo : null;
 }
 
 /**
@@ -140,6 +189,7 @@ async function pedir(
   caminho: string,
   corpo?: Registro,
   idempotencia?: string,
+  idDoAparelho?: string | null,
 ): Promise<Resultado<Registro>> {
   // O `trim` é regra, e não zelo: painel de hospedagem guarda o valor com a
   // quebra de linha que veio junto na hora de colar, e um cabeçalho com quebra
@@ -154,6 +204,9 @@ async function pedir(
   };
   if (corpo !== undefined) cabecalhos["content-type"] = "application/json";
   if (idempotencia) cabecalhos["X-Idempotency-Key"] = idempotencia;
+
+  const aparelho = idDeAparelhoLimpo(idDoAparelho);
+  if (aparelho) cabecalhos["X-meli-session-id"] = aparelho;
 
   let resposta: Response;
   try {
@@ -420,6 +473,64 @@ async function assinarComCartao(
 }
 
 /**
+ * O nome que sai na fatura de quem paga.
+ *
+ * Sai da marca, e nunca escrito à mão aqui: é o mesmo nome do logotipo, e a
+ * regra do projeto é que ele viva num arquivo só. A caixa fica como a marca
+ * escreve, porque quem coloca em maiúscula é o extrato do banco, e não nós.
+ *
+ * Curto de propósito: bandeira e banco cortam o descritor, e o pedaço que
+ * sobra é o que a pessoa lê na hora de decidir se reconhece a compra. Nome que
+ * ela reconhece é estorno que não acontece.
+ */
+const NOME_NA_FATURA = NOME_PRODUTO;
+
+/**
+ * O que foi comprado, do jeito que o antifraude deles lê.
+ *
+ * `category_id: "service"` é o valor que a documentação de dados de indústria
+ * deles usa para serviço, e este produto é assinatura de serviço. Categoria
+ * errada atrapalha mais que categoria ausente, então o valor sai de lá e não
+ * de invenção nossa.
+ *
+ * `unit_price` é o único decimal daqui, e ele nasce em `emReais` na linha em
+ * que o corpo é montado, como todo o resto do módulo.
+ */
+function itensDaCompra(ciclo: Ciclo, descricao: string): Registro[] {
+  const plano = PLANOS[ciclo];
+  return [
+    {
+      id: `plano-${ciclo}`,
+      title: descricao,
+      description: plano.descricao,
+      category_id: "service",
+      quantity: 1,
+      unit_price: emReais(plano.valorCentavos),
+    },
+  ];
+}
+
+/**
+ * O nome inteiro cortado em primeiro e resto, que é o formato deles.
+ *
+ * Quem tem um nome só fica com `first_name` e sem `last_name`, em vez de
+ * repetir o mesmo pedaço nos dois campos: repetir seria inventar sobrenome.
+ * Nome vazio devolve nulo, e o bloco inteiro sai da chamada.
+ */
+function nomeEmPartes(bruto: string | null | undefined): Registro | null {
+  const inteiro = typeof bruto === "string" ? bruto.trim() : "";
+  if (inteiro === "") return null;
+
+  const partes = inteiro.split(/\s+/);
+  const primeiro = partes[0];
+  const resto = partes.slice(1).join(" ");
+
+  const nome: Registro = { first_name: primeiro };
+  if (resto !== "") nome.last_name = resto;
+  return nome;
+}
+
+/**
  * Cobrança avulsa, que compra um ciclo e termina ali.
  *
  * O Pix volta pendente, com o código para colar, e vira aprovado pelo aviso do
@@ -439,11 +550,22 @@ async function cobrarUmaVez(p: DadosAvulso): Promise<Resultado<CobrancaCriada>> 
     };
   }
 
+  // O que a medição de qualidade chama de informação do comprador e do
+  // produto. Só entra o que existe de verdade: os itens saem da tabela de
+  // preços, e o pagador leva o nome do login quando o login trouxe um.
+  const adicional: Registro = {
+    items: itensDaCompra(p.ciclo, p.descricao),
+  };
+  const nome = nomeEmPartes(p.nomeDoPagador);
+  if (nome) adicional.payer = nome;
+
   const corpo: Registro = {
     transaction_amount: emReais(plano.valorCentavos),
     description: p.descricao,
+    statement_descriptor: NOME_NA_FATURA,
     external_reference: p.referencia,
     payer: pagador,
+    additional_info: adicional,
   };
   if (p.urlDeAviso) corpo.notification_url = p.urlDeAviso;
 
@@ -458,7 +580,13 @@ async function cobrarUmaVez(p: DadosAvulso): Promise<Resultado<CobrancaCriada>> 
     if (p.idDoMeio) corpo.payment_method_id = p.idDoMeio;
   }
 
-  const r = await pedir("POST", "/v1/payments", corpo, p.idempotencia);
+  const r = await pedir(
+    "POST",
+    "/v1/payments",
+    corpo,
+    p.idempotencia,
+    p.idDoAparelho,
+  );
   if (!r.ok) return r;
 
   const cobranca = lerCobranca(r.valor, p.ciclo, p.meio);
