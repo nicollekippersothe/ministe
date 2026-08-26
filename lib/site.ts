@@ -46,7 +46,15 @@ export const CONTATO_SUPORTE: string | null =
  * o perigoso. Para abrir na Vercel é preciso dizer MODO_VITRINE=0, na mão,
  * sabendo o que está fazendo.
  *
- * Sai quando o Supabase Auth entrar.
+ * O Supabase Auth entrou, e este interruptor continua vivo por outro motivo:
+ * ele é o que segura a escrita em disco no caminho SEM banco. Quem lê hoje é
+ * `lib/dados.ts`, em três lugares, e a pergunta lá é "dá para escrever no
+ * disco", que na Vercel é sempre não. Enquanto o destino de arquivo existir
+ * como caminho de desenvolvimento, este guarda existe com ele.
+ *
+ * O que envelheceu foi só a frase que estava aqui, prometendo que ele sairia
+ * com o login. `CADASTRO_ABERTO` logo abaixo é quem responde a pergunta que as
+ * telas fazem, e com Supabase configurado ele é verdadeiro de qualquer jeito.
  */
 export const MODO_VITRINE =
   process.env.MODO_VITRINE === "1" ||
