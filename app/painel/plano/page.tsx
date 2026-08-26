@@ -1,13 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { exigirLogin } from "@/app/painel/vitrine";
 import { IconeAvancar } from "@/componentes/Icones";
 import { IconeConferido, Passo } from "@/componentes/painel/PassoDaCompra";
 import { BotaoDeAcao } from "@/componentes/painel/BotaoDeAcao";
 import { AvisoCobranca } from "@/componentes/painel/AvisoCobranca";
 import { CamposCartao } from "@/componentes/painel/CamposCartao";
+import {
+  FaixaDeRecado,
+  IconeConfirmado,
+  IconeGirando,
+} from "@/componentes/painel/Sinais";
 import { cobrancaDoDono } from "@/lib/dados";
 import { preco } from "@/lib/formato";
 import { NOME_PRODUTO } from "@/lib/marca";
@@ -109,9 +116,13 @@ export default async function Plano({
   const decorrido =
     Number.isFinite(desde) && desde > 0 ? Date.now() - desde : 0;
   const esperando =
-    params.aguardando !== undefined && !confirmado && decorrido < ESPERA_MAXIMA_MS;
+    params.aguardando !== undefined &&
+    !confirmado &&
+    decorrido < ESPERA_MAXIMA_MS;
   const desistiu =
-    params.aguardando !== undefined && !confirmado && decorrido >= ESPERA_MAXIMA_MS;
+    params.aguardando !== undefined &&
+    !confirmado &&
+    decorrido >= ESPERA_MAXIMA_MS;
 
   return (
     <div className="pb-16">
@@ -130,7 +141,7 @@ export default async function Plano({
       ) : null}
 
       {esperando || desistiu ? (
-        <Espera esperando={esperando} />
+        <Espera esperando={esperando} ciclo={ciclo} meio={params.aguardando} />
       ) : confirmado ? (
         <Assinado estado={estado} />
       ) : provisoria ? (
@@ -239,17 +250,25 @@ function Escolha({ ciclo }: { ciclo: Ciclo }) {
         </div>
       </Passo>
 
-      <p className="text-sm leading-relaxed text-suave">
-        Tudo o que você já cadastrou permanece salvo, em qualquer plano. Voltar
-        para o gratuito muda os recursos, e mantém o conteúdo.{" "}
-        <Link
-          href="/termos"
-          className="font-medium text-destaque underline-offset-4 hover:underline"
-        >
-          Termos de uso
-        </Link>
-        .
-      </p>
+      {/*
+        O link dos termos era o fim de uma frase, e media 92 por 16 pixels de
+        alvo. Numa tela onde a próxima coisa que a pessoa faz é digitar um
+        cartão, o texto que rege a compra merece linha e altura próprias.
+      */}
+      <div className="text-sm leading-relaxed text-suave">
+        <p>
+          Tudo o que você já cadastrou permanece salvo, em qualquer plano.
+          Voltar para o gratuito muda os recursos, e mantém o conteúdo.
+        </p>
+        <p className="mt-1">
+          <Link
+            href="/termos"
+            className="inline-flex min-h-11 items-center font-medium text-destaque underline-offset-4 hover:underline"
+          >
+            Termos de uso
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
@@ -300,7 +319,7 @@ function Cartao({ ciclo }: { ciclo: Ciclo }) {
     <div className="mt-6">
       <Voltar ciclo={ciclo} />
 
-      <h2 className="mt-4 text-lg font-semibold tracking-tight text-texto">
+      <h2 className="mt-3 text-lg font-semibold tracking-tight text-texto">
         Cartão de crédito
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-suave">
@@ -310,17 +329,21 @@ function Cartao({ ciclo }: { ciclo: Ciclo }) {
       </p>
 
       {CHAVE_PUBLICA === "" ? (
+        /*
+         * Só aparece em máquina de desenvolvimento sem a chave pública. O nome
+         * do provedor sai daqui como sai do resto da tela: quem lê é quem está
+         * configurando, e o arquivo apontado já diz de quem é a chave.
+         */
         <p className="mt-4 rounded-xl border border-borda bg-superficie px-4 py-3.5 text-sm leading-relaxed text-suave">
           O Pix já funciona nesta máquina. O cartão entra assim que a chave
-          pública do Mercado Pago estiver definida em{" "}
+          pública do pagamento estiver definida em{" "}
           <code className="font-sistema">.env.local</code>.{" "}
           <Link
             href={`/painel/plano?meio=pix&ciclo=${ciclo}`}
-            className="font-medium text-destaque underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center font-medium text-destaque underline-offset-4 hover:underline"
           >
             Pagar com Pix
           </Link>
-          .
         </p>
       ) : (
         <CamposCartao
@@ -332,15 +355,32 @@ function Cartao({ ciclo }: { ciclo: Ciclo }) {
           frases={{
             dadosIncompletos: mensagemDeRecusa("dados_incompletos"),
             semSdk:
-              "O Pix segue disponível enquanto os campos do cartão carregam de novo.",
+              "O Pix aprova na hora e compra o mesmo plano, e é a saída mais rápida daqui.",
           }}
+          /*
+            Duas frases, e a segunda é a exceção da regra de esconder o
+            provedor. A primeira conta o caminho do número do cartão sem nomear
+            ninguém, porque ali o nome é detalhe de implementação. A segunda
+            nomeia de propósito: é o que ela vai ler na fatura daqui a um mês, e
+            nome reconhecido na fatura é estorno que não acontece. Ver
+            `NOME_NA_FATURA` em `lib/pagamento/mercadopago.ts`, que é quem
+            escreve o descritor.
+          */
+          rodape={
+            <div className="mt-6 flex flex-col gap-2 border-t border-borda pt-5 text-sm leading-relaxed text-suave">
+              <p>
+                Os números do cartão são digitados em campos de quem processa o
+                pagamento e vão direto para lá. O {NOME_PRODUTO} recebe a
+                confirmação, e mais nada.
+              </p>
+              <p>
+                Na fatura do cartão a cobrança sai como {NOME_PRODUTO}. O
+                Mercado Pago é quem processa, e o nome dele pode vir junto.
+              </p>
+            </div>
+          }
         />
       )}
-
-      <p className="mt-5 text-sm leading-relaxed text-suave">
-        Os dados do cartão são digitados em campos do Mercado Pago e vão direto
-        para eles. O {NOME_PRODUTO} recebe a confirmação, e mais nada.
-      </p>
     </div>
   );
 }
@@ -362,7 +402,7 @@ async function Pix({
     return (
       <div className="mt-6">
         <Voltar ciclo={ciclo} />
-        <h2 className="mt-4 text-lg font-semibold tracking-tight text-texto">
+        <h2 className="mt-3 text-lg font-semibold tracking-tight text-texto">
           Pix
         </h2>
         <p className="mt-1 text-sm leading-relaxed text-suave">
@@ -374,11 +414,15 @@ async function Pix({
           <input type="hidden" name="ciclo" value={ciclo} />
           <BotaoDeAcao
             type="submit"
-            className="h-13 w-full rounded-full bg-texto text-[1.05rem] font-medium text-superficie"
+            className="flex h-13 w-full items-center justify-center rounded-full bg-texto text-[1.05rem] font-medium text-superficie"
           >
             Gerar o código de {preco(plano.valorCentavos)}
           </BotaoDeAcao>
         </form>
+
+        <p className="mt-4 text-sm leading-relaxed text-suave">
+          O código vale por trinta minutos, e dá para gerar outro depois disso.
+        </p>
       </div>
     );
   }
@@ -404,13 +448,27 @@ async function Pix({
 
   if (cobranca.situacao === "aprovada") {
     return (
-      <div className="mt-6">
-        <p
+      <div className="mt-6 flex flex-col gap-4">
+        <section
           role="status"
-          className="rounded-xl bg-aberto-fundo px-4 py-3 text-sm leading-relaxed font-medium text-aberto-texto"
+          aria-live="polite"
+          className="rounded-2xl border border-aberto-texto/25 bg-aberto-fundo p-5"
         >
-          Pix recebido. O plano pago entra em instantes, e esta tela avisa.
-        </p>
+          <div className="flex items-start gap-2.5">
+            <IconeConfirmado className="mt-0.5 h-5 w-5 shrink-0 text-aberto-texto" />
+            <h2 className="text-[1.05rem] leading-snug font-medium text-aberto-texto">
+              Pix recebido
+            </h2>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-aberto-texto/80">
+            O plano pago entra em instantes, assim que o aviso do banco chegar.
+          </p>
+        </section>
+
+        <FaixaDeRecado tom="andamento">
+          Esta tela se atualiza sozinha.
+        </FaixaDeRecado>
+
         <Recarrega intervalo={RECARGA_DO_PIX_MS} />
       </div>
     );
@@ -419,12 +477,12 @@ async function Pix({
   return (
     <div className="mt-6">
       <Voltar ciclo={ciclo} />
-      <h2 className="mt-4 text-lg font-semibold tracking-tight text-texto">
+      <h2 className="mt-3 text-lg font-semibold tracking-tight text-texto">
         Pague {preco(cobranca.valorCentavos)} pelo Pix
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-suave">
         Abra o aplicativo do seu banco, escolha Pix, e aponte a câmera para o
-        código. Esta tela confirma sozinha assim que o pagamento chegar.
+        código.
       </p>
 
       {cobranca.pixQrBase64 ? (
@@ -445,17 +503,33 @@ async function Pix({
             htmlFor="copia-e-cola"
             className="mb-1.5 block text-sm font-medium text-texto"
           >
-            Ou copie o código
+            Ou copie este código e cole no aplicativo do banco
           </label>
           <textarea
             id="copia-e-cola"
             readOnly
             rows={3}
             value={cobranca.pixCopiaECola}
-            className="w-full rounded-xl border border-borda bg-superficie px-3.5 py-3 font-sistema text-xs break-all text-texto"
+            className="w-full rounded-xl border border-borda bg-superficie px-3.5 py-3 font-sistema text-base break-all text-texto"
           />
         </div>
       ) : null}
+
+      {/*
+        A segunda exceção da regra de esconder o provedor, e ela é do mesmo
+        tamanho da primeira. O Pix sai da conta de quem processa, então é esse
+        nome que aparece como recebedor na tela de confirmação do banco. Quem
+        esperava ler o nome do produto e lê outro para o pagamento na metade do
+        caminho, e é a metade em que o dinheiro já ia sair.
+      */}
+      <p className="mt-4 text-sm leading-relaxed text-suave">
+        No aplicativo do banco o recebedor aparece como Mercado Pago, que é quem
+        processa o pagamento do {NOME_PRODUTO}.
+      </p>
+
+      <FaixaDeRecado tom="andamento" className="mt-5">
+        Esta tela confirma sozinha assim que o pagamento chegar.
+      </FaixaDeRecado>
 
       <Recarrega intervalo={RECARGA_DO_PIX_MS} />
     </div>
@@ -466,22 +540,79 @@ async function Pix({
 /* Espera e situação                                                           */
 /* -------------------------------------------------------------------------- */
 
-function Espera({ esperando }: { esperando: boolean }) {
-  return (
-    <div className="mt-6">
-      <p
-        role="status"
-        className="rounded-xl border border-borda bg-superficie px-4 py-3.5 text-sm leading-relaxed text-suave"
-      >
-        {esperando
-          ? "Estamos confirmando com o banco. Esta tela se atualiza sozinha."
-          : "A confirmação está demorando mais que a média. Assim que ela chegar, o plano aparece aqui."}
-      </p>
+/**
+ * A tela entre o pagamento e o webhook.
+ *
+ * **Existe por um relato de uso, e ele era duro:** a dona do produto assinou de
+ * verdade, caiu aqui, e leu uma caixa de texto cinza parada. Nada girava, nada
+ * dizia o que estava acontecendo, e a única coisa com jeito de saída era um
+ * link de 16 pixels de altura chamado "Conferir agora", que ela apertou na mão.
+ * A tela estava esperando e não parecia estar.
+ *
+ * O que ela mostra agora é o vocabulário que o resto do painel já usa, de
+ * `componentes/painel/Sinais.tsx`: o giro enquanto a escrita corre, e a mesma
+ * caixa neutra do recado. Junto vai o que foi comprado, porque quem acabou de
+ * digitar um cartão quer ver a compra descrita de volta antes de tudo.
+ *
+ * O link à mão continua, e continua de propósito: é ele que atende quem está
+ * sem JavaScript. O que mudou é que ele deixou de ser a única saída, e ganhou
+ * altura de dedo.
+ */
+function Espera({
+  esperando,
+  ciclo,
+  meio,
+}: {
+  esperando: boolean;
+  ciclo: Ciclo;
+  meio: string | undefined;
+}) {
+  const plano = PLANOS[ciclo];
+  const noCartao = meio === "credito";
 
-      <p className="mt-3 text-sm">
+  const resumo = noCartao
+    ? `${plano.rotulo}, ${preco(plano.valorCentavos)}, no cartão de crédito.`
+    : `${plano.rotulo}, ${preco(plano.valorCentavos)}.`;
+
+  return (
+    <div className="mt-6 flex flex-col gap-4">
+      <section
+        role="status"
+        aria-live="polite"
+        className="rounded-2xl border border-borda bg-superficie p-5"
+      >
+        <div className="flex items-center gap-2.5">
+          {esperando ? (
+            <IconeGirando className="h-5 w-5 shrink-0 text-destaque motion-reduce:hidden" />
+          ) : null}
+          <h2 className="text-[1.05rem] leading-snug font-medium text-texto">
+            {esperando
+              ? "Confirmando o seu pagamento"
+              : "A confirmação está demorando mais que a média"}
+          </h2>
+        </div>
+
+        <p className="mt-2 text-sm leading-relaxed text-suave">
+          {esperando
+            ? noCartao
+              ? `O cartão já foi autorizado. O aviso do banco chega em alguns segundos, e os ${DIAS_DE_TESTE} dias de teste começam junto com ele. Esta tela se atualiza sozinha.`
+              : "O pagamento já saiu. O aviso do banco chega em alguns segundos, e o plano pago começa junto com ele. Esta tela se atualiza sozinha."
+            : "Assim que o aviso do banco chegar, o plano pago aparece aqui. Conferir agora traz a situação deste momento."}
+        </p>
+
+        <p className="mt-4 border-t border-borda pt-4 text-sm text-texto">
+          {resumo}
+        </p>
+      </section>
+
+      <p>
         <Link
           href="/painel/plano"
-          className="font-medium text-destaque underline-offset-4 hover:underline"
+          className={`inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-medium ${
+            esperando
+              ? "border border-borda text-texto hover:border-texto"
+              : "bg-texto text-superficie"
+          }`}
         >
           Conferir agora
         </Link>
@@ -492,6 +623,21 @@ function Espera({ esperando }: { esperando: boolean }) {
   );
 }
 
+/**
+ * O cartão de quem já tem plano, e o que fazer a partir dele.
+ *
+ * Ele foi refeito depois que a dona do produto mandou uma foto do que via
+ * depois de assinar: três parágrafos do mesmo tamanho, um deles com o período e
+ * o meio de pagamento soltos no fim, e um único botão na tela, o de cancelar.
+ * A tela inteira empurrava para a saída.
+ *
+ * A ordem agora é a que a pessoa procura: primeiro em que situação ela está,
+ * depois quando é a próxima data que importa, depois os dados da assinatura em
+ * lista, e só então as duas ações, na ordem certa. A que abre a letra da página
+ * é o que ela acabou de comprar, e vem em primeiro. Cancelar continua a um
+ * toque, porque o decreto do SAC manda ser tão fácil quanto assinar, e agora
+ * ele está onde uma saída fica, no fim e com a explicação junto.
+ */
 function Assinado({
   estado,
 }: {
@@ -503,57 +649,154 @@ function Assinado({
   const emAtraso = assinatura?.status === "em_atraso";
   const encerrada = assinatura === null || assinatura.status === "encerrada";
 
+  const plano = PLANOS[assinatura?.ciclo === "anual" ? "anual" : "mensal"];
+  const meio =
+    assinatura?.meio === "credito"
+      ? "Cartão de crédito"
+      : assinatura?.meio === "pix"
+        ? "Pix"
+        : null;
+
+  // O Pix compra um ciclo à vista e para ali, então a data dele é um fim de
+  // validade, e nunca uma renovação que vai acontecer sozinha. Dizer
+  // "próxima renovação" para quem pagou com Pix é prometer uma cobrança que
+  // ninguém vai fazer.
+  const renovaSozinho = assinatura?.meio === "credito";
+
+  const rotuloDaData = emTeste
+    ? "Primeira cobrança"
+    : emAtraso
+      ? "No ar até"
+      : encerrada || !renovaSozinho
+        ? "Vale até"
+        : "Próxima renovação";
+
   return (
-    <div className="mt-6 flex flex-col gap-6">
-      <section className="rounded-2xl border border-borda bg-superficie p-4">
-        <p className="text-[1.05rem] leading-snug font-medium text-texto">
-          {emTeste
-            ? `Você está nos ${DIAS_DE_TESTE} dias de teste`
-            : emAtraso
-              ? "O banco está tentando a cobrança de novo"
-              : encerrada
-                ? "Sua assinatura está encerrada"
-                : "Seu plano é o pago"}
+    <div className="mt-6 flex flex-col gap-8">
+      <section className="rounded-2xl border border-borda bg-superficie p-5">
+        <p className="text-xs font-semibold tracking-[0.14em] text-suave uppercase">
+          Plano pago
         </p>
-        <p className="mt-1 text-sm leading-relaxed text-suave">
-          {ate
-            ? emTeste
-              ? `O teste vale até ${ate}, e a primeira cobrança acontece nesse dia.`
+
+        <div className="mt-1.5 flex items-start gap-2.5">
+          {emTeste || (!emAtraso && !encerrada) ? (
+            <IconeConfirmado className="mt-0.5 h-5 w-5 shrink-0 text-aberto-texto" />
+          ) : null}
+          <h2 className="text-[1.15rem] leading-snug font-semibold tracking-tight text-texto">
+            {emTeste
+              ? `Você está nos ${DIAS_DE_TESTE} dias de teste`
               : emAtraso
-                ? `Sua página segue no ar até ${ate}.`
+                ? "O banco está tentando a cobrança de novo"
                 : encerrada
-                  ? `Os recursos do plano pago valem até ${ate}, e o conteúdo continua salvo depois disso.`
-                  : `A próxima renovação acontece em ${ate}.`
-            : "Os recursos do plano pago estão liberados."}
+                  ? "Seu plano pago vale até o fim do período"
+                  : "Seu plano é o pago"}
+          </h2>
+        </div>
+
+        {/*
+          A data aparece uma vez só, e ela mora na lista de baixo. Esta frase
+          conta o que a data significa, e é por isso que ela repete a palavra do
+          rótulo em vez de repetir o dia: as duas juntas diziam
+          "2 de setembro de 2026" duas vezes em quatro linhas.
+        */}
+        <p className="mt-2 text-sm leading-relaxed text-suave">
+          {!ate
+            ? "Os recursos do plano pago estão liberados."
+            : emTeste
+              ? "A primeira cobrança acontece no fim do teste, e cancelar antes disso deixa o cartão intacto."
+              : emAtraso
+                ? "Sua página segue no ar enquanto isso acontece."
+                : encerrada
+                  ? "Tudo o que você cadastrou continua salvo depois dessa data, em qualquer plano."
+                  : renovaSozinho
+                    ? "A renovação acontece sozinha, no cartão de crédito que você cadastrou."
+                    : "O período comprado vale até essa data, e um Pix novo compra o período seguinte."}
         </p>
-        {assinatura?.ciclo ? (
-          <p className="mt-1 text-sm text-suave">
-            {PLANOS[assinatura.ciclo === "anual" ? "anual" : "mensal"].rotulo}
-            {assinatura.meio === "credito"
-              ? ", no cartão de crédito"
-              : assinatura.meio === "pix"
-                ? ", no Pix"
-                : ""}
-            .
-          </p>
-        ) : null}
+
+        <dl className="mt-4 flex flex-col gap-2 border-t border-borda pt-4 text-sm">
+          <Linha rotulo="Período">
+            {plano.rotulo}, {preco(plano.valorCentavos)}
+          </Linha>
+          {meio ? <Linha rotulo="Pagamento">{meio}</Linha> : null}
+          {ate ? <Linha rotulo={rotuloDaData}>{ate}</Linha> : null}
+        </dl>
+      </section>
+
+      {/*
+        O que ela acabou de comprar, a um toque. Sem isto a tela de plano ativo
+        terminava em beco: a única coisa clicável era o cancelamento.
+      */}
+      <section>
+        <h2 className="text-sm font-medium text-texto">
+          O que o plano pago abriu
+        </h2>
+        <div className="mt-2 flex flex-col gap-2">
+          <Atalho
+            href="/painel/aparencia"
+            titulo="Letras da página"
+            dica="Cinco combinações, com o nome do seu negócio em cada uma."
+          />
+          <Atalho
+            href="/painel/numeros"
+            titulo="Números da página"
+            dica="Visitas e cliques completos, dia a dia."
+          />
+        </div>
       </section>
 
       {encerrada ? null : (
-        <form action={cancelarPlano}>
-          <BotaoDeAcao
-            type="submit"
-            className="h-11 rounded-full border border-borda px-5 text-sm font-medium text-texto"
-          >
-            Cancelar a assinatura
-          </BotaoDeAcao>
-          <p className="mt-2 text-sm leading-relaxed text-suave">
+        <form action={cancelarPlano} className="border-t border-borda pt-6">
+          <p className="text-sm leading-relaxed text-suave">
             O cancelamento encerra as próximas cobranças. O plano pago segue
             valendo até o fim do período que já está pago.
           </p>
+          <BotaoDeAcao
+            type="submit"
+            className="mt-3 h-11 rounded-full border border-borda px-5 text-sm font-medium text-texto"
+          >
+            Cancelar a assinatura
+          </BotaoDeAcao>
         </form>
       )}
     </div>
+  );
+}
+
+/** Uma linha da lista de dados da assinatura. */
+function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+      <dt className="text-suave">{rotulo}</dt>
+      <dd className="font-medium text-texto">{children}</dd>
+    </div>
+  );
+}
+
+/** Um recurso que o plano pago abriu, com a porta junto. */
+function Atalho({
+  href,
+  titulo,
+  dica,
+}: {
+  href: string;
+  titulo: string;
+  dica: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 rounded-2xl border border-borda bg-superficie px-4 py-3.5 hover:border-texto"
+    >
+      <span className="flex-1">
+        <span className="block text-[1.05rem] leading-snug text-texto">
+          {titulo}
+        </span>
+        <span className="mt-0.5 block text-sm leading-relaxed text-suave">
+          {dica}
+        </span>
+      </span>
+      <IconeAvancar className="h-4 w-4 shrink-0 text-suave" />
+    </Link>
   );
 }
 
@@ -573,10 +816,10 @@ function PrecisaEntrar() {
         começou a montar. Entrar com o Google guarda ela na sua conta de sempre,
         e é essa conta que recebe o plano.
       </p>
-      <p className="mt-3 text-sm">
+      <p className="mt-3">
         <Link
           href="/entrar?motivo=assinar"
-          className="font-medium text-destaque underline-offset-4 hover:underline"
+          className="inline-flex h-11 items-center justify-center rounded-full bg-texto px-5 text-sm font-medium text-superficie"
         >
           Entrar com o Google
         </Link>
@@ -597,8 +840,10 @@ function Voltar({ ciclo }: { ciclo: Ciclo }) {
     <p className="text-sm">
       <Link
         href={`/painel/plano?ciclo=${ciclo}`}
-        className="inline-flex min-h-11 items-center text-suave underline-offset-4 hover:underline"
+        className="-ml-1 inline-flex min-h-11 items-center gap-1.5 pr-2 pl-1 text-suave hover:text-texto"
       >
+        {/* A mesma seta do passo 2, virada: um desenho só para os dois sentidos. */}
+        <IconeAvancar className="h-4 w-4 shrink-0 rotate-180" />
         Voltar para os planos
       </Link>
     </p>
@@ -617,13 +862,30 @@ function Voltar({ ciclo }: { ciclo: Ciclo }) {
  * a tela de espera nunca aparece junto com o formulário do cartão: página que
  * se recarrega embaixo de quem está digitando um cartão seria o pior defeito
  * do produto.
+ *
+ * **`next/script`, e não a tag `<script>` crua.** Este é o conserto do "tem que
+ * apertar em conferir agora", e o defeito estava exatamente aqui. A tag crua
+ * roda quando o navegador analisa o documento, e só então: quem chega nesta
+ * tela chega pelo `redirect` da Server Action, que é navegação de cliente, e aí
+ * o React insere o elemento no DOM já montado e o navegador nunca executa o que
+ * está dentro dele. Medido no Chromium, com o mesmo endereço: aberto por carga
+ * inteira, uma recarga em sete segundos; alcançado por navegação de cliente,
+ * zero. A pessoa que acabou de pagar era justamente a que caía no caminho sem
+ * recarga, e por isso a tela ficou parada até ela apertar o link.
+ *
+ * O `id` leva o intervalo e o instante da montagem porque o `next/script`
+ * guarda os ids que já rodaram no documento: com id fixo, voltar para esta tela
+ * pelo botão de voltar do navegador encontraria o script marcado como usado e a
+ * espera ficaria parada de novo, que é o defeito que este arquivo acabou de
+ * consertar.
  */
 function Recarrega({ intervalo }: { intervalo: number }) {
   return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `setTimeout(function(){location.reload()},${intervalo})`,
-      }}
-    />
+    <Script
+      id={`recarga-${intervalo}-${Date.now()}`}
+      strategy="afterInteractive"
+    >
+      {`setTimeout(function(){location.reload()},${intervalo})`}
+    </Script>
   );
 }

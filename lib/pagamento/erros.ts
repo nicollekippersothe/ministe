@@ -59,8 +59,11 @@ export const MOTIVOS_DO_CHECKOUT: Record<string, string> = {
   ciclo: "Escolha entre o plano mensal e o anual para seguir.",
   conta:
     "Publique a sua página antes de assinar. O plano vale para a página que está no ar.",
+  // "logo abaixo", e não "logo acima": o aviso sai no topo da tela do plano, e
+  // o cartão com a situação da assinatura vem depois dele. A frase antiga
+  // mandava a pessoa olhar para o próprio aviso.
   assinatura_viva:
-    "Você já tem uma assinatura em andamento. A situação dela está logo acima.",
+    "Você já tem uma assinatura em andamento. A situação dela está logo abaixo.",
   entrar: "Entre com o Google para assinar. O plano fica ligado à sua conta.",
 };
 

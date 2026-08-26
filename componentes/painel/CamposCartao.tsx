@@ -1,7 +1,8 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { IconeGirando } from "./Sinais";
 
 /**
  * Os três campos do cartão, que são iframes do Mercado Pago dentro das nossas
@@ -150,6 +151,7 @@ export function CamposCartao({
   rotuloDoBotao,
   frases,
   caminhoPix,
+  rodape,
 }: {
   /** A Server Action. Termina em redirect, nos dois desfechos. */
   acao: (dados: FormData) => Promise<void>;
@@ -160,6 +162,16 @@ export function CamposCartao({
   frases: FrasesDoCartao;
   /** Para onde mandar quem ficar sem os campos do cartão. */
   caminhoPix: string;
+  /**
+   * O que fica embaixo do formulário: o caminho do número do cartão e o nome
+   * que sai na fatura.
+   *
+   * Entra por aqui, e não escrito na tela ao lado, porque quem sabe se o
+   * formulário existe é este componente. Quando o SDK fica fora de alcance a
+   * tela vira um convite ao Pix, e falar de fatura de cartão ali é responder
+   * uma pergunta que ninguém fez.
+   */
+  rodape?: ReactNode;
 }) {
   const [etapa, setEtapa] = useState<Etapa>("carregando");
   const [foco, setFoco] = useState<string | null>(null);
@@ -314,18 +326,25 @@ export function CamposCartao({
     setEtapa("pronto");
   }
 
+  /*
+   * O caminho de quando o SDK fica fora de alcance.
+   *
+   * Era um parágrafo com um link de 16 pixels de altura no meio dele, e essa
+   * era a tela inteira: quem chegava aqui tinha uma frase e um alvo que o dedo
+   * erra. Agora o Pix é botão, com a altura do botão de pagar, porque nesta
+   * tela ele passou a ser o caminho principal.
+   */
   if (etapa === "fora") {
     return (
-      <p className="mt-4 rounded-xl border border-borda bg-superficie px-4 py-3.5 text-sm leading-relaxed text-suave">
-        {frases.semSdk}{" "}
+      <div className="mt-5 rounded-2xl border border-borda bg-superficie p-5">
+        <p className="text-sm leading-relaxed text-suave">{frases.semSdk}</p>
         <a
           href={caminhoPix}
-          className="font-medium text-destaque underline-offset-4 hover:underline"
+          className="mt-4 flex h-13 w-full items-center justify-center rounded-full bg-texto text-[1.05rem] font-medium text-superficie transition-transform duration-75 active:scale-[0.97]"
         >
           Pagar com Pix
         </a>
-        .
-      </p>
+      </div>
     );
   }
 
@@ -349,6 +368,7 @@ export function CamposCartao({
           id={NUMERO}
           rotulo="Número do cartão"
           focado={foco === "numero"}
+          carregando={etapa === "carregando"}
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -356,11 +376,13 @@ export function CamposCartao({
             id={VALIDADE}
             rotulo="Validade"
             focado={foco === "validade"}
+            carregando={etapa === "carregando"}
           />
           <CaixaDoCampo
             id={CODIGO}
             rotulo="Código de segurança"
             focado={foco === "codigo"}
+            carregando={etapa === "carregando"}
           />
         </div>
 
@@ -387,9 +409,18 @@ export function CamposCartao({
           >
             CPF do titular
           </label>
-          <p id="documento-dica" className="mt-0.5 mb-1.5 text-xs leading-relaxed text-suave">
+          {/*
+            Sem o nome do provedor: aqui ele é detalhe de implementação, e quem
+            está digitando um CPF ganha zero em saber de quem é o servidor do
+            outro lado. O caminho do dado continua contado, que é o que a
+            pergunta dela de verdade é.
+          */}
+          <p
+            id="documento-dica"
+            className="mt-0.5 mb-1.5 text-xs leading-relaxed text-suave"
+          >
             O banco pede para confirmar quem é o dono do cartão. Ele fica no seu
-            navegador e vai direto para o Mercado Pago.
+            navegador e vai direto para quem processa o pagamento.
           </p>
           <input
             id="documento"
@@ -410,11 +441,23 @@ export function CamposCartao({
           </p>
         ) : null}
 
+        {/*
+          O giro dentro do botão é o conserto do "não tem ícone de carregar".
+          O rótulo já trocava entre preparar, enviar e o texto final, e trocar
+          palavra é retorno que só serve para quem estava lendo o botão: no
+          celular, com o dedo em cima dele, a tela ficava parada por três ou
+          quatro segundos sem nada se mexendo. O desenho é o mesmo do resto do
+          painel, de `Sinais.tsx`.
+        */}
         <button
           type="submit"
           disabled={ocupado}
-          className="h-13 w-full rounded-full bg-texto text-[1.05rem] font-medium text-superficie transition-transform duration-75 active:scale-[0.97] disabled:opacity-60"
+          aria-busy={ocupado || undefined}
+          className="flex h-13 w-full items-center justify-center gap-2.5 rounded-full bg-texto text-[1.05rem] font-medium text-superficie transition-transform duration-75 active:scale-[0.97] disabled:opacity-60"
         >
+          {ocupado ? (
+            <IconeGirando className="h-5 w-5 shrink-0 motion-reduce:hidden" />
+          ) : null}
           {etapa === "carregando"
             ? "Preparando os campos"
             : etapa === "enviando"
@@ -422,6 +465,8 @@ export function CamposCartao({
               : rotuloDoBotao}
         </button>
       </form>
+
+      {rodape}
     </div>
   );
 }
@@ -441,10 +486,12 @@ function CaixaDoCampo({
   id,
   rotulo,
   focado,
+  carregando,
 }: {
   id: string;
   rotulo: string;
   focado: boolean;
+  carregando: boolean;
 }) {
   return (
     <div>
@@ -457,7 +504,7 @@ function CaixaDoCampo({
       <div
         role="group"
         aria-labelledby={`${id}-rotulo`}
-        className={`w-full rounded-xl border bg-superficie px-3.5 py-3 ${
+        className={`relative w-full rounded-xl border bg-superficie px-3.5 py-3 ${
           focado
             ? "border-texto outline-3 outline-offset-[3px] outline-destaque"
             : "border-borda"
@@ -466,6 +513,20 @@ function CaixaDoCampo({
         {/* 24px, que é 1rem vezes 1.5: a mesma caixa de texto de um input
             nosso. O iframe do Mercado Pago ocupa 100% desta div. */}
         <div id={id} className="h-6" />
+
+        {/*
+          A barra que pulsa enquanto o iframe do provedor não chegou.
+          Três molduras vazias por três ou quatro segundos liam como campo
+          quebrado, e é o mesmo relato de "não tem ícone de carregar": a espera
+          precisa ter forma. Sai da árvore assim que o campo monta, e some
+          inteira para quem pediu menos movimento.
+        */}
+        {carregando ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-3.5 h-3 w-2/5 -translate-y-1/2 animate-pulse rounded-full bg-borda motion-reduce:hidden"
+          />
+        ) : null}
       </div>
     </div>
   );

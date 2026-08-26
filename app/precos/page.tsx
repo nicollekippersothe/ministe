@@ -353,9 +353,12 @@ export default async function Precos() {
                 conversa, e a assinatura do {NOME_PRODUTO} no rodapé. Ela vale
                 pelo tempo que você quiser.
               </p>
+              {/* Alvo de 44 pixels: media 24 de altura, e é a chamada da
+                  faixa do gratuito, o segundo lugar da página onde alguém
+                  começa. */}
               <a
                 href="#comecar"
-                className="shrink-0 font-medium text-destaque underline-offset-4 hover:underline"
+                className="inline-flex min-h-11 shrink-0 items-center font-medium text-destaque underline-offset-4 hover:underline"
               >
                 Escolher meu endereço
               </a>
@@ -463,10 +466,17 @@ export default async function Precos() {
               ))}
             </dl>
 
+            {/*
+              Sem o nome do provedor: quem lê esta página está decidindo se
+              compra, e de quem é o servidor que guarda o número do cartão é
+              assunto nosso. Quem precisa do nome é quem já assinou, na fatura e
+              no aplicativo do banco, e é lá que ele ficou. A política de
+              privacidade nomeia todos os três, que é onde nomear é a regra.
+            */}
             <p className="mt-10 max-w-2xl leading-relaxed text-suave">
-              Os campos do cartão são do Mercado Pago e vão direto para ele. O{" "}
-              {NOME_PRODUTO} recebe a confirmação e os quatro últimos dígitos, e
-              a tela do começo ao fim é a nossa.
+              Os campos do cartão são de quem processa o pagamento e vão direto
+              para lá. O {NOME_PRODUTO} recebe a confirmação e os quatro últimos
+              dígitos, e a tela do começo ao fim é a nossa.
             </p>
           </div>
         </section>
