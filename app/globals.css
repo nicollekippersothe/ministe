@@ -494,3 +494,292 @@ body {
   color: var(--c-zap);
   background: color-mix(in srgb, var(--c-zap) 8%, var(--c-superficie));
 }
+
+/* ==========================================================================
+ * A parede: a galeria da pagina publica.
+ *
+ * A secao era uma grade de tres quadrados iguais, do tamanho de um selo, com
+ * o resto da fileira em branco quando a conta sobrava. Isso e folha de
+ * contato, que e justamente o que o fotografo joga fora. O que o produto
+ * precisa entregar e o oposto: uma parede montada, com uma peca grande
+ * puxando o olho e as outras penduradas em volta dela.
+ *
+ * O ritmo inteiro sai de nth-child, entao ele custa zero byte de JavaScript e
+ * vale igual para tres fotos e para vinte. Cada bloco fecha a fileira exata, e
+ * as regras de :last-child esticam a ultima peca quando a conta sobra. E dai
+ * que veio o fim do pedaco vazio no canto.
+ * ========================================================================== */
+
+/*
+ * Dois tokens novos, e so isto: os tres temas de cima continuam com os mesmos
+ * valores medidos. O fio de luz sai do proprio texto do tema, entao ele e
+ * escuro no claro e claro no escuro sem nenhuma regra a mais. A sombra precisa
+ * de valor proprio no noite, porque sombra preta sobre parede preta some.
+ */
+:root,
+[data-tema="areia"],
+[data-tema="menta"] {
+  --c-fio-da-obra: color-mix(in srgb, var(--c-texto) 9%, transparent);
+  --sombra-da-obra:
+    0 1px 2px rgba(28, 25, 23, 0.07), 0 12px 32px -20px rgba(28, 25, 23, 0.4);
+}
+
+[data-tema="noite"] {
+  --c-fio-da-obra: color-mix(in srgb, var(--c-texto) 15%, transparent);
+  --sombra-da-obra:
+    0 1px 2px rgba(0, 0, 0, 0.55), 0 16px 38px -20px rgba(0, 0, 0, 0.85);
+}
+
+/*
+ * A peca, em qualquer arranjo.
+ *
+ * Foto de celular chega torta, com luz de teto e branco estourado, e e essa a
+ * foto que a maioria vai ter. O fio por dentro devolve a borda que a foto
+ * perdeu no estouro, entao mesmo a foto clara continua tendo onde terminar. O
+ * raio e pequeno de proposito, menor que o dos cartoes da pagina: assim a foto
+ * le como copia impressa e a interface le como interface.
+ */
+.obra {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  background: var(--c-borda);
+}
+
+.obra::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--c-fio-da-obra);
+}
+
+/*
+ * Uma foto so, que e o caso mais comum de quem esta comecando e o mais dificil
+ * de resolver: um quadradinho sozinho no canto de uma fileira le como erro.
+ *
+ * Aqui ela vira peca emoldurada. A foto entra inteira, sem corte nenhum, e o
+ * espaco que sobra dentro da moldura e passe-partout, que e exatamente o que a
+ * parede de galeria faz com a obra pequena. Retrato, paisagem ou quadrada
+ * cabem do mesmo jeito, porque quem se ajusta e a moldura, e nao a foto.
+ */
+.quadro {
+  display: flex;
+  justify-content: center;
+  padding: 0.9rem;
+  border: 1px solid var(--c-borda);
+  border-radius: 1rem;
+  background: var(--c-fundo);
+}
+
+.quadro img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 24rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 0 1px var(--c-fio-da-obra), var(--sombra-da-obra);
+}
+
+/* Duas fotos: o diptico, os dois paineis do mesmo tamanho ocupando a largura. */
+.diptico {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.diptico > li {
+  aspect-ratio: 4 / 5;
+}
+
+/*
+ * Tres ou mais: a parede pendurada.
+ *
+ * Os dois ritmos vivem em consultas de largura que nao se encontram, e isto e
+ * proposital e ja custou uma rodada: com o ritmo do celular escrito solto e so
+ * o do monitor dentro de `min-width`, a peca que era abertura de bloco no
+ * celular (3n + 1) continuava valendo no monitor, e a quarta foto atravessava
+ * duas colunas no meio da fileira deixando um buraco do lado. Cada tamanho
+ * declara o proprio arranjo inteiro, e nada vaza de um para o outro.
+ */
+.parede-obras {
+  display: grid;
+  grid-auto-flow: dense;
+  gap: 0.5rem;
+}
+
+/*
+ * As duas medidas de 100% mantem a fileira com a base reta, e as duas precisam
+ * estar escritas. Item de grade com `aspect-ratio` para de obedecer ao esticao
+ * automatico, entao a peca de abertura, mais alta pela propria proporcao,
+ * deixava a companheira do lado terminando acima dela. So a altura tambem nao
+ * resolve: com a altura cheia e a largura em automatico, a proporcao passa a
+ * calcular a largura a partir da altura, e a companheira crescia vinte pixels
+ * para fora da coluna, por cima da vizinha. Com as duas presas na celula, a
+ * proporcao volta a fazer so o trabalho dela, que e dizer que altura a fileira
+ * pede.
+ */
+.parede-obras > li {
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * No celular o bloco tem tres pecas em duas fileiras: a de abertura atravessa
+ * a largura, e o par entra embaixo. A ultima peca atravessa tambem quando ela
+ * sobraria sozinha, e e isso que fecha toda fileira sem buraco.
+ */
+@media (max-width: 63.9375rem) {
+  .parede-obras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .parede-obras > li {
+    aspect-ratio: 4 / 5;
+  }
+
+  .parede-obras > li:nth-child(3n + 1),
+  .parede-obras > li:last-child:nth-child(3n + 2) {
+    grid-column: span 2;
+    aspect-ratio: 3 / 2;
+  }
+}
+
+/*
+ * No monitor o bloco vira cinco pecas em duas fileiras: a de abertura ocupa
+ * duas colunas com uma companheira ao lado, e as tres seguintes formam a linha
+ * de baixo. A abertura troca de lado a cada bloco, senao a parede vira listra.
+ *
+ * As tres caudas possiveis tem cada uma a sua regra, e as tres fecham a fileira
+ * inteira: sobrando uma peca ela vira faixa de ponta a ponta, sobrando tres a
+ * terceira vira a faixa de baixo, e sobrando quatro a quarta ocupa as duas
+ * colunas que restam. Sobrando duas, a segunda ja cai no lugar sozinha.
+ */
+@media (min-width: 64rem) {
+  .diptico,
+  .parede-obras {
+    gap: 0.625rem;
+  }
+
+  .parede-obras {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .parede-obras > li {
+    aspect-ratio: 4 / 5;
+  }
+
+  .parede-obras > li:nth-child(5n + 1) {
+    aspect-ratio: 3 / 2;
+  }
+
+  .parede-obras > li:nth-child(10n + 1) {
+    grid-column: 1 / span 2;
+  }
+
+  .parede-obras > li:nth-child(10n + 6) {
+    grid-column: 2 / span 2;
+  }
+
+  .parede-obras > li:last-child:nth-child(5n + 1) {
+    grid-column: 1 / span 3;
+    aspect-ratio: 5 / 2;
+  }
+
+  .parede-obras > li:last-child:nth-child(5n + 3) {
+    grid-column: span 3;
+    aspect-ratio: 5 / 2;
+  }
+
+  /*
+   * 8 por 5 nas duas colunas da cauda da a mesma altura que 4 por 5 numa
+   * coluna, entao a peca larga entra ao lado da estreita sem esticar a fileira.
+   */
+  .parede-obras > li:last-child:nth-child(5n + 4) {
+    grid-column: span 2;
+    aspect-ratio: 8 / 5;
+  }
+
+  .quadro {
+    padding: 1.6rem;
+  }
+
+  .quadro img {
+    max-height: 32rem;
+  }
+}
+
+/*
+ * O rotulo de parede.
+ *
+ * Toda secao tinha o mesmo titulo grosso, no mesmo corpo, e o resultado era
+ * uma pagina onde a interface falava mais alto que o trabalho. Numa galeria o
+ * nome da sala e uma plaquinha discreta, e quem tem tamanho e a obra. A letra
+ * de titulo do tema passa a aparecer uma vez so, no nome do negocio, que e o
+ * jeito de ela valer alguma coisa.
+ */
+.rotulo-parede {
+  font-family: var(--f-corpo), var(--f-sistema);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--c-suave);
+}
+
+/*
+ * O retrato do dono da pagina.
+ *
+ * O anel branco separava do fundo da capa e parava ai. Com o fio por dentro
+ * ele passa a ter contorno proprio, entao logo claro sobre capa clara continua
+ * tendo onde comecar.
+ */
+.retrato {
+  box-shadow:
+    inset 0 0 0 1px var(--c-fio-da-obra),
+    0 2px 10px rgba(28, 25, 23, 0.12);
+}
+
+/*
+ * A chapa de links: uma peca so, com fio entre as linhas.
+ *
+ * Eram N cartoes identicos empilhados, cada um com a sua moldura, e a secao
+ * lia como lista de ajustes de aplicativo. Juntos numa chapa unica eles leem
+ * como o quadro de avisos que estao ali para ser: um objeto, varias linhas.
+ *
+ * O arredondamento vive na linha, e nao na chapa, de proposito: com recorte na
+ * chapa o contorno de foco do teclado ficava cortado nos cantos, e foco
+ * visivel e regra do projeto.
+ */
+.chapa {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.chapa-lista > li:first-child .chapa {
+  border-top-left-radius: 0.9rem;
+  border-top-right-radius: 0.9rem;
+}
+
+.chapa-lista > li:last-child .chapa {
+  border-bottom-left-radius: 0.9rem;
+  border-bottom-right-radius: 0.9rem;
+}
+
+.chapa:hover {
+  background: color-mix(in srgb, var(--c-destaque) 6%, var(--c-fundo));
+}
+
+.chapa .seta {
+  transition:
+    transform 160ms ease,
+    color 160ms ease;
+}
+
+.chapa:hover .seta {
+  transform: translate(2px, -2px);
+  color: var(--c-destaque);
+}

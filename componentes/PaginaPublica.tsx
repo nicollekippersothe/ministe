@@ -95,10 +95,15 @@ export function PaginaPublica({
     </>
   );
 
+  /*
+   * "Fotos" nomeava o formato do arquivo. "Galeria" nomeia o que a seção é: o
+   * lugar onde o trabalho fica pendurado, que é o motivo de a pessoa continuar
+   * rolando. É também a palavra que o dono usa para falar dela.
+   */
   const galeria = (
     <>
       {temGaleria ? <Divisor /> : null}
-      <Secao id="galeria" titulo="Fotos" vazia={!temGaleria}>
+      <Secao id="galeria" titulo="Galeria" vazia={!temGaleria} amplo>
         <Galeria negocio={negocio} />
       </Secao>
     </>
@@ -121,10 +126,21 @@ export function PaginaPublica({
         }}
       />
 
+      {/*
+        `overflow-clip` no lugar de `overflow-hidden`, e a diferenca entre os
+        dois e o que fazia a coluna da esquerda ficar parada.
+        `overflow: hidden` transforma o elemento em container de rolagem, e a
+        partir dai `position: sticky` la dentro passa a se prender a um
+        container que nunca rola, ou seja, para de funcionar. A coluna da
+        identidade ficava no alto e o resto do monitor virava faixa branca de
+        mais de mil pixels ao lado do catalogo, que era a queixa de "vazio".
+        `overflow: clip` recorta igual, mantem o canto arredondado e nao cria
+        container de rolagem, entao o grude volta a valer contra a janela.
+      */}
       <main
-        className={`mx-auto w-full max-w-[34rem] overflow-hidden bg-superficie ${respiro} sm:my-8 sm:rounded-3xl sm:border sm:border-borda sm:shadow-[0_1px_3px_rgba(28,25,23,0.06),0_12px_36px_-12px_rgba(28,25,23,0.14)] lg:max-w-5xl lg:pb-0`}
+        className={`mx-auto w-full max-w-[34rem] overflow-clip bg-superficie ${respiro} sm:my-8 sm:rounded-3xl sm:border sm:border-borda sm:shadow-[0_1px_3px_rgba(28,25,23,0.06),0_12px_36px_-12px_rgba(28,25,23,0.14)] lg:max-w-5xl lg:pb-0 xl:max-w-6xl`}
       >
-        <div className="lg:grid lg:grid-cols-[19rem_1fr] lg:items-start lg:gap-0">
+        <div className="lg:grid lg:grid-cols-[19rem_1fr] lg:items-start lg:gap-0 xl:grid-cols-[21rem_1fr]">
           <div className="lg:col-span-2">
             <Capa negocio={negocio} apenasCapa />
           </div>

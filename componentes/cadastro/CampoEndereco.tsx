@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { conferirFormato, MOTIVOS, normalizar } from "@/lib/slug";
@@ -109,6 +110,21 @@ export function CampoEndereco({
     };
   }, [slug]);
 
+  /*
+   * Endereço em uso é a única recusa que pode significar "essa página já é
+   * sua", e é onde a porta de entrada precisa estar.
+   *
+   * Foi o pedido escrito da dona do produto, com a captura do Beacons do lado:
+   * lá o campo de usuário, o botão e o "já tem conta? entrar" moram no mesmo
+   * cartão, um embaixo do outro. Aqui a porta aparece colada no motivo, no
+   * momento exato em que a pessoa descobre que alguém já tem o endereço que ela
+   * escolheu, que costuma ser ela mesma de outro aparelho.
+   *
+   * Só neste motivo. Endereço reservado, palavra restrita e formato errado são
+   * problema de escolha de nome, e oferecer login ali seria ruído.
+   */
+  const talvezSeja = estado === "ocupado" && motivo === MOTIVOS.ocupado;
+
   const borda =
     estado === "livre"
       ? "border-aberto-texto"
@@ -155,9 +171,12 @@ export function CampoEndereco({
          * em frente.
          *
          * scroll-mb deixa a barra do botão fora do caminho quando o navegador
-         * traz o campo focado para a tela.
+         * traz o campo focado para a tela. Aqui a folga é maior que a do campo
+         * de nome porque abaixo do campo ainda vêm duas linhas que precisam ser
+         * lidas: o endereço conferido e, quando ele já é de alguém, a porta de
+         * entrar. Com os 96px de antes elas nasciam debaixo da barra.
          */
-        className={`mt-4 w-full scroll-mb-24 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/70 outline-none ${borda}`}
+        className={`mt-4 w-full scroll-mb-56 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/70 outline-none ${borda}`}
       />
 
       <p
@@ -187,6 +206,18 @@ export function CampoEndereco({
           </>
         )}
       </p>
+
+      {talvezSeja ? (
+        <p className="mt-0.5 text-sm text-suave">
+          Esse endereço é seu?{" "}
+          <Link
+            href="/entrar"
+            className="inline-flex min-h-11 items-center px-1 font-medium text-destaque underline underline-offset-4"
+          >
+            Entrar
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }

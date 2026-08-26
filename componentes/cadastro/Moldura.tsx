@@ -1,14 +1,35 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Marca } from "@/componentes/Marca";
+import { LETRA_DE_ENTRADA } from "@/lib/fontes";
+import { BotaoEnviar } from "./BotaoEnviar";
 
 /**
- * Moldura das telas de entrada e cadastro. Uma coluna estreita, centralizada,
- * com bastante ar em volta e a fonte do próprio aparelho.
+ * Moldura das telas de entrada e cadastro. Uma coluna estreita, com bastante ar
+ * em volta, e a letra do próprio aparelho no corpo.
  *
- * Com `lado`, vira duas colunas no computador: a coluna de sempre à esquerda e
- * o que vier em `lado` à direita. É o que o cadastro usa para mostrar a página
- * nascendo enquanto a pessoa preenche.
+ * O título e o enunciado das perguntas saem na Gloock, a serifada de contraste
+ * alto que a página pública já oferece na combinação "Marcante". Ver
+ * `LETRA_DE_ENTRADA`, que também explica por que o corpo continua na letra do
+ * aparelho.
+ *
+ * Com `lado`, vira duas faixas no computador: a coluna de sempre à esquerda, e
+ * à direita uma parede que ocupa a faixa inteira, de cima a baixo. É o que o
+ * cadastro usa para mostrar a página nascendo enquanto a pessoa preenche.
+ *
+ * **A parede é a resposta ao vazio do monitor, e ela é medida.** Antes as duas
+ * colunas moravam dentro de um `max-w-4xl` centralizado: em 1440 sobravam 295px
+ * de nada à esquerda e 296px à direita, 41% da largura da tela, e a prévia
+ * terminava a 657px do topo enquanto o formulário seguia até 1339px, deixando
+ * um retângulo de 392 por 682 pixels em branco no canto de baixo à direita. A
+ * faixa da direita passa a ser um objeto, com fundo próprio e altura de tela
+ * inteira, então o que sobra deixa de ser sobra e vira o ar em volta da peça
+ * pendurada.
+ *
+ * A parede veste o tema `noite`, que existe no produto pelo motivo de museu
+ * (ver o comentário dele em globals.css): parede escura, a peça avança. A
+ * prévia devolve o tema `areia` para dentro do aparelho, senão ela mentiria
+ * sobre a cor da página que a pessoa vai receber.
  *
  * O `lado` some no celular, e não encolhe. Ali a tela é do formulário, que é o
  * que a pessoa veio fazer, e uma prévia espremida em cima roubaria o espaço da
@@ -18,12 +39,6 @@ import { Marca } from "@/componentes/Marca";
  * para a direita. É um link de verdade, e não `history.back()`: funciona com o
  * JavaScript desligado, abre em nova aba se a pessoa quiser, e leva sempre
  * para o mesmo lugar, mesmo quando a pessoa chegou pelo endereço direto.
- *
- * A largura de duas colunas é `4xl`, e não `5xl`, porque o par cabe em 800px:
- * com `5xl` sobravam 160px de vazio à direita da prévia, e o conjunto inteiro
- * ficava encostado à esquerda dentro da própria moldura. Medido em 1440.
- * A coluna do `lado` cresce e centraliza a prévia no que sobra, então a folga
- * fica igual dos dois lados em vez de toda de um lado só.
  */
 export function Moldura({
   titulo,
@@ -41,11 +56,35 @@ export function Moldura({
   /** A saída da tela, no alto à esquerda. O rótulo padrão é "Voltar". */
   voltar?: { href: string; rotulo?: string };
 }) {
-  const largura = lado ? "max-w-md lg:max-w-4xl" : "max-w-md";
+  /*
+   * A coluna cresce de 448 para 512px onde existe parede ao lado, e volta ao
+   * tamanho de sempre onde ela é a tela inteira. Com a faixa da direita comendo
+   * 42% do monitor, a coluna maior é o que devolve equilíbrio: a folga de cada
+   * lado dela cai de 295 para 137 pixels em 1440.
+   */
+  const largura = lado ? "max-w-md xl:max-w-lg" : "max-w-md";
 
+  /*
+   * Sem parede ao lado, a coluna desce para o meio da altura.
+   *
+   * `/entrar` mede 351px de conteúdo numa tela de 900 e 371px numa de 664:
+   * encostada no topo, ela deixava 449px de nada embaixo no monitor e 250px no
+   * celular, e a tela de login parecia ter perdido um pedaço. No celular a
+   * centralização também baixa o botão para a altura do polegar.
+   *
+   * `my-auto` continua seguro quando o conteúdo passa da altura da tela, que é
+   * o caso da denúncia e da ajuda: margem automática só reparte folga que
+   * existe, então ali ela vale zero e a coluna começa no topo. `justify-center`
+   * cortaria o começo dessas duas.
+   */
   const coluna = (
-    <div className="flex w-full max-w-md flex-col">
-      <h1 className="text-[2rem] leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto">
+    <div className={`flex w-full flex-col ${lado ? "" : "my-auto"}`}>
+      {/*
+        O título desce um passo no celular. A serifada de contraste alto ocupa
+        mais altura que a letra do aparelho no mesmo corpo, e a 2,35rem ela
+        comia 190 dos 664 pixels do iPhone 13 antes da primeira pergunta.
+      */}
+      <h1 className="font-titulo text-[2.05rem] leading-[1.06] font-normal tracking-[-0.015em] text-balance text-texto sm:text-[2.35rem]">
         {titulo}
       </h1>
       {subtitulo ? (
@@ -60,8 +99,8 @@ export function Moldura({
     </div>
   );
 
-  return (
-    <div data-tema="areia" className="flex min-h-dvh flex-col bg-fundo">
+  const faixaDaEsquerda = (
+    <div className="flex min-h-dvh flex-col">
       {/*
         O alvo do link da marca tem 23px de altura por conta da própria letra.
         A altura mínima vem por aqui, e não dentro de `Marca`, porque a marca
@@ -94,17 +133,40 @@ export function Moldura({
       <main
         className={`mx-auto flex w-full ${largura} flex-1 flex-col px-6 pt-6 pb-10`}
       >
-        {lado ? (
-          <div className="lg:flex lg:items-start lg:gap-12">
-            {coluna}
-            <div className="hidden lg:sticky lg:top-8 lg:flex lg:flex-1 lg:justify-center">
-              {lado}
-            </div>
-          </div>
-        ) : (
-          coluna
-        )}
+        {coluna}
       </main>
+    </div>
+  );
+
+  if (!lado) {
+    return (
+      <div
+        data-tema="areia"
+        className={`${LETRA_DE_ENTRADA} min-h-dvh bg-fundo`}
+      >
+        {faixaDaEsquerda}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      data-tema="areia"
+      className={`${LETRA_DE_ENTRADA} min-h-dvh bg-fundo lg:grid lg:grid-cols-[minmax(0,1fr)_42%]`}
+    >
+      {faixaDaEsquerda}
+
+      {/*
+        A faixa escura ocupa a célula inteira da grade, então ela continua
+        pintada por toda a rolagem. O que gruda é o miolo, com uma tela de
+        altura, e é ele que mantém a peça no meio do campo de visão enquanto o
+        formulário desce.
+      */}
+      <aside data-tema="noite" className="hidden bg-fundo lg:block">
+        <div className="sticky top-0 flex h-dvh flex-col items-center justify-center px-8">
+          {lado}
+        </div>
+      </aside>
     </div>
   );
 }
@@ -133,12 +195,5 @@ export function BotaoPrincipal({
   children,
   ...resto
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      className="flex h-13 w-full items-center justify-center rounded-full bg-texto px-6 text-[1.05rem] font-semibold text-superficie"
-      {...resto}
-    >
-      {children}
-    </button>
-  );
+  return <BotaoEnviar {...resto}>{children}</BotaoEnviar>;
 }

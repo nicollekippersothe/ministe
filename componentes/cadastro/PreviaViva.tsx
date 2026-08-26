@@ -1,6 +1,6 @@
 "use client";
 
-import { receitaDe } from "@/lib/categorias";
+import { categoriaPorId, receitaDe } from "@/lib/categorias";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 
 /**
@@ -41,6 +41,13 @@ export function PreviaViva({
 }) {
   const receita = receitaDe(categoria);
   const inicial = nome.trim().charAt(0).toUpperCase();
+  /*
+   * O nome do ramo escolhido, que é o que a plaquinha anuncia. Quem marcou
+   * "Outro" cai em nulo aqui de propósito: ali a receita é a padrão, e escrever
+   * o texto livre da pessoa na plaquinha faria a prévia prometer uma receita
+   * própria para um ramo que ainda não tem nenhuma.
+   */
+  const rotuloDaPeca = categoriaPorId(categoria)?.nome ?? "Sua galeria";
 
   const catalogo = (
     <Secao titulo={receita.tituloCatalogo}>
@@ -70,63 +77,95 @@ export function PreviaViva({
 
   return (
     <div data-previa className="w-[20rem]">
-      {/* O aparelho. Desenho, e não imagem, para acompanhar o tema. */}
+      {/*
+        O aparelho, pendurado na parede.
+
+        A moldura veste o tema da parede, e o miolo devolve o tema `areia`: na
+        parede escura ela vira um passe-partout claro em volta da página, e a
+        página continua com a cor que a pessoa vai receber de verdade. Sem essa
+        volta, o miolo escureceria junto e a prévia passaria a prometer uma
+        página escura para quem escolheu a clara.
+      */}
       <div className="relative rounded-[2.2rem] border border-borda bg-texto/90 p-2.5 shadow-[0_24px_50px_-24px_rgba(28,25,23,0.5)]">
         {/*
-          A página continua abaixo da dobra, e o corte seco parecia defeito de
-          renderização. O esmaecido diz que ali tem mais, que é a verdade.
+          O fio entre o passe-partout e a página.
+
+          Sem ele, o creme da moldura e o creme da capa vazia encostavam num
+          bloco só, e o aparelho perdia o contorno justo na parte de cima. O
+          fio é a tinta do próprio tema claro, bem diluída: separa sem virar
+          mais uma borda forte.
         */}
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-2.5 bottom-2.5 z-10 h-16 rounded-b-[1.7rem] bg-gradient-to-t from-superficie to-transparent"
-        />
-        <div className="h-[31rem] overflow-hidden rounded-[1.7rem] bg-superficie">
-          {/* A capa, que é a primeira coisa que a pessoa sobe. */}
-          <EspacoDeFoto className="h-24 w-full rounded-none border-x-0 border-t-0" />
+          data-tema="areia"
+          className="relative rounded-[1.7rem] ring-1 ring-texto/12"
+        >
+          {/*
+            A página continua abaixo da dobra, e o corte seco parecia defeito de
+            renderização. O esmaecido diz que ali tem mais, que é a verdade.
+          */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 rounded-b-[1.7rem] bg-gradient-to-t from-superficie to-transparent"
+          />
+          <div className="h-[31rem] overflow-hidden rounded-[1.7rem] bg-superficie">
+            {/* A capa, que é a primeira coisa que a pessoa sobe. */}
+            <EspacoDeFoto className="h-24 w-full rounded-none border-x-0 border-t-0" />
 
-          <div className="px-4 pb-5">
-            <div className="-mt-7 mb-3 flex h-14 w-14 items-center justify-center rounded-full border-4 border-superficie bg-fundo text-lg font-semibold text-suave">
-              {inicial === "" ? <Retrato /> : inicial}
-            </div>
+            <div className="px-4 pb-5">
+              <div className="-mt-7 mb-3 flex h-14 w-14 items-center justify-center rounded-full border-4 border-superficie bg-fundo text-lg font-semibold text-suave">
+                {inicial === "" ? <Retrato /> : inicial}
+              </div>
 
-            {nome.trim() === "" ? (
-              <Linha className="h-3 w-2/3" />
-            ) : (
-              <p className="text-[1.05rem] leading-tight font-semibold text-balance text-texto">
-                {nome.trim()}
+              {nome.trim() === "" ? (
+                <Linha className="h-3 w-2/3" />
+              ) : (
+                <p className="text-[1.05rem] leading-tight font-semibold text-balance text-texto">
+                  {nome.trim()}
+                </p>
+              )}
+
+              <p className="mt-1.5 truncate text-[0.7rem] text-suave">
+                {DOMINIO_PUBLICO}/{slug || "..."}
               </p>
-            )}
 
-            <p className="mt-1.5 truncate text-[0.7rem] text-suave">
-              {DOMINIO_PUBLICO}/{slug || "..."}
-            </p>
+              {/* Onde entra o botão que abre a conversa. */}
+              <div className="mt-4 h-8 rounded-full border border-borda bg-fundo" />
 
-            {/* Onde entra o botão que abre a conversa. */}
-            <div className="mt-4 h-8 rounded-full border border-borda bg-fundo" />
-
-            {receita.galeriaPrimeiro ? (
-              <>
-                {galeria}
-                {catalogo}
-              </>
-            ) : (
-              <>
-                {catalogo}
-                {galeria}
-              </>
-            )}
+              {receita.galeriaPrimeiro ? (
+                <>
+                  {galeria}
+                  {catalogo}
+                </>
+              ) : (
+                <>
+                  {catalogo}
+                  {galeria}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <p
-        aria-live="polite"
-        className="mt-4 px-1 text-center text-sm leading-relaxed text-suave"
-      >
-        {escolhido
-          ? "Sua galeria nasce assim. O resto é com você."
-          : "Escolha o seu ramo, e ela se monta aqui."}
-      </p>
+      {/*
+        A plaquinha da peça, do jeito que museu escreve: uma linha em caixa
+        alta com o nome do que está pendurado, e a explicação embaixo. Ela
+        substitui a frase centralizada em cinza, que era mais uma legenda solta
+        de tela gerada.
+      */}
+      <div className="mt-5 border-t border-borda pt-3.5">
+        <p className="text-[0.7rem] font-semibold tracking-[0.14em] text-suave uppercase">
+          {rotuloDaPeca}
+        </p>
+        <p
+          aria-live="polite"
+          className="mt-1.5 text-[0.9rem] leading-relaxed text-suave"
+        >
+          {escolhido
+            ? "Nasce assim, com as seções do seu ramo já no lugar. O resto é com você."
+            : "Escolha o seu ramo, e ela se monta aqui."}
+        </p>
+      </div>
     </div>
   );
 }

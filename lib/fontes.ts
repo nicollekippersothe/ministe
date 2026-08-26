@@ -140,6 +140,29 @@ export const COMBINACOES: Record<ChaveFonte, Combinacao> = {
 export const LISTA_COMBINACOES = Object.values(COMBINACOES);
 
 /**
+ * A letra das telas de entrada: cadastro, login, ajuda e denúncia.
+ *
+ * Elas usavam a fonte do aparelho de ponta a ponta, e o cadastro ficava com
+ * cara de formulário de sistema: o título, as três perguntas e as opções da
+ * lista tinham todos o mesmo desenho de letra, e a hierarquia sobrava toda
+ * para o peso e o tamanho.
+ *
+ * Aqui entra a Gloock, que é a mesma da combinação "Marcante" da página
+ * pública: serifada de contraste alto, com a haste fina ao lado da grossa. Ela
+ * já vem no produto, então a escolha custa um arquivo que o projeto já
+ * empacota, e nenhuma família nova.
+ *
+ * Vale só para o título e para o enunciado das perguntas. O corpo, os campos e
+ * os botões continuam na letra do aparelho, que custa zero byte e é a que o
+ * iPhone e o Android desenham melhor em texto miúdo. É a mesma divisão de
+ * papel que a página pública faz entre `--f-titulo` e `--f-corpo`.
+ *
+ * Sem pré-carregamento, como todas as outras: o navegador busca o arquivo
+ * quando o CSS aplica a família, e só nas rotas que vestem esta variável.
+ */
+export const LETRA_DE_ENTRADA = gloock.variable;
+
+/**
  * A letra que todo mundo tem, inclusive no plano gratuito.
  *
  * Escolher outra é recurso do plano pago. A regra que guia a escolha desta:

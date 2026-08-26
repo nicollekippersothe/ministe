@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { exigirLogin } from "@/app/painel/vitrine";
 import { BotaoGoogle } from "@/componentes/cadastro/BotaoGoogle";
 import { Moldura } from "@/componentes/cadastro/Moldura";
+import { contaProvisoria, usuarioAtual } from "@/lib/supabase/servidor";
 
 export const metadata: Metadata = {
   title: "Entrar",
@@ -24,6 +26,25 @@ export default async function Entrar({
   exigirLogin();
   const { erro, motivo } = await searchParams;
   const publicando = motivo === "publicar";
+
+  /*
+   * Quem já entrou vai direto para o painel.
+   *
+   * Esta tela oferece uma porta, e para quem já está dentro da casa a porta é
+   * um beco: a pessoa clica em "Entrar com o Google", passa pela tela de contas
+   * do Google e volta para o mesmo painel que ela já podia abrir. Acontece de
+   * verdade por três caminhos: o link de "já tem uma página?" no cadastro, o
+   * endereço guardado no navegador, e a volta pelo histórico depois de entrar.
+   *
+   * Conta provisória fica de fora de propósito: ela é justamente quem montou
+   * uma página e ainda precisa entrar de verdade para publicar, que é o motivo
+   * `publicar` desta mesma tela.
+   */
+  const [conta, provisoria] = await Promise.all([
+    usuarioAtual(),
+    contaProvisoria(),
+  ]);
+  if (conta !== null && !provisoria) redirect("/painel");
 
   return (
     <Moldura
