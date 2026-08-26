@@ -22,6 +22,17 @@ deste produto que vira problema jurídico.
 | assinatura do entrais no rodapé | fica | sai |
 | números | dois, dos últimos 7 dias | histórico, por dia, por botão |
 
+**A regra que decide o que entra nesta tabela: cobra-se quantidade, e nunca
+beleza.** Três fotos por trabalho no gratuito e dez no pago, com o mesmo
+desenho nos dois. O motivo é de crescimento, e não de generosidade: a página
+gratuita é o que a pessoa mostra para outra pessoa, e é assim que alguém
+descobre o Entrais. Página gratuita feia é página que ninguém mostra, e aí o
+produto para de se anunciar sozinho. Beleza é a isca, e a cota é o anzol.
+
+Para o lançamento o plano pago é exatamente esta tabela, mais personalização
+(temas, cores e letras). Domínio próprio e agendamento ficaram de fora, e o
+porquê de cada um está no fim deste arquivo.
+
 Os limites moram numa função só no banco, `limite_do_plano`, e são conferidos
 por gatilho `BEFORE INSERT`. Mudar um número é mudar uma linha. Limite que
 morasse só na tela seria decoração: o painel escreve direto no banco pelo
@@ -756,6 +767,22 @@ problema é a política, e não a chave.
 
   E é o motivo de a camada ficar atrás da interface `Gateway`: trocar de
   provedor, ou acrescentar um, é trocar um arquivo.
+- **Domínio próprio.** Decidido pela dona em agosto de 2026, e o motivo é
+  suporte, e nunca código. Do nosso lado é registrar o domínio no projeto da
+  Vercel por API e deixar ela emitir o certificado. Do lado da pessoa é entrar
+  no Registro.br ou na GoDaddy e apontar um registro de DNS, e é aí que mora o
+  custo: quem erra o registro, e quem espera a propagação, acha que o produto
+  quebrou. Para um público de psicóloga e tatuador isso vira mensagem toda
+  semana. Barato de programar, e caro de manter para sempre.
+- **Agendamento.** Adiado pela dona no mesmo dia, com a condição escrita: entra
+  quando for rápido de fazer, e o foco agora é usabilidade para lançar.
+
+  Fica registrado que ele é o item de maior valor da lista, e por um motivo
+  concreto: psicóloga, tatuador e professora marcam hora o dia inteiro, e
+  nenhum concorrente de link in bio faz isso bem. É o único item que faz alguém
+  sair do Linktree por necessidade em vez de por gosto. Também é o mais caro:
+  disponibilidade, fuso, conflito, confirmação, cancelamento e falta são um
+  produto inteiro, e não um campo novo.
 - **Cupom de desconto.**
 - **Nota fiscal de serviço**, que é por município e fica fora do código.
 - **Devolução automática no anual.** Na versão 1 o estorno é feito à mão no
