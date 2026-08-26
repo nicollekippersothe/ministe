@@ -733,8 +733,28 @@ problema é a política, e não a chave.
 
 ## O que fica de fora
 
-- **Pix Automático**, o débito recorrente do Banco Central. Taxa bem menor que
-  cartão, e é o motivo de a camada ficar atrás da interface `Gateway`: trocar de
+- **Pix Automático**, o débito recorrente do Banco Central.
+
+  **Correção de uma premissa que estava escrita aqui e era falsa neste ticket.**
+  Esta linha dizia "taxa bem menor que cartão". Isso vale para o mercado em
+  geral, onde a taxa de cartão é percentual e a de Pix é fixa, e deixa de valer
+  em R$ 19,90, onde a taxa fixa domina. Pesquisado em agosto de 2026: o Pix
+  Automático custa R$ 3,50 na Efí (17,6% deste ticket) e R$ 1,99 no Asaas
+  (10,0%), contra R$ 0,79 do cartão no Mercado Pago (3,98%). Ou seja, o cartão
+  daqui é hoje mais barato que o Pix Automático de dois dos três provedores que
+  o oferecem.
+
+  O motivo para querer Pix Automático neste produto é outro, e continua bom:
+  alcance, porque quem tem cartão nenhum passa a poder assinar, e retenção,
+  porque a renovação para de depender de a pessoa lembrar de refazer o Pix.
+
+  Fica em aberto se o `/preapproval` do Mercado Pago já aceita Pix Automático.
+  A referência do `preapproval_plan` lista `credit_card` e boleto, e os posts de
+  blog deles falam do assunto sem documentação de desenvolvedor por trás. Se a
+  resposta for sim, é a melhoria mais barata que existe: campo novo, e provedor
+  nenhum.
+
+  E é o motivo de a camada ficar atrás da interface `Gateway`: trocar de
   provedor, ou acrescentar um, é trocar um arquivo.
 - **Cupom de desconto.**
 - **Nota fiscal de serviço**, que é por município e fica fora do código.
