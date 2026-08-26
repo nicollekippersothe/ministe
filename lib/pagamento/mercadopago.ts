@@ -747,6 +747,7 @@ async function lerAviso(
         manifesto: confere.manifesto ?? null,
         atrasoS: confere.atrasoS ?? null,
         tamanhoDoSegredo: confere.tamanhoDoSegredo,
+        pontasDoSegredo: confere.pontasDoSegredo ?? null,
         tipo: texto(dados.type) ?? texto(dados.topic),
         // Qual variação de manifesto bateria, se alguma. Nulo aqui quer dizer
         // que o problema está no segredo, e não no formato, que é a bifurcação

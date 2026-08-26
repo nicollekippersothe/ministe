@@ -189,6 +189,21 @@ export type Conferencia = {
   atrasoS?: number;
   /** O tamanho do segredo configurado. Zero diz que a variável falta. */
   tamanhoDoSegredo: number;
+  /**
+   * As quatro primeiras e as quatro últimas letras do segredo, só quando o
+   * HMAC diverge.
+   *
+   * Existe porque o tamanho sozinho separa "variável ausente" de "variável
+   * colada pela metade", e deixa de fora o caso que mais aparece: segredo
+   * inteiro, do tamanho certo, e de outro ambiente. As pontas resolvem isso
+   * numa olhada, comparando com o que o painel do provedor mostra.
+   *
+   * Oito letras de sessenta e quatro servem para reconhecer, e servem para
+   * ninguém assinar nada: recuperar o resto exigiria adivinhar 56 letras. E
+   * elas aparecem só no caminho de recusa, onde alguém está justamente
+   * procurando o motivo.
+   */
+  pontasDoSegredo?: string;
 };
 
 /**
@@ -205,6 +220,12 @@ export type Conferencia = {
  * aparece pelo tamanho, que separa variável ausente de variável colada pela
  * metade sem revelar o valor.
  */
+/** As quatro pontas de cada lado, com o miolo escondido. */
+function pontas(segredo: string): string {
+  if (segredo.length <= 12) return "curto demais para mostrar";
+  return `${segredo.slice(0, 4)}...${segredo.slice(-4)}`;
+}
+
 export function conferirAssinaturaDetalhe(e: EntradaDeConferencia): Conferencia {
   const tamanhoDoSegredo = e.segredo ? e.segredo.length : 0;
 
@@ -240,6 +261,7 @@ export function conferirAssinaturaDetalhe(e: EntradaDeConferencia): Conferencia 
       manifesto,
       atrasoS,
       tamanhoDoSegredo,
+      pontasDoSegredo: pontas(e.segredo),
     };
   }
 
