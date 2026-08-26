@@ -194,43 +194,78 @@ const BUSCAS = [
     ],
   },
   {
+    // A posição 14 era a esfera de vidro na mão contra o bosque de outono, com
+    // amarelo estourado e os dedos de quem segura dentro do quadro: truque de
+    // fotógrafo, e a única foto berrante de uma página que é toda noite.
     consulta: "crystals",
-    arquivos: [["astro-g2", QUADRADA, 14]],
+    arquivos: [["astro-g2", QUADRADA, 21]],
   },
 
   /*
    * Téo Sarmento, tatuador. A categoria abre a página pela galeria, então ele
-   * tem mais foto de galeria que de catálogo, ao contrário da maioria.
+   * tem mais foto de galeria que de catálogo, ao contrário da maioria. É a
+   * página que mais depende da foto: ali a imagem é o produto.
    *
-   * O avatar sai daqui, e não da busca de retrato: a foto de quem está
-   * tatuando diz o ramo antes de qualquer texto.
+   * A busca "arm tattoo" saiu daqui inteira, e as posições do começo de
+   * "tattoo" também. As duas devolviam o mesmo tipo de foto: mão de luva preta
+   * em cima da pele, close de pele vermelha com o decalque ainda roxo, e o
+   * tatuador curvado numa banca de convenção com luz de teto. É foto de
+   * procedimento, e procedimento é o que o cliente atravessa para ter a peça,
+   * e não o que ele vem ver.
+   *
+   * No lugar delas entraram termos de resultado e de material: peça cicatrizada
+   * ("tattoo art", páginas 1 e 2), traço fino no papel e tinta arrumada
+   * ("ink"). Rende trabalho pronto, luz de janela, um assunto por quadro e
+   * preto sobre creme, que é a paleta que convive com o areia (#f4f0e8) e o
+   * barro (#7a4a2b) do produto.
+   *
+   * O avatar passou a sair de "tattooed man", e não mais da foto de quem está
+   * tatuando: no círculo de 88px a luva azul e a pele viravam um borrão, e o
+   * alt já prometia retrato. Rosto em fundo claro sobrevive ao tamanho.
    */
   {
     consulta: "tattoo",
     arquivos: [
-      ["tatu-capa", CAPA, 11],
-      ["tatu-1", QUADRADA, 0],
-      ["tatu-3", QUADRADA, 3],
-      ["tatu-4", QUADRADA, 1],
-      ["tatu-g1", QUADRADA, 8],
-      ["tatu-g2", QUADRADA, 5],
-      ["tatu-g3", QUADRADA, 9],
+      ["tatu-1", QUADRADA, 39],
+      ["tatu-2", QUADRADA, 27],
       ["tatu-g4", QUADRADA, 2],
       ["tatu-g6", QUADRADA, 4],
     ],
   },
   {
-    consulta: "arm tattoo",
+    consulta: "tattoo art",
     arquivos: [
-      ["tatu-2", QUADRADA, 8],
-      ["tatu-g5", QUADRADA, 3],
-      ["tatu-logo", AVATAR, 1],
+      ["tatu-capa", CAPA, 20],
+      ["tatu-3", QUADRADA, 8],
+      ["tatu-g1", QUADRADA, 15],
     ],
+  },
+  {
+    // O desenho antes da agulha, e o vidro de tinta de desenho na mesa.
+    consulta: "ink",
+    arquivos: [
+      ["tatu-4", QUADRADA, 36],
+      ["tatu-g2", QUADRADA, 33],
+      ["tatu-g3", QUADRADA, 4],
+    ],
+  },
+  {
+    consulta: "tattooed woman",
+    arquivos: [["tatu-g5", QUADRADA, 32]],
+  },
+  {
+    consulta: "tattooed man",
+    arquivos: [["tatu-logo", AVATAR, 22]],
   },
 
   /*
-   * Lia Prado, ilustradora. Também abre pela galeria. O avatar sai da busca de
-   * ateliê pelo mesmo motivo do tatuador: a mesa de trabalho aparece junto.
+   * Lia Prado, ilustradora. Também abre pela galeria.
+   *
+   * O avatar saiu da busca de ateliê e foi para junto dos outros retratos, no
+   * fim do arquivo. No quadro inteiro a mesa de trabalho aparecia junto, e
+   * parecia boa ideia, mas dentro do círculo de 88px sobrava um borrão de
+   * pincéis na frente e um rosto pequeno no fundo. A mesa de trabalho é assunto
+   * de galeria, e o avatar é onde o rosto precisa caber.
    */
   {
     consulta: "illustration",
@@ -259,7 +294,6 @@ const BUSCAS = [
     arquivos: [
       ["ilustra-4", QUADRADA, 7],
       ["ilustra-g2", QUADRADA, 3],
-      ["ilustra-logo", AVATAR, 0],
     ],
   },
 
@@ -304,18 +338,28 @@ const BUSCAS = [
    *
    * Os quadrados aqui são menores porque avatar aparece com 88px de lado.
    *
-   * Quatro pessoas diferentes, de duas buscas. A busca "portrait" saiu daqui:
+   * Cinco pessoas diferentes, de três buscas. A busca "portrait" saiu daqui:
    * devolvia o mesmo enquadramento de estúdio para todo mundo, e o corte por
    * atenção ainda achava a boca no lugar dos olhos. Rosto de perfil, luz de
    * fim de tarde e fundo aberto sobrevivem melhor ao círculo de 88px, e vale
    * conferir cada avatar nesse tamanho: o que decide é a leitura com 88px de
    * lado, e não o arquivo de 400.
+   *
+   * A regra que sai disso, e que a posição 13 de "woman profile" provou de
+   * novo: o rosto precisa ocupar o quadro. Ali era cabelo louro contra a luz em
+   * três quartos da imagem, e no círculo de 88px sobrava cabelo, com os olhos
+   * pequenos demais para alguém reconhecer uma pessoa. Vale igual para foto de
+   * gente trabalhando: o que cabe em 88px é rosto, e o ofício aparece na
+   * galeria, que é grande.
+   *
+   * O avatar de Téo Sarmento obedece à mesma regra, e por isso ficou na lista
+   * dele lá em cima: a busca é do ramo, o enquadramento é de retrato.
    */
   {
     consulta: "woman profile",
     arquivos: [
       ["spa-logo", AVATAR, 17],
-      ["astro-logo", AVATAR, 13],
+      ["astro-logo", AVATAR, 9],
     ],
   },
   {
@@ -325,48 +369,72 @@ const BUSCAS = [
       ["canto-logo", AVATAR, 16],
     ],
   },
+  {
+    consulta: "woman glasses",
+    arquivos: [["ilustra-logo", AVATAR, 0]],
+  },
 ];
 
 /**
- * Quantos candidatos a folha de contato mostra por busca. É o mesmo 20 que a
- * API devolve: com 12, as oito últimas posições ficavam escolhíveis sem que
- * ninguém tivesse visto, e é justamente onde mora a foto boa que sobrou de
- * fora do resultado óbvio.
+ * Quantos candidatos a folha de contato mostra por busca.
+ *
+ * A conta é por página: a API anônima recusa page_size acima de 20, e responde
+ * "page_size may not exceed 20 for anonymous requests". O que ela permite é
+ * pedir a página seguinte, e "tattoo" sozinha tem 126 resultados em CC0. Com
+ * 20, cem deles ficavam fora da folha, e a foto de obra pronta que a busca
+ * óbvia soterra mora justamente ali. Então a busca agora vira duas páginas.
+ *
+ * A ordem da página 1 é a mesma de antes, então as posições já escolhidas
+ * continuam apontando para as mesmas fotos.
  */
-const CANDIDATOS = 20;
+const CANDIDATOS = 40;
+const POR_PAGINA = 20;
 
-async function buscar(consulta) {
-  const cache = `${CACHE}busca-${consulta.replace(/\W+/g, "-")}.json`;
-  if (existsSync(cache)) return JSON.parse(await readFile(cache, "utf8"));
-
+async function pedir(consulta, pagina) {
   const url = new URL(API);
   url.searchParams.set("q", consulta);
   url.searchParams.set("license", "cc0");
   url.searchParams.set("source", "stocksnap");
-  url.searchParams.set("page_size", "20");
+  url.searchParams.set("page_size", String(POR_PAGINA));
+  url.searchParams.set("page", String(pagina));
 
   // A API anônima devolve 503 de vez em quando e volta sozinha logo depois.
-  let dados = null;
   for (let tentativa = 0; ; tentativa += 1) {
     const r = await fetch(url, { headers: { Accept: "application/json" } });
-    if (r.ok) {
-      dados = await r.json();
-      break;
-    }
-    if (tentativa === 3) throw new Error(`busca "${consulta}": ${r.status}`);
+    if (r.ok) return r.json();
+    if (tentativa === 3) throw new Error(`busca "${consulta}" p${pagina}: ${r.status}`);
     await new Promise((s) => setTimeout(s, 2000 * 2 ** tentativa));
   }
+}
 
-  const uteis = (dados.results ?? []).map((f) => ({
-    url: f.url,
-    titulo: f.title ?? null,
-    licenca: f.license,
-    fonte: f.source ?? null,
-    pagina: f.foreign_landing_url ?? null,
-  }));
+async function buscar(consulta) {
+  // O número entra no nome porque um cache curto, gravado quando a folha
+  // mostrava menos candidatos, não serve para a folha de hoje.
+  const cache = `${CACHE}busca-${consulta.replace(/\W+/g, "-")}-${CANDIDATOS}.json`;
+  if (existsSync(cache)) return JSON.parse(await readFile(cache, "utf8"));
 
-  await writeFile(cache, JSON.stringify(uteis, null, 2));
-  return uteis;
+  const uteis = [];
+  for (let pagina = 1; uteis.length < CANDIDATOS; pagina += 1) {
+    const dados = await pedir(consulta, pagina);
+    const achados = dados.results ?? [];
+    if (achados.length === 0) break;
+
+    for (const f of achados) {
+      uteis.push({
+        url: f.url,
+        titulo: f.title ?? null,
+        licenca: f.license,
+        fonte: f.source ?? null,
+        pagina: f.foreign_landing_url ?? null,
+      });
+    }
+
+    if (pagina >= (dados.page_count ?? 1)) break;
+  }
+
+  const cortados = uteis.slice(0, CANDIDATOS);
+  await writeFile(cache, JSON.stringify(cortados, null, 2));
+  return cortados;
 }
 
 async function baixar(url) {
@@ -399,29 +467,43 @@ if (process.argv.includes("--folha")) {
     ? BUSCAS.filter((b) => pedidas.includes(b.consulta))
     : BUSCAS;
 
+  /*
+   * Vinte por fileira, e o resto desce para a fileira de baixo. Quarenta em
+   * fila única deixaria a folha com mais de cinco mil pixels de largura, e
+   * miniatura que só cabe na tela encolhida serve para contar, não para
+   * escolher.
+   */
+  const COLUNAS = 20;
+  const fileiras = Math.ceil(CANDIDATOS / COLUNAS);
+  const altura = rotulo + fileiras * lado;
+
   for (const [linha, { consulta }] of escolhidas.entries()) {
     const achados = (await buscar(consulta)).slice(0, CANDIDATOS);
-    const topo = linha * (lado + rotulo);
+    const topo = linha * altura;
 
     pecas.push({
       input: Buffer.from(
-        `<svg width="${CANDIDATOS * lado}" height="${rotulo}"><text x="4" y="14" font-family="monospace" font-size="13" fill="#111">${consulta}</text></svg>`,
+        `<svg width="${COLUNAS * lado}" height="${rotulo}"><text x="4" y="14" font-family="monospace" font-size="13" fill="#111">${consulta}</text></svg>`,
       ),
       left: 0,
       top: topo,
     });
 
-    for (const [coluna, foto] of achados.entries()) {
+    for (const [posicao, foto] of achados.entries()) {
+      const coluna = posicao % COLUNAS;
+      const fileira = Math.floor(posicao / COLUNAS);
+      const y = topo + rotulo + fileira * lado;
+
       const miniatura = await sharp(await baixar(foto.url))
         .resize(lado, lado, { fit: "cover" })
         .toBuffer();
-      pecas.push({ input: miniatura, left: coluna * lado, top: topo + rotulo });
+      pecas.push({ input: miniatura, left: coluna * lado, top: y });
       pecas.push({
         input: Buffer.from(
-          `<svg width="24" height="18"><rect width="24" height="18" fill="#fff"/><text x="4" y="13" font-family="monospace" font-size="12" fill="#111">${coluna}</text></svg>`,
+          `<svg width="26" height="18"><rect width="26" height="18" fill="#fff"/><text x="3" y="13" font-family="monospace" font-size="12" fill="#111">${posicao}</text></svg>`,
         ),
         left: coluna * lado,
-        top: topo + rotulo,
+        top: y,
       });
     }
     console.log(`${consulta}: ${achados.length}`);
@@ -429,8 +511,8 @@ if (process.argv.includes("--folha")) {
 
   await sharp({
     create: {
-      width: CANDIDATOS * lado,
-      height: escolhidas.length * (lado + rotulo),
+      width: COLUNAS * lado,
+      height: escolhidas.length * altura,
       channels: 3,
       background: "#ffffff",
     },
