@@ -682,14 +682,21 @@ body {
     grid-column: 2 / span 2;
   }
 
+  /*
+   * 2 por 1 na faixa, e nao a fita bem mais deitada que ela era: numa faixa de
+   * 774 por 310 a foto quadrada que a maioria manda entrava com quarenta por
+   * cento da altura, e o bolo de andares aparecia so pelo meio. Um pouco mais
+   * alta, a faixa continua sendo faixa, mostra metade da foto e ainda fecha a
+   * parede com peso de peca final.
+   */
   .parede-obras > li:last-child:nth-child(5n + 1) {
     grid-column: 1 / span 3;
-    aspect-ratio: 5 / 2;
+    aspect-ratio: 2 / 1;
   }
 
   .parede-obras > li:last-child:nth-child(5n + 3) {
     grid-column: span 3;
-    aspect-ratio: 5 / 2;
+    aspect-ratio: 2 / 1;
   }
 
   /*
