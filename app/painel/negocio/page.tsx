@@ -138,8 +138,9 @@ export default async function Informacoes({
         empilham, na ordem em que aparecem na página.
       */}
       <section
+        id="imagens"
         aria-labelledby="titulo-imagens"
-        className="mt-6 flex flex-col gap-4 lg:grid lg:grid-cols-[19rem_1fr] lg:items-start"
+        className="mt-6 flex scroll-mt-32 flex-col gap-4 lg:grid lg:grid-cols-[19rem_1fr] lg:items-start"
       >
         <h2
           id="titulo-imagens"

@@ -1,3 +1,4 @@
+import { Medidor } from "@/componentes/painel/Medidor";
 import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
 import { MapaDaPagina } from "@/componentes/painel/MapaDaPagina";
@@ -391,6 +392,17 @@ export default async function Painel({
           <p className="mt-2 text-[0.95rem] leading-relaxed text-suave">
             Esta é a sua tela inicial. A sua página inteira sai daqui.
           </p>
+
+          {/*
+            O medidor é a primeira coisa depois do cumprimento, e é de propósito
+            (Serial Position): quem chega incompleto vê logo o quanto falta e o
+            passo mais curto; quem chega completo vê um "pronta" calmo e segue
+            para o estado e o plano abaixo. A conta e as leis de UX que ele
+            desenha estão em lib/completude.ts e componentes/painel/Medidor.tsx.
+          */}
+          <div className="mt-5">
+            <Medidor negocio={negocio} />
+          </div>
 
           {criado === "1" ? <Criado negocio={negocio} /> : null}
 
