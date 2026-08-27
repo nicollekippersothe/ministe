@@ -1,5 +1,6 @@
 "use client";
 
+import { CLASSE_CAMPO } from "@/componentes/painel/Campos";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
@@ -227,10 +228,11 @@ export function CampoEndereco({
         /*
          * Duas classes que valem por uma decisão cada.
          *
-         * placeholder:text-suave/70 é a cor de exemplo do campo de busca. Sem
-         * ela o navegador escolhe a própria, mais escura, e o exemplo passava
-         * por valor já digitado: o campo parecia preenchido e a pessoa seguia
-         * em frente.
+         * A cor de exemplo agora vem de `CLASSE_CAMPO`
+         * (placeholder:text-suave/60), a mesma do campo do painel. Sem uma cor
+         * escrita o navegador escolhe a própria, mais escura, e o exemplo
+         * passava por valor já digitado: o campo parecia preenchido e a pessoa
+         * seguia em frente.
          *
          * scroll-mb deixa a barra do botão fora do caminho quando o navegador
          * traz o campo focado para a tela. Aqui a folga é maior que a do campo
@@ -238,7 +240,7 @@ export function CampoEndereco({
          * lidas: o link conferido e, quando ele já é de alguém, a porta de
          * entrar. Com os 96px de antes elas nasciam debaixo da barra.
          */
-        className={`mt-2 w-full scroll-mb-56 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/70 outline-none ${borda}`}
+        className={`${CLASSE_CAMPO} mt-2 scroll-mb-56 outline-none ${borda}`}
       />
 
       <p

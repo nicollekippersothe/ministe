@@ -1,5 +1,6 @@
 "use client";
 
+import { CLASSE_CAMPO } from "@/componentes/painel/Campos";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { categoriaPorId } from "@/lib/categorias";
@@ -370,7 +371,7 @@ export function FormularioCriar({
                barra, que passou de 88 para 134px quando a porta de entrar
                entrou nela: com os 96px de antes, o campo focado nascia
                debaixo do botão. */
-            className={`mt-4 w-full scroll-mb-40 rounded-2xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/70 focus:outline-none ${
+            className={`${CLASSE_CAMPO} mt-4 scroll-mb-40 focus:outline-none ${
               erroNome
                 ? "border-destaque"
                 : "border-borda focus:border-destaque"

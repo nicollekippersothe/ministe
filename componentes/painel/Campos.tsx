@@ -12,6 +12,29 @@ import { FaixaDeRecado } from "./Sinais";
  * leitor de tela sem saber o que preencher.
  */
 
+/**
+ * O campo do produto inteiro, escrito uma vez.
+ *
+ * **Existe porque havia dois sistemas de campo na mesma jornada.** O cadastro
+ * usava caixa de 55 pixels, letra de 16,8 e canto de 16; o painel usava 50, 16
+ * e 12. Quem montava a página passava de um para o outro sem sair do fluxo, e a
+ * diferença lia como duas mãos diferentes montando o mesmo produto. A auditoria
+ * chamou isso de "infos muito espalhadas", e a causa não era o conteúdo, era o
+ * campo mudando de forma no meio do caminho.
+ *
+ * Agora a forma é uma só, e mora aqui. O cadastro importa esta mesma classe
+ * (ver componentes/cadastro/CampoEndereco.tsx e FormularioCriar.tsx), então
+ * mudar a medida do campo do produto é mudar esta linha, e as duas pontas
+ * andam juntas por construção.
+ *
+ * A borda entra sem cor: o painel acrescenta `border-borda`, e o cadastro troca
+ * para `border-destaque` quando o campo é recusado. A letra fica em 1,05rem
+ * porque abaixo de 16 pixels o Safari do iPhone dá zoom ao focar, e 16,8 é o
+ * degrau seguinte, com respiro sem virar caixa grande.
+ */
+export const CLASSE_CAMPO =
+  "w-full rounded-xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/60";
+
 /*
  * `scroll-mt-32` mora no campo, e nunca no invólucro, e a diferença é a
  * distância entre funcionar e parecer que funciona.
@@ -26,8 +49,7 @@ import { FaixaDeRecado } from "./Sinais";
  * vendo o nome do campo junto com o campo, que é o que faz ela reconhecer onde
  * a tela parou.
  */
-const BASE =
-  "w-full scroll-mt-32 rounded-xl border border-borda bg-superficie px-3.5 py-3 text-[1rem] text-texto placeholder:text-suave/60";
+const BASE = `${CLASSE_CAMPO} scroll-mt-32 border-borda`;
 
 function Rotulo({
   htmlFor,
@@ -146,9 +168,11 @@ export function Escolha({
          * alturas diferentes: medido em 45 pixels contra 50. A diferença é a
          * entrelinha, que o navegador calcula sozinho dentro de um `select` e
          * devolve como `normal`, ignorando a classe de entrelinha que o resto
-         * do formulário respeita. 3.125rem são os mesmos 50 pixels que o
-         * `px-3.5 py-3` de cima produz num `input`, com a borda contada, e a
-         * conta continua valendo se a caixa de base mudar de medida.
+         * do formulário respeita. 3.4375rem são os mesmos 55 pixels que o
+         * `px-4 py-3.5 text-[1.05rem]` de `CLASSE_CAMPO` produz num `input`,
+         * medido no navegador, com a borda contada. Quando a medida do campo
+         * mudar, ela muda em `CLASSE_CAMPO`, e esta altura acompanha à mão:
+         * são os dois pontos a conferir de novo.
          */
         /*
          * `appearance-none` mais a seta desenhada por nós.
@@ -159,7 +183,7 @@ export function Escolha({
          * a ser a mesma dos outros campos, e o `pr-11` guarda o lugar dela para
          * um rótulo comprido parar antes em vez de correr por baixo.
          */
-        className={`${BASE} h-[3.125rem] appearance-none pr-11`}
+        className={`${BASE} h-[3.4375rem] appearance-none pr-11`}
       >
         {opcoes.map((o) => (
           <option key={o.valor} value={o.valor}>
