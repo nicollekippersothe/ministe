@@ -333,6 +333,38 @@ body {
 }
 
 /*
+ * A luz da galeria, continuada no meio da pagina.
+ *
+ * O foco quente do herói é o que faz a tela inicial ler como sala de
+ * exposição, e ele morria na primeira dobra: o resto da página caía numa
+ * parede chapada. Esta é a mesma pintura, mais baixa (10% em vez de 17%) e
+ * mais larga, pendurada atrás da parede de fotos, para o museu não terminar
+ * no primeiro quadro. Continua sendo pintura só, em ::before com z negativo,
+ * sem custo de layout e sem roubar toque.
+ */
+.parede-suave {
+  position: relative;
+  isolation: isolate;
+}
+
+.parede-suave::before {
+  content: "";
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  z-index: -1;
+  width: min(130vw, 80rem);
+  height: 40rem;
+  translate: -50% 0;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 50% 30%,
+    color-mix(in srgb, var(--c-destaque) 10%, transparent),
+    transparent 70%
+  );
+}
+
+/*
  * A placa da porta.
  *
  * O dominio ja vem gravado e o nome aparece depois da barra enquanto a pessoa

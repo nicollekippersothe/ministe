@@ -293,7 +293,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-labelledby="mosaico" className="border-t border-borda">
+        <section aria-labelledby="mosaico" className="parede-suave border-t border-borda">
           <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
             <h2
               id="mosaico"
