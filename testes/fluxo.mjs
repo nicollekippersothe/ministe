@@ -622,9 +622,19 @@ passo(
 
 await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });
 await p.click('main button:has-text("Publicar")');
-await p.waitForSelector('main button:has-text("Tirar do ar")');
+// Publicar leva ao pico: a página no ar, com o link e o compartilhar. O
+// controle de tirar do ar cede a vez nesse instante, e volta na visita
+// seguinte, então o seletor de antes ("Tirar do ar") saiu daqui.
+await p.waitForURL(/publicou=1/);
+passo(
+  "publicar leva ao momento de a página estar no ar",
+  (await p.textContent("body")).includes("Sua página está no ar"),
+);
 const dentro = await p.goto(`${BASE}/demo`);
 passo("publicar coloca de volta no ar", dentro.status() === 200);
+// Numa visita normal ao painel, o controle de tirar do ar está de volta.
+await p.goto(`${BASE}/painel`, { waitUntil: "networkidle" });
+await p.waitForSelector('main button:has-text("Tirar do ar")');
 
 // ---------------------------------------------------------------------------
 // Anti golpe

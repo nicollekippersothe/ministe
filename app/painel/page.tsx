@@ -1,4 +1,5 @@
 import { Medidor } from "@/componentes/painel/Medidor";
+import { Publicou } from "@/componentes/painel/Publicou";
 import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
 import { MapaDaPagina } from "@/componentes/painel/MapaDaPagina";
@@ -187,7 +188,7 @@ function Criado({ negocio }: { negocio: Negocio }) {
 export default async function Painel({
   searchParams,
 }: {
-  searchParams: Promise<{ criado?: string; rascunho?: string; erro?: string }>;
+  searchParams: Promise<{ criado?: string; publicou?: string; rascunho?: string; erro?: string }>;
 }) {
   exigirLogin();
   /*
@@ -199,7 +200,7 @@ export default async function Painel({
    * para as que dependem da sessão, inclusive o nome do cumprimento, pelo
    * `cache` de lib/supabase/servidor.ts.
    */
-  const [{ criado, rascunho, erro }, negocio, provisoria, cobranca, ola] =
+  const [{ criado, publicou, rascunho, erro }, negocio, provisoria, cobranca, ola] =
     await Promise.all([
       searchParams,
       doDono(),
@@ -400,9 +401,18 @@ export default async function Painel({
             para o estado e o plano abaixo. A conta e as leis de UX que ele
             desenha estão em lib/completude.ts e componentes/painel/Medidor.tsx.
           */}
-          <div className="mt-5">
-            <Medidor negocio={negocio} />
-          </div>
+          {/*
+            Um foco por vez (Selective Attention): quando a página acabou de ir
+            para o ar, o pico ocupa o topo sozinho, e o medidor cede o lugar.
+            Nas outras chegadas, o medidor é quem diz o que fazer agora.
+          */}
+          {publicou === "1" ? (
+            <Publicou negocio={negocio} />
+          ) : (
+            <div className="mt-5">
+              <Medidor negocio={negocio} />
+            </div>
+          )}
 
           {criado === "1" ? <Criado negocio={negocio} /> : null}
 
@@ -416,9 +426,14 @@ export default async function Painel({
               vista em todas as telas do painel. Repetir o mesmo link aqui
               era o que acontecia antes, com dois blocos a duzentos pixels um do
               outro. */}
-          <div className="mt-5 lg:hidden">
-            <CartaoEstado negocio={negocio} provisoria={provisoria} />
-          </div>
+          {/* No celular o cartão de estado repete o link e o copiar, que o
+              pico de publicar acabou de mostrar. Um foco por vez: ele cede a
+              vez no instante da publicação, e volta na próxima visita. */}
+          {publicou === "1" ? null : (
+            <div className="mt-5 lg:hidden">
+              <CartaoEstado negocio={negocio} provisoria={provisoria} />
+            </div>
+          )}
 
           {/* O plano fecha a tela no celular e acompanha o desenho no
               computador, escondido de um lado por vez. Ele fala de uma página

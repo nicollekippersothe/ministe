@@ -283,7 +283,13 @@ export async function alternarPublicacao() {
 
   revalidatePath(`/${negocio.slug}`);
   revalidatePath("/painel");
-  redirect("/painel");
+  /*
+   * O momento de publicar é o pico do fluxo (Peak-End), e é o único da vida da
+   * página em que ela acabou de ir para o ar. Tirar do ar volta calada, porque
+   * ali o assunto é o contrário de uma comemoração. Ver `Publicou` em
+   * app/painel/page.tsx.
+   */
+  redirect(noArAgora ? "/painel?publicou=1" : "/painel");
 }
 
 /**
