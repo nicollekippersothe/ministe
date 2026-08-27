@@ -10,8 +10,22 @@ import { BotaoDeAcao } from "./BotaoDeAcao";
  * leitor de tela sem saber o que preencher.
  */
 
+/*
+ * `scroll-mt-32` mora no campo, e nunca no invólucro, e a diferença é a
+ * distância entre funcionar e parecer que funciona.
+ *
+ * O resumo do painel leva a pessoa ao campo por âncora, e o navegador aplica o
+ * `scroll-margin-top` do elemento que carrega o `id`. Uma tentativa anterior
+ * pôs a classe no `div` de fora: o alvo continuava com margem zero, e o campo
+ * parava colado no topo da janela, com o rótulo escondido atrás do cabeçalho.
+ * Medido no iPhone 13, o `#nome` chegava a rolar zero pixel.
+ *
+ * Oito rem cobrem o cabeçalho, o rótulo e a linha de dica, então a pessoa cai
+ * vendo o nome do campo junto com o campo, que é o que faz ela reconhecer onde
+ * a tela parou.
+ */
 const BASE =
-  "w-full rounded-xl border border-borda bg-superficie px-3.5 py-3 text-[1rem] text-texto placeholder:text-suave/60";
+  "w-full scroll-mt-32 rounded-xl border border-borda bg-superficie px-3.5 py-3 text-[1rem] text-texto placeholder:text-suave/60";
 
 function Rotulo({
   htmlFor,
@@ -36,13 +50,6 @@ function Rotulo({
   );
 }
 
-/*
- * O respiro do topo existe por causa do resumo do painel.
- *
- * Cada linha de lá leva ao campo por âncora, e âncora sem margem encosta o
- * campo no topo da janela, atrás do cabeçalho. Vinte e quatro deixa o rótulo à
- * vista junto com o campo, que é o que faz a pessoa reconhecer onde caiu.
- */
 export function Texto({
   id,
   rotulo,
@@ -56,7 +63,7 @@ export function Texto({
   valor: string | null;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "defaultValue">) {
   return (
-    <div className="scroll-mt-24">
+    <div>
       <Rotulo htmlFor={id} dica={dica}>
         {rotulo}
       </Rotulo>
@@ -119,7 +126,7 @@ export function Escolha({
   opcoes: Array<{ valor: string; rotulo: string }>;
 }) {
   return (
-    <div className="scroll-mt-24">
+    <div>
       <Rotulo htmlFor={id} dica={dica}>
         {rotulo}
       </Rotulo>

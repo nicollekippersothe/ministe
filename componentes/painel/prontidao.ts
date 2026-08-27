@@ -37,6 +37,14 @@ export type Passo = {
   href: string;
 };
 
+/*
+ * Cada passo leva ao CAMPO, e não ao topo da tela.
+ *
+ * Este é o botão principal de quem acabou de criar a página, e sem a âncora ele
+ * caía no começo de uma tela de três mil pixels, onde o primeiro bloco é o
+ * envio da foto de perfil. O resumo do painel já tinha sido consertado, e este
+ * caminho, que é o mais oferecido dos dois, tinha ficado para trás.
+ */
 export function passosParaOAr(negocio: Negocio): Passo[] {
   const passos: Passo[] = [];
 
@@ -44,7 +52,7 @@ export function passosParaOAr(negocio: Negocio): Passo[] {
     passos.push({
       rotulo: "Escrever o nome do negócio",
       nome: "o nome do negócio",
-      href: "/painel/negocio",
+      href: "/painel/negocio#nome",
     });
   }
 
@@ -52,7 +60,7 @@ export function passosParaOAr(negocio: Negocio): Passo[] {
     passos.push({
       rotulo: "Informar o WhatsApp",
       nome: "o WhatsApp",
-      href: "/painel/negocio",
+      href: "/painel/negocio#whatsapp",
     });
   }
 
@@ -69,7 +77,7 @@ export function passosParaOAr(negocio: Negocio): Passo[] {
     passos.push({
       rotulo: "Escrever uma frase curta",
       nome: "uma frase curta",
-      href: "/painel/negocio",
+      href: "/painel/negocio#frase",
     });
   }
 
