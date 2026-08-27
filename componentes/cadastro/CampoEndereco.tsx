@@ -262,7 +262,20 @@ export function CampoEndereco({
               <span className="text-suave">conferindo...</span>
             ) : null}
             {estado === "livre" ? (
-              <span className="inline-flex items-center gap-1 font-medium text-aberto-texto">
+              <span className="endereco-livre inline-flex items-center gap-1 font-medium text-aberto-texto">
+                <style href="cadastro-livre" precedence="default">{`
+                  @keyframes endereco-aparece { from { opacity: 0; transform: translateY(2px) } }
+                  @keyframes endereco-risco { from { stroke-dashoffset: 14 } }
+                  .endereco-livre { animation: endereco-aparece 0.25s ease-out }
+                  .endereco-risco {
+                    stroke-dasharray: 14;
+                    animation: endereco-risco 0.35s 0.05s cubic-bezier(0.65,0,0.35,1) both;
+                  }
+                  @media (prefers-reduced-motion: reduce) {
+                    .endereco-livre, .endereco-risco { animation: none }
+                    .endereco-risco { stroke-dashoffset: 0 }
+                  }
+                `}</style>
                 <Certo />
                 disponível
               </span>
@@ -297,6 +310,7 @@ function Certo() {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true" className="h-3.5 w-3.5 shrink-0">
       <path
+        className="endereco-risco"
         d="M3.5 8.5 6.5 11.5 12.5 5"
         fill="none"
         stroke="currentColor"

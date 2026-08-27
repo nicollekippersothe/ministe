@@ -33,7 +33,7 @@ import { FaixaDeRecado } from "./Sinais";
  * degrau seguinte, com respiro sem virar caixa grande.
  */
 export const CLASSE_CAMPO =
-  "w-full rounded-xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto placeholder:text-suave/60";
+  "w-full rounded-xl border bg-superficie px-4 py-3.5 text-[1.05rem] text-texto transition-colors duration-150 placeholder:text-suave/60";
 
 /*
  * `scroll-mt-32` mora no campo, e nunca no invólucro, e a diferença é a
