@@ -232,6 +232,15 @@ export default async function Painel({
       <h2 className={ROTULO}>Na sua página hoje</h2>
 
       <ul className="mt-3 divide-y divide-borda overflow-hidden rounded-2xl border border-borda bg-superficie">
+        {/*
+          Cada linha leva ao CAMPO, e não ao topo da tela.
+
+          Sem a âncora, tocar em "Frase" abria a tela de informações no começo
+          dela, onde o primeiro cartão é o envio da foto de perfil. A dona do
+          produto descreveu exatamente isso: "eu clico em frase curta e aparece
+          pra colocar a imagem do perfil". O resumo prometia levar direto ao
+          lugar de editar, e entregava o topo de uma tela comprida.
+        */}
         <Linha
           rotulo="Nome"
           /* `|| null`, e não o valor cru: nome em branco é string vazia, que o
@@ -239,25 +248,25 @@ export default async function Painel({
              nada no meio, justo na página recém criada. */
           valor={negocio.nome || null}
           convite="Escrever o nome do negócio"
-          href="/painel/negocio"
+          href="/painel/negocio#nome"
         />
         <Linha
           rotulo="Frase"
           valor={negocio.frase}
           convite="Escrever uma frase curta"
-          href="/painel/negocio"
+          href="/painel/negocio#frase"
         />
         <Linha
           rotulo="WhatsApp"
           valor={negocio.whatsapp ? telefoneVisivel(negocio.whatsapp) : null}
           convite="Informar o WhatsApp"
-          href="/painel/negocio"
+          href="/painel/negocio#whatsapp"
         />
         <Linha
           rotulo="Endereço"
           valor={enderecoVisivel}
           convite="Informar o endereço"
-          href="/painel/negocio"
+          href="/painel/negocio#endereco"
         />
         <Linha
           rotulo="Catálogo"

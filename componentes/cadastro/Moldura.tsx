@@ -1,17 +1,18 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Marca } from "@/componentes/Marca";
-import { LETRA_DE_ENTRADA } from "@/lib/fontes";
 import { BotaoEnviar } from "./BotaoEnviar";
 
 /**
  * Moldura das telas de entrada e cadastro. Uma coluna estreita, com bastante ar
  * em volta, e a letra do próprio aparelho no corpo.
  *
- * O título e o enunciado das perguntas saem na Gloock, a serifada de contraste
- * alto que a página pública já oferece na combinação "Marcante". Ver
- * `LETRA_DE_ENTRADA`, que também explica por que o corpo continua na letra do
- * aparelho.
+ * A tela inteira sai na letra do próprio aparelho, e isso foi decidido depois
+ * de tentar o contrário. Uma rodada pôs a serifada Gloock no título e no
+ * enunciado das perguntas, e a dona do produto leu a tela e disse "essa fonte
+ * horrível precisa trocar". Serifada de display num formulário rouba a atenção
+ * de quem está preenchendo, e o lugar dela é a página pública, onde o assunto é
+ * o negócio da pessoa, e nunca a nossa.
  *
  * Com `lado`, vira duas faixas no computador: a coluna de sempre à esquerda, e
  * à direita uma parede que ocupa a faixa inteira, de cima a baixo. É o que o
@@ -84,7 +85,7 @@ export function Moldura({
         mais altura que a letra do aparelho no mesmo corpo, e a 2,35rem ela
         comia 190 dos 664 pixels do iPhone 13 antes da primeira pergunta.
       */}
-      <h1 className="font-titulo text-[2.05rem] leading-[1.06] font-normal tracking-[-0.015em] text-balance text-texto sm:text-[2.35rem]">
+      <h1 className="text-[2.05rem] leading-[1.06] font-semibold tracking-[-0.02em] text-balance text-texto sm:text-[2.35rem]">
         {titulo}
       </h1>
       {subtitulo ? (
@@ -142,7 +143,7 @@ export function Moldura({
     return (
       <div
         data-tema="areia"
-        className={`${LETRA_DE_ENTRADA} min-h-dvh bg-fundo`}
+        className="min-h-dvh bg-fundo"
       >
         {faixaDaEsquerda}
       </div>
@@ -152,7 +153,7 @@ export function Moldura({
   return (
     <div
       data-tema="areia"
-      className={`${LETRA_DE_ENTRADA} min-h-dvh bg-fundo lg:grid lg:grid-cols-[minmax(0,1fr)_42%]`}
+      className="min-h-dvh bg-fundo lg:grid lg:grid-cols-[minmax(0,1fr)_42%]"
     >
       {faixaDaEsquerda}
 

@@ -36,6 +36,13 @@ function Rotulo({
   );
 }
 
+/*
+ * O respiro do topo existe por causa do resumo do painel.
+ *
+ * Cada linha de lá leva ao campo por âncora, e âncora sem margem encosta o
+ * campo no topo da janela, atrás do cabeçalho. Vinte e quatro deixa o rótulo à
+ * vista junto com o campo, que é o que faz a pessoa reconhecer onde caiu.
+ */
 export function Texto({
   id,
   rotulo,
@@ -49,7 +56,7 @@ export function Texto({
   valor: string | null;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "defaultValue">) {
   return (
-    <div>
+    <div className="scroll-mt-24">
       <Rotulo htmlFor={id} dica={dica}>
         {rotulo}
       </Rotulo>
@@ -112,7 +119,7 @@ export function Escolha({
   opcoes: Array<{ valor: string; rotulo: string }>;
 }) {
   return (
-    <div>
+    <div className="scroll-mt-24">
       <Rotulo htmlFor={id} dica={dica}>
         {rotulo}
       </Rotulo>
