@@ -65,18 +65,54 @@ export default async function LayoutPainel({
         <PreservarDigitado />
       </Suspense>
 
-      <div className="mx-auto w-full max-w-[34rem] px-5 pt-5 pb-8 lg:max-w-5xl lg:px-8">
-        {/* -my-2 devolve o espaço que a altura de alvo toma: o logotipo é um
-            link para /painel, então o dedo precisa dos 44 pixels, e sem isso o
-            topo da tela ganharia um vão que ninguém pediu. */}
-        <Marca href="/painel" className="-my-2 min-h-11" />
+      {/*
+        Duas formas do mesmo painel, e a diferença é o que resolve o "espaço
+        vazio gigantesco" que a dona apontou no computador.
 
-        <div className="lg:mt-6 lg:grid lg:grid-cols-[17rem_1fr] lg:items-start lg:gap-10">
-          <aside className="hidden lg:sticky lg:top-8 lg:block">
+        No celular é uma coluna só, centrada, com a marca no topo: a navegação
+        mora dentro de cada tela, e o `max-w-[34rem]` mantém a linha de leitura.
+
+        No computador vira uma casca de aplicativo de verdade: uma barra lateral
+        definida à esquerda, com borda e uma superfície própria que desce até o
+        fim da tela, e o conteúdo ocupando o resto. Antes a navegação flutuava
+        no mesmo creme liso de tudo, sem contorno, então a tela lia como cartões
+        soltos num campo vazio enorme. Com a barra desenhada como barra, o vão
+        embaixo dela vira "lateral do aplicativo", e a margem do conteúdo vira
+        "coluna de leitura", que é como todo painel bem-acabado se apresenta.
+      */}
+      <div className="lg:flex lg:min-h-dvh">
+        {/*
+          A barra lateral: só no computador, largura fixa, borda à direita e uma
+          superfície levemente distinta do fundo. Ela desce a tela inteira,
+          porque é um item flex sem `items-start`, e o miolo dela gruda no topo
+          com `sticky`, rolando por dentro quando a navegação passa da altura da
+          janela.
+        */}
+        <aside className="hidden lg:flex lg:w-[17rem] lg:shrink-0 lg:flex-col lg:border-r lg:border-borda lg:bg-superficie/40">
+          <div className="sticky top-0 flex max-h-dvh flex-col gap-6 overflow-y-auto px-5 py-6">
+            {/* -my-2 devolve o espaço que a altura de alvo toma: o logotipo é
+                um link para /painel, então o dedo precisa dos 44 pixels. */}
+            <Marca href="/painel" className="-my-2 min-h-11" />
             <Navegacao negocio={negocio} provisoria={provisoria} />
-          </aside>
+          </div>
+        </aside>
 
-          <div className="lg:min-w-0">{children}</div>
+        <div className="w-full lg:flex-1 lg:min-w-0">
+          {/* A marca no topo só no celular: no computador ela mora na barra. */}
+          <div className="mx-auto w-full max-w-[34rem] px-5 pt-5 lg:hidden">
+            <Marca href="/painel" className="-my-2 min-h-11" />
+          </div>
+
+          {/*
+            O conteúdo encosta na barra, e não flutua no meio. `max-w-2xl` é a
+            largura em que um formulário se lê sem esticar; encostado na lateral
+            com `pl-12`, ele fica ao lado da navegação em vez de deixar um vão
+            entre as duas. A folga que sobra fica à direita, e com a barra
+            desenhada como barra ela lê como espaço de tela, e não como vazio.
+          */}
+          <div className="mx-auto w-full max-w-[34rem] px-5 pb-8 lg:mx-0 lg:max-w-2xl lg:px-0 lg:py-8 lg:pl-12 lg:pr-8">
+            {children}
+          </div>
         </div>
       </div>
     </div>
