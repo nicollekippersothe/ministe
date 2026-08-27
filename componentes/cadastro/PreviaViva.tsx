@@ -22,7 +22,7 @@ import { DOMINIO_PUBLICO } from "@/lib/marca";
  * honesto, e passa a parecer parede de exposição esperando o trabalho.
  *
  * Só aparece no computador. No celular ela roubaria a tela do formulário, que
- * é o que a pessoa veio fazer, e o cadastro inteiro cabe em três perguntas.
+ * é o que a pessoa veio fazer, e o cadastro inteiro cabe em duas perguntas.
  *
  * `escolhido` é separado de `categoria` por causa de "Outro": ali a receita é
  * a padrão e a categoria é nula, e a frase de baixo ficava pedindo um ramo que

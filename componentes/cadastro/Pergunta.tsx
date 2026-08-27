@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * O cabeçalho de uma pergunta do cadastro.
+ * O cabeçalho de uma das duas perguntas do cadastro.
  *
  * Existe para uma coisa só: fazer a pergunta pesar mais que a resposta. Antes
  * o rótulo tinha 15px e as opções da lista tinham 16, então a tela lia como
@@ -20,8 +20,12 @@ import type { ReactNode } from "react";
  *
  * A numeração se sustenta porque a ordem carrega informação de verdade: o ramo
  * é a primeira pergunta porque a receita dele monta a página antes de a pessoa
- * escrever qualquer coisa, e as duas seguintes dependem dele. Numerar uma lista
- * de campos independentes seria enfeite.
+ * escrever qualquer coisa, e o nome, que é a segunda, depende dele. Numerar uma
+ * lista de campos independentes seria enfeite.
+ *
+ * Eram três, e o link da página era a terceira. Ele saiu da numeração no dia em
+ * que passou a nascer do nome: numerar como pergunta uma linha que já vem
+ * respondida seria cobrar trabalho que a tela mesma faz.
  *
  * Não é o elemento de rótulo, e sim o miolo dele. Quem chama põe por dentro do
  * `legend` (no grupo de rádio) ou do `label` (nos campos de texto), porque as

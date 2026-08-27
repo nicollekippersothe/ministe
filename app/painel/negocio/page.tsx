@@ -118,7 +118,13 @@ export default async function Informacoes({
         Informações do negócio
       </h1>
 
-      <Aviso salvo={params.salvo === "1"} erro={params.erro} />
+      {/*
+        Só a recusa sai no alto, e é o lugar dela: ela vale para a tela toda e
+        precisa ser lida antes de qualquer campo. A confirmação desceu para
+        dentro da `BarraSalvar`, junto do botão que a produziu. Ver o comentário
+        do `recado` em componentes/painel/Campos.tsx.
+      */}
+      <Aviso erro={params.erro} />
 
       {/*
         As imagens ficam fora do formulário de texto, e é uma decisão de
@@ -264,13 +270,19 @@ export default async function Informacoes({
           <Texto
             id="mapsUrl"
             rotulo="Link do Google Maps"
-            dica="Abra seu endereço no Maps, toque em compartilhar e cole aqui."
+            dica="Procure onde você atende no Maps, toque em compartilhar e cole aqui."
             valor={negocio.mapsUrl}
             inputMode="url"
           />
         </EscolhaDoEndereco>
 
-        <BarraSalvar>
+        <BarraSalvar
+          recado={
+            params.salvo === "1"
+              ? "Alterações salvas. A sua página já mostra o que você escreveu aqui."
+              : undefined
+          }
+        >
           <Botao type="submit">Salvar</Botao>
         </BarraSalvar>
       </form>

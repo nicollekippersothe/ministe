@@ -74,10 +74,15 @@ function Botoes({
         <IconeDescer className="h-5 w-5" />
       </BotaoDeAcao>
 
-      <p className="text-xs tabular-nums text-suave">
-        {indice + 1} de {total}
-      </p>
+      {/*
+        A posição da linha era escrita duas vezes: o selo redondo do cabeçalho,
+        que fica à vista com o cartão aberto ou fechado, e um "1 de 6" aqui
+        embaixo. O selo já responde qual é a linha, e o total já está escrito na
+        contagem no alto da tela. Ficou o selo, que é o que está junto do nome.
 
+        Subir e descer continuam dizendo a posição de outro jeito, e mais
+        direto: o primeiro da lista tem o subir apagado, o último tem o descer.
+      */}
       <div className="ml-auto flex items-center gap-1">
         {salvar ? (
           /*

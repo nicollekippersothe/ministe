@@ -227,7 +227,14 @@ function Dia({ dia, intervalos }: { dia: number; intervalos: Intervalo[] }) {
  * dentro do campo. Sete dias em fila é a leitura natural de uma semana, e a
  * largura travada deixa cada par de horas do tamanho do que se digita nele.
  */
-function Semana({ horarios }: { horarios: Intervalo[] }) {
+function Semana({
+  horarios,
+  recado,
+}: {
+  horarios: Intervalo[];
+  /** A confirmação de gravação, que sai encostada no Salvar que a produziu. */
+  recado?: string;
+}) {
   const semana = porDiaSemana(horarios);
 
   return (
@@ -246,7 +253,7 @@ function Semana({ horarios }: { horarios: Intervalo[] }) {
         Copiar segunda para terça a sexta
       </BotaoDeAcao>
 
-      <BarraSalvar>
+      <BarraSalvar recado={recado}>
         <Botao type="submit">Salvar</Botao>
       </BarraSalvar>
     </form>
@@ -319,7 +326,7 @@ function HoraMarcada({ negocio }: { negocio: Negocio }) {
         Hoje a sua página atende com hora marcada
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-suave">
-        Quem abre o seu endereço marca pelo botão do rodapé.
+        Quem abre o link da sua página marca pelo botão do rodapé.
       </p>
 
       {acoes.length > 0 ? (
@@ -393,6 +400,28 @@ export default async function Horarios({
    */
   const horaMarcada = negocio.horarios.length === 0;
 
+  /*
+   * Onde a confirmação sai, e o que ela diz.
+   *
+   * Com a semana preenchida ela sai dentro da `BarraSalvar`, encostada no botão
+   * que a produziu, que é o conserto do item 3 desta rodada: no monitor de 1440
+   * a frase saía a 1627 pixels do Salvar, com a rolagem devolvida ao topo. O
+   * "copiar segunda para terça a sexta" mora na mesma barra, dois dedos acima do
+   * Salvar, então a resposta dele cabe no mesmo lugar.
+   *
+   * Com a semana em branco a frase volta para o alto, e isso é escolha e não
+   * sobra: ali o formulário inteiro está dentro de uma dobra fechada, e o botão
+   * que produziu a resposta pode nem existir mais na tela (é o caso de quem
+   * acabou de tocar em "Passar a atender com hora marcada"). O alto da tela é o
+   * único lugar que a pessoa está olhando.
+   */
+  const recadoNaBarra = horaMarcada
+    ? undefined
+    : params.copiado === "1"
+      ? "Horário copiado para terça a sexta, e a semana está salva."
+      : params.salvo === "1"
+        ? "Alterações salvas. A sua página já mostra esta semana."
+        : undefined;
 
   /*
    * A semana montada uma vez, porque os dois ramos abaixo mostram a mesma
@@ -406,7 +435,7 @@ export default async function Horarios({
         Dia em branco fica marcado como fechado. Para turno que passa da meia
         noite, use 19:00 às 00:30.
       </p>
-      <Semana horarios={negocio.horarios} />
+      <Semana horarios={negocio.horarios} recado={recadoNaBarra} />
     </>
   );
 
@@ -430,9 +459,11 @@ export default async function Horarios({
         Horários
       </h1>
 
+      {/* A recusa vale para a tela toda e continua no alto. A confirmação só
+          aparece aqui quando a barra do Salvar está fora de alcance. */}
       <Aviso
-        salvo={params.salvo === "1"}
-        copiado={params.copiado === "1"}
+        salvo={params.salvo === "1" && recadoNaBarra === undefined}
+        copiado={params.copiado === "1" && recadoNaBarra === undefined}
         erro={params.erro}
       />
 

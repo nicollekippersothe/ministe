@@ -3,23 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Copia o endereço da página para a área de transferência.
+ * Copia o link da página para a área de transferência.
  *
- * **Existe porque o painel mostrava o endereço e parava aí.** Quem quer mandar
- * a própria página para uma cliente no WhatsApp precisava abrir o endereço numa
- * aba, esperar carregar e copiar da barra do navegador, ou digitar na mão. No
+ * **Existe porque o painel mostrava o link e parava aí.** Quem quer mandar a
+ * própria página para uma cliente no WhatsApp precisava abrir o link numa aba,
+ * esperar carregar e copiar da barra do navegador, ou digitar na mão. No
  * celular esse caminho custa quatro toques e uma troca de aplicativo, e é o
  * gesto mais frequente que esta tela tem para oferecer.
  *
- * Fica colado no endereço, em peso de contorno, e por isso continua abaixo do
- * botão principal do cartão: ele acompanha o endereço, e não disputa com
+ * Fica colado no link, em peso de contorno, e por isso continua abaixo do
+ * botão principal do cartão: ele acompanha o link, e não disputa com
  * publicar.
+ *
+ * **A palavra é "link", e nunca "endereço".** No painel, endereço passou a
+ * nomear uma coisa só, a rua onde a pessoa atende, e este botão copia a outra:
+ * o que se cola numa conversa e abre a página.
  *
  * O rótulo troca para "Copiado" por dois segundos e volta sozinho. A troca é
  * anunciada por `aria-live`, então quem usa leitor de tela ouve o mesmo retorno
  * que quem enxerga o botão mudar.
  */
-export function BotaoCopiar({ endereco }: { endereco: string }) {
+export function BotaoCopiar({ link }: { link: string }) {
   const [copiado, setCopiado] = useState(false);
   const relogio = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -33,9 +37,9 @@ export function BotaoCopiar({ endereco }: { endereco: string }) {
 
   async function copiar() {
     try {
-      await navigator.clipboard.writeText(endereco);
+      await navigator.clipboard.writeText(link);
     } catch {
-      // Navegador antigo, ou permissão recusada pelo sistema. O endereço segue
+      // Navegador antigo, ou permissão recusada pelo sistema. O link segue
       // escrito na tela, do lado, e continua dando para marcar e copiar na mão.
       return;
     }
@@ -54,7 +58,7 @@ export function BotaoCopiar({ endereco }: { endereco: string }) {
       <span className="shrink-0 text-suave" aria-hidden>
         {copiado ? <IconeConferido /> : <IconeCopiar />}
       </span>
-      <span aria-live="polite">{copiado ? "Copiado" : "Copiar o endereço"}</span>
+      <span aria-live="polite">{copiado ? "Copiado" : "Copiar o link"}</span>
     </button>
   );
 }

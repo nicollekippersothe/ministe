@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { IconeAbrirLista } from "@/componentes/Icones";
 import { BotaoDeAcao } from "./BotaoDeAcao";
+import { PreservarRolagem } from "./PreservarRolagem";
+import { FaixaDeRecado } from "./Sinais";
 
 /**
  * Campos do painel.
@@ -420,19 +422,43 @@ export function GrupoRecolhivel({
 }
 
 /**
- * O Salvar do rodapé.
+ * O Salvar do rodapé, e a confirmação que ele produz.
  *
  * No celular ele fica preso na base da tela, porque o formulário tem sempre
  * mais campos do que cabe e o botão precisa estar a um toque. No computador o
  * formulário inteiro cabe de uma vez, e aí a barra presa vira uma tarja parada
  * no meio da tela: ela volta a ser o fim do formulário, na largura do botão.
+ *
+ * **O `recado` é a confirmação, e ela mora aqui porque é aqui que ela nasce.**
+ * Ela saía no alto da tela, pelo `Aviso`, e no monitor de 1440 isso punha a
+ * frase a 2244 pixels do botão que a produziu, com a rolagem no topo e a pessoa
+ * no meio do formulário. É o mesmo conserto que `app/painel/catalogo/page.tsx`
+ * já fez pelo item, com a mesma `FaixaDeRecado`: quem tocou no botão lê a
+ * resposta no botão. `PreservarRolagem` completa o par, devolvendo a rolagem
+ * para onde ela estava no toque.
+ *
+ * A frase fica fora do `lg:max-w-56` do botão de propósito: ali ela cairia em
+ * quatro linhas dentro de catorze rem, no computador, onde há largura de sobra.
  */
-export function BarraSalvar({ children }: { children: ReactNode }) {
+export function BarraSalvar({
+  recado,
+  children,
+}: {
+  /** O que dizer depois de gravar. Ausente, a barra é só o botão. */
+  recado?: string;
+  children: ReactNode;
+}) {
   return (
     <div
       className="sticky inset-x-0 bottom-0 -mx-5 mt-2 border-t border-borda bg-fundo/95 px-5 pt-3 backdrop-blur-sm lg:static lg:col-span-2 lg:mx-0 lg:px-0"
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
+      {recado ? (
+        <FaixaDeRecado tom="pronto" className="mb-3 lg:max-w-prose">
+          {recado}
+        </FaixaDeRecado>
+      ) : null}
+      <PreservarRolagem devolver={recado !== undefined} />
       <div className="lg:max-w-56">{children}</div>
     </div>
   );

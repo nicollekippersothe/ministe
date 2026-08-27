@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { IconeSeta } from "@/componentes/Icones";
-import { ListaSecoes } from "@/componentes/painel/ListaSecoes";
 import { MapaDaPagina } from "@/componentes/painel/MapaDaPagina";
 import { CartaoEstado } from "@/componentes/painel/Navegacao";
 import { Aviso } from "@/componentes/painel/Aviso";
 import { CartaoPlano } from "@/componentes/painel/CartaoPlano";
 import { cobrancaDoDono, doDono } from "@/lib/dados";
 import { telefoneVisivel } from "@/lib/formato";
+import { combinacao } from "@/lib/fontes";
 import { acoesDoRodape } from "@/lib/acoes";
+import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { contaProvisoria } from "@/lib/supabase/servidor";
-import type { Intervalo, Item } from "@/lib/tipos";
+import type { Intervalo, Item, Negocio } from "@/lib/tipos";
 
 import { saudacao } from "@/app/painel/sessao";
 import { exigirLogin } from "@/app/painel/vitrine";
@@ -71,13 +72,13 @@ function Linha({
         className="flex items-start gap-3 px-4 py-4 hover:bg-fundo active:bg-fundo sm:gap-4 sm:px-5"
       >
         {/* Coluna de rótulo mais estreita no celular: com 28 fixos sobravam
-            pouco mais de 180 pixels para o valor, e endereço quebrava em
-            quatro linhas numa tela de 390. */}
+            pouco mais de 180 pixels para o valor, e a rua quebrava em quatro
+            linhas numa tela de 390. */}
         <span className="w-20 shrink-0 text-sm text-suave sm:w-28">
           {rotulo}
         </span>
-        {/* Duas linhas no máximo, e só no celular. Numa tela de 390 pixels o
-            endereço inteiro ocupava quatro linhas, a lista de oito itens
+        {/* Duas linhas no máximo, e só no celular. Numa tela de 390 pixels a
+            rua inteira ocupava quatro linhas, a lista de oito itens
             virava uma parede, e encontrar a linha de Horários dava mais
             trabalho do que abrir a seção. O resto do texto fica no editor, do
             outro lado do clique. Da largura de tablet para cima sobra espaço
@@ -102,8 +103,8 @@ function Linha({
  * semibold, o mesmo peso do conteúdo que eles anunciam e quase o mesmo do
  * título da tela, e com três deles empilhados a tela ficava com quatro coisas
  * disputando o primeiro lugar. Rótulo é placa, e placa se lê de canto de olho:
- * encolhendo ele, o endereço, o cumprimento e as linhas da página passam a ter
- * cada um um degrau só para si.
+ * encolhendo ele, o link da página, o cumprimento e as linhas do resumo passam
+ * a ter cada um um degrau só para si.
  */
 const ROTULO =
   "text-xs font-semibold tracking-[0.1em] text-suave uppercase";
@@ -140,10 +141,47 @@ function Rascunho({ estado }: { estado?: string }) {
   );
 }
 
+/**
+ * A chegada de quem acabou de montar a página.
+ *
+ * **Existe porque o cadastro terminava em silêncio.** `app/criar/acoes.ts`
+ * fecha o cadastro com `redirect("/painel?criado=1")`, e nenhuma tela do
+ * produto lia esse `criado`: a pessoa escolhia o link, tocava no botão que
+ * cria a página, e caía numa tela que começava com "Oi". O momento em que a
+ * página nasce é o único da vida dela em que o link é novidade, e ele passava
+ * batido.
+ *
+ * Então a chegada diz as duas coisas que só ela pode dizer: qual é o link que
+ * acabou de nascer, e o que acontece com ele agora. O passo concreto de
+ * preencher fica com o `CartaoEstado`, que já sabe qual campo falta e leva
+ * direto nele: repetir esse botão aqui seria a mesma oferta duas vezes na
+ * mesma tela.
+ *
+ * Mesmo `role="status"` do aviso de rascunho logo abaixo, pelo mesmo motivo: é
+ * um recado sobre o que acabou de acontecer, e quem usa leitor de tela ouve ele
+ * ao terminar a frase de agora, sem ser interrompido.
+ */
+function Criado({ negocio }: { negocio: Negocio }) {
+  return (
+    <div
+      role="status"
+      className="mt-4 rounded-xl bg-aberto-fundo px-4 py-3 text-aberto-texto"
+    >
+      <p className="text-[1.05rem] leading-snug font-semibold break-all">
+        A sua página nasceu em {DOMINIO_PUBLICO}/{negocio.slug}
+      </p>
+      <p className="mt-1.5 text-sm leading-relaxed">
+        Ela fica só para você até você publicar. O que você salvar aqui já
+        aparece nela.
+      </p>
+    </div>
+  );
+}
+
 export default async function Painel({
   searchParams,
 }: {
-  searchParams: Promise<{ rascunho?: string; erro?: string }>;
+  searchParams: Promise<{ criado?: string; rascunho?: string; erro?: string }>;
 }) {
   exigirLogin();
   /*
@@ -155,7 +193,7 @@ export default async function Painel({
    * para as que dependem da sessão, inclusive o nome do cumprimento, pelo
    * `cache` de lib/supabase/servidor.ts.
    */
-  const [{ rascunho, erro }, negocio, provisoria, cobranca, ola] =
+  const [{ criado, rascunho, erro }, negocio, provisoria, cobranca, ola] =
     await Promise.all([
       searchParams,
       doDono(),
@@ -171,7 +209,7 @@ export default async function Painel({
 
   // Rua, cidade e UF numa linha só, na ordem em que a página pública mostra. O
   // CEP fica fora: numa linha de resumo ele ocupa espaço sem ajudar ninguém a
-  // reconhecer o endereço de relance.
+  // reconhecer a rua de relance.
   const enderecoVisivel =
     [negocio.endereco, negocio.cidade, negocio.estado]
       .filter(Boolean)
@@ -188,11 +226,12 @@ export default async function Painel({
    * Os dois falam de uma página que já tem público: o plano vende letra e
    * números, e a contagem conta quem abriu. Numa coluna só eles se enfileiravam
    * entre a pessoa e o lugar de escrever, e a primeira coisa lida depois do
-   * endereço era uma oferta. Agora fecham a tela, a um rolar de distância.
+   * link da página era uma oferta. Agora fecham a tela, a um rolar de
+   * distância.
    *
    * A exceção é o cartão que voltou do banco. Ali o assunto deixa de ser oferta
    * e passa a ser a página seguir no ar, com a saída à mão, então esse sobe
-   * para logo abaixo do endereço.
+   * para logo abaixo do link da página.
    */
   const planoNoTopo = cobranca.assinatura?.status === "em_atraso";
 
@@ -218,7 +257,7 @@ export default async function Painel({
    * informação da página dela. Medido no navegador: abaixo de 1024 pixels de
    * janela, que é qualquer navegador em meia tela ou com zoom de 125 por
    * cento, o painel caía no desenho de celular e ali o resumo simplesmente
-   * não existia. Sobravam o endereço, o plano e seis nomes de seção, e para
+   * não existia. Sobravam o link, o plano e seis nomes de seção, e para
    * lembrar o que tinha escrito ela precisava abrir uma por uma.
    *
    * Agora ele sai nas duas, e continua sendo a mesma peça.
@@ -262,10 +301,13 @@ export default async function Painel({
           convite="Informar o WhatsApp"
           href="/painel/negocio#whatsapp"
         />
+        {/* "Onde você atende", e nunca "Endereço": a palavra endereço já nomeia
+            o link da página no cartão logo acima, e a mesma palavra em dois
+            assuntos na mesma tela é o que faz a pessoa ler o errado. */}
         <Linha
-          rotulo="Endereço"
+          rotulo="Onde atende"
           valor={enderecoVisivel}
-          convite="Informar o endereço"
+          convite="Dizer onde você atende"
           href="/painel/negocio#endereco"
         />
         <Linha
@@ -296,6 +338,19 @@ export default async function Painel({
           convite="Apontar para o seu Instagram"
           href="/painel/links"
         />
+        {/*
+          A letra entrou no resumo quando a lista de cartões saiu do celular.
+          Sem esta linha, "Letras da página" ficava sem nenhum caminho no
+          celular, porque era a única das seis seções que o resumo ainda não
+          nomeava. O valor é a combinação em uso, que é o conteúdo de verdade
+          desta parte, do mesmo jeito que as outras linhas mostram o delas.
+        */}
+        <Linha
+          rotulo="Letras"
+          valor={combinacao(negocio.fonte).nome}
+          convite="Escolher a letra da página"
+          href="/painel/aparencia"
+        />
       </ul>
     </>
   );
@@ -312,7 +367,7 @@ export default async function Painel({
 
         Agora a primeira linha cumprimenta pelo primeiro nome, a segunda nomeia
         o lugar, e logo abaixo vem o que a pessoa costuma vir buscar: o
-        endereço, quem o enxerga, o botão de copiar e o próximo passo.
+        link da página, quem o enxerga, o botão de copiar e o próximo passo.
 
         No computador a banda ganha o desenho da página à direita. É o mesmo
         `MapaDaPagina` das telas de botões e de links, com nenhum pedaço aceso:
@@ -334,6 +389,8 @@ export default async function Painel({
             Esta é a sua tela inicial. A sua página inteira sai daqui.
           </p>
 
+          {criado === "1" ? <Criado negocio={negocio} /> : null}
+
           <Rascunho estado={rascunho} />
 
           {/* Publicar é a única escrita que sai daqui, e o gatilho pode
@@ -341,7 +398,7 @@ export default async function Painel({
           <Aviso erro={erro} />
 
           {/* No computador o cartão de estado mora na coluna da esquerda, à
-              vista em todas as telas do painel. Repetir o mesmo endereço aqui
+              vista em todas as telas do painel. Repetir o mesmo link aqui
               era o que acontecia antes, com dois blocos a duzentos pixels um do
               outro. */}
           <div className="mt-5 lg:hidden">
@@ -368,16 +425,25 @@ export default async function Painel({
           passa a ser a página seguir no ar, com a saída à mão. */}
       {planoNoTopo ? <div className="mt-6 lg:hidden">{plano}</div> : null}
 
-      {/* A navegação, e só no celular: no computador ela mora na coluna da
-          esquerda, e repetir a mesma lista a meia tela de distância seria a
-          mesma lista duas vezes. */}
-      <section className="mt-10 lg:hidden">
-        <h2 className={ROTULO}>Editar</h2>
-        <div className="mt-3">
-          <ListaSecoes />
-        </div>
-      </section>
+      {/*
+        Uma navegação só para os mesmos seis lugares.
 
+        **O celular tinha duas.** Medido numa tela de 390: a lista "Editar", com
+        seis cartões, e o resumo "Na sua página hoje", com oito linhas, levavam
+        aos mesmos seis destinos, separadas por 527 pixels de rolagem, somando 21
+        alvos tocáveis numa tela de 2015. A dona do produto resumiu como "infos
+        muito espalhadas".
+
+        Quem ficou foi o resumo, e a escolha é fácil de defender: ele mostra o
+        conteúdo de verdade de cada parte ("3 dias da semana", "7 itens, 4 na
+        página"), e mostra o convite quando o campo está em branco. A lista de
+        cartões dizia só o nome da seção, que é a metade que o resumo já carrega
+        na coluna da esquerda de cada linha.
+
+        No computador nada mudou: lá a lista mora na coluna fixa do layout,
+        sempre à vista, e o resumo ocupa o meio da tela. São dois papéis
+        diferentes, e não duas cópias.
+      */}
       <section className="mt-10">{resumo}</section>
 
       {planoNoTopo ? null : <div className="mt-10 lg:hidden">{plano}</div>}

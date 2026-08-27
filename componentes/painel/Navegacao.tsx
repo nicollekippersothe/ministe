@@ -14,15 +14,15 @@ import type { Negocio } from "@/lib/tipos";
  *
  * No celular é o conteúdo de /painel, e a pessoa volta para cá entre uma edição
  * e outra. No computador vira a coluna da esquerda, sempre à vista, e esse
- * vaivém desaparece: dá para ir de Horários direto para Botões, e o endereço
- * continua na tela enquanto se edita.
+ * vaivém desaparece: dá para ir de Horários direto para Botões, e o link da
+ * página continua na tela enquanto se edita.
  *
  * Mesmo componente nos dois, e de propósito. Duas versões do estado da página
- * seriam duas chances de uma delas mentir sobre quem enxerga o endereço.
+ * seriam duas chances de uma delas mentir sobre quem enxerga o link.
  */
 
 /**
- * O cartão de cima: o endereço, quem o enxerga, e o que fazer em seguida.
+ * O cartão de cima: o link da página, quem o enxerga, e o que fazer em seguida.
  *
  * **Ele tem duas formas, e a escolha é de `passosParaOAr`.** Enquanto a página
  * ainda estiver crua, quem ocupa o lugar de destaque é o próximo passo de
@@ -67,13 +67,13 @@ export function CartaoEstado({
       <EstadoDaPagina negocio={negocio} />
 
       {/*
-        O mesmo endereço que está escrito logo acima, inteiro e com o esquema,
-        que é o que cola num aplicativo de conversa e abre. O que a tela mostra
-        vem do mesmo `DOMINIO_PUBLICO` do `EstadoDaPagina`, então o botão copia
-        o endereço que a pessoa está lendo.
+        O mesmo link que está escrito logo acima, inteiro e com o esquema, que
+        é o que cola num aplicativo de conversa e abre. O que a tela mostra vem
+        do mesmo `DOMINIO_PUBLICO` do `EstadoDaPagina`, então o botão copia o
+        link que a pessoa está lendo.
       */}
       <div className="mt-3">
-        <BotaoCopiar endereco={`https://${DOMINIO_PUBLICO}/${negocio.slug}`} />
+        <BotaoCopiar link={`https://${DOMINIO_PUBLICO}/${negocio.slug}`} />
       </div>
 
       {emMontagem && proximo ? (
@@ -118,7 +118,7 @@ export function CartaoEstado({
           **Os dois vinham em botão de altura cheia, um debaixo do outro**, e a
           tela abria oferecendo duas decisões do mesmo tamanho, uma delas sendo
           desfazer a publicação. Quem volta ao painel com a página no ar quer
-          ver como ela ficou, ou pegar o endereço para mandar para alguém. Tirar
+          ver como ela ficou, ou pegar o link para mandar para alguém. Tirar
           do ar é decisão rara, e rara continua a um toque de distância, com o
           mesmo rótulo, embaixo.
         */
@@ -165,8 +165,8 @@ export function CartaoEstado({
       {!noAr && provisoria ? (
         <p className="mt-3 text-xs leading-relaxed text-suave">
           A sua página está numa conta provisória, criada quando você começou a
-          montar. O Google guarda ela na sua conta de sempre, e aí o endereço
-          abre para qualquer pessoa.
+          montar. O Google guarda ela na sua conta de sempre, e aí o link da sua
+          página abre para qualquer pessoa.
         </p>
       ) : null}
     </div>

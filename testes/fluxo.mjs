@@ -21,7 +21,7 @@ const EXECUTAVEL = process.env.CHROMIUM;
 const processo = process;
 
 /*
- * O aviso que fica ao lado do campo de endereço.
+ * O aviso que fica embaixo da linha do link da página.
  *
  * Escrito pelo id, e não como "o primeiro [aria-live] da página", porque o
  * primeiro deixou de ser este no dia em que o ramo virou a primeira pergunta
@@ -94,6 +94,44 @@ passo(
   "endereço já ocupado é avisado na hora",
   (await p.textContent(ESTADO_DO_ENDERECO)).length > 0,
 );
+
+/*
+ * O link nasce do nome, e para de nascer na primeira tecla dada nele.
+ *
+ * Os dois passos entraram junto com a mudança que tirou o link da terceira
+ * pergunta: ele deixou de ser um campo em branco e passou a sair do nome ao
+ * vivo. O par precisa de prova junto, e nunca separado. Derivar sem cortar é o
+ * defeito clássico deste desenho: a pessoa escolhe o próprio link, digita mais
+ * uma letra no nome, e a tela apaga o que ela acabou de escrever.
+ *
+ * A digitação é tecla por tecla de propósito. Com `fill`, o navegador entrega
+ * o campo pronto num evento só, e isso passaria mesmo numa versão que
+ * derivasse o link só ao sair do campo.
+ */
+await p.goto(`${BASE}/criar`, { waitUntil: "networkidle" });
+await p.evaluate(() => localStorage.clear());
+await p.reload({ waitUntil: "networkidle" });
+await p.locator("input[name=nome]").pressSequentially("Ateliê da Nicolle", {
+  delay: 30,
+});
+await p.waitForTimeout(800);
+passo(
+  "o link da página nasce do nome, ao vivo",
+  (await p.inputValue("input[name=slug]")) === "atelie-da-nicolle" &&
+    (await p.textContent(ESTADO_DO_ENDERECO)).includes("disponível"),
+);
+
+await p.fill("input[name=slug]", "nicolle-ceramica");
+await p.locator("input[name=nome]").pressSequentially(" Cerâmica", { delay: 30 });
+await p.waitForTimeout(800);
+passo(
+  "e escrito à mão, o link para de receber o nome",
+  (await p.inputValue("input[name=slug]")) === "nicolle-ceramica",
+);
+
+// O cadastro começado fica guardado na aba por sete dias, e os passos daqui
+// para baixo contam com a tela em branco.
+await p.evaluate(() => localStorage.clear());
 
 await p.goto(`${BASE}/entrar`, { waitUntil: "load" });
 passo(
@@ -387,6 +425,16 @@ passo(
     itensAntes > 0,
 );
 
+/*
+ * O bloco de acrescentar chega fechado quando o catálogo já tem item, e quem
+ * abre ele é a âncora `#acrescentar`, do atalho do alto ou do convite no fim da
+ * lista. Antes ele nascia aberto e o preenchimento começava direto no campo.
+ *
+ * O clique fica aqui e não vira asserção própria porque ele é o caminho da
+ * pessoa: sem a âncora abrindo o bloco, os dois `fill` abaixo param em campo
+ * escondido, e é assim que este passo avisa se a âncora parar de abrir.
+ */
+await p.click('main a[href="#acrescentar"]');
 await p.fill("#novo-titulo", "Brigadeiro de colher");
 await p.fill("#novo-preco", "12,50");
 await p.click('button:has-text("Acrescentar ao catálogo")');
@@ -639,6 +687,13 @@ passo(
 const enderecoNovo = `camila reis ${processo.pid}`;
 const slugNovo = enderecoNovo.replace(/ /g, "-");
 
+/*
+ * O nome entra primeiro, e o link escrito logo depois passa por cima do que o
+ * nome tinha derivado. É de propósito: o passo continua criando uma página com
+ * link próprio, e de quebra ele prova pela segunda vez, no caminho inteiro,
+ * que a mão ganha da derivação. Sem essa ordem o teste criaria camila-reis, que
+ * é reservado, e morreria aqui.
+ */
 await p.fill("input[name=nome]", "Camila Reis");
 await p.fill("input[name=slug]", enderecoNovo);
 await p.waitForTimeout(800);
@@ -687,6 +742,11 @@ await monitor.close();
 // Sem JavaScript a prévia some, e o cadastro continua funcionando. É o que
 // separa enfeite de muleta: quem entra por uma rede ruim ou com o JavaScript
 // bloqueado ainda consegue criar a página.
+//
+// O link derivado também some aqui, porque derivar é trabalho de navegador. É
+// por isso que a linha do link continua sendo `input` de verdade, com `name` e
+// `required`: sem script ela é um campo comum, e o que a pessoa digita nele é o
+// que o servidor recebe.
 const seco = await navegador.newContext({
   ...devices["iPhone 13"],
   javaScriptEnabled: false,

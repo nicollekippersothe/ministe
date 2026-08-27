@@ -17,12 +17,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * O que a tela inicial mostra quando alguém usa o campo de endereço da
- * abertura antes do cadastro existir.
+ * O que a tela inicial mostra quando alguém usa o campo de link da abertura
+ * antes do cadastro existir.
  *
  * Some quando o login entrar. Até lá, quem digita um nome e aperta o botão
- * precisa de uma resposta: dizer que o endereço está livre é verdade e é útil,
- * e dizer quando o cadastro abre é melhor do que uma página de erro.
+ * precisa de uma resposta: dizer que o link está livre é verdade e é útil, e
+ * dizer quando o cadastro abre é melhor do que uma página de erro.
  */
 async function EnderecoConferido({ slug }: { slug: string }) {
   const pedido = normalizar(slug);
@@ -34,7 +34,7 @@ async function EnderecoConferido({ slug }: { slug: string }) {
       titulo={
         livre
           ? `${DOMINIO_PUBLICO}/${pedido} está livre`
-          : "Confira outro endereço"
+          : "Confira outro link"
       }
       subtitulo={
         livre
@@ -68,8 +68,8 @@ async function EnderecoConferido({ slug }: { slug: string }) {
  *
  * Uma mensagem só, colada no botão, era o que existia antes: no celular ela
  * nascia a 1260px do topo, fora da tela, e falava de um campo que ficava
- * quatrocentos pixels acima. Agora o motivo do endereço vai para debaixo do
- * endereço, o do nome para debaixo do nome, e sobra o aviso de conta, que é o
+ * quatrocentos pixels acima. Agora o motivo do link vai para debaixo da linha
+ * do link, o do nome para debaixo do nome, e sobra o aviso de conta, que é o
  * único que fala do formulário inteiro e por isso abre no alto.
  */
 function ondeMostrar(erro: string | undefined): "nome" | "endereco" | "geral" {

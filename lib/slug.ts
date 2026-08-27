@@ -67,14 +67,22 @@ export type Recusa =
   | "restrito"
   | "ocupado";
 
+/**
+ * As frases que a tela diz quando recusa.
+ *
+ * Elas nomeiam a URL da página, e a palavra dela no produto é "link": endereço
+ * ficou reservado para a rua onde a pessoa atende, que é outra coisa e mora
+ * noutra tela. As três telas que mostram estas frases falam todas da URL: a
+ * linha de link do cadastro, o campo da abertura e a conferência de /criar.
+ */
 export const MOTIVOS: Record<Recusa, string> = {
   curto: `Precisa de pelo menos ${TAMANHO_MINIMO} letras.`,
   longo: `No máximo ${TAMANHO_MAXIMO} letras.`,
   formato: "Use só letras, números e hífen.",
-  reservado: "Este endereço é reservado pelo sistema.",
+  reservado: "Este link é reservado pelo sistema.",
   restrito:
-    "Este endereço usa uma palavra restrita, porque pode ser confundida com banco ou cobrança.",
-  ocupado: "Este endereço já está em uso.",
+    "Este link usa uma palavra restrita, porque pode ser confundida com banco ou cobrança.",
+  ocupado: "Este link já está em uso.",
 };
 
 /** Confere só o formato. Se está ocupado é o banco que sabe. */

@@ -12,7 +12,6 @@ import { AtalhoDeAcrescentar, IconeMais } from "@/componentes/painel/Acrescentar
 import { Aviso, MENSAGENS } from "@/componentes/painel/Aviso";
 import {
   AreaTexto,
-  BarraSalvar,
   Botao,
   Marcar,
   Opcoes,
@@ -102,6 +101,41 @@ export const dynamic = "force-dynamic";
  * e ela passou a aparecer também aqui: "eu sei que ela preenche isso na outra
  * tela, mas eu traria pra tela de catálogo pra ficar mais clara a navegação".
  * É a mesma coluna da tela de informações, lida e escrita pelas duas.
+ *
+ * ## Um Salvar só, e ele é o do item
+ *
+ * **Medido nesta tela, com o catálogo de seis itens: 30 botões, e oito deles
+ * eram botão de gravar.** Seis Salvar de item, o "Acrescentar ao catálogo" e o
+ * "Salvar o catálogo" do rodapé. Os dois últimos terminavam a 90 pixels um do
+ * outro, e a pergunta que sobrava para quem chegava ali era qual dos dois é o
+ * que vale.
+ *
+ * O Salvar do rodapé saiu, e o do item ficou. O do item foi decidido com a dona
+ * em resposta a um relato de uso dela, e ele é o que responde onde a pessoa
+ * está olhando; o do rodapé gravava a mesma lista pelo mesmo caminho, e sobrava
+ * como segundo nome da mesma coisa.
+ *
+ * **O custo é real e é este: quem mexe em três itens seguidos passa a tocar
+ * Salvar três vezes**, uma por cartão, em vez de um toque só no fim. Foi aceito
+ * porque o caminho comum desta tela é mexer num item, e porque cada toque
+ * agora volta com a confirmação dentro do cartão em que ela tocou.
+ *
+ * `salvarItens` continua sendo a ação do `form`, e por isso Enter num campo de
+ * texto continua gravando a lista inteira. O que saiu foi o botão.
+ *
+ * ## O acrescentar chega fechado quando já tem catálogo
+ *
+ * Com a lista vazia ele é o próximo passo óbvio, e nasce aberto. Com a lista
+ * cheia ele era mais uma tela de rolagem de campos em branco embaixo dos itens
+ * que a pessoa veio editar, e o botão dele encostava no Salvar do rodapé.
+ *
+ * Fechar é `:target` de CSS, e não estado no React, pelo mesmo motivo do
+ * `details` das linhas: funciona com o JavaScript ainda a caminho. E é o que
+ * mantém a âncora `#acrescentar` valendo, que é o endereço para onde a recusa
+ * do formulário manda a pessoa (ver `paraRecusa` em ./acoes.ts): o bloco alvo
+ * da âncora é o bloco aberto. A recusa e a parede dos 20 itens também chegam
+ * com ele aberto pelo servidor, para a frase sair à vista em vez de dentro de
+ * um bloco fechado.
  */
 
 /**
@@ -130,6 +164,40 @@ function RegraDoPreco() {
   return (
     <style href="painel-preco-sob-consulta" precedence="default">{`
       .preco-escolha:has(input[value="consulta"]:checked) .preco-valor {
+        display: none;
+      }
+    `}</style>
+  );
+}
+
+/**
+ * O bloco de acrescentar fechado, e a âncora abrindo ele.
+ *
+ * Mesma escolha da regra do preço aqui em cima: CSS, e não estado no React. O
+ * bloco é o alvo da âncora `#acrescentar`, então `:target` já descreve
+ * exatamente o estado que interessa, o de "a pessoa pediu este bloco". Quem
+ * pede é o atalho do alto da lista, o convite no fim dela, e a volta de uma
+ * recusa do formulário.
+ *
+ * Fechado, o bloco vira o mesmo atalho de "Acrescentar item" que existe no alto
+ * da lista. A moldura tracejada, o rótulo e os campos chegam com a abertura.
+ *
+ * Vale só onde a tela pediu, pela classe: com a lista vazia, e na volta de uma
+ * recusa, o bloco chega aberto pelo servidor e regra nenhuma o alcança.
+ */
+function RegraDoAcrescentar() {
+  return (
+    <style href="painel-acrescentar-fechado" precedence="default">{`
+      .acrescentar-fechado:not(:target) {
+        border-width: 0;
+        padding: 0;
+        background: none;
+      }
+      .acrescentar-fechado:not(:target) > legend,
+      .acrescentar-fechado:not(:target) > .acrescentar-corpo {
+        display: none;
+      }
+      .acrescentar-fechado:target > .acrescentar-convite {
         display: none;
       }
     `}</style>
@@ -278,9 +346,24 @@ export default async function Catalogo({
     ativo: true,
   };
 
+  /*
+   * Quando o bloco de acrescentar chega aberto pelo servidor.
+   *
+   * A lista vazia, que é quando ele é o próximo passo. E a volta de uma recusa
+   * levantada dentro dele: a do nome e a do preço, que sabem o endereço delas,
+   * e a parede dos 20 itens, que sai no `Aviso` do alto porque é da tela toda e
+   * só o acrescentar levanta. Nos três casos a pessoa acabou de escrever ali, e
+   * um bloco fechado esconderia a frase e o que ela digitou.
+   */
+  const acrescentarAberto =
+    total === 0 ||
+    recusaDoItem?.onde === "novo" ||
+    params.erro === "limite_itens";
+
   return (
     <main className="mt-6">
       <RegraDoPreco />
+      {acrescentarAberto ? null : <RegraDoAcrescentar />}
       {/*
         No computador a coluna da esquerda fica sempre à vista, com as seções e
         o estado da página, então o Voltar seria um segundo caminho para onde já
@@ -489,52 +572,63 @@ export default async function Catalogo({
         */}
         <fieldset
           id="acrescentar"
-          className="mt-2 flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-dashed border-borda bg-fundo p-4 lg:scroll-mt-8"
+          className={`mt-2 flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-dashed border-borda bg-fundo p-4 lg:scroll-mt-8 ${
+            acrescentarAberto ? "" : "acrescentar-fechado"
+          }`}
         >
           <legend className="flex items-center gap-1.5 px-1 text-sm font-semibold text-texto">
             <IconeMais className="h-4 w-4 text-destaque" />
             Acrescentar item
           </legend>
 
-          {recusaDoItem?.onde === "novo" ? (
-            <FaixaDeRecado tom="recusa">{recusaDoItem.frase}</FaixaDeRecado>
-          ) : null}
+          {/*
+            O que o bloco fechado mostra: o mesmo atalho do alto da lista, agora
+            no fim dela, que é onde a linha nova vai nascer. Ele aponta para a
+            própria âncora, e é a âncora que abre o bloco. Ver `RegraDoAcrescentar`.
+          */}
+          {acrescentarAberto ? null : (
+            <div className="acrescentar-convite">
+              <AtalhoDeAcrescentar href="#acrescentar">
+                Acrescentar item
+              </AtalhoDeAcrescentar>
+            </div>
+          )}
 
-          <PreviaDoItem
-            /* Chave pelo tamanho da lista: acrescentar devolve a tela com o
-               formulário em branco, e a prévia precisa nascer em branco junto. */
-            key={`novo-${total}`}
-            negocio={negocio}
-            prefixo="novo"
-            item={emBranco}
-            sobConsulta={false}
-            chamada="Assim que você salvar, ele entra na sua página deste jeito:"
-          >
-            <Texto
-              id="novo-titulo"
-              rotulo="Nome do item"
-              dica="Por exemplo: Sessão de terapia, 50 minutos."
-              valor={null}
-              maxLength={80}
-              autoComplete="off"
-            />
-            <EscolhaDoPreco prefixo="novo" centavos={null} sobConsulta={false} />
-          </PreviaDoItem>
+          <div className="acrescentar-corpo flex flex-col gap-4">
+            {recusaDoItem?.onde === "novo" ? (
+              <FaixaDeRecado tom="recusa">{recusaDoItem.frase}</FaixaDeRecado>
+            ) : null}
 
-          {/* 64 e não 56: em 224 pixels o rótulo quebrava em duas linhas e
-              vazava da altura fixa do botão. */}
-          <div className="lg:max-w-64">
-            <Botao type="submit" formAction={acrescentarItem} tom="leve">
-              Acrescentar ao catálogo
-            </Botao>
+            <PreviaDoItem
+              /* Chave pelo tamanho da lista: acrescentar devolve a tela com o
+                 formulário em branco, e a prévia precisa nascer em branco junto. */
+              key={`novo-${total}`}
+              negocio={negocio}
+              prefixo="novo"
+              item={emBranco}
+              sobConsulta={false}
+              chamada="Assim que você salvar, ele entra na sua página deste jeito:"
+            >
+              <Texto
+                id="novo-titulo"
+                rotulo="Nome do item"
+                dica="Por exemplo: Sessão de terapia, 50 minutos."
+                valor={null}
+                maxLength={80}
+                autoComplete="off"
+              />
+              <EscolhaDoPreco prefixo="novo" centavos={null} sobConsulta={false} />
+            </PreviaDoItem>
+
+            {/* 64 e não 56: em 224 pixels o rótulo quebrava em duas linhas e
+                vazava da altura fixa do botão. */}
+            <div className="lg:max-w-64">
+              <Botao type="submit" formAction={acrescentarItem} tom="leve">
+                Acrescentar ao catálogo
+              </Botao>
+            </div>
           </div>
         </fieldset>
-
-        {total > 0 ? (
-          <BarraSalvar>
-            <Botao type="submit">Salvar o catálogo</Botao>
-          </BarraSalvar>
-        ) : null}
       </form>
 
       {/*

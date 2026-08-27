@@ -26,7 +26,7 @@ export const SECOES = [
   {
     href: "/painel/negocio",
     titulo: "Informações do negócio",
-    resumo: "Nome, frase, WhatsApp e endereço",
+    resumo: "Nome, frase, WhatsApp e onde você atende",
     Icone: IconeLoja,
   },
   {

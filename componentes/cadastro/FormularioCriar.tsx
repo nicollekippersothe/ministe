@@ -76,7 +76,7 @@ function esquecer() {
 /**
  * A tela de criar página, com a prévia ao lado no computador.
  *
- * Segura o nome, o endereço e a categoria em estado só para alimentar a prévia.
+ * Segura o nome, o link e a categoria em estado só para alimentar a prévia.
  * Os campos continuam sendo `input` de verdade, com `name` e valor próprios,
  * então **o formulário envia igual com o JavaScript desligado**: a prévia é
  * enfeite, e nunca muleta. O teste de fluxo confere isso com o JavaScript
@@ -86,7 +86,7 @@ function esquecer() {
  * estado, e o `lado` da Moldura é irmão do formulário, não filho.
  *
  * Os três `*Inicial` são o que a pessoa já tinha respondido quando o servidor
- * recusou o envio. Antes voltava só o nome, então quem errasse o endereço
+ * recusou o envio. Antes voltava só o nome, então quem errasse o link
  * perdia junto o ramo que tinha achado no meio de trinta e cinco, e recomeçava.
  */
 export function FormularioCriar({
@@ -124,17 +124,28 @@ export function FormularioCriar({
   const [livre, setLivre] = useState(livreInicial);
 
   /*
+   * Se o link foi escrito à mão, e é por isso que ele vale a pena ser guardado.
+   *
+   * O link derivado é função do nome: guardá-lo seria guardar a mesma resposta
+   * duas vezes, e voltar sete dias depois com ele no disco travaria a
+   * derivação (`CampoEndereco` trata valor de entrada como escolha anterior).
+   * Então o disco leva só o link que a pessoa escolheu, e o derivado renasce
+   * do nome guardado, ao vivo, como nasceu da primeira vez.
+   */
+  const [slugProprio, setSlugProprio] = useState(slugInicial !== "");
+
+  /*
    * As respostas ficam guardadas na aba enquanto a pessoa preenche, e é isso
    * que faz a seta de voltar ser segura.
    *
    * Quem sai daqui e volta pelo histórico do navegador chega numa página nova,
    * montada no servidor: o estado de React que segurava o ramo, o nome e o
-   * endereço morreu na saída, e voltar para um formulário em branco é pior do
+   * link morreu na saída, e voltar para um formulário em branco é pior do
    * que ficar sem voltar.
    *
-   * O endereço da página seria o lugar bonito para guardar, e foi a primeira
-   * tentativa. Ela morreu medida: `window.history.replaceState` troca a barra
-   * de endereço, e o Next guarda a busca que ele renderizou dentro do próprio
+   * A barra de endereço do navegador seria o lugar bonito para guardar, e foi
+   * a primeira tentativa. Ela morreu medida: `window.history.replaceState`
+   * troca a barra, e o Next guarda a busca que ele renderizou dentro do próprio
    * `history.state` (`renderedSearch`). No `popstate` ele restaura a dele, e a
    * pessoa volta para `/criar` em branco, com as respostas que estavam na barra
    * jogadas fora. Chamar `router.replace` a cada pausa arruma isso e cobra uma
@@ -190,11 +201,17 @@ export function FormularioCriar({
       return;
     }
     const espera = setTimeout(
-      () => guardar({ categoria: escolha, livre, nome, slug }),
+      () =>
+        guardar({
+          categoria: escolha,
+          livre,
+          nome,
+          slug: slugProprio ? slug : "",
+        }),
       300,
     );
     return () => clearTimeout(espera);
-  }, [escolha, livre, nome, slug]);
+  }, [escolha, livre, nome, slug, slugProprio]);
 
   /*
    * A prévia lê a receita, e "outro" não tem receita: ali ela mostra a padrão.
@@ -226,7 +243,7 @@ export function FormularioCriar({
         : "Que nome vai na página?";
   /*
    * O exemplo acompanha o rótulo. No rótulo neutro ele puxa para pessoa, que é
-   * quem está no centro do produto, e casa com o "camila reis" do endereço
+   * quem está no centro do produto, e casa com o "camila-reis" do link
    * logo abaixo: os dois juntos mostram como um vira o outro.
    */
   const exemploDoNome =
@@ -249,13 +266,14 @@ export function FormularioCriar({
     setRestaurado(null);
     setNome("");
     setSlug("");
+    setSlugProprio(false);
     setEscolha("");
     setLivre("");
   }
 
   return (
     <Moldura
-      titulo="Sua galeria em três perguntas"
+      titulo="Sua galeria em duas perguntas"
       voltar={{ href: "/" }}
       lado={
         <PreviaViva
@@ -298,7 +316,7 @@ export function FormularioCriar({
 
           Ele é a única resposta que decide as outras: o tipo que vai para o
           Google, o nome da seção do catálogo, se preço aparece, se a galeria
-          vem antes, se o endereço da rua faz sentido, e o rótulo do campo
+          vem antes, se "onde você atende" faz sentido, e o rótulo do campo
           logo abaixo. Perguntado por último, ele chega quando a pessoa já
           respondeu tudo, e as respostas dela é que teriam que se ajustar.
           Perguntado primeiro, a tela se ajusta a ela.
@@ -320,6 +338,16 @@ export function FormularioCriar({
           aoMudarLivre={setLivre}
         />
 
+        {/*
+          O nome e o link da página moram no mesmo bloco, porque agora são a
+          mesma resposta: um sai do outro enquanto a pessoa digita.
+
+          Separados, com o link como pergunta 3 numerada, a tela cobrava à mão
+          um dado que ela já tinha. Juntos, a pessoa escreve "Ateliê da
+          Nicolle" e vê entrais.app/atelie-da-nicolle aparecer uma linha
+          abaixo, com a placa de disponível acendendo sozinha, que é o que
+          Linktree e Beacons entregam no instante em que a conta nasce.
+        */}
         <div>
           <label htmlFor="nome">
             <Pergunta numero={2}>{rotuloDoNome}</Pergunta>
@@ -335,7 +363,7 @@ export function FormularioCriar({
             placeholder={exemploDoNome}
             aria-invalid={erroNome !== null}
             aria-describedby={erroNome ? "nome-erro" : undefined}
-            // Mesma ideia do endereço: a recusa põe o cursor no campo dela.
+            // Mesma ideia da linha do link: a recusa põe o cursor no campo dela.
             autoFocus={erroNome !== null}
             /* scroll-mb deixa a barra do botão fora do caminho quando o
                navegador traz o campo focado para a tela. A conta é a altura da
@@ -353,14 +381,18 @@ export function FormularioCriar({
               {erroNome}
             </p>
           ) : null}
-        </div>
 
-        <CampoEndereco
-          key={enderecoGuardado ? "endereco-guardado" : "endereco-novo"}
-          inicial={restaurado?.slug ?? slugInicial}
-          recusa={erroEndereco}
-          aoMudar={setSlug}
-        />
+          <CampoEndereco
+            key={enderecoGuardado ? "endereco-guardado" : "endereco-novo"}
+            inicial={restaurado?.slug ?? slugInicial}
+            derivarDe={nome}
+            recusa={erroEndereco}
+            aoMudar={(valor, proprio) => {
+              setSlug(valor);
+              setSlugProprio(proprio);
+            }}
+          />
+        </div>
 
         {/*
           As duas dúvidas que aparecem com o dedo em cima do botão, respondidas
