@@ -455,7 +455,7 @@ export default async function Horarios({
         Voltar
       </Link>
 
-      <h1 className="mt-2 text-2xl font-bold tracking-tight text-texto">
+      <h1 className="titulo mt-2 text-2xl text-texto">
         Horários
       </h1>
 

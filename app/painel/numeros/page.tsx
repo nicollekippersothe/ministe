@@ -66,7 +66,7 @@ export default async function Numeros({
 
   return (
     <div className="pb-16">
-      <h1 className="text-2xl font-bold tracking-tight text-texto">Números</h1>
+      <h1 className="titulo text-2xl text-texto">Números</h1>
       <p className="mt-1 text-sm leading-relaxed text-suave">
         {pago
           ? "Quantas pessoas abriram a sua página e quantas clicaram nos botões."

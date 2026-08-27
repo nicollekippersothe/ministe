@@ -1,3 +1,4 @@
+import { combinacao } from "@/lib/fontes";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Marca } from "@/componentes/Marca";
@@ -58,6 +59,15 @@ export function Moldura({
   voltar?: { href: string; rotulo?: string };
 }) {
   /*
+   * A marca entra no cadastro pela letra, igual ao painel. `combinacao("moderno")`
+   * define `--f-titulo` (Bricolage) e `--f-corpo` (Inter), então o título pela
+   * classe `titulo` e o nome da marca no cabeçalho pegam a face da marca, e o
+   * corpo segue na letra do aparelho. A faixa escura da direita põe o próprio
+   * `data-fonte` na página que ela prevê, então a marca daqui não a alcança.
+   */
+  const marca = combinacao("moderno");
+
+  /*
    * A coluna cresce de 448 para 512px onde existe parede ao lado, e volta ao
    * tamanho de sempre onde ela é a tela inteira. Com a faixa da direita comendo
    * 42% do monitor, a coluna maior é o que devolve equilíbrio: a folga de cada
@@ -81,11 +91,13 @@ export function Moldura({
   const coluna = (
     <div className={`flex w-full flex-col ${lado ? "" : "my-auto"}`}>
       {/*
-        O título desce um passo no celular. A serifada de contraste alto ocupa
-        mais altura que a letra do aparelho no mesmo corpo, e a 2,35rem ela
-        comia 190 dos 664 pixels do iPhone 13 antes da primeira pergunta.
+        O título carrega a letra da marca, a mesma Bricolage da tela inicial,
+        pela classe `titulo`. O peso e o espaçamento vêm de `.titulo` e do
+        `[data-fonte="moderno"]` no globals, então aqui fica só o tamanho, que
+        desce um passo no celular: a 2,35rem o título comia 190 dos 664 pixels
+        do iPhone 13 antes da primeira pergunta.
       */}
-      <h1 className="text-[2.05rem] leading-[1.06] font-semibold tracking-[-0.02em] text-balance text-texto sm:text-[2.35rem]">
+      <h1 className="titulo text-[2.05rem] leading-[1.06] text-balance text-texto sm:text-[2.35rem]">
         {titulo}
       </h1>
       {subtitulo ? (
@@ -143,7 +155,8 @@ export function Moldura({
     return (
       <div
         data-tema="areia"
-        className="min-h-dvh bg-fundo"
+        data-fonte={marca.chave}
+        className={`${marca.classe} min-h-dvh bg-fundo`}
       >
         {faixaDaEsquerda}
       </div>
@@ -153,7 +166,8 @@ export function Moldura({
   return (
     <div
       data-tema="areia"
-      className="min-h-dvh bg-fundo lg:grid lg:grid-cols-[minmax(0,1fr)_42%]"
+      data-fonte={marca.chave}
+      className={`${marca.classe} min-h-dvh bg-fundo lg:grid lg:grid-cols-[minmax(0,1fr)_42%]`}
     >
       {faixaDaEsquerda}
 

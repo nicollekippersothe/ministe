@@ -123,7 +123,7 @@ export default async function LinksEBotoesDaPagina({
         Voltar
       </Link>
 
-      <h1 className="mt-2 text-2xl font-bold tracking-tight text-texto">
+      <h1 className="titulo mt-2 text-2xl text-texto">
         Links e botões
       </h1>
       <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">

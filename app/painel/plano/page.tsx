@@ -126,7 +126,7 @@ export default async function Plano({
 
   return (
     <div className="pb-16">
-      <h1 className="text-2xl font-bold tracking-tight text-texto">Plano</h1>
+      <h1 className="titulo text-2xl text-texto">Plano</h1>
 
       <AvisoCobranca erro={params.erro} />
 

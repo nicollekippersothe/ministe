@@ -385,7 +385,7 @@ export default async function Painel({
       */}
       <div className="lg:flex lg:items-start lg:gap-10">
         <div className="min-w-0 lg:flex-1">
-          <h1 className="text-[1.75rem] leading-tight font-bold tracking-tight text-texto lg:text-[2.25rem]">
+          <h1 className="titulo text-[1.75rem] leading-tight text-texto lg:text-[2.25rem]">
             {ola}
           </h1>
           <p className="mt-2 text-[0.95rem] leading-relaxed text-suave">

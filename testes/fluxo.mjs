@@ -203,7 +203,12 @@ async function fontesBaixadas(rota) {
 }
 
 passo("a página pública baixa só duas fontes", (await fontesBaixadas("/demo")) === 2);
-passo("o painel não baixa fonte nenhuma", (await fontesBaixadas("/painel")) === 0);
+// O painel passou a carregar a letra da marca, na Fase 3 da auditoria: a
+// Bricolage do título, pela classe `titulo`. É uma só, e não as duas da tela
+// inicial, porque o corpo do texto segue na letra do aparelho e o nome da
+// marca no cabeçalho não usa `.marca`, então a Inter nunca é pedida. Antes
+// eram zero, e a mudança é a marca deixando de morrer na porta do painel.
+passo("o painel carrega só a letra de título da marca", (await fontesBaixadas("/painel")) === 1);
 // A tela inicial mostra a página de verdade dentro de um telefone, com a
 // letra de verdade. São as mesmas duas fontes da página do negócio, e não
 // mais que isso.
