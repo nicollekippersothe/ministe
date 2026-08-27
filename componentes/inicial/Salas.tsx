@@ -39,7 +39,7 @@ function Quadro({ sala, largo }: { sala: Sala; largo: boolean }) {
     >
       <div className="flex flex-col gap-6 px-6 pt-7 pb-8 sm:px-8 sm:pt-9">
         <div>
-          <p className="text-[0.7rem] font-semibold tracking-[0.18em] text-destaque uppercase">
+          <p className="text-[0.7rem] font-semibold tracking-[0.18em] text-suave uppercase">
             {sala.publico}
           </p>
           <h3 className="titulo mt-3 text-[1.7rem] leading-[1.05] text-balance text-texto sm:text-[2rem]">

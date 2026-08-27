@@ -114,7 +114,7 @@ export function CampoAbertura({
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
-            className="min-w-0 flex-1 bg-transparent text-[1.05rem] font-semibold tracking-[-0.01em] text-texto placeholder:font-normal placeholder:text-suave/60 focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent text-[1.05rem] font-semibold tracking-[-0.01em] text-texto placeholder:font-normal placeholder:text-suave focus:outline-none"
           />
         </span>
 

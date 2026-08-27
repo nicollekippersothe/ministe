@@ -30,7 +30,7 @@ export function Cartela({
 
   return (
     <div className={`border-t border-borda pt-3 ${className}`}>
-      <p className="text-[0.7rem] font-semibold tracking-[0.18em] text-destaque uppercase">
+      <p className="text-[0.7rem] font-semibold tracking-[0.18em] text-suave uppercase">
         {tipo}
       </p>
       <p className="mt-1.5 font-semibold tracking-[-0.015em] text-texto">

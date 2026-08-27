@@ -219,7 +219,7 @@ export default async function Home() {
                 className="acende titulo mt-5 text-[2.5rem] leading-[0.96] text-balance text-texto sm:text-[3.4rem] lg:text-[4.1rem]"
                 style={{ "--atraso": "160ms" } as React.CSSProperties}
               >
-                <span className="block text-destaque">Entrai.</span>
+                <span className="block">Entrai.</span>
                 O seu trabalho exposto num endereço só.
               </h1>
 
@@ -251,7 +251,7 @@ export default async function Home() {
               className="acende"
               style={{ "--atraso": "400ms" } as React.CSSProperties}
             >
-              <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase">
+              <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-suave uppercase">
                 Em cartaz agora
               </p>
               <Carrossel>

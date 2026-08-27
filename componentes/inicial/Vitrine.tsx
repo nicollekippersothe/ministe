@@ -29,7 +29,7 @@ export function Vitrine() {
               />
             ) : null}
             <div className="flex flex-1 flex-col gap-1 px-4 py-3.5">
-              <span className="text-xs font-semibold tracking-[0.12em] text-destaque uppercase">
+              <span className="text-xs font-semibold tracking-[0.12em] text-suave uppercase">
                 {tipo}
               </span>
               <span className="font-semibold text-texto">{negocio.nome}</span>
