@@ -20,6 +20,17 @@ import type { LinkExtra, Negocio } from "@/lib/tipos";
  * rótulo escrito pelo dono e o destino invisível para quem clica.
  */
 
+/*
+ * A tela de volta, e por que estas cinco ações dispensam o `onde=` que
+ * `salvarAcoes` escreve.
+ *
+ * A tela grava duas coisas, a lista e o botão do rodapé, e as duas voltam para
+ * cá. Então ela precisa saber qual seção está respondendo, senão a mesma frase
+ * de recusa de `conferirLink` apareceria nas duas ao mesmo tempo. A lista é o
+ * padrão, porque são cinco ações daqui contra uma de lá, e quem escreve o
+ * parâmetro é a exceção. O `salvo=lista` continua explícito, porque ele escolhe
+ * em qual dos dois botões de Salvar a confirmação aparece.
+ */
 const TELA = "/painel/links";
 
 function texto(f: FormData, campo: string): string | null {
@@ -89,7 +100,7 @@ export async function salvarLinks(formData: FormData) {
   const { negocio, links } = await lista(formData);
   await guardar({ ...negocio, links }, TELA);
   const volta = linhaAberta(links, formData);
-  redirect(`${TELA}?salvo=1${volta.pedaco}${volta.ancora}`);
+  redirect(`${TELA}?salvo=lista${volta.pedaco}${volta.ancora}`);
 }
 
 /**
@@ -133,7 +144,7 @@ async function mover(alvo: number, formData: FormData, passo: number) {
   const destino = alvo + passo;
 
   if (!dentroDaLista(alvo, links.length) || !dentroDaLista(destino, links.length)) {
-    redirect(`${TELA}?salvo=1`);
+    redirect(`${TELA}?salvo=lista`);
   }
 
   const novos = [...links];
@@ -155,7 +166,7 @@ export async function descerLink(alvo: number, formData: FormData) {
 
 export async function removerLink(alvo: number, formData: FormData) {
   const { negocio, links } = await lista(formData);
-  if (!dentroDaLista(alvo, links.length)) redirect(`${TELA}?salvo=1`);
+  if (!dentroDaLista(alvo, links.length)) redirect(`${TELA}?salvo=lista`);
 
   const novos = links.filter((_, i) => i !== alvo);
   await guardar({ ...negocio, links: novos }, TELA);

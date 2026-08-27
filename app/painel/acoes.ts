@@ -224,13 +224,21 @@ function lerAcao(
 export async function salvarAcoes(formData: FormData) {
   const negocio = await doDono();
 
+  /*
+   * A volta é `/painel/links`, que é onde os dois botões passaram a morar, e
+   * ela carrega `onde=botao`. A mesma tela grava também a lista de links, as
+   * duas gravações levantam as mesmas recusas de `conferirLink`, e sem o
+   * `onde` a frase de recusa apareceria nas duas seções ao mesmo tempo. O
+   * `salvo=botao` faz o par: a confirmação sai no Salvar desta seção, e nunca
+   * no da outra.
+   */
   const principal = lerAcao(formData, "principal");
   if ("erro" in principal) {
-    redirect(`/painel/acoes-botoes?erro=link_${principal.erro}`);
+    redirect(`/painel/links?erro=link_${principal.erro}&onde=botao`);
   }
   const secundaria = lerAcao(formData, "secundaria");
   if ("erro" in secundaria) {
-    redirect(`/painel/acoes-botoes?erro=link_${secundaria.erro}`);
+    redirect(`/painel/links?erro=link_${secundaria.erro}&onde=botao`);
   }
 
   await guardar(
@@ -239,9 +247,9 @@ export async function salvarAcoes(formData: FormData) {
       acaoPrincipal: principal.acao,
       acaoSecundaria: secundaria.acao,
     },
-    "/painel/acoes-botoes",
+    "/painel/links",
   );
-  redirect("/painel/acoes-botoes?salvo=1");
+  redirect("/painel/links?salvo=botao");
 }
 
 /**

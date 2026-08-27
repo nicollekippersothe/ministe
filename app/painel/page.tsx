@@ -327,20 +327,18 @@ export default async function Painel({
           convite="Dizer quando você atende"
           href="/painel/horarios"
         />
+        {/* Uma linha só desde que as duas telas viraram uma. O valor junta o
+            botão do rodapé e a lista do corpo na ordem em que a página os
+            mostra, e o convite nomeia o botão, que é o passo que a página
+            precisa para ir para o ar. */}
         <Linha
-          rotulo="Botões"
-          valor={botoes || null}
-          convite="Escolher o botão principal"
-          href="/painel/acoes-botoes"
-        />
-        <Linha
-          rotulo="Links extras"
+          rotulo="Links e botões"
           valor={
-            negocio.links.length > 0
-              ? negocio.links.map((l) => l.rotulo).join(", ")
-              : null
+            [botoes, ...negocio.links.map((l) => l.rotulo)]
+              .filter(Boolean)
+              .join(", ") || null
           }
-          convite="Apontar para o seu Instagram"
+          convite="Escolher o botão principal"
           href="/painel/links"
         />
         {/*
@@ -375,7 +373,7 @@ export default async function Painel({
         link da página, quem o enxerga, o botão de copiar e o próximo passo.
 
         No computador a banda ganha o desenho da página à direita. É o mesmo
-        `MapaDaPagina` das telas de botões e de links, com nenhum pedaço aceso:
+        `MapaDaPagina` da tela de links e botões, com nenhum pedaço aceso:
         lá ele responde "onde fica isto que estou editando", e aqui, mudo, ele
         responde "o que é isto que eu tenho". A sobra ao lado dele recebe o
         cartão do plano, e as duas colunas terminam quase juntas.

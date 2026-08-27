@@ -303,7 +303,7 @@ function VirarHoraMarcada() {
  * Escrever "atendimento com hora marcada" na página seria o produto falando
  * pela dona, e apareceria igualzinho para quem só ainda vai preencher a
  * semana. Quem diz isso na página é o botão que ela mesma nomeia, em
- * `/painel/acoes-botoes`: "Agendar horário", "Ver horários livres", "Marcar
+ * `/painel/links`: "Agendar horário", "Ver horários livres", "Marcar
  * pelo WhatsApp". A frase é dela, e por isso é verdade.
  *
  * **O botão dela aparece aqui, e é o botão de verdade.** O relato foi "clico
@@ -358,19 +358,19 @@ function HoraMarcada({ negocio }: { negocio: Negocio }) {
         </>
       ) : (
         <p className="mt-4 rounded-lg border border-dashed border-borda px-3 py-2 text-xs leading-relaxed text-suave">
-          O botão aparece assim que você escolher o que ele faz, em Botões da
-          página.
+          O botão aparece assim que você escolher o que ele faz, em Links e
+          botões.
         </p>
       )}
 
       <p className="mt-3 text-sm">
         <Link
-          href="/painel/acoes-botoes"
+          href="/painel/links"
           className="inline-flex min-h-11 items-center gap-1.5 font-medium text-destaque underline-offset-4 hover:underline"
         >
           {acoes.length > 0
-            ? "Trocar em Botões da página"
-            : "Ir para Botões da página"}
+            ? "Trocar em Links e botões"
+            : "Ir para Links e botões"}
           <IconeAvancar className="h-4 w-4" />
         </Link>
       </p>

@@ -531,11 +531,19 @@ passo(
 );
 
 // ---------------------------------------------------------------------------
-// Links extras
+// A lista de links, na tela que ela divide com os botões do rodapé
 // ---------------------------------------------------------------------------
 
 await p.goto(`${BASE}/painel/links`, { waitUntil: "networkidle" });
 const linksAntes = await p.locator("fieldset[id^=link-]").count();
+
+passo(
+  "os botões do rodapé e a lista de links dividem uma tela só",
+  (await p.locator('button:has-text("Salvar o botão")').count()) === 1 &&
+    (await p.locator('button:has-text("Salvar os links")').count()) === 1 &&
+    (await p.locator("#secundaria-tipo").count()) === 1 &&
+    (await p.locator("#novo-url").count()) === 1,
+);
 
 await p.fill("#novo-rotulo", "Ver a agenda completa");
 await p.fill("#novo-url", "bit.ly/agenda");
@@ -570,6 +578,12 @@ await p.waitForURL(/removido=1/);
 passo(
   "remover devolve a lista de links ao tamanho de antes",
   (await p.locator("fieldset[id^=link-]").count()) === linksAntes,
+);
+
+const rotaAntiga = await p.goto(`${BASE}/painel/acoes-botoes`);
+passo(
+  "o endereço separado dos botões deixou de existir",
+  rotaAntiga.status() === 404,
 );
 
 // ---------------------------------------------------------------------------
@@ -615,11 +629,14 @@ passo("publicar coloca de volta no ar", dentro.status() === 200);
 // anunciador de rota do Next usa esse mesmo papel e aparece vazio antes da
 // resposta. Quem chega junto com o resultado é a URL.
 
-await p.goto(`${BASE}/painel/acoes-botoes`, { waitUntil: "networkidle" });
+// Os botões do rodapé e a lista de links passaram a dividir uma tela só, com um
+// Salvar em cada seção, então o seletor precisa nomear qual dos dois: "Salvar"
+// sozinho casaria com os dois botões e o Playwright recusaria a escolha.
+await p.goto(`${BASE}/painel/links`, { waitUntil: "networkidle" });
 await p.selectOption("#secundaria-tipo", "link");
 
 await p.fill("#secundaria-url", "javascript:alert(1)");
-await p.click('button:has-text("Salvar")');
+await p.click('button:has-text("Salvar o botão")');
 await p.waitForURL(/erro=link_/);
 passo(
   "script no lugar do link é recusado ao salvar",
@@ -627,7 +644,7 @@ passo(
 );
 
 await p.fill("#secundaria-url", "bit.ly/promo");
-await p.click('button:has-text("Salvar")');
+await p.click('button:has-text("Salvar o botão")');
 await p.waitForURL(/erro=link_encurtador/);
 passo(
   "link encurtado é recusado, dizendo o motivo",
@@ -635,8 +652,8 @@ passo(
 );
 
 await p.fill("#secundaria-url", "helena-vasques.com.br");
-await p.click('button:has-text("Salvar")');
-await p.waitForURL(/salvo=1/);
+await p.click('button:has-text("Salvar o botão")');
+await p.waitForURL(/salvo=botao/);
 passo(
   "endereço sem https é aceito e completado",
   (await p.inputValue("#secundaria-url")) === "https://helena-vasques.com.br/",

@@ -1,37 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { Escolha, Texto } from "./Campos";
+import { useState, type ReactNode } from "react";
+import { BarraSalvar, Botao, Escolha, Texto } from "./Campos";
 import { MapaDaPagina } from "./MapaDaPagina";
 import { BotaoAcao } from "@/componentes/BarraAcoes";
 import { acoesDoRodape } from "@/lib/acoes";
 import type { Acao, IconeLink, Negocio, TipoAcao } from "@/lib/tipos";
 
 /**
- * Os dois botões do rodapé, com o rodapé desenhado ao lado.
+ * A tela de links e botões inteira: os dois lugares da página que levam para
+ * outro lugar, um desenho só, e um formulário para cada um.
  *
- * **É o conserto de "eu clico e ele não tem o comportamento esperado".** A tela
- * era seis campos e um Salvar. A pessoa escolhia "Abrir um link", escrevia o
- * texto, salvava, lia "Alterações salvas" e ficava sem saber que botão tinha
- * acabado de fazer: para ver o resultado ela precisava abrir a prévia, rolar até
- * o fim e olhar a barra. O recado de salvo confirma a gravação, e o que ela
- * queria confirmar era a aparência.
+ * **Eram duas telas, e a fusão é o item 6 da auditoria.** "Botões da página" e
+ * "Links extras" viviam em endereços separados, e cada uma abria com um
+ * parágrafo explicando que ela não era a outra, mais um link para a outra. Uma
+ * tela que precisa dizer o que ela não é está pagando o preço da divisão: a
+ * comparação que responderia a dúvida dependia de a pessoa guardar de cabeça o
+ * desenho da tela anterior, e o que ela guardava era o texto, que era
+ * justamente a parte que confundia.
  *
- * Então o botão está na tela o tempo todo, e é o `BotaoAcao` da página pública,
- * resolvido pela mesma `acoesDoRodape`. Trocar o tipo, escrever o texto ou
- * escolher outro ícone muda o desenho na mesma tecla, e aí o Salvar deixa de ser
- * o momento em que ela descobre o resultado.
+ * Juntas, o desenho responde sozinho. `MapaDaPagina` acende os dois pedaços ao
+ * mesmo tempo, com o rótulo de cada um em cima, e cada seção do formulário leva
+ * o mesmo nome do pedaço que ela edita. A pergunta "esta é a que fica embaixo
+ * ou a que fica no meio" deixa de existir, porque as duas estão à vista.
+ *
+ * **Dois formulários, e nunca um.** É o que a tela antiga defendia com razão, e
+ * continua valendo depois da fusão: os dois botões do rodapé moram em jsonb na
+ * linha do negócio, aceitam WhatsApp e telefone além de link e têm a lista de
+ * ícones inteira; os links extras moram em tabela própria, com o limite do
+ * plano num gatilho e cinco ícones numa constraint. Um Salvar só responderia
+ * por dois limites e duas frases de recusa, e a parede dos links apareceria na
+ * cara de quem estava mexendo no botão do WhatsApp. Some a isso que acrescentar
+ * e mover são botões que enviam o formulário dos links: dentro de um formulário
+ * único, acrescentar um link descartaria em silêncio o botão que a pessoa
+ * estava editando. Então cada seção grava a sua, e cada Salvar diz no rótulo o
+ * que ele grava.
+ *
+ * **O desenho continua vivo, e por isso esta camada é de cliente.** Trocar o
+ * tipo do botão, escrever o texto ou escolher outro ícone muda o desenho na
+ * mesma tecla. Era o conserto de "eu clico e ele não tem o comportamento
+ * esperado": antes, para ver que botão tinha acabado de fazer, a pessoa
+ * precisava abrir a prévia e rolar até o fim.
  *
  * **Os campos que aquele tipo de botão usa são os campos que ficam na tela.** O
- * endereço e o ícone só valem para "Abrir um link": no WhatsApp o destino sai do
- * número gravado na tela do negócio, e no telefone sai do telefone. Os dois
+ * endereço e o ícone só valem para "Abrir um link": no WhatsApp o destino sai
+ * do número gravado na tela do negócio, e no telefone sai do telefone. Os dois
  * campos ficavam ali, brancos, pedindo um endereço que a gravação ia descartar,
- * e é o tipo de campo que faz a pessoa achar que preencheu errado. Com o tipo em
- * "Deixar este botão de fora", o bloco fecha inteiro, porque não sobra pergunta.
- *
- * Quem grava continua sendo `salvarAcoes` lendo o formulário. Esta camada existe
- * para a tela mostrar o que está sendo montado, e o desenho pode sumir inteiro
- * que a gravação continua a mesma.
+ * e é o tipo de campo que faz a pessoa achar que preencheu errado. Com o tipo
+ * em "Deixar este botão de fora", o bloco fecha inteiro, porque não sobra
+ * pergunta.
  */
 
 const TIPOS: Array<{ valor: TipoAcao | "nenhum"; rotulo: string }> = [
@@ -178,7 +195,33 @@ function Bloco({
   );
 }
 
-export function BotoesDaPagina({ negocio }: { negocio: Negocio }) {
+export function LinksEBotoes({
+  negocio,
+  salvarBotoes,
+  avisoDosBotoes,
+  recadoDosBotoes,
+  previaDosLinks,
+  children,
+}: {
+  negocio: Negocio;
+  /**
+   * A Server Action que grava os dois botões do rodapé.
+   *
+   * Chega por prop, e não por import, porque o formulário dos botões precisa
+   * ficar dentro desta camada: são os campos que somem e aparecem conforme o
+   * tipo escolhido, e isso é estado de cliente. A seção dos links entra por
+   * `children`, já montada no servidor, e leva a ação dela dentro.
+   */
+  salvarBotoes: (formData: FormData) => void;
+  /** A recusa da gravação dos botões, quando houve uma. */
+  avisoDosBotoes?: ReactNode;
+  /** A confirmação da gravação dos botões, encostada no botão que a produziu. */
+  recadoDosBotoes?: string;
+  /** A seção Links de verdade, para o pedaço aceso do desenho. */
+  previaDosLinks: ReactNode;
+  /** A seção da lista de links, com o formulário dela. */
+  children: ReactNode;
+}) {
   const [principal, setPrincipal] = useState<Escrita>(
     comoEstava(negocio.acaoPrincipal, "whatsapp"),
   );
@@ -194,6 +237,11 @@ export function BotoesDaPagina({ negocio }: { negocio: Negocio }) {
    * campo a menos funcionando enquanto o JavaScript ainda vem. Então os campos
    * continuam iguais aos das outras telas, e esta camada só escuta o que sobe
    * deles e copia para o desenho.
+   *
+   * O ouvinte cobre a tela inteira, e a seção dos links passa por ele também.
+   * Os campos de lá sobem com nome `link-3-rotulo` e `novo-url`, e o dono
+   * lido do prefixo nunca é "principal" nem "secundaria", então eles saem
+   * ignorados na primeira comparação.
    */
   function ler(evento: React.FormEvent<HTMLDivElement>) {
     const alvo = evento.target;
@@ -249,44 +297,48 @@ export function BotoesDaPagina({ negocio }: { negocio: Negocio }) {
     (e) => e.tipo === "link" && e.url.trim() === "",
   );
 
-  const mapa = (
-    <MapaDaPagina
-      negocio={negocio}
-      zona="barra"
-      chamada="Na sua página eles ficam presos embaixo, por cima do que estiver rolando:"
-    >
-      {acoes.length > 0 ? (
-        acoes.map((a, i) => (
-          <BotaoAcao
-            key={`${a.rotulo}-${i}`}
-            acao={a}
-            principal={i === 0}
-            compacto
-            interativo={false}
-          />
-        ))
-      ) : (
-        <p className="rounded-lg border border-dashed border-borda px-3 py-2 text-[0.7rem] leading-relaxed text-suave">
-          {aviso}
-        </p>
-      )}
-    </MapaDaPagina>
-  );
-
   return (
     <div
       onInput={ler}
       onChange={ler}
-      className="mt-6 flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start lg:gap-8"
+      className="mt-6 flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start lg:gap-8"
     >
       {/*
-        No computador o desenho fica na coluna da direita e acompanha a rolagem,
-        então ele continua à vista enquanto a pessoa mexe no segundo botão. No
-        celular ele vem antes dos campos: é o que responde "onde isso aparece"
-        antes de a primeira escolha ser feita.
+        No computador o desenho fica na coluna da direita e acompanha a rolagem
+        das duas seções, porque as duas moram na mesma linha da grade: ele
+        continua à vista enquanto a pessoa desce do botão do rodapé para a lista
+        de links, que é exatamente onde a comparação entre os dois é feita. No
+        celular ele vem antes de tudo: é o que responde "onde isso aparece"
+        antes da primeira escolha.
+
+        `lg:items-start` na grade é o que faz o `sticky` valer: em `stretch` a
+        coluna cresceria até a altura da linha inteira e o grude ficaria sem
+        folga para acontecer.
       */}
       <div className="lg:order-2 lg:sticky lg:top-8">
-        {mapa}
+        <MapaDaPagina
+          negocio={negocio}
+          zona="ambas"
+          chamada="Os dois lugares, na sua página:"
+          barra={
+            acoes.length > 0 ? (
+              acoes.map((a, i) => (
+                <BotaoAcao
+                  key={`${a.rotulo}-${i}`}
+                  acao={a}
+                  principal={i === 0}
+                  compacto
+                  interativo={false}
+                />
+              ))
+            ) : (
+              <p className="rounded-lg border border-dashed border-borda px-3 py-2 text-[0.7rem] leading-relaxed text-suave">
+                {aviso}
+              </p>
+            )
+          }
+          links={previaDosLinks}
+        />
         {esperandoEndereco ? (
           <p className="mt-2 inline-flex rounded-full bg-destaque/10 px-2.5 py-1 text-[0.7rem] font-semibold text-destaque">
             Esperando o endereço do link
@@ -294,21 +346,50 @@ export function BotoesDaPagina({ negocio }: { negocio: Negocio }) {
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-4 lg:order-1">
-        <Bloco
-          prefixo="principal"
-          titulo="Botão principal"
-          explicacao="Aparece preenchido, com destaque."
-          exemploRotulo="Marcar uma sessão"
-          escrita={principal}
-        />
-        <Bloco
-          prefixo="secundaria"
-          titulo="Botão secundário"
-          explicacao="Aparece contornado, embaixo do principal."
-          exemploRotulo="Ver os horários livres"
-          escrita={secundaria}
-        />
+      <div className="flex flex-col gap-10 lg:order-1">
+        {/*
+          O título de cada seção repete, palavra por palavra, o rótulo que o
+          desenho põe em cima do pedaço aceso. É o que liga uma coisa na outra
+          sem gastar uma frase explicando a ligação.
+        */}
+        <section aria-labelledby="titulo-botao">
+          <h2
+            id="titulo-botao"
+            className="text-lg font-semibold tracking-tight text-texto"
+          >
+            O botão preso no rodapé
+          </h2>
+          <p className="mt-1 max-w-prose text-sm leading-relaxed text-suave">
+            Fica embaixo o tempo todo, por cima do que estiver rolando. É por
+            ele que a pessoa fala com você.
+          </p>
+
+          {avisoDosBotoes}
+
+          <form action={salvarBotoes} className="mt-4 flex flex-col gap-4">
+            <Bloco
+              prefixo="principal"
+              titulo="Botão principal"
+              explicacao="Aparece preenchido, com destaque."
+              exemploRotulo="Marcar uma sessão"
+              escrita={principal}
+            />
+            <Bloco
+              prefixo="secundaria"
+              titulo="Botão secundário"
+              explicacao="Aparece contornado, embaixo do principal."
+              exemploRotulo="Ver os horários livres"
+              escrita={secundaria}
+            />
+            {/* O rótulo diz o que este Salvar grava. São dois na tela, um por
+                seção, e "Salvar" sozinho nos dois deixaria a escolha no ar. */}
+            <BarraSalvar recado={recadoDosBotoes}>
+              <Botao type="submit">Salvar o botão</Botao>
+            </BarraSalvar>
+          </form>
+        </section>
+
+        {children}
       </div>
     </div>
   );

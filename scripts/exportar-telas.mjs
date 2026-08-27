@@ -200,13 +200,13 @@ const TELAS = [
   },
   {
     id: "link-recusado",
-    rota: "/painel/acoes-botoes",
+    rota: "/painel/links",
     nome: "Link recusado",
     grupo: "Painel do dono",
     preparar: async (p) => {
       await p.selectOption("#secundaria-tipo", "link");
       await p.fill("#secundaria-url", "bit.ly/promo");
-      await p.click('button:has-text("Salvar")');
+      await p.click('button:has-text("Salvar o botão")');
       await p.waitForURL(/erro=link_/);
     },
     nota: "Todo link digitado passa por lib/links.ts antes de virar botão. Seguem em frente http e https com o domínio à vista; encurtador (que esconde o destino), usuário antes do arroba e IP puro ficam de fora, cada um com o motivo escrito na tela. A conferência na Google Safe Browsing está escrita e espera a chave.",
@@ -218,7 +218,7 @@ const TELAS = [
     grupo: "Painel do dono",
     nota: "Funciona de verdade, e agora com login: cada pessoa entra com o Google e enxerga a própria página. A separação mora na RLS do banco, um andar abaixo da tela, então ela vale igual para quem chamar a API direto com a chave pública. O cartão de cima mostra o endereço, o estado (rascunho ou no ar) e o botão que troca um pelo outro.",
     aviso:
-      "Editar catálogo, fotos e links entra nas próximas etapas. Hoje o painel cobre informações do negócio, horários, botões e letras.",
+      "Editar catálogo, fotos e links entra nas próximas etapas. Hoje o painel cobre informações do negócio, horários, links e botões, e letras.",
   },
   {
     id: "negocio",
@@ -246,11 +246,11 @@ const TELAS = [
   },
   {
     id: "acoes",
-    rota: "/painel/acoes-botoes",
-    nome: "Botões da página",
+    rota: "/painel/links",
+    nome: "Links e botões",
     grupo: "Painel do dono",
     semFixos: true,
-    nota: "O botão do rodapé vai além do WhatsApp: pode virar iFood, agenda, link de parceiro ou uma ligação, e ainda cabe um segundo botão embaixo.",
+    nota: "Os dois lugares da página que levam para outro lugar, numa tela só, com o desenho da página acendendo os dois. O botão do rodapé vai além do WhatsApp: pode virar iFood, agenda, link de parceiro ou uma ligação, e ainda cabe um segundo botão embaixo. A lista do corpo é para onde a página aponta.",
   },
   {
     id: "aparencia",

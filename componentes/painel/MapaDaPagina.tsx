@@ -5,16 +5,18 @@ import type { Negocio } from "@/lib/tipos";
  * Onde, na página, mora o que esta tela edita.
  *
  * **Existe por causa de uma pergunta da dona do produto: "Links extras parece
- * duplicado".** Duas telas do painel põem botão com link na página, e as duas se
- * apresentavam por texto. "Os botões que ficam presos no rodapé" e "os botões da
- * seção Links, no fim da sua página" descrevem lugares diferentes, e quem lê
+ * duplicado".** Duas telas do painel punham botão com link na página, e as duas
+ * se apresentavam por texto. "Os botões que ficam presos no rodapé" e "os botões
+ * da seção Links, no fim da sua página" descrevem lugares diferentes, e quem lê
  * isso no meio de um formulário guarda a mesma coisa das duas: botão com link.
  * A diferença é de posição na página, e posição se resolve mostrando.
  *
- * Então as duas telas passam a abrir com o mesmo desenho da página inteira, e o
- * que muda entre elas é qual pedaço está aceso. Lado a lado na cabeça de quem
- * usa, a resposta aparece sozinha: uma coisa fica presa embaixo o tempo todo, a
- * outra é uma lista dentro do corpo, perto do fim.
+ * **Depois as duas telas viraram uma só, e o desenho passou a acender os dois
+ * pedaços ao mesmo tempo.** Enquanto eram duas, a comparação dependia de a
+ * pessoa guardar de cabeça o desenho da tela anterior, e ela guardava o texto,
+ * que era justamente a parte que confundia. Com `zona="ambas"`, a resposta está
+ * inteira num desenho só: uma coisa fica presa embaixo o tempo todo, a outra é
+ * uma lista dentro do corpo, perto do fim.
  *
  * O pedaço aceso recebe o componente de verdade da página pública, com os dados
  * de verdade: `BotaoAcao` na barra, `LinksExtras` na seção. O resto do desenho é
@@ -78,11 +80,14 @@ export function MapaDaPagina({
   negocio,
   zona,
   chamada,
-  children,
+  barra,
+  links,
 }: {
   negocio: Negocio;
   /**
-   * Qual pedaço acende: a barra presa embaixo, a lista de links, ou nenhum.
+   * Qual pedaço acende: a barra presa embaixo, a lista de links, os dois, ou
+   * nenhum. "ambas" é a forma da tela de links e botões, e é ela que responde
+   * a pergunta que deu origem a este componente.
    *
    * Com "nenhuma" o desenho sai inteiro em silhueta, e aí ele deixa de
    * responder "onde fica isto que estou editando" e passa a responder "o que é
@@ -90,12 +95,16 @@ export function MapaDaPagina({
    * com a página já montada vê o formato dela ao lado do endereço, e a tela se
    * apresenta como a casa da página em vez de uma lista de campos.
    */
-  zona: "barra" | "links" | "nenhuma";
+  zona: "barra" | "links" | "ambas" | "nenhuma";
   /** A frase acima do desenho. */
   chamada: string;
-  /** O componente de verdade que entra no pedaço aceso. */
-  children?: ReactNode;
+  /** O rodapé de verdade, quando ele está aceso. */
+  barra?: ReactNode;
+  /** A seção Links de verdade, quando ela está acesa. */
+  links?: ReactNode;
 }) {
+  const acesa = (qual: "barra" | "links") => zona === qual || zona === "ambas";
+
   return (
     /*
      * `inert` pelo mesmo motivo de toda prévia do painel: o que entra no pedaço
@@ -130,11 +139,11 @@ export function MapaDaPagina({
 
           <Linha />
 
-          <Zona lugar="No corpo, perto do fim" acesa={zona === "links"}>
+          <Zona lugar="No corpo, perto do fim" acesa={acesa("links")}>
             <div className="flex flex-col gap-1.5">
               <p className="text-[0.7rem] font-medium text-suave">Links</p>
-              {zona === "links" ? (
-                <div className={MIUDO}>{children}</div>
+              {acesa("links") ? (
+                <div className={MIUDO}>{links}</div>
               ) : (
                 <>
                   <Bloco className="h-6 rounded-lg" />
@@ -154,10 +163,10 @@ export function MapaDaPagina({
           diferença que esta tela precisa mostrar.
         */}
         <div className="border-t-2 border-borda bg-fundo px-3 py-3">
-          <Zona lugar="Preso no rodapé" acesa={zona === "barra"}>
+          <Zona lugar="Preso no rodapé" acesa={acesa("barra")}>
             <div className="flex flex-col gap-1.5">
-              {zona === "barra" ? (
-                children
+              {acesa("barra") ? (
+                barra
               ) : (
                 <Bloco className="h-7 rounded-full" />
               )}

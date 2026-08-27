@@ -18,7 +18,7 @@ export const metadata: Metadata = {
  * No celular é uma coluna só, e a navegação mora dentro de /painel: a pessoa
  * entra numa seção, edita, volta. No computador a navegação vira a coluna da
  * esquerda, fixa, e o vaivém desaparece: dá para ir de Horários direto para
- * Botões, com o selo de No ar sempre à vista.
+ * Links e botões, com o selo de No ar sempre à vista.
  *
  * A coluna some abaixo de lg em vez de encolher, porque no celular ela seria a
  * mesma lista duas vezes na mesma tela.

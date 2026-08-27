@@ -14,7 +14,7 @@ import type { Negocio } from "@/lib/tipos";
  *
  * No celular é o conteúdo de /painel, e a pessoa volta para cá entre uma edição
  * e outra. No computador vira a coluna da esquerda, sempre à vista, e esse
- * vaivém desaparece: dá para ir de Horários direto para Botões, e o link da
+ * vaivém desaparece: dá para ir de Horários direto para Links, e o link da
  * página continua na tela enquanto se edita.
  *
  * Mesmo componente nos dois, e de propósito. Duas versões do estado da página
