@@ -167,7 +167,12 @@ function Criado({ negocio }: { negocio: Negocio }) {
       role="status"
       className="mt-4 rounded-xl bg-aberto-fundo px-4 py-3 text-aberto-texto"
     >
-      <p className="text-[1.05rem] leading-snug font-semibold break-all">
+      {/* `break-words`, e nunca `break-all`: com `break-all` o navegador parte
+          onde a linha acabar, e numa tela de 390 pixels o link saía cortado no
+          meio ("entrais.app/de" / "mo"). Assim ele desce inteiro para a linha
+          de baixo, e só um endereço longo demais para a largura chega a ser
+          partido. */}
+      <p className="text-[1.05rem] leading-snug font-semibold break-words">
         A sua página nasceu em {DOMINIO_PUBLICO}/{negocio.slug}
       </p>
       <p className="mt-1.5 text-sm leading-relaxed">

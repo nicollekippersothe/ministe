@@ -15,15 +15,15 @@ type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
  *
  * **O link é derivado, e a linha continua editável.** Enquanto ninguém mexer
  * aqui, o valor sai de `derivarDe`, que é o nome digitado logo acima, passado
- * pela mesma `normalizar` de lib/slug.ts que o servidor usa no envio. Na
- * primeira tecla digitada nesta linha a derivação para para sempre: quem
- * escolheu o próprio link fica com ele, e a tecla seguinte no nome deixa de
- * apagar o que a pessoa acabou de escrever.
+ * pela mesma `normalizar` de lib/slug.ts que o servidor usa no envio. A
+ * primeira tecla digitada nesta linha encerra a derivação: quem escolheu o
+ * próprio link fica com ele, e a tecla seguinte no nome deixa de apagar o que
+ * a pessoa acabou de escrever.
  *
- * Antes esta era a pergunta 3, um campo em branco de 65px de altura com
- * enunciado próprio, e a pessoa escrevia à mão uma coisa que o nome já dizia.
- * Linktree e Beacons entregam a página com endereço no instante em que a conta
- * nasce; aqui ela nasce junto com o nome, uma linha abaixo dele.
+ * Antes esta era a pergunta 3, com enunciado numerado e um campo em branco de
+ * 55px, e a pessoa escrevia à mão uma coisa que o nome logo acima já dizia.
+ * Linktree e Beacons entregam a página com link no instante em que a conta
+ * nasce. Aqui ele nasce junto com o nome, na linha debaixo.
  *
  * O domínio fica na linha de baixo, e continua fora da caixa. Dentro dela ele
  * comeria espaço de digitação no celular, e diria uma mentira nos segundos em
