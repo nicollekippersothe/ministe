@@ -169,6 +169,7 @@ export default async function Informacoes({
           <Texto
             id="nome"
             rotulo="Nome do negócio"
+            autoCapitalize="words"
             valor={negocio.nome}
             required
             maxLength={80}
@@ -177,6 +178,7 @@ export default async function Informacoes({
           <AreaTexto
             id="frase"
             rotulo="Uma frase curta"
+            autoCapitalize="sentences"
             dica="Aparece abaixo do nome. Em branco, a linha some da página."
             valor={negocio.frase}
             maxLength={160}
@@ -227,6 +229,7 @@ export default async function Informacoes({
             <Texto
               id="endereco"
               rotulo="Rua, número e bairro"
+              autoCapitalize="words"
               valor={negocio.endereco}
               maxLength={120}
               autoComplete="street-address"
@@ -244,6 +247,8 @@ export default async function Informacoes({
               <Texto
                 id="cidade"
                 rotulo="Cidade"
+                autoComplete="address-level2"
+                autoCapitalize="words"
                 valor={negocio.cidade}
                 maxLength={60}
               />
@@ -252,6 +257,8 @@ export default async function Informacoes({
               <Texto
                 id="estado"
                 rotulo="UF"
+                autoComplete="address-level1"
+                autoCapitalize="characters"
                 valor={negocio.estado}
                 maxLength={2}
                 pattern="[A-Za-z]{2}"

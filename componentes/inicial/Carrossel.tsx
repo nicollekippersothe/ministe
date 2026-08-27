@@ -117,7 +117,7 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
               >
                 <span
                   aria-hidden
-                  className={`block h-1.5 rounded-full transition-all ${
+                  className={`block h-1.5 rounded-full transition-[width,background-color] duration-300 ${
                     i === atual ? "w-5 bg-texto" : "w-1.5 bg-texto/30"
                   }`}
                 />

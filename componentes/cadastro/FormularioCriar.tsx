@@ -361,6 +361,10 @@ export function FormularioCriar({
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             autoComplete={nomeDe === "pessoa" ? "name" : nomeDe === "lugar" ? "organization" : undefined}
+            /* Nome próprio e nome de negócio começam cada palavra com
+               maiúscula: o teclado do celular já entrega "Camila Reis" em vez
+               de "camila reis". É o "reduza o erro na entrada" do HIG. */
+            autoCapitalize="words"
             placeholder={exemploDoNome}
             aria-invalid={erroNome !== null}
             aria-describedby={erroNome ? "nome-erro" : undefined}
