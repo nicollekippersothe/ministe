@@ -32,13 +32,19 @@ export function PreviaAoVivo({ chave }: { chave: string }) {
         formulário. O `overflow-hidden` mais o raio recortam o iframe no formato
         do aparelho.
       */}
-      <div className="mx-auto w-[320px] max-w-full overflow-hidden rounded-[2rem] border-[6px] border-texto/85 bg-fundo shadow-xl">
+      {/*
+        A moldura de celular, refinada para padrão Apple: bisel fino e escuro em
+        vez da borda grossa, cantos bem arredondados, e uma sombra funda e sem
+        cor que faz o aparelho pousar na tela. O `p-[3px]` é o bisel; o miolo é
+        recortado no formato do aparelho pelo raio de dentro.
+      */}
+      <div className="mx-auto w-[300px] max-w-full rounded-[2.6rem] bg-neutral-900 p-[3px] shadow-[0_24px_60px_-18px_rgba(0,0,0,0.4)]">
         <iframe
           key={chave}
           src="/painel/previa?nua=1"
           title="Prévia da sua página"
           loading="lazy"
-          className="h-[640px] w-full border-0"
+          className="h-[600px] w-full rounded-[2.4rem] border-0 bg-fundo"
         />
       </div>
     </div>

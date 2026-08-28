@@ -5,9 +5,14 @@ import type { Negocio } from "@/lib/tipos";
 /**
  * A barra fixa no rodape da pagina publica.
  *
- * Ate duas acoes: a primeira cheia, a segunda contornada. So o WhatsApp usa o
- * verde, porque verde ali significa WhatsApp e nao "botao principal". Quando a
- * acao principal e o iFood ou uma agenda, ela sai na cor da marca.
+ * Ate duas acoes: a primeira cheia, a segunda contornada.
+ *
+ * **O botao principal e preto, padrao Apple, e nao mais um pill verde gritante.**
+ * A dona apontou que o verde do WhatsApp chamava atencao demais na base branca.
+ * Agora o botao principal e da cor da tinta, e o verde fica so no icone do
+ * WhatsApp, onde continua dizendo "isto abre o WhatsApp" sem dominar a tela. O
+ * botao secundario ganha a cor auxiliar da marca, a marsala, no texto e no
+ * icone. Uma cor forte por tela, e nunca duas competindo.
  *
  * O data-evento e o gancho da contagem de cliques. Nao carrega JavaScript.
  */
@@ -43,16 +48,17 @@ export function BotaoAcao({
    * superficie sem anunciar efeito.
    */
   const cor = !principal
-    ? "border border-borda bg-superficie text-texto hover:border-texto/25"
-    : acao.whatsapp
-      ? "bg-zap text-white shadow-[0_1px_2px_rgba(28,25,23,0.16)] hover:bg-zap-forte"
-      : "bg-destaque text-white shadow-[0_1px_2px_rgba(28,25,23,0.16)] hover:brightness-95";
+    ? "border border-borda bg-superficie text-destaque hover:border-destaque/40"
+    : "bg-texto text-superficie shadow-[0_1px_2px_rgba(28,25,23,0.16)] hover:brightness-110";
 
   const tamanhoIcone = compacto ? "h-4 w-4" : "h-5 w-5";
+  // O icone do WhatsApp fica verde no botao preto: o verde vira detalhe de
+  // reconhecimento, e nao o botao inteiro.
+  const corIcone = principal && acao.whatsapp ? "text-zap" : "";
   const miolo = (
     <>
       {acao.whatsapp ? (
-        <IconeWhatsapp className={tamanhoIcone} />
+        <IconeWhatsapp className={`${tamanhoIcone} ${corIcone}`} />
       ) : (
         <IconeDoLink icone={acao.icone} className={tamanhoIcone} />
       )}

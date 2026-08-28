@@ -38,31 +38,34 @@
 :root,
 [data-tema="areia"] {
   /*
-   * O tema claro afinado para padrão Apple, medido no navegador.
+   * O tema claro, padrão Apple: branco e preto neutros com uma cor auxiliar.
    *
-   * A dona pediu "mais elegante, padrão apple, cores menos feias", e a
-   * auditoria achou três coisas: o creme era amarelo demais (lia como papel
-   * pardo), o cinza de apoio estava no fio do AA (4,54, lia sujo) e o marrom
-   * era laranja demais e aparecia em tudo. Os quatro valores abaixo movem a
-   * paleta de "bege artesanal" para "quase branco quente com um acento
-   * contido", mantendo a identidade e o contraste. Cada troca foi conferida:
-   * texto sobre o fundo segue em 15,5, o cinza sobe para 5,1 sobre o fundo, e o
-   * barro sobe para 8,1 sobre o branco. Nada cruza abaixo do AA, então os 100
-   * de acessibilidade seguem de pé.
+   * A dona pediu para tirar o marrom do site e ir "apple mesmo, branco e preto
+   * com cor auxiliar pra destaque", e nomeou o gosto: ouro/diamante e um rosa
+   * marsala. Ouro puro reprova no contraste (fica olivado e some em texto
+   * pequeno), então a cor auxiliar interativa é a marsala, que é joia, elegante
+   * e passa no AA, e o ouro fica reservado para um detalhe decorativo em
+   * `--c-ouro`, onde contraste não pesa.
+   *
+   * A base saiu do creme quente para um quase-branco neutro, e o cinza de apoio
+   * para o cinza de sistema. Contrastes conferidos: texto sobre o fundo em 16+,
+   * o cinza em 4,9 sobre o fundo, a marsala em 6,6 sobre o branco. Nada cruza
+   * abaixo do AA, então os 100 de acessibilidade seguem de pé.
    */
-  --c-fundo: #f5f2ec; /* Areia, menos amarela */
+  --c-fundo: #f6f5f3; /* quase-branco neutro */
   --c-superficie: #ffffff; /* Branco */
-  --c-texto: #1c1917; /* Tinta */
-  --c-suave: #6b645f; /* Pedra, um passo mais escura: 5,1 sobre o fundo */
-  --c-borda: #e7e2d8; /* fio mais limpo, menos amarelo */
-  --c-destaque: #6f4526; /* Barro mais fundo e menos laranja */
+  --c-texto: #1b1b1b; /* Tinta neutra */
+  --c-suave: #68686d; /* cinza de apoio neutro: 4,9 sobre o fundo */
+  --c-borda: #e6e6e4; /* fio neutro */
+  --c-destaque: #8f4451; /* Marsala, a cor auxiliar: 6,6 sobre o branco */
+  /* Ouro só para detalhe decorativo, nunca para texto: contraste não se aplica. */
+  --c-ouro: #b08d3a;
   --c-zap: #0e7a55; /* Conversa */
   --c-zap-forte: #0b6647;
   --c-aberto-fundo: #e4f2ea;
   --c-aberto-texto: #0b6647;
-  --c-fechado-fundo: #eae4d8;
-  /* Pedra sobre esse fundo dá 4,08 e não passa. Um passo mais escura, 4,82. */
-  --c-fechado-texto: #67615c;
+  --c-fechado-fundo: #ececea;
+  --c-fechado-texto: #6a6a6e;
 }
 
 /*
