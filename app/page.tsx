@@ -127,7 +127,7 @@ const PASSOS = [
  */
 const SALA_CRIADOR: Sala = {
   publico: "Vende o próprio trabalho",
-  titulo: "A galeria abre a página.",
+  titulo: "A sua galeria ocupa a tela inteira.",
   itens: [
     "As suas fotos em tamanho grande, na ordem que você escolher.",
     "Catálogo com preço, e um botão de WhatsApp em cada peça.",
@@ -139,7 +139,7 @@ const SALA_CRIADOR: Sala = {
 
 const SALA_LOJA: Sala = {
   publico: "Tem porta na rua",
-  titulo: "O endereço abre a página.",
+  titulo: "O endereço e o mapa vêm primeiro.",
   itens: [
     "Endereço com o mapa a um toque, e o aberto agora calculado na hora.",
     "Cardápio com foto e preço, e a encomenda saindo pelo WhatsApp.",
@@ -270,16 +270,26 @@ export default async function Home() {
                 inicial passava longe disso. Dito uma vez, em letra pequena,
                 ele arma o "Entrai" que vem logo abaixo em tamanho grande.
               */}
+              {/*
+                A hierarquia mora aqui: a primeira linha diz o que é, em tinta
+                cheia, e a segunda diz o que a marca tem de próprio, na cor da
+                marca. O que era lista de recurso ("com catálogo, horário e
+                WhatsApp") desce para o apoio, que é o lugar de recurso. A
+                segunda linha rima com a placa logo abaixo, que escreve um
+                endereço com o nome de verdade na frente de quem chega.
+              */}
               <h1
-                className="acende titulo text-[2.9rem] leading-[0.96] text-balance text-texto sm:text-[3.7rem] lg:text-[4.3rem]"
+                className="acende titulo text-[2.9rem] leading-[0.95] text-balance text-texto sm:text-[3.7rem] lg:text-[4.5rem]"
                 style={{ "--atraso": "120ms" } as React.CSSProperties}
               >
-                <span className="block">A página do seu negócio.</span>
-                Com catálogo, horário e WhatsApp.
+                <span className="block">A página do seu negócio,</span>
+                <span className="block text-destaque">
+                  num endereço com o seu nome.
+                </span>
               </h1>
 
               <p
-                className="acende mt-6 max-w-sm text-[1.1rem] leading-relaxed text-suave"
+                className="acende mt-6 max-w-md text-[1.12rem] leading-relaxed text-suave"
                 style={
                   {
                     fontFamily: "var(--f-corpo)",
@@ -287,7 +297,8 @@ export default async function Home() {
                   } as React.CSSProperties
                 }
               >
-                Pronta em minutos, direto do celular. Grátis para publicar.
+                Catálogo, horário, galeria e o botão de WhatsApp, prontos em
+                minutos direto do celular. Grátis para publicar.
               </p>
 
               <div
@@ -363,22 +374,35 @@ export default async function Home() {
           </div>
         </section>
 
+        {/*
+          A parede escura, o único respiro de contraste da página clara.
+          data-tema="noite" retematiza só esta seção: bg-fundo, text-texto e o
+          resto passam a ler os tokens do escuro sem uma linha de estilo nova, e
+          as páginas penduradas voltam a acender no próprio tema. É o motivo de
+          museu que o produto já carrega, e é a resposta ao "tudo muito branco":
+          a parede recua, e o trabalho avança.
+        */}
         <section
           aria-labelledby="exemplos"
-          className="border-t border-borda"
+          data-tema="noite"
+          className="bg-fundo text-texto"
         >
-          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
+          <div className="parede-suave mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+            <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase">
+              Galeria de exemplos
+            </p>
             <h2
               id="exemplos"
-              className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
+              className="titulo mt-3 max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Exemplos de página por tipo de negócio.
+              Como a sua página pode ficar.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Exemplos que montamos para mostrar como fica.
+              Sete ofícios, sete páginas montadas com o produto. Arraste para o
+              lado e toque para abrir qualquer uma.
             </p>
 
-            <div className="mt-10 sm:mt-12">
+            <div className="mt-10 sm:mt-14">
               <Vitrine />
             </div>
           </div>
