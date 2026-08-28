@@ -76,6 +76,24 @@ async function lista(f: FormData): Promise<{
   return { negocio, links: lido.links };
 }
 
+/**
+ * Os links já gravados, sem a conferência de `conferirLink`.
+ *
+ * Mesmo motivo do catálogo: remover e reordenar são estrutura, e não conteúdo.
+ * Apagar um link não pode exigir que os outros estejam válidos, senão um
+ * endereço meio digitado em outra linha barra o excluir com um erro que não é
+ * o da linha que a pessoa quer apagar. A operação age sobre a lista que
+ * `doDono` traz, pela posição, e uma edição não salva em outra linha se perde,
+ * que é o esperado de uma ação de estrutura.
+ */
+async function listaSalva(f: FormData): Promise<{
+  negocio: Negocio;
+  links: LinkExtra[];
+}> {
+  const negocio = await doDono();
+  return { negocio, links: negocio.links };
+}
+
 const naLinha = (i: number) => `#link-${i}`;
 
 /**
@@ -140,7 +158,7 @@ const dentroDaLista = (alvo: number, total: number): boolean =>
   Number.isInteger(alvo) && alvo >= 0 && alvo < total;
 
 async function mover(alvo: number, formData: FormData, passo: number) {
-  const { negocio, links } = await lista(formData);
+  const { negocio, links } = await listaSalva(formData);
   const destino = alvo + passo;
 
   if (!dentroDaLista(alvo, links.length) || !dentroDaLista(destino, links.length)) {
@@ -165,7 +183,7 @@ export async function descerLink(alvo: number, formData: FormData) {
 }
 
 export async function removerLink(alvo: number, formData: FormData) {
-  const { negocio, links } = await lista(formData);
+  const { negocio, links } = await listaSalva(formData);
   if (!dentroDaLista(alvo, links.length)) redirect(`${TELA}?salvo=lista`);
 
   const novos = links.filter((_, i) => i !== alvo);

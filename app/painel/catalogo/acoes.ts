@@ -148,6 +148,29 @@ async function lista(f: FormData): Promise<{ negocio: Negocio; itens: Item[] }> 
   };
 }
 
+/**
+ * Os itens já gravados, sem passar pela conferência de conteúdo.
+ *
+ * **Remover e reordenar são operações de estrutura, e não de conteúdo.** Apagar
+ * o item 3 não pode exigir que os itens 1, 2 e 4 estejam válidos. Lendo do
+ * formulário por `lista`, um item novo meio preenchido barrava o excluir com um
+ * erro de outra linha, e a pessoa via a tela pular para um campo que não era o
+ * que ela queria apagar: era o "comportamento estranho ao excluir". Aqui a
+ * operação age sobre a lista que `doDono` traz do banco, pela posição, então
+ * ela funciona sempre. O preço, assumido: uma edição ainda não salva em outra
+ * linha se perde ao mover ou remover, que é o que se espera de uma ação de
+ * estrutura, e nunca de conteúdo.
+ */
+async function listaSalva(
+  f: FormData,
+): Promise<{ negocio: Negocio; itens: Item[] }> {
+  const negocio = await doDono();
+  return {
+    negocio: { ...negocio, mostrarPrecos: mostrarPrecos(f, negocio) },
+    itens: negocio.itens,
+  };
+}
+
 /** Para onde a tela volta depois de mexer numa linha. Ver o comentário da tela. */
 const naLinha = (i: number) => `#item-${i}`;
 
@@ -278,7 +301,7 @@ const dentroDaLista = (alvo: number, total: number): boolean =>
  * o que a pessoa digitou é gravado do mesmo jeito.
  */
 async function mover(alvo: number, formData: FormData, passo: number) {
-  const { negocio, itens } = await lista(formData);
+  const { negocio, itens } = await listaSalva(formData);
   const destino = alvo + passo;
 
   if (!dentroDaLista(alvo, itens.length) || !dentroDaLista(destino, itens.length)) {
@@ -306,7 +329,7 @@ export async function descerItem(alvo: number, formData: FormData) {
 }
 
 export async function removerItem(alvo: number, formData: FormData) {
-  const { negocio, itens } = await lista(formData);
+  const { negocio, itens } = await listaSalva(formData);
   if (!dentroDaLista(alvo, itens.length)) redirect(`${TELA}?salvo=1`);
 
   const novos = itens.filter((_, i) => i !== alvo);
