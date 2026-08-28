@@ -58,6 +58,8 @@
   --c-suave: #68686d; /* cinza de apoio neutro: 4,9 sobre o fundo */
   --c-borda: #e6e6e4; /* fio neutro */
   --c-destaque: #8f4451; /* Marsala, a cor auxiliar: 6,6 sobre o branco */
+  /* Cor semântica de erro, própria e separada da marca: a marsala não é o erro. */
+  --c-erro: #b42318;
   /* Ouro só para detalhe decorativo, nunca para texto: contraste não se aplica. */
   --c-ouro: #b08d3a;
   --c-zap: #0e7a55; /* Conversa */
@@ -412,11 +414,27 @@ body {
   outline: none;
 }
 
-.placa[data-livre="1"] {
-  border-color: var(--c-destaque);
+/*
+ * Um estado, tres sinais juntos: borda, icone e texto. Nunca so a cor.
+ *
+ * Vazio e conferindo ficam na borda neutra da placa (o fio suave do Tailwind),
+ * sem brilho e sem icone. Livre acende no verde do proprio token de aberto, com
+ * o tique ao lado. Ocupado acende no vermelho de erro, que e cor semantica
+ * propria e nao a marsala da marca, com o alerta ao lado. O icone e o texto
+ * abaixo do campo vivem no componente; aqui fica a borda e o brilho.
+ */
+.placa[data-estado="livre"] {
+  border-color: var(--c-aberto-texto);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent),
-    0 0 0 4px color-mix(in srgb, var(--c-destaque) 16%, transparent);
+    0 0 0 4px color-mix(in srgb, var(--c-aberto-texto) 16%, transparent);
+}
+
+.placa[data-estado="ocupado"] {
+  border-color: var(--c-erro);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--c-erro) 16%, transparent);
 }
 
 /*

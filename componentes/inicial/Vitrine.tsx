@@ -21,7 +21,7 @@ export function Vitrine() {
             {negocio.capa ? (
               <Image
                 src={negocio.capa.url}
-                alt=""
+                alt={`Página de exemplo de ${negocio.nome}, ${tipo}, em ${negocio.cidade}`}
                 width={negocio.capa.largura}
                 height={negocio.capa.altura}
                 sizes="(max-width: 640px) 60vw, 260px"

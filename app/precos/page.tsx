@@ -8,7 +8,12 @@ import { porSlug } from "@/lib/dados";
 import { atelie } from "@/lib/exemplos";
 import { FONTE_PADRAO, podeEscolherFonte, type ChaveFonte } from "@/lib/fontes";
 import { preco } from "@/lib/formato";
-import { NOME_PRODUTO } from "@/lib/marca";
+import {
+  DOCUMENTO,
+  NOME_PRODUTO,
+  RESPONSAVEL,
+  tipoDeDocumento,
+} from "@/lib/marca";
 import {
   DIAS_DE_TESTE,
   MESES_DO_CICLO,
@@ -18,7 +23,7 @@ import {
   mesesDeCortesia,
 } from "@/lib/pagamento";
 import type { Ciclo } from "@/lib/pagamento";
-import { CADASTRO_ABERTO } from "@/lib/site";
+import { CADASTRO_ABERTO, CONTATO_SUPORTE } from "@/lib/site";
 import type { Negocio, Plano } from "@/lib/tipos";
 
 export const revalidate = 3600;
@@ -541,7 +546,7 @@ export default async function Precos() {
             </p>
             <div className="mt-9 max-w-lg">
               <CampoAbertura
-                rotulo={CADASTRO_ABERTO ? "Criar meu endereço" : "Continuar"}
+                rotulo={CADASTRO_ABERTO ? "Criar minha página grátis" : "Continuar"}
               />
             </div>
           </div>
@@ -549,16 +554,40 @@ export default async function Precos() {
       </main>
 
       <footer className="border-t border-borda">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-suave">
-          <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
-          <div className="flex gap-5">
-            <Link href="/termos" className="underline underline-offset-2">
-              Termos
-            </Link>
-            <Link href="/privacidade" className="underline underline-offset-2">
-              Privacidade
-            </Link>
+        <div className="mx-auto w-full max-w-6xl px-6 py-8 text-sm text-suave">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
+            <nav
+              aria-label="Rodapé"
+              className="flex flex-wrap items-center gap-5"
+            >
+              <Link
+                href="/termos"
+                className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+              >
+                Termos
+              </Link>
+              <Link
+                href="/privacidade"
+                className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+              >
+                Privacidade
+              </Link>
+              {CONTATO_SUPORTE ? (
+                <a
+                  href={`mailto:${CONTATO_SUPORTE}`}
+                  className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  Falar com o suporte
+                </a>
+              ) : null}
+            </nav>
           </div>
+          {RESPONSAVEL && DOCUMENTO ? (
+            <p className="mt-4">
+              {RESPONSAVEL} · {tipoDeDocumento(DOCUMENTO)} {DOCUMENTO}
+            </p>
+          ) : null}
         </div>
       </footer>
     </div>

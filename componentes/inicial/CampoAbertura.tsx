@@ -25,7 +25,7 @@ type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
  * na tela inicial, longe da página do cliente.
  */
 export function CampoAbertura({
-  rotulo = "Criar meu endereço",
+  rotulo = "Criar minha página grátis",
 }: {
   /**
    * Enquanto o cadastro não abre, o botão diz "Continuar": prometer criar e
@@ -86,17 +86,19 @@ export function CampoAbertura({
         className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
       >
         <label htmlFor={id} className="sr-only">
-          Endereço da sua página
+          Escolha o seu endereço
         </label>
 
         {/*
-          A chapa. O brilho de latão entra por data-livre, em CSS, e não por
+          A chapa. Borda e brilho entram por data-estado, em CSS, e não por
           classe montada aqui: assim o estado da placa é uma coisa só, legível
-          na inspeção do navegador junto com o resto do produto.
+          na inspeção do navegador junto com o resto do produto. Estado nunca só
+          por cor: a borda vem do CSS, o ícone e o texto abaixo vêm daqui, e os
+          três dizem a mesma coisa ao mesmo tempo.
         */}
         <span
           className="placa flex flex-1 items-center rounded-2xl border border-suave/35 bg-superficie px-5 py-4"
-          data-livre={estado === "livre" ? "1" : "0"}
+          data-estado={estado}
         >
           <span
             aria-hidden
@@ -111,34 +113,93 @@ export function CampoAbertura({
             onChange={(e) => setValor(e.target.value)}
             placeholder="seunome"
             aria-describedby={`${id}-estado`}
+            aria-invalid={estado === "ocupado"}
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
             className="min-w-0 flex-1 bg-transparent text-[1.05rem] font-semibold tracking-[-0.01em] text-texto placeholder:font-normal placeholder:text-suave focus:outline-none"
           />
+
+          {/* O tique do endereço livre. Desenhado, nunca emoji. */}
+          {estado === "livre" ? (
+            <svg
+              aria-hidden
+              viewBox="0 0 20 20"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="ml-2 shrink-0 text-aberto-texto"
+            >
+              <path d="M4 10.5 8 14.5 16 5.5" />
+            </svg>
+          ) : null}
+
+          {/* O alerta do endereço ocupado, no vermelho de erro próprio. */}
+          {estado === "ocupado" ? (
+            <svg
+              aria-hidden
+              viewBox="0 0 20 20"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="ml-2 shrink-0"
+              style={{ color: "var(--c-erro)" }}
+            >
+              <path d="M10 3 18 16.5H2Z" />
+              <path d="M10 8.5V11.5" />
+              <path d="M10 14h.01" />
+            </svg>
+          ) : null}
         </span>
 
         <button
           type="submit"
-          className="flex h-13 shrink-0 items-center justify-center rounded-2xl bg-texto px-7 text-[1.02rem] font-semibold text-fundo transition-opacity hover:opacity-90 sm:h-auto sm:px-8"
+          disabled={estado !== "livre"}
+          className="flex h-13 shrink-0 items-center justify-center rounded-2xl bg-texto px-7 text-[1.02rem] font-semibold text-fundo transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:h-auto sm:px-8"
         >
           {rotulo}
         </button>
       </form>
 
+      {/*
+        A mensagem fala com o leitor de tela (role="status" + aria-live) e mostra
+        a normalização: vazio dá a ajuda fixa, e com texto aparece o endereço
+        final embaixo, sem mexer no valor digitado. Verde em livre, o motivo em
+        vermelho em ocupado, neutro em conferindo.
+      */}
       <p
         id={`${id}-estado`}
+        role="status"
         aria-live="polite"
-        className="mt-3 min-h-5 text-sm text-suave"
+        className="mt-3 min-h-5 text-sm"
       >
-        {estado === "conferindo" ? "conferindo..." : null}
+        {estado === "vazio" ? (
+          <span className="text-suave">
+            Letras, números e hífen. Mínimo de 3 caracteres.
+          </span>
+        ) : null}
+        {estado === "conferindo" ? (
+          <span className="font-semibold text-texto">
+            A sua página vai ficar em {DOMINIO_PUBLICO}/{slug}
+          </span>
+        ) : null}
         {estado === "livre" ? (
           <span className="font-semibold text-aberto-texto">
-            {DOMINIO_PUBLICO}/{slug} está disponível
+            A sua página vai ficar em {DOMINIO_PUBLICO}/{slug}
           </span>
         ) : null}
         {estado === "ocupado" ? (
-          <span className="text-destaque">{motivo}</span>
+          <span className="font-semibold" style={{ color: "var(--c-erro)" }}>
+            {motivo}
+          </span>
         ) : null}
       </p>
     </div>

@@ -95,7 +95,7 @@ export function Planos() {
           href="#comecar"
           className="mt-7 flex h-12 items-center justify-center rounded-2xl border border-borda bg-superficie px-6 text-[0.98rem] font-semibold text-texto transition-colors hover:border-suave"
         >
-          Criar minha página
+          Criar minha página grátis
         </Link>
       </div>
 
@@ -133,7 +133,7 @@ export function Planos() {
           href="#comecar"
           className="mt-7 flex h-12 items-center justify-center rounded-2xl bg-texto px-6 text-[0.98rem] font-semibold text-fundo transition-opacity hover:opacity-90"
         >
-          Começar agora
+          Assinar o Completo
         </Link>
         <p className="mt-3 text-center text-xs text-suave">
           Você cria a página primeiro. A assinatura fica a um toque no seu painel.

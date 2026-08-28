@@ -10,10 +10,15 @@ import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { IconeEntrar } from "@/componentes/Icones";
 import { combinacao } from "@/lib/fontes";
-import { NOME_PRODUTO } from "@/lib/marca";
+import {
+  DOCUMENTO,
+  NOME_PRODUTO,
+  RESPONSAVEL,
+  tipoDeDocumento,
+} from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
-import { CADASTRO_ABERTO, urlBase } from "@/lib/site";
+import { CADASTRO_ABERTO, CONTATO_SUPORTE, urlBase } from "@/lib/site";
 import {
   atelie,
   canto,
@@ -177,7 +182,7 @@ export default async function Home() {
    * a tela seguinte diz o que acontece, em vez de prometer uma criação que
    * ainda não existe.
    */
-  const rotulo = CADASTRO_ABERTO ? "Criar meu endereço" : "Continuar";
+  const rotulo = CADASTRO_ABERTO ? "Criar minha página grátis" : "Continuar";
 
   /*
    * A letra dos títulos da tela inicial é a mesma que o plano gratuito entrega
@@ -220,7 +225,7 @@ export default async function Home() {
               href="#comecar"
               className="hidden h-11 items-center rounded-full bg-texto px-4 text-[0.9rem] font-semibold text-fundo transition-opacity hover:opacity-90 sm:flex"
             >
-              Criar minha página
+              Criar minha página grátis
             </Link>
           </div>
         ) : null}
@@ -359,8 +364,8 @@ export default async function Home() {
               Salas abertas agora.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Todas estas estão no ar. Abra a que mais parece com a sua e
-              percorra até o fim.
+              Exemplos que montamos para mostrar como fica. Abra o que mais
+              parece com o seu e percorra até o fim.
             </p>
 
             <div className="mt-10 sm:mt-12">
@@ -486,16 +491,50 @@ export default async function Home() {
       </main>
 
       <footer className="border-t border-borda">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-suave">
-          <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
-          {CADASTRO_ABERTO ? (
-            <Link
-              href="/entrar"
-              className="-mx-2 flex h-11 items-center gap-2 rounded-full px-2 font-medium text-texto hover:text-destaque"
-            >
-              <IconeEntrar className="h-4 w-4" />
-              Entrar
-            </Link>
+        <div className="mx-auto w-full max-w-6xl px-6 py-8 text-sm text-suave">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
+            <div className="flex flex-wrap items-center gap-5">
+              <nav
+                aria-label="Rodapé"
+                className="flex flex-wrap items-center gap-5"
+              >
+                <Link
+                  href="/termos"
+                  className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  Termos
+                </Link>
+                <Link
+                  href="/privacidade"
+                  className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  Privacidade
+                </Link>
+                {CONTATO_SUPORTE ? (
+                  <a
+                    href={`mailto:${CONTATO_SUPORTE}`}
+                    className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                  >
+                    Falar com o suporte
+                  </a>
+                ) : null}
+              </nav>
+              {CADASTRO_ABERTO ? (
+                <Link
+                  href="/entrar"
+                  className="-mx-2 flex h-11 items-center gap-2 rounded-full px-2 font-medium text-texto outline-none hover:text-destaque focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  <IconeEntrar className="h-4 w-4" />
+                  Entrar
+                </Link>
+              ) : null}
+            </div>
+          </div>
+          {RESPONSAVEL && DOCUMENTO ? (
+            <p className="mt-4">
+              {RESPONSAVEL} · {tipoDeDocumento(DOCUMENTO)} {DOCUMENTO}
+            </p>
           ) : null}
         </div>
       </footer>
