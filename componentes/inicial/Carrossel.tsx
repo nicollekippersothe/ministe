@@ -93,9 +93,9 @@ export function Carrossel({ children }: { children: React.ReactNode }) {
              * posição que diz "isto avança aquilo ali", em vez de parecer um
              * botão qualquer perdido ao lado.
              */
-            className="absolute top-1/2 right-0 z-10 flex h-12 w-12 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-borda bg-superficie text-texto shadow-[0_1px_2px_rgba(28,25,23,0.12),0_10px_24px_-10px_rgba(28,25,23,0.45)] transition-colors hover:border-texto/30 hover:bg-fundo"
+            className="absolute top-1/2 right-0 z-10 flex h-11 w-11 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-borda bg-superficie text-texto shadow-[0_4px_14px_-4px_rgba(28,25,23,0.28)] transition-all hover:border-transparent hover:bg-texto hover:text-fundo active:scale-95"
           >
-            <IconeAvancar className="h-5 w-5" />
+            <IconeAvancar className="h-[1.15rem] w-[1.15rem]" />
           </button>
 
           {/*

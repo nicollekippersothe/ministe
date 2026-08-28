@@ -100,7 +100,7 @@ export function Planos() {
       </div>
 
       {/* Completo */}
-      <div className="surge relative flex flex-col rounded-3xl border border-destaque bg-superficie p-6 shadow-[0_0_0_1px_var(--c-destaque),0_24px_50px_-30px_rgba(143,68,81,0.5)] sm:p-7">
+      <div className="surge relative flex flex-col rounded-3xl border border-destaque bg-superficie p-6 shadow-[0_0_0_1px_var(--c-destaque)] sm:p-7">
         <span className="absolute -top-3 left-7 rounded-full bg-destaque px-3 py-1 text-[0.68rem] font-bold tracking-[0.1em] text-superficie uppercase">
           Mais escolhido
         </span>

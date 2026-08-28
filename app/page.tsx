@@ -78,24 +78,21 @@ export const metadata: Metadata = {
  */
 const BENEFICIOS = [
   {
-    titulo: "Encontrada por quem procura agora",
+    titulo: "Encontrada por quem procura",
     texto:
-      "A marcação que o Google lê sai pronta: nome, categoria, cidade, horário e o que você oferece. Uma lista de links atende quem já chegou até você. Esta atende também quem ainda está atrás do serviço.",
+      "A marcação que o Google lê sai pronta, então quem busca o seu serviço acha a sua página.",
   },
   {
-    titulo: "Um endereço para colocar em tudo",
-    texto:
-      "Bio, anúncio pago, cartão, assinatura de e-mail. Quem toca cai direto no seu catálogo.",
+    titulo: "Um endereço para tudo",
+    texto: "Na bio, no anúncio, no cartão. Quem toca cai no seu catálogo.",
   },
   {
     titulo: "Editou, já está no ar",
-    texto:
-      "Peça nova, ou o horário do feriado é outro? Você altera do celular e quem abrir em seguida já vê.",
+    texto: "Você altera pelo celular e quem abrir em seguida já vê.",
   },
   {
     titulo: "O endereço é seu",
-    texto:
-      "As redes sociais mudam de regra e de alcance quando querem. O seu endereço fica onde está, com o mesmo nome, e continua abrindo.",
+    texto: "As redes mudam de regra quando querem. O seu endereço fica.",
   },
 ];
 
@@ -274,28 +271,19 @@ export default async function Home() {
                 inicial passava longe disso. Dito uma vez, em letra pequena,
                 ele arma o "Entrai" que vem logo abaixo em tamanho grande.
               */}
-              <p
-                className="acende border-t border-borda pt-3 text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase"
-                style={{ "--atraso": "80ms" } as React.CSSProperties}
-              >
-                Página profissional para negócio pequeno
-              </p>
-
               <h1
-                className="acende titulo mt-5 text-[2.5rem] leading-[0.98] text-balance text-texto sm:text-[3.2rem] lg:text-[3.7rem]"
-                style={{ "--atraso": "160ms" } as React.CSSProperties}
+                className="acende titulo text-[2.7rem] leading-[0.98] text-balance text-texto sm:text-[3.4rem] lg:text-[3.9rem]"
+                style={{ "--atraso": "120ms" } as React.CSSProperties}
               >
                 <span className="block">A página do seu negócio.</span>
                 Com catálogo, horário e WhatsApp.
               </h1>
 
               <p
-                className="acende mt-6 max-w-md text-[1.05rem] leading-relaxed text-suave lg:text-[1.15rem]"
-                style={{ "--atraso": "240ms" } as React.CSSProperties}
+                className="acende mt-6 max-w-sm text-[1.1rem] leading-relaxed text-suave"
+                style={{ "--atraso": "220ms" } as React.CSSProperties}
               >
-                Escolha o endereço, responda o essencial e publique, tudo pelo
-                celular. Fica no ar na hora, com o seu nome, bonita para receber
-                quem chega e para aparecer na busca.
+                Pronta em minutos, direto do celular. Grátis para publicar.
               </p>
 
               <div
@@ -318,9 +306,6 @@ export default async function Home() {
               className="acende"
               style={{ "--atraso": "400ms" } as React.CSSProperties}
             >
-              <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-suave uppercase">
-                Em cartaz agora
-              </p>
               <Carrossel>
                 {EM_CARTAZ.map(({ negocio: n, tipo }, i) => (
                   <div key={n.slug}>
@@ -342,17 +327,13 @@ export default async function Home() {
           aria-labelledby="salas"
           className="border-t border-borda"
         >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <h2
               id="salas"
               className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
               A sua página se monta pelo seu ramo.
             </h2>
-            <p className="mt-4 max-w-xl leading-relaxed text-suave">
-              O ramo que você escolhe decide a montagem: uma página abre pela
-              galeria de trabalhos, a outra abre pelo endereço e pelo horário.
-            </p>
 
             <div className="mt-10 sm:mt-14">
               <Salas criador={SALA_CRIADOR} loja={SALA_LOJA} />
@@ -361,7 +342,7 @@ export default async function Home() {
         </section>
 
         <section aria-labelledby="mosaico" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <h2
               id="mosaico"
               className="titulo max-w-2xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
@@ -383,7 +364,7 @@ export default async function Home() {
           aria-labelledby="exemplos"
           className="border-t border-borda"
         >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <h2
               id="exemplos"
               className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
@@ -391,8 +372,7 @@ export default async function Home() {
               Exemplos de página por tipo de negócio.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Exemplos que montamos para mostrar como fica. Abra o que mais
-              parece com o seu e percorra até o fim.
+              Exemplos que montamos para mostrar como fica.
             </p>
 
             <div className="mt-10 sm:mt-12">
@@ -408,22 +388,14 @@ export default async function Home() {
           vender "por tirar" nada.
         */}
         <section aria-labelledby="planos" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
-              <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase">
-                Planos
-              </p>
               <h2
                 id="planos"
-                className="titulo mt-2 text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
+                className="titulo text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
               >
                 Comece de graça. Cresça quando quiser.
               </h2>
-              <p className="mt-4 leading-relaxed text-suave text-pretty">
-                Sua página no ar sem pagar nada. Quando o trabalho pedir mais, o
-                completo abre a personalização e os números de verdade de quem
-                visita.
-              </p>
             </div>
 
             <Planos />
@@ -437,7 +409,7 @@ export default async function Home() {
           itens, então cada um se lê como resposta à pergunta do título.
         */}
         <section aria-labelledby="beneficios" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <div className="lg:grid lg:grid-cols-[20rem_1fr] lg:gap-16">
               <div className="lg:sticky lg:top-16 lg:self-start">
                 <h2
@@ -446,9 +418,6 @@ export default async function Home() {
                 >
                   O que você ganha depois de publicar.
                 </h2>
-                <p className="mt-4 max-w-sm leading-relaxed text-suave">
-                  Quatro coisas que só aparecem depois de publicar.
-                </p>
               </div>
 
               <dl className="mt-10 lg:mt-0">
@@ -474,7 +443,7 @@ export default async function Home() {
           aria-labelledby="passos"
           className="border-t border-borda"
         >
-          <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-5xl px-6 py-14 sm:py-20">
             <h2
               id="passos"
               className="titulo max-w-lg text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
