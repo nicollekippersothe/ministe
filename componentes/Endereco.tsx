@@ -11,7 +11,7 @@ export function Endereco({ negocio }: { negocio: Negocio }) {
 
   const conteudo = (
     <>
-      <IconePin className="mt-0.5 h-5 w-5 shrink-0 text-destaque" />
+      <IconePin className="mt-0.5 h-5 w-5 shrink-0 text-suave" />
       <span className="flex-1 text-sm leading-relaxed text-suave">
         {linhas.map((linha) => (
           <span key={linha} className="block">

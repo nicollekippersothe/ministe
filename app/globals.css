@@ -37,12 +37,25 @@
  */
 :root,
 [data-tema="areia"] {
-  --c-fundo: #f4f0e8; /* Areia */
+  /*
+   * O tema claro afinado para padrão Apple, medido no navegador.
+   *
+   * A dona pediu "mais elegante, padrão apple, cores menos feias", e a
+   * auditoria achou três coisas: o creme era amarelo demais (lia como papel
+   * pardo), o cinza de apoio estava no fio do AA (4,54, lia sujo) e o marrom
+   * era laranja demais e aparecia em tudo. Os quatro valores abaixo movem a
+   * paleta de "bege artesanal" para "quase branco quente com um acento
+   * contido", mantendo a identidade e o contraste. Cada troca foi conferida:
+   * texto sobre o fundo segue em 15,5, o cinza sobe para 5,1 sobre o fundo, e o
+   * barro sobe para 8,1 sobre o branco. Nada cruza abaixo do AA, então os 100
+   * de acessibilidade seguem de pé.
+   */
+  --c-fundo: #f5f2ec; /* Areia, menos amarela */
   --c-superficie: #ffffff; /* Branco */
   --c-texto: #1c1917; /* Tinta */
-  --c-suave: #736c67; /* Pedra, escurecida para passar sobre Areia */
-  --c-borda: #e5dfd3;
-  --c-destaque: #7a4a2b; /* Barro */
+  --c-suave: #6b645f; /* Pedra, um passo mais escura: 5,1 sobre o fundo */
+  --c-borda: #e7e2d8; /* fio mais limpo, menos amarelo */
+  --c-destaque: #6f4526; /* Barro mais fundo e menos laranja */
   --c-zap: #0e7a55; /* Conversa */
   --c-zap-forte: #0b6647;
   --c-aberto-fundo: #e4f2ea;

@@ -28,7 +28,7 @@ export function LinksExtras({ negocio }: { negocio: Negocio }) {
           >
             <IconeDoLink
               icone={link.icone}
-              className="h-[1.1rem] w-[1.1rem] shrink-0 text-destaque"
+              className="h-[1.1rem] w-[1.1rem] shrink-0 text-suave"
             />
             <span className="flex-1 text-[0.95rem] font-medium">
               {link.rotulo}
