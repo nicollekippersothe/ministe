@@ -4,6 +4,7 @@ import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
 import { Cartela } from "@/componentes/inicial/Cartela";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
+import { Planos } from "@/componentes/inicial/Planos";
 import { Salas, type Sala } from "@/componentes/inicial/Salas";
 import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
@@ -175,20 +176,28 @@ export default async function Home() {
      * aparece acesa, com a cor que o dono dela escolheu.
      */
     <div
-      data-tema="noite"
+      data-tema="areia"
       data-fonte={letra.chave}
       className={`min-h-dvh bg-fundo ${letra.classe}`}
     >
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Marca href={null} />
         {CADASTRO_ABERTO ? (
-          <Link
-            href="/entrar"
-            className="-mr-3 flex h-11 items-center gap-2 rounded-full px-3 text-[0.95rem] font-medium text-texto hover:text-destaque"
-          >
-            <IconeEntrar className="h-5 w-5" />
-            Entrar
-          </Link>
+          <div className="-mr-3 flex items-center gap-1.5">
+            <Link
+              href="/entrar"
+              className="flex h-11 items-center gap-2 rounded-full px-3 text-[0.95rem] font-medium text-texto hover:text-destaque"
+            >
+              <IconeEntrar className="h-5 w-5" />
+              Entrar
+            </Link>
+            <Link
+              href="#comecar"
+              className="hidden h-11 items-center rounded-full bg-texto px-4 text-[0.9rem] font-semibold text-fundo transition-opacity hover:opacity-90 sm:flex"
+            >
+              Criar minha página
+            </Link>
+          </div>
         ) : null}
       </header>
 
@@ -199,7 +208,7 @@ export default async function Home() {
           cartaz. É o único movimento orquestrado da página; o resto da rolagem
           usa o `surge`, que já existia.
         */}
-        <section className="parede mx-auto w-full max-w-6xl px-6 pt-4 pb-12 sm:pt-10 sm:pb-24">
+        <section id="comecar" className="mx-auto w-full max-w-6xl px-6 pt-4 pb-12 sm:pt-10 sm:pb-24">
           <div className="grid items-start gap-6 lg:grid-cols-[1fr_19rem] lg:gap-14">
             <div className="max-w-2xl">
               {/*
@@ -212,23 +221,24 @@ export default async function Home() {
                 className="acende border-t border-borda pt-3 text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase"
                 style={{ "--atraso": "80ms" } as React.CSSProperties}
               >
-                {NOME_PRODUTO}, verbo: o que se diz na porta
+                Para quem cria e empreende
               </p>
 
               <h1
                 className="acende titulo mt-5 text-[2.5rem] leading-[0.96] text-balance text-texto sm:text-[3.4rem] lg:text-[4.1rem]"
                 style={{ "--atraso": "160ms" } as React.CSSProperties}
               >
-                <span className="block">Entrai.</span>
-                O seu trabalho exposto num endereço só.
+                <span className="block">Exponha o seu melhor.</span>
+                Num endereço só seu.
               </h1>
 
               <p
                 className="acende mt-6 max-w-md text-[1.05rem] leading-relaxed text-suave lg:text-[1.15rem]"
                 style={{ "--atraso": "240ms" } as React.CSSProperties}
               >
-                As fotos, o que você vende e por quanto, o horário, e o botão
-                que já abre a conversa no WhatsApp.
+                Reúna o seu portfólio, o catálogo e o contato numa página que
+                apresenta o seu trabalho com o cuidado de uma galeria. Bonita no
+                celular e no computador, pronta para receber quem chega.
               </p>
 
               <div
@@ -293,7 +303,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-labelledby="mosaico" className="parede-suave border-t border-borda">
+        <section aria-labelledby="mosaico" className="border-t border-borda">
           <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
             <h2
               id="mosaico"
@@ -331,6 +341,35 @@ export default async function Home() {
             <div className="mt-10 sm:mt-12">
               <Vitrine />
             </div>
+          </div>
+        </section>
+
+        {/*
+          Os planos. Vêm depois de a pessoa ter visto o produto de verdade nas
+          seções acima, que é quando a pergunta passa a ser "quanto custa". O
+          grátis lista o que já entrega, e o completo lista só o que soma, sem
+          vender "por tirar" nada.
+        */}
+        <section aria-labelledby="planos" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+            <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
+              <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase">
+                Planos
+              </p>
+              <h2
+                id="planos"
+                className="titulo mt-2 text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
+              >
+                Comece de graça. Cresça quando quiser.
+              </h2>
+              <p className="mt-4 leading-relaxed text-suave text-pretty">
+                Sua página no ar sem pagar nada. Quando o trabalho pedir mais, o
+                completo abre a personalização e os números de verdade de quem
+                visita.
+              </p>
+            </div>
+
+            <Planos />
           </div>
         </section>
 
