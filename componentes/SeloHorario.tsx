@@ -22,9 +22,9 @@ export function SeloHorario({
     <p
       id={id}
       data-aberto={estado.aberto ? "1" : "0"}
-      className={`selo inline-flex items-center gap-2 rounded-full py-1.5 pr-4 pl-3 text-sm ${className}`}
+      className={`selo inline-flex items-center gap-1.5 rounded-full py-1 pr-3.5 pl-2.5 text-sm ${className}`}
     >
-      <span className="bolinha h-2 w-2 shrink-0 rounded-full" aria-hidden />
+      <span className="bolinha h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden />
       <strong data-t className="font-semibold">
         {estado.titulo}
       </strong>
