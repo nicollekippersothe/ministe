@@ -14,6 +14,7 @@
     "mockup": "node scripts/mockup.mjs",
     "revisao": "node scripts/exportar-telas.mjs",
     "fotos": "node scripts/baixar-fotos.mjs",
+    "tratar": "node scripts/tratar-fotos.mjs",
     "logos": "node scripts/gerar-logos.mjs"
   },
   "dependencies": {
