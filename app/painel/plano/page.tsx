@@ -20,6 +20,7 @@ import { preco } from "@/lib/formato";
 import { NOME_PRODUTO } from "@/lib/marca";
 import {
   DIAS_DE_TESTE,
+  NOME_DO_PLANO,
   PLANOS,
   economiaAnualEmCentavos,
   gateway,
@@ -675,7 +676,7 @@ function Assinado({
     <div className="mt-6 flex flex-col gap-8">
       <section className="rounded-2xl border border-borda bg-superficie p-5">
         <p className="text-xs font-semibold tracking-[0.14em] text-suave uppercase">
-          Plano pago
+          {NOME_DO_PLANO.pago}
         </p>
 
         <div className="mt-1.5 flex items-start gap-2.5">
@@ -689,7 +690,7 @@ function Assinado({
                 ? "O banco está tentando a cobrança de novo"
                 : encerrada
                   ? "Seu plano pago vale até o fim do período"
-                  : "Seu plano é o pago"}
+                  : `Seu plano é o ${NOME_DO_PLANO.pago}`}
           </h2>
         </div>
 
@@ -728,7 +729,7 @@ function Assinado({
       */}
       <section>
         <h2 className="text-sm font-medium text-texto">
-          O que o plano pago abriu
+          O que o {NOME_DO_PLANO.pago} abriu
         </h2>
         <div className="mt-2 flex flex-col gap-2">
           <Atalho
