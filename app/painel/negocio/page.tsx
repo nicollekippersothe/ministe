@@ -1,3 +1,4 @@
+import { TelaComPrevia } from "@/componentes/painel/TelaComPrevia";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import Link from "next/link";
 import { salvarBasico } from "../acoes";
@@ -99,8 +100,21 @@ export default async function Informacoes({
     negocio.mapsUrl,
   ].join("|");
 
+  // A chave da prévia muda quando muda o que a página mostra, e é o que faz
+  // o iframe recarregar depois de um Salvar.
+  const chavePrevia = [
+    negocio.nome,
+    negocio.frase,
+    negocio.slug,
+    negocio.whatsapp,
+    negocio.logo?.url,
+    negocio.capa?.url,
+    negocio.itens.length,
+  ].join("|");
+
   return (
-    <main className="mt-6">
+    <TelaComPrevia chave={chavePrevia}>
+      <main className="mt-6">
       {/*
         No computador a coluna da esquerda fica sempre à vista, com as seções
         e o estado da página, então o Voltar seria um segundo caminho
@@ -314,6 +328,7 @@ export default async function Informacoes({
           <Botao type="submit">Salvar</Botao>
         </BarraSalvar>
       </form>
-    </main>
+      </main>
+    </TelaComPrevia>
   );
 }

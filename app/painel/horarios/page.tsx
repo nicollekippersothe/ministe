@@ -1,3 +1,4 @@
+import { TelaComPrevia } from "@/componentes/painel/TelaComPrevia";
 import Link from "next/link";
 import { copiarSegundaParaSemana, salvarHorarios } from "../acoes";
 import { Aviso } from "@/componentes/painel/Aviso";
@@ -440,7 +441,8 @@ export default async function Horarios({
   );
 
   return (
-    <main className="mt-6">
+    <TelaComPrevia chave={JSON.stringify(negocio.horarios)}>
+      <main className="mt-6">
       {/*
         No computador a coluna da esquerda fica sempre à vista, com as seções
         e o estado da página, então o Voltar seria um segundo caminho
@@ -485,6 +487,7 @@ export default async function Horarios({
           <VirarHoraMarcada />
         </>
       )}
-    </main>
+      </main>
+    </TelaComPrevia>
   );
 }

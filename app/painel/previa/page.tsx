@@ -56,9 +56,26 @@ export const metadata: Metadata = {
  */
 const SEM_PAINEL_ATRAS = `body *:has([data-previa]) > *:not([data-previa], :has([data-previa])) { display: none }`;
 
-export default async function Previa() {
+export default async function Previa({
+  searchParams,
+}: {
+  searchParams: Promise<{ nua?: string }>;
+}) {
   exigirLogin();
-  const negocio = await doDono();
+  const [negocio, { nua }] = await Promise.all([doDono(), searchParams]);
+
+  /*
+   * A prévia "nua" existe para caber num iframe dentro do painel de edição.
+   *
+   * Um iframe tem janela própria, então as regras `lg:` da página pública veem
+   * a largura dele (estreita) e montam o desenho de celular, que é o que a
+   * prévia ao vivo quer: a página real, no formato certo, ao lado do
+   * formulário. Sem a faixa e sem a moldura fixa, porque quem emoldura é o
+   * componente de fora (componentes/painel/PreviaAoVivo.tsx).
+   */
+  if (nua) {
+    return <PaginaPublica negocio={negocio} urlBase={urlBase} />;
+  }
 
   return (
     <>

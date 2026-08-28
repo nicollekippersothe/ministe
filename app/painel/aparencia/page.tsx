@@ -1,3 +1,4 @@
+import { TelaComPrevia } from "@/componentes/painel/TelaComPrevia";
 import Link from "next/link";
 import { salvarAparencia } from "../acoes";
 import { Aviso } from "@/componentes/painel/Aviso";
@@ -22,7 +23,8 @@ export default async function Aparencia({
   const atual = pode ? negocio.fonte : FONTE_PADRAO;
 
   return (
-    <main className="mt-6">
+    <TelaComPrevia chave={`${negocio.fonte}|${negocio.nome}`}>
+      <main className="mt-6">
       {/*
         No computador a coluna da esquerda fica sempre à vista, com as seções
         e o estado da página, então o Voltar seria um segundo caminho
@@ -125,6 +127,7 @@ export default async function Aparencia({
           </BarraSalvar>
         ) : null}
       </form>
-    </main>
+      </main>
+    </TelaComPrevia>
   );
 }

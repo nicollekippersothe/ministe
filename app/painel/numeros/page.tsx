@@ -65,7 +65,7 @@ export default async function Numeros({
   const vazio = numeros.totais.visitas === 0 && numeros.totais.whatsapp === 0;
 
   return (
-    <div className="pb-16">
+    <div className="pb-16 lg:max-w-2xl">
       <h1 className="titulo text-2xl text-texto">Números</h1>
       <p className="mt-1 text-sm leading-relaxed text-suave">
         {pago

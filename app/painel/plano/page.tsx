@@ -125,7 +125,7 @@ export default async function Plano({
     decorrido >= ESPERA_MAXIMA_MS;
 
   return (
-    <div className="pb-16">
+    <div className="pb-16 lg:max-w-2xl">
       <h1 className="titulo text-2xl text-texto">Plano</h1>
 
       <AvisoCobranca erro={params.erro} />

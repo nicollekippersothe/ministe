@@ -110,7 +110,7 @@ export default async function LayoutPainel({
             entre as duas. A folga que sobra fica à direita, e com a barra
             desenhada como barra ela lê como espaço de tela, e não como vazio.
           */}
-          <div className="mx-auto w-full max-w-[34rem] px-5 pb-8 lg:mx-0 lg:max-w-2xl lg:px-0 lg:py-8 lg:pl-12 lg:pr-8">
+          <div className="mx-auto w-full max-w-[34rem] px-5 pb-8 lg:mx-0 lg:max-w-5xl lg:px-0 lg:py-8 lg:pl-12 lg:pr-8">
             {children}
           </div>
         </div>

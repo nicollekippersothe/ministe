@@ -1,3 +1,4 @@
+import { TelaComPrevia } from "@/componentes/painel/TelaComPrevia";
 import Link from "next/link";
 import {
   acrescentarItem,
@@ -361,7 +362,8 @@ export default async function Catalogo({
     params.erro === "limite_itens";
 
   return (
-    <main className="mt-6">
+    <TelaComPrevia chave={`${negocio.itens.map((i) => i.id + i.titulo + i.precoCentavos + i.ativo).join()}|${negocio.mostrarPrecos}|${negocio.tituloCatalogo}`}>
+      <main className="mt-6">
       <RegraDoPreco />
       {acrescentarAberto ? null : <RegraDoAcrescentar />}
       {/*
@@ -659,5 +661,6 @@ export default async function Catalogo({
         />
       ) : null}
     </main>
+    </TelaComPrevia>
   );
 }
