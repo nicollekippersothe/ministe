@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { doDono, publicar, salvar } from "@/lib/dados";
+import { doDono, enderecoLivre, publicar, salvar } from "@/lib/dados";
 import { MOTIVOS_DADOS, motivoDaRecusa, type RecusaDados } from "@/lib/dados/erros";
 import { guardar } from "./guardar";
 import { configurado } from "@/lib/supabase/config";
@@ -23,6 +23,7 @@ import {
 import { contaProvisoria, servidor, usuarioAtual } from "@/lib/supabase/servidor";
 import { combinacao, FONTE_PADRAO, podeEscolherFonte } from "@/lib/fontes";
 import { normalizarWhatsapp } from "@/lib/formato";
+import { conferirFormato, normalizar as normalizarSlug } from "@/lib/slug";
 import { conferirLink, type RecusaLink } from "@/lib/links";
 import type { Acao, Foto, Intervalo, Negocio } from "@/lib/tipos";
 
@@ -44,6 +45,31 @@ export async function salvarBasico(formData: FormData) {
 
   const nome = texto(formData, "nome");
   if (!nome) redirect("/painel/negocio?erro=nome");
+
+  /*
+   * O link da página passou a ser editável, e a mudança é a mais delicada da
+   * tela: ela troca o endereço público. O que estava gravado só muda quando
+   * chega diferente, e a mesma conferência de formato do cadastro vale aqui.
+   * O antigo vira `slugAnterior`, então o link que a pessoa já mandou para
+   * alguém continua levando para a página. `enderecoLivre` responde pela RLS,
+   * e a chave única do banco é o cinto de segurança se duas pessoas mirarem o
+   * mesmo endereço ao mesmo tempo.
+   */
+  const slugBruto = texto(formData, "slug");
+  let slug = negocio.slug;
+  let slugAnterior = negocio.slugAnterior;
+  if (slugBruto) {
+    const novo = normalizarSlug(slugBruto);
+    if (novo !== negocio.slug) {
+      const motivo = conferirFormato(novo);
+      if (motivo) redirect(`/painel/negocio?erro=slug_${motivo}`);
+      if (!(await enderecoLivre(novo))) {
+        redirect("/painel/negocio?erro=slug_ocupado");
+      }
+      slugAnterior = negocio.slug;
+      slug = novo;
+    }
+  }
 
   const bruto = texto(formData, "whatsapp");
   const whatsapp = bruto ? normalizarWhatsapp(bruto) : null;
@@ -84,6 +110,8 @@ export async function salvarBasico(formData: FormData) {
   await guardar(
     {
       ...negocio,
+      slug,
+      slugAnterior,
       nome,
       frase: texto(formData, "frase"),
       whatsapp,

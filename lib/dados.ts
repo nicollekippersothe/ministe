@@ -209,7 +209,12 @@ export async function criar(
 export async function salvar(negocio: Negocio): Promise<void> {
   if (!configurado) {
     const todos = await ler();
-    const i = todos.findIndex((n) => n.slug === negocio.slug);
+    // Casa pelo slug novo ou pelo antigo: quando o dono troca o link, o
+    // `slugAnterior` guarda o de antes, e sem ele a gravação local criaria um
+    // registro órfão em vez de atualizar. Em produção quem casa é `dono_id`.
+    const i = todos.findIndex(
+      (n) => n.slug === negocio.slug || n.slug === negocio.slugAnterior,
+    );
     if (i >= 0) todos[i] = negocio;
     else todos.push(negocio);
     await gravar(todos);

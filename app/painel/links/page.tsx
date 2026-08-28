@@ -127,7 +127,7 @@ export default async function LinksEBotoesDaPagina({
         Links e botões
       </h1>
       <p className="mt-2 max-w-prose text-sm leading-relaxed text-suave">
-        Os dois lugares da sua página que levam para outro lugar. Um fica preso
+        Os dois lugares da sua página que levam para outro lugar. Um fica fixo
         embaixo o tempo todo, o outro é uma lista dentro do corpo.
       </p>
 

@@ -107,6 +107,8 @@ export function Publicou({ negocio }: { negocio: Negocio }) {
       <div className="mt-4 flex flex-wrap gap-3">
         <Link
           href={`/${negocio.slug}`}
+          target="_blank"
+          rel="noreferrer"
           className="inline-flex min-h-11 items-center gap-2 rounded-full border border-borda bg-superficie px-5 text-sm font-semibold text-texto transition-transform duration-75 active:scale-[0.97]"
         >
           Ver a página

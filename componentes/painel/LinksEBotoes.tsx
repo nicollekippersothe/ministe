@@ -357,11 +357,11 @@ export function LinksEBotoes({
             id="titulo-botao"
             className="text-lg font-semibold tracking-tight text-texto"
           >
-            O botão preso no rodapé
+            O botão fixo no rodapé
           </h2>
           <p className="mt-1 max-w-prose text-sm leading-relaxed text-suave">
-            Fica embaixo o tempo todo, por cima do que estiver rolando. É por
-            ele que a pessoa fala com você.
+            Fica sempre embaixo, por cima do que estiver rolando. É por ele
+            que a pessoa fala com você.
           </p>
 
           {avisoDosBotoes}

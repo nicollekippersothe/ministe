@@ -125,6 +125,9 @@ export function CartaoEstado({
         <div className="mt-4 flex flex-col gap-3">
           <Link
             href={`/${negocio.slug}`}
+            /* Nova aba: espiar a página no ar mantém o painel aberto atrás. */
+            target="_blank"
+            rel="noreferrer"
             className="flex h-12 items-center justify-center gap-2 rounded-full border border-borda bg-fundo px-5 font-semibold text-texto transition-transform duration-75 active:scale-[0.97]"
           >
             Ver a página

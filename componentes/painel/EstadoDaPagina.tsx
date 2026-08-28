@@ -61,6 +61,9 @@ export function EstadoDaPagina({
       {noAr ? (
         <Link
           href={`/${negocio.slug}`}
+          /* Nova aba: espiar a página não pode custar a sessão de edição. */
+          target="_blank"
+          rel="noreferrer"
           className={`-my-2 inline-flex min-h-11 items-center gap-1.5 font-semibold break-all text-suave underline decoration-borda underline-offset-4 hover:decoration-texto ${tamanho}`}
         >
           <span>{link}</span>

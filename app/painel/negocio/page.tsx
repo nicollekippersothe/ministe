@@ -1,3 +1,4 @@
+import { DOMINIO_PUBLICO } from "@/lib/marca";
 import Link from "next/link";
 import { salvarBasico } from "../acoes";
 import { Aviso } from "@/componentes/painel/Aviso";
@@ -174,6 +175,25 @@ export default async function Informacoes({
             required
             maxLength={80}
             autoComplete="organization"
+          />
+          {/*
+            O link da página, editável. Ela ficava presa no endereço escolhido
+            no cadastro, sem jeito de trocar. Muda o endereço público, e o
+            antigo continua levando para a página, então trocar aqui não perde
+            o link que já foi mandado para alguém. A conferência de formato,
+            reserva e disponibilidade acontece em salvarBasico.
+          */}
+          <Texto
+            id="slug"
+            rotulo="O link da sua página"
+            dica={`Hoje ele é ${DOMINIO_PUBLICO}/${negocio.slug}. Trocar aqui muda o endereço, e o antigo continua levando para cá.`}
+            valor={negocio.slug}
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="url"
+            maxLength={30}
           />
           <AreaTexto
             id="frase"

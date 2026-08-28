@@ -163,7 +163,7 @@ export function MapaDaPagina({
           diferença que esta tela precisa mostrar.
         */}
         <div className="border-t-2 border-borda bg-fundo px-3 py-3">
-          <Zona lugar="Preso no rodapé" acesa={acesa("barra")}>
+          <Zona lugar="Fixo no rodapé" acesa={acesa("barra")}>
             <div className="flex flex-col gap-1.5">
               {acesa("barra") ? (
                 barra

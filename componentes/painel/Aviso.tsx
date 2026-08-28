@@ -5,6 +5,7 @@ import {
   ehRecusaDados,
 } from "@/lib/dados/erros";
 import { MOTIVOS_LINK, type RecusaLink } from "@/lib/links";
+import { MOTIVOS as MOTIVOS_SLUG, type Recusa as RecusaSlug } from "@/lib/slug";
 
 /**
  * As frases de campo recusado, escritas uma vez.
@@ -48,6 +49,16 @@ type Recado = { texto: string; saida?: { rotulo: string; href: string } };
  * escrito aqui: frase de tela mora junto da regra que a levanta.
  */
 function recado(erro: string): Recado {
+  /*
+   * O link da página recusado vira "slug_<motivo>", e o motivo vem de
+   * lib/slug.ts, o mesmo lugar que o cadastro usa: a regra e a frase moram
+   * juntas, então mudar uma sem a outra fica impossível.
+   */
+  if (erro.startsWith("slug_")) {
+    const motivo = MOTIVOS_SLUG[erro.slice(5) as RecusaSlug];
+    if (motivo) return { texto: `O link da sua página: ${motivo}` };
+  }
+
   const corte = erro.indexOf("_");
   if (corte > 0) {
     const campo = CAMPOS_DE_LINK[erro.slice(0, corte)];
