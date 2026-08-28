@@ -13,7 +13,7 @@ import { combinacao } from "@/lib/fontes";
 import { NOME_PRODUTO } from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
-import { CADASTRO_ABERTO } from "@/lib/site";
+import { CADASTRO_ABERTO, urlBase } from "@/lib/site";
 import {
   atelie,
   canto,
@@ -25,10 +25,35 @@ import {
 
 export const revalidate = 3600;
 
+/*
+ * O título e a descrição carregam a palavra que a pessoa digita no Google
+ * (página de negócio, catálogo, WhatsApp), e não a metáfora da marca: ninguém
+ * busca "porta" nem "sala". O Open Graph e o Twitter card fazem o link colado no
+ * WhatsApp chegar com prévia em vez de retângulo cinza, que é justamente o que o
+ * produto vende. A imagem sai de `app/opengraph-image.tsx`, ao lado desta rota.
+ */
+const TITULO_OG = `${NOME_PRODUTO}, a página do seu negócio`;
+const DESCRICAO_OG =
+  "Catálogo com preço, horário, galeria e botão de WhatsApp, num endereço com o seu nome. Grátis para publicar.";
+
 export const metadata: Metadata = {
-  title: `${NOME_PRODUTO}, o endereço do seu negócio na internet`,
+  title: `${NOME_PRODUTO} | Página do seu negócio com catálogo e WhatsApp`,
   description:
-    "O seu trabalho numa página só: as fotos, o que você vende, o horário e o caminho para falar com você. Com o seu nome no endereço, escrita para aparecer na busca.",
+    "Crie a página do seu negócio em minutos: catálogo com preço, horário, galeria e botão de WhatsApp. Endereço com o seu nome. Grátis para publicar.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: urlBase,
+    siteName: NOME_PRODUTO,
+    title: TITULO_OG,
+    description: DESCRICAO_OG,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITULO_OG,
+    description: DESCRICAO_OG,
+  },
 };
 
 /*

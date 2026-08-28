@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { preco } from "@/lib/formato";
 import {
   MESES_DE_CORTESIA_PROMETIDOS,
@@ -26,7 +27,7 @@ import {
 
 const DO_GRATIS = [
   <>
-    Endereço próprio, <b className="font-semibold text-texto">entrais.com.br/seu-nome</b>
+    Endereço próprio, <b className="font-semibold text-texto">{DOMINIO_PUBLICO}/seu-nome</b>
   </>,
   <>
     Catálogo com até <b className="font-semibold text-texto">20 itens</b>, com foto e preço
