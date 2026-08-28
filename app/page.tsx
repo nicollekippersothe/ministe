@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Calistoga, JetBrains_Mono } from "next/font/google";
+import { Fraunces, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
@@ -30,8 +30,8 @@ import {
 } from "@/lib/exemplos";
 
 /*
- * A tipografia da tela inicial, escolhida com a dona: Calistoga no display, o
- * calor humano de uma serifa cheia, e a mono discreta só nos rótulos, que é a
+ * A tipografia da tela inicial: Fraunces no display, uma serifa fina e
+ * editorial, com ar de joia, e a mono discreta só nos rótulos, que é a
  * assinatura. O corpo fica na Inter, que a letra "moderno" já baixa, então o
  * texto para de cair na fonte do aparelho, que era o que dava cara de gerado.
  *
@@ -39,8 +39,8 @@ import {
  * não há piscar nem pulo de layout. Só a tela inicial as importa, então só a
  * rota dela carrega os arquivos; a página pública do cliente continua intocada.
  */
-const displayLp = Calistoga({
-  weight: "400",
+const displayLp = Fraunces({
+  weight: ["400", "600"],
   subsets: ["latin"],
   variable: "--f-display-lp",
   display: "swap",
@@ -132,7 +132,7 @@ const PASSOS = [
   {
     titulo: "Publique e divulgue",
     texto:
-      "O endereço fica pronto para colar na bio, no anúncio, no cartão e em toda conversa que termina com alguém pedindo o seu contato.",
+      "O endereço fica pronto para colar na bio, no anúncio e no cartão.",
   },
 ];
 
@@ -319,7 +319,8 @@ export default async function Home() {
                 style={
                   {
                     fontFamily: "var(--f-display-lp)",
-                    letterSpacing: "-0.01em",
+                    fontWeight: 600,
+                    letterSpacing: "-0.015em",
                     "--atraso": "140ms",
                   } as React.CSSProperties
                 }
