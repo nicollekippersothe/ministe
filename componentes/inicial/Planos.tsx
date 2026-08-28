@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { preco } from "@/lib/formato";
-import { MESES_DE_CORTESIA_PROMETIDOS, PLANOS } from "@/lib/pagamento/precos";
+import {
+  MESES_DE_CORTESIA_PROMETIDOS,
+  NOME_DO_PLANO,
+  PLANOS,
+} from "@/lib/pagamento/precos";
 
 /**
  * Os planos na tela inicial: o que vende o completo.
@@ -70,7 +74,7 @@ export function Planos() {
     <div className="mx-auto grid max-w-3xl gap-5 sm:grid-cols-[1fr_1.1fr] sm:items-stretch">
       {/* Grátis */}
       <div className="surge flex flex-col rounded-3xl border border-borda bg-superficie p-6 sm:p-7">
-        <p className="titulo text-[1.35rem] text-texto">Grátis</p>
+        <p className="titulo text-[1.35rem] text-texto">{NOME_DO_PLANO.gratuito}</p>
         <p className="mt-3 flex items-baseline gap-1.5">
           <span className="titulo text-[2.4rem] leading-none text-texto">R$ 0</span>
           <span className="text-sm text-suave">para sempre</span>
@@ -100,7 +104,7 @@ export function Planos() {
           Mais escolhido
         </span>
 
-        <p className="titulo text-[1.35rem] text-texto">Completo</p>
+        <p className="titulo text-[1.35rem] text-texto">{NOME_DO_PLANO.pago}</p>
         <p className="mt-3 flex items-baseline gap-1.5">
           <span className="titulo text-[2.4rem] leading-none text-texto">
             {preco(PLANOS.mensal.valorCentavos)}
