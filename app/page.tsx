@@ -101,7 +101,7 @@ const BENEFICIOS = [
 
 const PASSOS = [
   {
-    titulo: "Escreva o nome na placa",
+    titulo: "Escolha o seu endereço",
     texto: "Se o endereço estiver livre, ele passa a ser seu na mesma hora.",
   },
   {
@@ -110,7 +110,7 @@ const PASSOS = [
       "O que você vende, por quanto, quando atende e por onde falam com você.",
   },
   {
-    titulo: "Abra a porta",
+    titulo: "Publique e divulgue",
     texto:
       "O endereço fica pronto para colar na bio, no anúncio, no cartão e em toda conversa que termina com alguém pedindo o seu contato.",
   },
@@ -212,6 +212,33 @@ export default async function Home() {
     >
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Marca href={null} />
+
+        {/* Âncoras para as seções, no computador. No celular a página é curta
+            e rolada de uma vez, então o menu seria peso sem função. */}
+        <nav
+          aria-label="Seções da página"
+          className="hidden items-center gap-7 lg:flex"
+        >
+          <a
+            href="#mosaico"
+            className="text-[0.92rem] font-medium text-suave hover:text-texto"
+          >
+            Recursos
+          </a>
+          <a
+            href="#exemplos"
+            className="text-[0.92rem] font-medium text-suave hover:text-texto"
+          >
+            Exemplos
+          </a>
+          <a
+            href="#planos"
+            className="text-[0.92rem] font-medium text-suave hover:text-texto"
+          >
+            Preço
+          </a>
+        </nav>
+
         {CADASTRO_ABERTO ? (
           <div className="-mr-3 flex items-center gap-1.5">
             <Link
@@ -251,24 +278,24 @@ export default async function Home() {
                 className="acende border-t border-borda pt-3 text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase"
                 style={{ "--atraso": "80ms" } as React.CSSProperties}
               >
-                Para quem cria e empreende
+                Página profissional para negócio pequeno
               </p>
 
               <h1
-                className="acende titulo mt-5 text-[2.5rem] leading-[0.96] text-balance text-texto sm:text-[3.4rem] lg:text-[4.1rem]"
+                className="acende titulo mt-5 text-[2.5rem] leading-[0.98] text-balance text-texto sm:text-[3.2rem] lg:text-[3.7rem]"
                 style={{ "--atraso": "160ms" } as React.CSSProperties}
               >
-                <span className="block">Exponha o seu melhor.</span>
-                Num endereço só seu.
+                <span className="block">A página do seu negócio.</span>
+                Com catálogo, horário e WhatsApp.
               </h1>
 
               <p
                 className="acende mt-6 max-w-md text-[1.05rem] leading-relaxed text-suave lg:text-[1.15rem]"
                 style={{ "--atraso": "240ms" } as React.CSSProperties}
               >
-                Reúna o seu portfólio, o catálogo e o contato numa página que
-                apresenta o seu trabalho com o cuidado de uma galeria. Bonita no
-                celular e no computador, pronta para receber quem chega.
+                Escolha o endereço, responda o essencial e publique, tudo pelo
+                celular. Fica no ar na hora, com o seu nome, bonita para receber
+                quem chega e para aparecer na busca.
               </p>
 
               <div
@@ -276,7 +303,7 @@ export default async function Home() {
                 style={{ "--atraso": "320ms" } as React.CSSProperties}
               >
                 <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-                  Escreva o nome que vai na placa.
+                  Escolha o seu endereço
                 </p>
                 <CampoAbertura rotulo={rotulo} />
               </div>
@@ -320,11 +347,11 @@ export default async function Home() {
               id="salas"
               className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Duas salas, duas montagens.
+              A sua página se monta pelo seu ramo.
             </h2>
             <p className="mt-4 max-w-xl leading-relaxed text-suave">
-              A página se arruma pelo ramo que você escolhe: uma abre pela
-              galeria, a outra abre pelo endereço e pelo horário.
+              O ramo que você escolhe decide a montagem: uma página abre pela
+              galeria de trabalhos, a outra abre pelo endereço e pelo horário.
             </p>
 
             <div className="mt-10 sm:mt-14">
@@ -339,7 +366,7 @@ export default async function Home() {
               id="mosaico"
               className="titulo max-w-2xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              O que cabe numa sala só.
+              Catálogo, horário, galeria e WhatsApp na mesma página.
             </h2>
             <div className="mt-10 sm:mt-14">
               <Mosaico
@@ -361,7 +388,7 @@ export default async function Home() {
               id="exemplos"
               className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Salas abertas agora.
+              Exemplos de página por tipo de negócio.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
               Exemplos que montamos para mostrar como fica. Abra o que mais
@@ -417,7 +444,7 @@ export default async function Home() {
                   id="beneficios"
                   className="titulo text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
                 >
-                  O que muda depois que a porta abre.
+                  O que você ganha depois de publicar.
                 </h2>
                 <p className="mt-4 max-w-sm leading-relaxed text-suave">
                   Quatro coisas que só aparecem depois de publicar.
@@ -452,7 +479,7 @@ export default async function Home() {
               id="passos"
               className="titulo max-w-lg text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Do nome à porta aberta, em três passos.
+              Como criar a sua página em três passos.
             </h2>
 
             {/*
@@ -482,7 +509,7 @@ export default async function Home() {
             {/* A mesma placa da abertura, ao alcance de quem leu até aqui. */}
             <div className="mt-14 max-w-xl">
               <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-                Escreva o nome que vai na placa.
+                Escolha o seu endereço
               </p>
               <CampoAbertura rotulo={rotulo} />
             </div>
