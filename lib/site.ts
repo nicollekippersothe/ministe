@@ -1,12 +1,28 @@
 import { configurado } from "./supabase/config";
 
-/** Endereço base do site, usado no JSON-LD, no canonical e no Open Graph. */
-export const urlBase = (
+/**
+ * Endereço base do site, usado no JSON-LD, no canonical e no Open Graph.
+ *
+ * **Garante o protocolo, e a barra do fim some.** `metadataBase: new URL(...)`
+ * em app/layout.tsx quebra o build inteiro quando a base vem sem `https://`, e
+ * o Next avalia isso na coleta de páginas, então o erro nem parece vir daqui:
+ * sai como "Failed to collect page data for /_not-found". Uma variável de
+ * ambiente escrita como "entrais.app", sem esquema, é o jeito mais fácil de
+ * cair nisso, e foi o que segurou a produção presa numa versão antiga. Aqui a
+ * base passa a aceitar as duas formas: com esquema fica como está, sem esquema
+ * ganha `https://`.
+ */
+function comEsquema(base: string): string {
+  const limpo = base.trim().replace(/\/$/, "");
+  return /^https?:\/\//.test(limpo) ? limpo : `https://${limpo}`;
+}
+
+export const urlBase = comEsquema(
   process.env.NEXT_PUBLIC_URL_BASE ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000")
-).replace(/\/$/, "");
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000"),
+);
 
 /**
  * O endereço deste deploy, que pode ser diferente do endereço do site.
