@@ -162,8 +162,12 @@ export function CampoAbertura({
 
         <button
           type="submit"
-          disabled={estado !== "livre"}
-          className="flex h-13 shrink-0 items-center justify-center rounded-2xl bg-texto px-7 text-[1.02rem] font-semibold text-fundo transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:h-auto sm:px-8"
+          /* Só um endereço barrado (palavra reservada ou formato inválido)
+             desliga o botão. Vazio e "conferindo" seguem com o botão cheio e
+             convidativo, senão a abertura da tela mostra um CTA apagado, que é
+             o pior primeiro quadro para uma página que vende. */
+          disabled={estado === "ocupado"}
+          className="flex h-13 shrink-0 items-center justify-center rounded-2xl bg-texto px-7 text-[1.02rem] font-semibold text-fundo transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 sm:h-auto sm:px-8"
         >
           {rotulo}
         </button>

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { Fraunces, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
 import { Carrossel } from "@/componentes/inicial/Carrossel";
-import { Cartela } from "@/componentes/inicial/Cartela";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
 import { Planos } from "@/componentes/inicial/Planos";
 import { Salas, type Sala } from "@/componentes/inicial/Salas";
@@ -28,28 +26,6 @@ import {
   psicologia,
   tatuagem,
 } from "@/lib/exemplos";
-
-/*
- * A tipografia da tela inicial: Fraunces no display, uma serifa fina e
- * editorial, com ar de joia, e a mono discreta só nos rótulos, que é a
- * assinatura. O corpo fica na Inter, que a letra "moderno" já baixa, então o
- * texto para de cair na fonte do aparelho, que era o que dava cara de gerado.
- *
- * `next/font` hospeda as duas no próprio domínio e reserva a métrica, então
- * não há piscar nem pulo de layout. Só a tela inicial as importa, então só a
- * rota dela carrega os arquivos; a página pública do cliente continua intocada.
- */
-const displayLp = Fraunces({
-  weight: ["400", "600"],
-  subsets: ["latin"],
-  variable: "--f-display-lp",
-  display: "swap",
-});
-const monoLp = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--f-mono-lp",
-  display: "swap",
-});
 
 export const revalidate = 3600;
 
@@ -228,7 +204,7 @@ export default async function Home() {
     <div
       data-tema="areia"
       data-fonte={letra.chave}
-      className={`min-h-dvh bg-fundo ${letra.classe} ${displayLp.variable} ${monoLp.variable}`}
+      className={`min-h-dvh bg-fundo ${letra.classe}`}
     >
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Marca href={null} />
@@ -294,36 +270,9 @@ export default async function Home() {
                 inicial passava longe disso. Dito uma vez, em letra pequena,
                 ele arma o "Entrai" que vem logo abaixo em tamanho grande.
               */}
-              {/* A assinatura: fio de ouro e um rótulo em mono. É o único ouro
-                  da tela, e o único lugar da mono, então os dois marcam sem
-                  competir com a marsala. */}
-              <div
-                className="acende flex items-center gap-3"
-                style={{ "--atraso": "60ms" } as React.CSSProperties}
-              >
-                <span
-                  aria-hidden
-                  className="h-px w-10 shrink-0"
-                  style={{ background: "var(--c-ouro)" }}
-                />
-                <span
-                  className="text-[0.7rem] tracking-[0.2em] text-suave uppercase"
-                  style={{ fontFamily: "var(--f-mono-lp)" }}
-                >
-                  página profissional
-                </span>
-              </div>
-
               <h1
-                className="acende mt-5 text-[2.7rem] leading-[1.04] text-balance text-texto sm:text-[3.3rem] lg:text-[3.7rem]"
-                style={
-                  {
-                    fontFamily: "var(--f-display-lp)",
-                    fontWeight: 600,
-                    letterSpacing: "-0.015em",
-                    "--atraso": "140ms",
-                  } as React.CSSProperties
-                }
+                className="acende titulo text-[2.9rem] leading-[0.96] text-balance text-texto sm:text-[3.7rem] lg:text-[4.3rem]"
+                style={{ "--atraso": "120ms" } as React.CSSProperties}
               >
                 <span className="block">A página do seu negócio.</span>
                 Com catálogo, horário e WhatsApp.
@@ -362,10 +311,9 @@ export default async function Home() {
               style={{ "--atraso": "400ms" } as React.CSSProperties}
             >
               <Carrossel>
-                {EM_CARTAZ.map(({ negocio: n, tipo }, i) => (
+                {EM_CARTAZ.map(({ negocio: n }, i) => (
                   <div key={n.slug}>
                     <Telefone negocio={n} prioridade={i === 0} leve />
-                    <Cartela negocio={n} tipo={tipo} className="mt-5" />
                   </div>
                 ))}
               </Carrossel>
