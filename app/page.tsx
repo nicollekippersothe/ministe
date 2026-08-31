@@ -19,6 +19,7 @@ import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
 import { CADASTRO_ABERTO, CONTATO_SUPORTE, urlBase } from "@/lib/site";
 import {
+  astrologia,
   atelie,
   canto,
   doceria,
@@ -158,7 +159,7 @@ const SALA_LOJA: Sala = {
  * pergunta dos dois primeiros segundos é "serve para mim".
  */
 const EM_CARTAZ = [
-  { negocio: tatuagem, tipo: "Tatuador" },
+  { negocio: astrologia, tipo: "Astróloga" },
   { negocio: canto, tipo: "Professora de canto" },
   { negocio: psicologia, tipo: "Psicóloga" },
 ];
@@ -204,7 +205,7 @@ export default async function Home() {
     <div
       data-tema="areia"
       data-fonte={letra.chave}
-      className={`min-h-dvh bg-fundo ${letra.classe}`}
+      className={`parede-papel min-h-dvh bg-fundo ${letra.classe}`}
     >
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Marca href={null} />
@@ -278,6 +279,7 @@ export default async function Home() {
             legendas={EM_CARTAZ.map(({ negocio, tipo }) => ({
               nome: negocio.nome,
               tipo,
+              cidade: negocio.cidade,
             }))}
             cabecalho={
               <>

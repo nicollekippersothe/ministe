@@ -33,8 +33,8 @@ export function HeroDemo({
 }: {
   /** O endereço de cada página, na ordem dos aparelhos. slugs[i] é o de children[i]. */
   slugs: string[];
-  /** A legenda de parede de cada obra: nome de quem assina e o ofício. */
-  legendas: { nome: string; tipo: string }[];
+  /** A legenda de parede de cada obra: quem assina, o ofício e a cidade. */
+  legendas: { nome: string; tipo: string; cidade: string | null }[];
   rotulo: string;
   /** Sobrescrita, título e apoio, montados no servidor e servidos aqui em cima da placa. */
   cabecalho: React.ReactNode;
@@ -175,13 +175,21 @@ export function HeroDemo({
           seria muda, já que os aparelhos são decorativos.
         */}
         {legenda ? (
-          <p
-            className="mt-5 text-center text-[0.82rem] leading-snug"
-            aria-live="polite"
-          >
-            <span className="font-semibold text-texto">{legenda.nome}</span>
-            <span className="text-suave"> · {legenda.tipo}</span>
-          </p>
+          <div className="mt-6 text-center" aria-live="polite">
+            {/* Um fio curto de latão, como a haste da plaquinha na parede. */}
+            <span
+              aria-hidden
+              className="mx-auto mb-3 block h-px w-8"
+              style={{ background: "var(--c-ouro)" }}
+            />
+            <p className="text-[0.95rem] font-semibold text-texto">
+              {legenda.nome}
+            </p>
+            <p className="mt-0.5 text-[0.75rem] tracking-[0.14em] text-suave uppercase">
+              {legenda.tipo}
+              {legenda.cidade ? ` · ${legenda.cidade}` : ""}
+            </p>
+          </div>
         ) : null}
       </div>
     </div>
