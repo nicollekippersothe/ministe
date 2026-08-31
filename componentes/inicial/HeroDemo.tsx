@@ -143,10 +143,10 @@ export function HeroDemo({
         próprio aparelho, então o seguinte não espia pela direita.
       */}
       <div
-        className="foco-heroi acende relative mx-auto w-full max-w-[19rem] lg:max-w-none lg:-translate-y-3 lg:scale-[1.06]"
+        className="acende relative mx-auto w-full max-w-[19rem] lg:max-w-none"
         style={{ "--atraso": "440ms" } as React.CSSProperties}
       >
-        <div className="mx-auto w-full max-w-[19rem] overflow-hidden pt-3 pb-5 lg:max-w-[23rem]">
+        <div className="mx-auto w-full max-w-[19rem] overflow-hidden pt-3 pb-5 lg:max-w-[21rem]">
           <div
             className="flex transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
             style={{ transform: `translateX(-${atual * 100}%)` }}
