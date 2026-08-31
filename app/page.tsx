@@ -289,12 +289,11 @@ export default async function Home() {
                   de recurso desce para o apoio, que é o lugar dela.
                 */}
                 <h1
-                  className="acende titulo mt-4 text-[3rem] leading-[0.9] text-balance text-texto sm:text-[4.2rem] lg:text-[5rem]"
+                  className="acende titulo mt-5 text-[2.4rem] leading-[1.04] text-balance text-texto sm:text-[3rem] lg:text-[3.5rem]"
                   style={{ "--atraso": "120ms" } as React.CSSProperties}
                 >
-                  <span className="block">A página do</span>
-                  <span className="block">seu negócio,</span>
-                  <span className="block text-destaque">no seu endereço.</span>
+                  A página do seu negócio,{" "}
+                  <span className="text-destaque">no seu endereço.</span>
                 </h1>
 
                 <p
