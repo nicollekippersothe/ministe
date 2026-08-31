@@ -114,7 +114,7 @@ export function HeroDemo({
 
   return (
     <div
-      className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_25rem] lg:gap-6"
+      className="heroi-painel"
       onMouseEnter={() => {
         pausado.current = true;
       }}
@@ -122,10 +122,10 @@ export function HeroDemo({
         pausado.current = false;
       }}
     >
-      <div className="relative z-10 max-w-2xl">
+      <div className="mx-auto max-w-2xl text-center">
         {cabecalho}
         <div
-          className="acende mt-8"
+          className="acende mx-auto mt-8 max-w-xl"
           style={{ "--atraso": "320ms" } as React.CSSProperties}
         >
           <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
@@ -136,17 +136,18 @@ export function HeroDemo({
       </div>
 
       {/*
-        O aparelho, no foco de luz quente da parede. Desliza, não desaparece:
-        empilhar duas superfícies opacas e cruzar a opacidade delas nunca fica
-        limpo, porque o fundo aparece no meio. Deslizando, cada página está
-        sempre inteira ou fora de vista. O corte do trilho cai na largura do
-        próprio aparelho, então o seguinte não espia pela direita.
+        O aparelho no centro, furando a borda de baixo do painel: a margem
+        negativa encolhe a caixa do painel, e a parte de baixo do celular fica
+        pendurada para fora, como quadro grande numa parede baixa. Desliza, não
+        desaparece: empilhar duas superfícies opacas e cruzar a opacidade delas
+        nunca fica limpo, porque o fundo aparece no meio. Deslizando, cada página
+        está sempre inteira ou fora de vista.
       */}
       <div
-        className="acende relative mx-auto w-full max-w-[19rem] lg:max-w-none"
+        className="acende relative mx-auto -mb-14 mt-10 w-full max-w-[18rem]"
         style={{ "--atraso": "440ms" } as React.CSSProperties}
       >
-        <div className="mx-auto w-full max-w-[19rem] overflow-hidden pt-3 pb-5 lg:max-w-[21rem]">
+        <div className="overflow-hidden pt-3 pb-2">
           <div
             className="flex transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
             style={{ transform: `translateX(-${atual * 100}%)` }}
@@ -164,11 +165,12 @@ export function HeroDemo({
         </div>
 
         {/*
-          Onde estou e quantos faltam, sem esperar para descobrir. Espelham o
-          endereço no ar: o ponto cheio é a página que a placa está escrevendo.
+          Onde estou e quantos faltam. Espelham o endereço no ar: o ponto cheio é
+          a página que a placa está escrevendo. Ficam presos ao pé do aparelho,
+          já fora do painel.
         */}
         {total > 1 ? (
-          <div className="mt-1 flex justify-center gap-1.5" aria-hidden>
+          <div className="mt-2 flex justify-center gap-1.5" aria-hidden>
             {quadros.map((_, i) => (
               <span
                 key={i}

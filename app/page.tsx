@@ -261,7 +261,7 @@ export default async function Home() {
           cartaz. É o único movimento orquestrado da página; o resto da rolagem
           usa o `surge`, que já existia.
         */}
-        <section id="comecar" className="mx-auto w-full max-w-6xl px-6 pt-6 pb-14 sm:pt-12 sm:pb-24">
+        <section id="comecar" className="mx-auto w-full max-w-5xl px-4 pt-6 pb-24 sm:px-6 sm:pt-10 sm:pb-32">
           {/*
             O herói que se monta ao vivo. A placa escreve o endereço de um
             negócio, letra a letra, e o celular ao lado mostra a página daquele
@@ -297,7 +297,7 @@ export default async function Home() {
                 </h1>
 
                 <p
-                  className="acende mt-6 max-w-md text-[1.12rem] leading-relaxed text-suave"
+                  className="acende mx-auto mt-5 max-w-md text-[1.1rem] leading-relaxed text-suave"
                   style={
                     {
                       fontFamily: "var(--f-corpo)",
