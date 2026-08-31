@@ -26,12 +26,15 @@ import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
  */
 export function HeroDemo({
   slugs,
+  legendas,
   rotulo,
   cabecalho,
   children,
 }: {
   /** O endereço de cada página, na ordem dos aparelhos. slugs[i] é o de children[i]. */
   slugs: string[];
+  /** A legenda de parede de cada obra: nome de quem assina e o ofício. */
+  legendas: { nome: string; tipo: string }[];
   rotulo: string;
   /** Sobrescrita, título e apoio, montados no servidor e servidos aqui em cima da placa. */
   cabecalho: React.ReactNode;
@@ -112,9 +115,10 @@ export function HeroDemo({
     };
   }, [slugs, total]);
 
+  const legenda = legendas[atual];
+
   return (
     <div
-      className="heroi-painel"
       onMouseEnter={() => {
         pausado.current = true;
       }}
@@ -129,25 +133,25 @@ export function HeroDemo({
           style={{ "--atraso": "320ms" } as React.CSSProperties}
         >
           <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-            Escolha o seu endereço
+            Reserve o seu endereço
           </p>
           <CampoAbertura rotulo={rotulo} dica={dica} onEngajar={encerrar} />
         </div>
       </div>
 
       {/*
-        O aparelho no centro, furando a borda de baixo do painel: a margem
-        negativa encolhe a caixa do painel, e a parte de baixo do celular fica
-        pendurada para fora, como quadro grande numa parede baixa. Desliza, não
-        desaparece: empilhar duas superfícies opacas e cruzar a opacidade delas
-        nunca fica limpo, porque o fundo aparece no meio. Deslizando, cada página
-        está sempre inteira ou fora de vista.
+        A obra na parede: o aparelho pendurado no centro, com a própria sombra
+        fazendo o foco de luz da galeria. Nada de painel nem de brilho atrás,
+        porque na parede branca quem tem cor é a obra. Desliza, não desaparece:
+        empilhar duas superfícies opacas e cruzar a opacidade delas nunca fica
+        limpo, porque o fundo aparece no meio. Deslizando, cada página está
+        sempre inteira ou fora de vista.
       */}
       <div
-        className="acende relative mx-auto -mb-14 mt-10 w-full max-w-[18rem]"
+        className="acende relative mx-auto mt-14 w-full max-w-[18rem]"
         style={{ "--atraso": "440ms" } as React.CSSProperties}
       >
-        <div className="overflow-hidden pt-3 pb-2">
+        <div className="overflow-hidden pt-3 pb-4">
           <div
             className="flex transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
             style={{ transform: `translateX(-${atual * 100}%)` }}
@@ -165,21 +169,19 @@ export function HeroDemo({
         </div>
 
         {/*
-          Onde estou e quantos faltam. Espelham o endereço no ar: o ponto cheio é
-          a página que a placa está escrevendo. Ficam presos ao pé do aparelho,
-          já fora do painel.
+          A legenda de parede: nome de quem assina e o ofício, como a plaquinha
+          ao pé de uma obra numa mostra. Troca junto com a página, sem piscar. O
+          aria-live avisa o leitor de tela da troca de obra, que de outro jeito
+          seria muda, já que os aparelhos são decorativos.
         */}
-        {total > 1 ? (
-          <div className="mt-2 flex justify-center gap-1.5" aria-hidden>
-            {quadros.map((_, i) => (
-              <span
-                key={i}
-                className={`block h-1.5 rounded-full transition-[width,background-color] duration-300 ${
-                  i === atual ? "w-5 bg-texto" : "w-1.5 bg-texto/25"
-                }`}
-              />
-            ))}
-          </div>
+        {legenda ? (
+          <p
+            className="mt-5 text-center text-[0.82rem] leading-snug"
+            aria-live="polite"
+          >
+            <span className="font-semibold text-texto">{legenda.nome}</span>
+            <span className="text-suave"> · {legenda.tipo}</span>
+          </p>
         ) : null}
       </div>
     </div>

@@ -261,43 +261,35 @@ export default async function Home() {
           cartaz. É o único movimento orquestrado da página; o resto da rolagem
           usa o `surge`, que já existia.
         */}
-        <section id="comecar" className="mx-auto w-full max-w-5xl px-4 pt-6 pb-24 sm:px-6 sm:pt-10 sm:pb-32">
+        <section id="comecar" className="mx-auto w-full max-w-5xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-28">
           {/*
-            O herói que se monta ao vivo. A placa escreve o endereço de um
-            negócio, letra a letra, e o celular ao lado mostra a página daquele
-            endereço; troca o endereço, desliza a página. A placa e o celular são
-            uma coisa só, sincronizados pelo HeroDemo. Aqui ficam as frases; o
+            O herói é uma galeria de parede branca. A frase que abre é a promessa
+            aspiracional ("seu trabalho merece uma parede branca"), a placa
+            reserva o endereço, e a obra fica pendurada logo abaixo: o celular
+            com a página de um ofício, com a legenda ao pé. A placa escreve o
+            endereço e o celular mostra a página daquele endereço, os dois
+            sincronizados pelo HeroDemo, sem piscar. Aqui ficam as frases; o
             componente de cliente recebe texto pronto e os aparelhos prontos do
             servidor.
           */}
           <HeroDemo
             rotulo={rotulo}
             slugs={EM_CARTAZ.map(({ negocio }) => negocio.slug)}
+            legendas={EM_CARTAZ.map(({ negocio, tipo }) => ({
+              nome: negocio.nome,
+              tipo,
+            }))}
             cabecalho={
               <>
-                <p
-                  className="acende text-[0.72rem] font-semibold tracking-[0.2em] text-suave uppercase"
-                  style={{ "--atraso": "40ms" } as React.CSSProperties}
-                >
-                  Página, catálogo e WhatsApp
-                </p>
-
-                {/*
-                  A hierarquia mora aqui: as duas primeiras linhas dizem o que é,
-                  em tinta cheia, e a terceira, na cor da marca, rima com a placa
-                  logo abaixo e com o endereço que ela escreve ao vivo. A lista
-                  de recurso desce para o apoio, que é o lugar dela.
-                */}
                 <h1
-                  className="acende titulo mt-5 text-[2.4rem] leading-[1.04] text-balance text-texto sm:text-[3rem] lg:text-[3.5rem]"
+                  className="acende titulo text-[2.3rem] leading-[1.06] text-balance text-texto sm:text-[2.9rem] lg:text-[3.4rem]"
                   style={{ "--atraso": "120ms" } as React.CSSProperties}
                 >
-                  A página do seu negócio,{" "}
-                  <span className="text-destaque">no seu endereço.</span>
+                  Seu trabalho merece uma parede branca.
                 </h1>
 
                 <p
-                  className="acende mx-auto mt-5 max-w-md text-[1.1rem] leading-relaxed text-suave"
+                  className="acende mx-auto mt-6 max-w-lg text-[1.1rem] leading-relaxed text-suave text-pretty"
                   style={
                     {
                       fontFamily: "var(--f-corpo)",
@@ -305,8 +297,8 @@ export default async function Home() {
                     } as React.CSSProperties
                   }
                 >
-                  Catálogo, horário, galeria e o botão de WhatsApp, prontos em
-                  minutos direto do celular. Grátis para publicar.
+                  O endereço na internet de quem vive do próprio ofício. Um lugar
+                  bem iluminado, onde a imagem vem primeiro.
                 </p>
               </>
             }
