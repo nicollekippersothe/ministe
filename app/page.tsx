@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
-import { Carrossel } from "@/componentes/inicial/Carrossel";
+import { HeroDemo } from "@/componentes/inicial/HeroDemo";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
 import { Planos } from "@/componentes/inicial/Planos";
 import { Salas, type Sala } from "@/componentes/inicial/Salas";
@@ -261,75 +261,61 @@ export default async function Home() {
           cartaz. É o único movimento orquestrado da página; o resto da rolagem
           usa o `surge`, que já existia.
         */}
-        <section id="comecar" className="mx-auto w-full max-w-6xl px-6 pt-4 pb-12 sm:pt-10 sm:pb-24">
-          <div className="grid items-start gap-6 lg:grid-cols-[1fr_19rem] lg:gap-14">
-            <div className="max-w-2xl">
-              {/*
-                A cartela do próprio nome da marca. O trocadilho fica debaixo do
-                nariz do produto: entrais é o que se diz na porta, e a tela
-                inicial passava longe disso. Dito uma vez, em letra pequena,
-                ele arma o "Entrai" que vem logo abaixo em tamanho grande.
-              */}
-              {/*
-                A hierarquia mora aqui: a primeira linha diz o que é, em tinta
-                cheia, e a segunda diz o que a marca tem de próprio, na cor da
-                marca. O que era lista de recurso ("com catálogo, horário e
-                WhatsApp") desce para o apoio, que é o lugar de recurso. A
-                segunda linha rima com a placa logo abaixo, que escreve um
-                endereço com o nome de verdade na frente de quem chega.
-              */}
-              <h1
-                className="acende titulo text-[2.9rem] leading-[0.95] text-balance text-texto sm:text-[3.7rem] lg:text-[4.5rem]"
-                style={{ "--atraso": "120ms" } as React.CSSProperties}
-              >
-                <span className="block">A página do seu negócio,</span>
-                <span className="block text-destaque">
-                  num endereço com o seu nome.
-                </span>
-              </h1>
-
-              <p
-                className="acende mt-6 max-w-md text-[1.12rem] leading-relaxed text-suave"
-                style={
-                  {
-                    fontFamily: "var(--f-corpo)",
-                    "--atraso": "220ms",
-                  } as React.CSSProperties
-                }
-              >
-                Catálogo, horário, galeria e o botão de WhatsApp, prontos em
-                minutos direto do celular. Grátis para publicar.
-              </p>
-
-              <div
-                className="acende mt-9"
-                style={{ "--atraso": "320ms" } as React.CSSProperties}
-              >
-                <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-                  Escolha o seu endereço
+        <section id="comecar" className="mx-auto w-full max-w-6xl px-6 pt-6 pb-14 sm:pt-12 sm:pb-24">
+          {/*
+            O herói que se monta ao vivo. A placa escreve o endereço de um
+            negócio, letra a letra, e o celular ao lado mostra a página daquele
+            endereço; troca o endereço, desliza a página. A placa e o celular são
+            uma coisa só, sincronizados pelo HeroDemo. Aqui ficam as frases; o
+            componente de cliente recebe texto pronto e os aparelhos prontos do
+            servidor.
+          */}
+          <HeroDemo
+            rotulo={rotulo}
+            slugs={EM_CARTAZ.map(({ negocio }) => negocio.slug)}
+            cabecalho={
+              <>
+                <p
+                  className="acende text-[0.72rem] font-semibold tracking-[0.2em] text-suave uppercase"
+                  style={{ "--atraso": "40ms" } as React.CSSProperties}
+                >
+                  Página, catálogo e WhatsApp
                 </p>
-                <CampoAbertura rotulo={rotulo} />
-              </div>
-            </div>
 
-            {/*
-              O que está pendurado, com a etiqueta embaixo. No celular ele vem
-              logo depois da placa, e o vão entre os dois é de respiro, e não
-              mais de meia tela vazia.
-            */}
-            <div
-              className="acende"
-              style={{ "--atraso": "400ms" } as React.CSSProperties}
-            >
-              <Carrossel>
-                {EM_CARTAZ.map(({ negocio: n }, i) => (
-                  <div key={n.slug}>
-                    <Telefone negocio={n} prioridade={i === 0} leve />
-                  </div>
-                ))}
-              </Carrossel>
-            </div>
-          </div>
+                {/*
+                  A hierarquia mora aqui: as duas primeiras linhas dizem o que é,
+                  em tinta cheia, e a terceira, na cor da marca, rima com a placa
+                  logo abaixo e com o endereço que ela escreve ao vivo. A lista
+                  de recurso desce para o apoio, que é o lugar dela.
+                */}
+                <h1
+                  className="acende titulo mt-4 text-[3rem] leading-[0.9] text-balance text-texto sm:text-[4.2rem] lg:text-[5rem]"
+                  style={{ "--atraso": "120ms" } as React.CSSProperties}
+                >
+                  <span className="block">A página do</span>
+                  <span className="block">seu negócio,</span>
+                  <span className="block text-destaque">no seu endereço.</span>
+                </h1>
+
+                <p
+                  className="acende mt-6 max-w-md text-[1.12rem] leading-relaxed text-suave"
+                  style={
+                    {
+                      fontFamily: "var(--f-corpo)",
+                      "--atraso": "220ms",
+                    } as React.CSSProperties
+                  }
+                >
+                  Catálogo, horário, galeria e o botão de WhatsApp, prontos em
+                  minutos direto do celular. Grátis para publicar.
+                </p>
+              </>
+            }
+          >
+            {EM_CARTAZ.map(({ negocio: n }, i) => (
+              <Telefone key={n.slug} negocio={n} prioridade={i === 0} leve />
+            ))}
+          </HeroDemo>
         </section>
 
         {/*

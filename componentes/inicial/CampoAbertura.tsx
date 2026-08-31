@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { conferirFormato, MOTIVOS, normalizar } from "@/lib/slug";
 
@@ -26,91 +26,34 @@ type Estado = "vazio" | "conferindo" | "livre" | "ocupado";
  */
 export function CampoAbertura({
   rotulo = "Criar minha página grátis",
+  dica = "seunome",
+  onEngajar,
 }: {
   /**
    * Enquanto o cadastro não abre, o botão diz "Continuar": prometer criar e
    * cair numa tela que não cria seria pegar a pessoa de jeito.
    */
   rotulo?: string;
+  /**
+   * O que aparece depois da barra enquanto o campo está vazio. Fixo em
+   * "seunome" quando a placa vive sozinha; no herói, o HeroDemo passa aqui o
+   * endereço sendo escrito letra a letra, sincronizado com a página no celular.
+   * É só dica (placeholder): o valor real fica intocado e nada é conferido.
+   */
+  dica?: string;
+  /**
+   * Avisa o dono da demonstração de que a pessoa assumiu a placa (foco ou
+   * primeira tecla), para a escrita automática parar e sair da frente. Uma placa
+   * que escrevesse por baixo de quem digita seria o pior defeito da tela.
+   */
+  onEngajar?: () => void;
 }) {
   const id = useId();
   const [valor, setValor] = useState("");
   const [estado, setEstado] = useState<Estado>("vazio");
   const [motivo, setMotivo] = useState<string | null>(null);
 
-  // A dica que a placa mostra depois da barra enquanto o campo está vazio. Ela
-  // começa fixa e a placa passa a escrevê-la sozinha logo abaixo. O gancho de
-  // parar a demonstração fica num ref para os handlers do campo alcançarem sem
-  // religar o efeito.
-  const [dica, setDica] = useState("seunome");
-  const pararDemo = useRef<() => void>(() => {});
-
   const slug = normalizar(valor);
-
-  /*
-   * A placa se escrevendo sozinha, o único gesto orquestrado da tela.
-   *
-   * Antes de qualquer toque, a placa demonstra "seu nome vira seu endereço":
-   * escreve um exemplo depois da barra, letra a letra, segura, apaga e vai para
-   * o próximo. É só a dica do campo que se move, na mesma cor suave do
-   * "seunome"; o valor real fica intocado, nenhum endereço é conferido e nada é
-   * inventado como livre. O que a pessoa vê é a forma do que vai acontecer com o
-   * nome dela.
-   *
-   * A regra que importa: no instante em que a pessoa assume o campo (foco ou
-   * primeira tecla), a demonstração para e some para sempre. Uma placa que
-   * escrevesse por baixo de quem está digitando seria o pior defeito da tela.
-   * E quem pediu menos movimento no sistema não vê nada disso: a placa nasce
-   * com o "seunome" parado.
-   */
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const exemplos = ["marina-tatua", "docesdaana", "atelie-rosa", "psi-joao"];
-    let vivo = true;
-    let timer: ReturnType<typeof setTimeout>;
-
-    const parar = () => {
-      vivo = false;
-      clearTimeout(timer);
-      setDica("seunome");
-    };
-    pararDemo.current = parar;
-
-    let iExemplo = 0;
-    const escrever = () => {
-      const alvo = exemplos[iExemplo];
-
-      const digitar = (n: number) => {
-        if (!vivo) return;
-        setDica(alvo.slice(0, n));
-        if (n < alvo.length) {
-          timer = setTimeout(() => digitar(n + 1), 95);
-        } else {
-          timer = setTimeout(() => apagar(alvo.length), 1500);
-        }
-      };
-
-      const apagar = (n: number) => {
-        if (!vivo) return;
-        setDica(alvo.slice(0, n) || "seunome");
-        if (n > 0) {
-          timer = setTimeout(() => apagar(n - 1), 45);
-        } else {
-          iExemplo = (iExemplo + 1) % exemplos.length;
-          timer = setTimeout(escrever, 500);
-        }
-      };
-
-      digitar(1);
-    };
-
-    // Deixa a entrada (.acende) assentar antes de a placa se apresentar:
-    // primeiro a tela chega, depois ela começa a escrever.
-    timer = setTimeout(escrever, 800);
-
-    return parar;
-  }, []);
 
   useEffect(() => {
     if (slug === "") {
@@ -183,10 +126,10 @@ export function CampoAbertura({
             name="slug"
             value={valor}
             onChange={(e) => {
-              pararDemo.current();
+              onEngajar?.();
               setValor(e.target.value);
             }}
-            onFocus={() => pararDemo.current()}
+            onFocus={() => onEngajar?.()}
             placeholder={dica}
             aria-describedby={`${id}-estado`}
             aria-invalid={estado === "ocupado"}

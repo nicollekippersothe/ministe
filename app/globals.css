@@ -415,6 +415,34 @@ body {
  * unico brilho da pagina: e o estado que importa no momento em que ele
  * aparece, entao ele merece corpo em vez de so uma linha de texto.
  */
+/*
+ * O foco de luz atras do aparelho do heroi, na parede clara.
+ *
+ * A parede escura ganha foco com o brilho da marsala; a parede clara pede o
+ * oposto, um halo quente e discreto de latao que levanta o aparelho do fundo sem
+ * sujar o creme. E pintura so, em ::before com z negativo e sem eventos de
+ * ponteiro: nao rouba toque nem custa layout. Sangra para fora do proprio
+ * aparelho, que e o que faz a peca furar a faixa em vez de morar presa na coluna.
+ */
+.foco-heroi {
+  position: relative;
+  isolation: isolate;
+}
+
+.foco-heroi::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -16% -14% -10%;
+  pointer-events: none;
+  background: radial-gradient(
+    58% 52% at 54% 40%,
+    color-mix(in srgb, var(--c-ouro) 20%, transparent),
+    color-mix(in srgb, var(--c-destaque) 7%, transparent) 46%,
+    transparent 72%
+  );
+}
+
 .placa {
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent);
   transition:
