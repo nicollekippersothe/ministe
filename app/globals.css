@@ -481,6 +481,63 @@ body {
   background-size: 170px 170px;
 }
 
+/*
+ * O acabamento da parede, separado do tema.
+ *
+ * O tema escolhe a cor da parede; o acabamento escolhe a textura ou a luz dela,
+ * e os dois se combinam livremente porque o acabamento é todo feito dos tokens
+ * do tema (a mesma pintura serve à parede clara e à escura). Fica dentro do
+ * cartão (`main`), atrás do conteúdo: as obras emolduradas, os cartões do
+ * catálogo e a chapa de links têm superfície própria e cobrem o acabamento onde
+ * precisam, então ele aparece só na parede, atrás do que está pendurado nela.
+ * `liso` é a ausência, e por isso não precisa de regra.
+ *
+ * Tudo em `background-image` e `box-shadow`, sobre a cor que o Tailwind já pôs
+ * em `main`: pintura, sem custo de layout e sem roubar toque.
+ */
+/* Papel: o grão da parede de algodão. O ruído do tema claro é escuro, então
+   some sobre parede escura; os temas escuros recebem a versão invertida, um
+   grão claro, pela mesma técnica de SVG sem baixar imagem. */
+[data-fundo="papel"] main {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  background-size: 170px 170px;
+}
+[data-tema="noite"] [data-fundo="papel"] main,
+[data-tema="cosmico"] [data-fundo="papel"] main {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='table' tableValues='1 0'/%3E%3CfeFuncG type='table' tableValues='1 0'/%3E%3CfeFuncB type='table' tableValues='1 0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+}
+
+/* Tinta: a parede inteira ganha um véu do acento do tema, uma cor de fundo
+   diferente do branco, no espírito do linkbio, mas tirada do próprio tema. */
+[data-fundo="tinta"] main {
+  background-image: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--c-destaque) 13%, transparent),
+    color-mix(in srgb, var(--c-destaque) 13%, transparent)
+  );
+}
+
+/* Degradê: uma passagem diagonal do acento ao latão, de canto a canto, cobrindo
+   a parede toda. É a opção com mais cor e movimento. */
+[data-fundo="degrade"] main {
+  background-image: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--c-destaque) 24%, transparent) 0%,
+    transparent 48%,
+    color-mix(in srgb, var(--c-ouro) 18%, transparent) 100%
+  );
+  background-repeat: no-repeat;
+}
+
+/* Vinheta: as bordas da parede escurecem, como a luz caindo no centro de uma
+   sala de mostra. Estática, então continua no reduzido de movimento. Dá corpo
+   especialmente aos temas escuros. */
+[data-fundo="vinheta"] main {
+  box-shadow:
+    inset 0 0 8rem color-mix(in srgb, var(--c-texto) 16%, transparent),
+    0 12px 36px -12px rgba(28, 25, 23, 0.14);
+}
+
 .placa {
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent);
   transition:

@@ -53,6 +53,7 @@ const base = {
   acaoPrincipal: null,
   acaoSecundaria: null,
   tema: "areia" as const,
+  fundo: "liso" as const,
   plano: "gratuito" as const,
   publicado: true,
   telefone: null,
@@ -82,6 +83,9 @@ export const massagem: Negocio = {
   // A parede branca de galeria: o bem-estar pede a página mais quieta, com a
   // tinta grafite no lugar do preto e a cor toda vindo da foto, não do fundo.
   tema: "minimal",
+  // O grão de papel de algodão, o acabamento mais discreto, para não roubar a
+  // quietude que o tema pede.
+  fundo: "papel",
   fonte: "moderno",
   whatsapp: "5531988886666",
   mensagemPadrao: "Olá! Vim pela página e gostaria de marcar uma sessão.",
@@ -277,6 +281,8 @@ export const astrologia: Negocio = {
   // A parede de noite profunda: o céu do trabalho vira o fundo da página, com a
   // ametista no lugar do latão. É a curadoria Cósmico levada ao produto.
   tema: "cosmico",
+  // A vinheta fecha a luz no centro, como uma sala de mostra escura.
+  fundo: "vinheta",
   fonte: "moderno",
   whatsapp: "5571988882222",
   mensagemPadrao: "Olá! Vim pela página e gostaria de saber sobre uma leitura.",

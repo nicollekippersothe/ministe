@@ -112,6 +112,9 @@ export function PaginaPublica({
   return (
     <div
       data-tema={negocio.tema}
+      /* `liso` é a ausência de acabamento, então nem vai ao DOM: só os fundos
+         com pintura carregam o atributo. */
+      data-fundo={negocio.fundo === "liso" ? undefined : negocio.fundo}
       data-fonte={fonte.chave}
       data-conta={contar ? negocio.slug : undefined}
       className={`marca min-h-dvh bg-fundo ${fonte.classe}`}
