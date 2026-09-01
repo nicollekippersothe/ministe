@@ -79,6 +79,9 @@ export const massagem: Negocio = {
   frase: "Massoterapia e drenagem, com hora marcada, na Savassi.",
   logo: foto("spa-logo.jpg", "Retrato de Helena Vasques", 400),
   capa: capa("spa-capa.jpg", "Poltrona de madeira junto à cortina de linho, na sala de atendimento"),
+  // A parede branca de galeria: o bem-estar pede a página mais quieta, com a
+  // tinta grafite no lugar do preto e a cor toda vindo da foto, não do fundo.
+  tema: "minimal",
   fonte: "moderno",
   whatsapp: "5531988886666",
   mensagemPadrao: "Olá! Vim pela página e gostaria de marcar uma sessão.",
@@ -260,12 +263,17 @@ export const psicologia: Negocio = {
  */
 export const astrologia: Negocio = {
   ...base,
+  // O slug segue "nara-bittencourt" porque é o identificador já gravado nas
+  // correções do banco; o nome de tela é o que a pessoa lê, e é ele que muda.
   slug: "nara-bittencourt",
   categoria: "consultoria",
-  nome: "Nara Bittencourt",
+  nome: "Ísis Moraes",
   frase: "Astrologia natal e leitura de trânsitos, por chamada, com o áudio da sessão gravado.",
-  logo: foto("astro-logo.jpg", "Retrato de Nara Bittencourt", 400),
+  logo: foto("astro-logo.jpg", "Retrato de Ísis Moraes", 400),
   capa: capa("astro-capa.jpg", "Céu estrelado sobre o horizonte"),
+  // A parede de noite profunda: o céu do trabalho vira o fundo da página, com a
+  // ametista no lugar do latão. É a curadoria Cósmico levada ao produto.
+  tema: "cosmico",
   fonte: "moderno",
   whatsapp: "5571988882222",
   mensagemPadrao: "Olá! Vim pela página e gostaria de saber sobre uma leitura.",

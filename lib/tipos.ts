@@ -7,7 +7,7 @@
 
 import type { ChaveFonte } from "./fontes";
 
-export type Tema = "areia" | "noite" | "menta";
+export type Tema = "areia" | "noite" | "menta" | "cosmico" | "minimal";
 
 export type Plano = "gratuito" | "pago";
 

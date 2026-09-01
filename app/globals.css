@@ -124,6 +124,58 @@
   --c-fechado-texto: #5a6560;
 }
 
+/*
+ * Cósmico. A parede de noite profunda, para quem lê o céu.
+ *
+ * Nasceu no laboratório de curadorias e virou tema do produto. É a irmã fria da
+ * noite: um azul quase preto de espaço, texto em lavanda clara e o acento numa
+ * ametista luminosa, no lugar do latão. Serve a astrólogo, tarólogo, fotógrafo
+ * de longa exposição, músico de palco escuro. Contrastes conferidos sobre o
+ * fundo: texto 15+, o suave 6,1, a ametista 6,7 — todos acima do AA.
+ */
+[data-tema="cosmico"] {
+  --c-fundo: #0b0b16;
+  --c-superficie: #14131f;
+  --c-texto: #efeaf6;
+  --c-suave: #a59fbb;
+  --c-borda: #292740;
+  --c-destaque: #a493f2;
+  --c-erro: #ff7a7a;
+  --c-ouro: #d7b46a;
+  --c-zap: #34b37e;
+  --c-zap-forte: #2a9468;
+  --c-aberto-fundo: #14302a;
+  --c-aberto-texto: #74dcac;
+  --c-fechado-fundo: #221f30;
+  --c-fechado-texto: #b7b1c8;
+}
+
+/*
+ * Minimal. A parede branca de galeria, padrão Apple.
+ *
+ * A base é o branco quase puro sobre um cinza claríssimo de fundo, tinta grafite
+ * no lugar do preto duro, e o acento na própria tinta: quem tem cor é a obra, e
+ * não a página. Serve a estúdio de bem-estar, arquiteto, ceramista, fotógrafo
+ * de produto. O cinza de apoio é o secundário da Apple, medido em 4,6 sobre o
+ * branco. O verde da conversa continua sendo o do WhatsApp.
+ */
+[data-tema="minimal"] {
+  --c-fundo: #f5f5f7;
+  --c-superficie: #ffffff;
+  --c-texto: #1d1d1f;
+  --c-suave: #66666b;
+  --c-borda: #e4e4e7;
+  --c-destaque: #1d1d1f;
+  --c-erro: #c8321f;
+  --c-ouro: #9c8a5e;
+  --c-zap: #0e7a55;
+  --c-zap-forte: #0b6647;
+  --c-aberto-fundo: #eef0ee;
+  --c-aberto-texto: #0b6647;
+  --c-fechado-fundo: #efefef;
+  --c-fechado-texto: #5f5f64;
+}
+
 * {
   min-width: 0;
 }
