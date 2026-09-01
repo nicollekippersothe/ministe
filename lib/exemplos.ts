@@ -266,7 +266,10 @@ export const astrologia: Negocio = {
   // O slug segue "nara-bittencourt" porque é o identificador já gravado nas
   // correções do banco; o nome de tela é o que a pessoa lê, e é ele que muda.
   slug: "nara-bittencourt",
-  categoria: "consultoria",
+  // Astrologia não está na lista de categorias, então a astróloga de verdade
+  // marca "outro" e escreve o ofício: é o texto livre que vira a legenda de
+  // parede, "Astrologia · Salvador". A ordem das seções é a mesma da padrão.
+  categoriaLivre: "Astrologia",
   nome: "Ísis Moraes",
   frase: "Astrologia natal e leitura de trânsitos, por chamada, com o áudio da sessão gravado.",
   logo: foto("astro-logo.jpg", "Retrato de Ísis Moraes", 400),

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { categoriaPorId } from "@/lib/categorias";
 import { posicaoDoFoco } from "@/lib/supabase/imagens";
 import type { Negocio } from "@/lib/tipos";
 
@@ -23,6 +24,18 @@ export function Capa({
   const Titulo = nivel === 1 ? "h1" : "h2";
   const mostrarCapa = !apenasIdentidade;
   const mostrarIdentidade = !apenasCapa;
+
+  /*
+   * A legenda de parede: o ofício e a cidade, como a plaquinha ao pé de uma
+   * obra numa mostra. É a mesma linha que o herói da tela inicial usa, trazida
+   * para a página de verdade, e a que dá o ar de exposição. O ofício sai do que
+   * a pessoa escreveu quando marcou "outro", senão do nome da categoria que ela
+   * escolheu; some inteira quando nem um nem outro existe, sem virar rótulo
+   * vazio.
+   */
+  const oficio =
+    negocio.categoriaLivre ?? categoriaPorId(negocio.categoria)?.nome ?? null;
+  const legenda = [oficio, negocio.cidade].filter(Boolean).join(" · ");
 
   return (
     <header className="relative">
@@ -93,11 +106,34 @@ export function Capa({
           ) : null}
 
           {/*
+            A plaquinha da parede, acima do nome: um fio curto de latão e, sob
+            ele, o ofício e a cidade em maiúsculas espaçadas, como a legenda de
+            uma obra. O latão vem de `--c-ouro`, que existe em todos os temas e
+            é o mesmo detalhe do herói da tela inicial.
+          */}
+          {legenda ? (
+            <div className="mt-4 flex flex-col items-center gap-2 lg:items-start">
+              <span
+                aria-hidden
+                className="block h-px w-8"
+                style={{ background: "var(--c-ouro)" }}
+              />
+              <p className="text-[0.72rem] font-semibold tracking-[0.16em] text-suave uppercase">
+                {legenda}
+              </p>
+            </div>
+          ) : null}
+
+          {/*
             O nome e a unica aparicao da letra de titulo do tema na pagina, e
             por isso ele tem escala de verdade. Escolher a letra e recurso pago,
             e ela precisa se ver de longe para valer o que custa.
           */}
-          <Titulo className="titulo mt-3.5 text-[2.05rem] leading-[1.1] text-balance text-texto lg:text-[2.5rem]">
+          <Titulo
+            className={`titulo ${
+              legenda ? "mt-2.5" : "mt-3.5"
+            } text-[2.05rem] leading-[1.1] text-balance text-texto lg:text-[2.5rem]`}
+          >
             {negocio.nome}
           </Titulo>
 
