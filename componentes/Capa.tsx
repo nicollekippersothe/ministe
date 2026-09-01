@@ -83,15 +83,19 @@ export function Capa({
         >
           {temLogo && negocio.logo ? (
             /*
-              O retrato sobe metade da propria altura para cima da capa, e por
-              isso a margem negativa acompanha o tamanho: 44 de 88 no celular,
-              52 de 104 no monitor. Fora de sincronia, ele encosta na foto de um
-              lado e sobra do outro.
+              O retrato deixou de ser a bolinha de rede social e virou a peça no
+              nicho: um retângulo em pé com o topo em arco, emoldurado pela mesma
+              cor da superfície, como um quadro pendurado numa parede de galeria.
+              Sobe metade da própria altura para cima da capa, então a margem
+              negativa acompanha o tamanho: 56 de 112 no celular, 64 de 128 no
+              monitor. Fora de sincronia, ele encosta na foto de um lado e sobra
+              do outro. O arco vem de um raio de topo maior que a meia-largura,
+              que o navegador limita à meia-largura e fecha em meia-lua.
             */
             <div
               className={`relative ${
-                negocio.capa ? "-mt-11 lg:-mt-13" : ""
-              } retrato h-22 w-22 overflow-hidden rounded-full border-4 border-superficie bg-superficie lg:h-26 lg:w-26`}
+                negocio.capa ? "-mt-14 lg:-mt-16" : ""
+              } retrato h-28 w-24 overflow-hidden rounded-t-[999px] rounded-b-xl border-[3px] border-superficie bg-superficie lg:h-32 lg:w-26`}
             >
               <Image
                 src={negocio.logo.url}
@@ -99,7 +103,7 @@ export function Capa({
                 width={negocio.logo.largura}
                 height={negocio.logo.altura}
                 loading="eager"
-                sizes="(min-width: 1024px) 104px, 88px"
+                sizes="(min-width: 1024px) 104px, 96px"
                 className="h-full w-full object-cover"
               />
             </div>

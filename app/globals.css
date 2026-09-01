@@ -243,28 +243,27 @@ body {
 
 /* Selo de horario. O estado vem do servidor e o script inline so atualiza. */
 .selo {
-  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
-  /* Fio seco de 1px na propria cor do estado, no lugar de fundo chapado de
-     badge: define a borda sem pesar, no espirito Apple do guia. */
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 12%, transparent);
 }
-.selo[data-aberto="1"] {
-  background: var(--c-aberto-fundo);
+/* O rótulo do estado é a legenda em maiúsculas espaçadas, a mesma língua da
+   plaquinha de parede. A cor do estado mora no rótulo e no ponto, e não num
+   fundo chapado, que é o que dava cara de aplicativo. */
+.selo [data-t] {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.78rem;
+}
+.selo[data-aberto="1"] [data-t] {
   color: var(--c-aberto-texto);
 }
-.selo[data-aberto="0"] {
-  background: var(--c-fechado-fundo);
-  color: var(--c-fechado-texto);
+.selo[data-aberto="0"] [data-t] {
+  color: var(--c-suave);
 }
-/* Hierarquia pelo peso e pelo tracking do rotulo, nao por apagar o horario:
-   no estado fechado o horario esta no limite do contraste e precisa continuar
-   legivel, entao ele mantem a cor cheia do token. */
-.selo [data-t] {
-  letter-spacing: -0.013em;
+.selo[data-aberto="1"] .bolinha {
+  background: var(--c-aberto-texto);
 }
-.selo .bolinha {
-  background: currentColor;
+.selo[data-aberto="0"] .bolinha {
+  background: var(--c-suave);
 }
 /* Pulso muito discreto so no estado aberto. A regra global de
    prefers-reduced-motion mais abaixo zera esta animacao, e o ponto continua
@@ -274,11 +273,11 @@ body {
 }
 @keyframes selo-pulso {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 26%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-aberto-texto) 30%, transparent);
   }
   70%,
   100% {
-    box-shadow: 0 0 0 4px transparent;
+    box-shadow: 0 0 0 5px transparent;
   }
 }
 
@@ -676,13 +675,18 @@ body {
  */
 :root,
 [data-tema="areia"],
-[data-tema="menta"] {
+[data-tema="menta"],
+[data-tema="minimal"] {
   --c-fio-da-obra: color-mix(in srgb, var(--c-texto) 9%, transparent);
   --sombra-da-obra:
     0 1px 2px rgba(28, 25, 23, 0.07), 0 12px 32px -20px rgba(28, 25, 23, 0.4);
 }
 
-[data-tema="noite"] {
+/* Os dois temas escuros compartilham o fio mais forte e a sombra funda: sobre
+   parede escura a foto precisa de mais borda para terminar, e a sombra some se
+   for a mesma da parede clara. */
+[data-tema="noite"],
+[data-tema="cosmico"] {
   --c-fio-da-obra: color-mix(in srgb, var(--c-texto) 15%, transparent);
   --sombra-da-obra:
     0 1px 2px rgba(0, 0, 0, 0.55), 0 16px 38px -20px rgba(0, 0, 0, 0.85);

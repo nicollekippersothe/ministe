@@ -19,16 +19,24 @@ export function SeloHorario({
   className?: string;
 }) {
   return (
+    /*
+      O estado deixou de ser a pílula de aplicativo e virou linha de placa: o
+      ponto vivo, o rótulo em maiúsculas e o horário ao lado, sem fundo chapado.
+      O ponto e a cor do rótulo carregam o estado; o texto continua dizendo tudo,
+      então quem não distingue a cor lê a mesma coisa.
+    */
     <p
       id={id}
       data-aberto={estado.aberto ? "1" : "0"}
-      className={`selo inline-flex items-center gap-1.5 rounded-full py-1 pr-3.5 pl-2.5 text-sm ${className}`}
+      className={`selo inline-flex items-center gap-2 text-sm ${className}`}
     >
-      <span className="bolinha h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden />
+      <span className="bolinha h-2 w-2 shrink-0 rounded-full" aria-hidden />
       <strong data-t className="font-semibold">
         {estado.titulo}
       </strong>
-      <span data-u>{estado.detalhe}</span>
+      <span data-u className="text-suave">
+        {estado.detalhe}
+      </span>
     </p>
   );
 }
