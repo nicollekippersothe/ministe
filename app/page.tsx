@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
-import { HeroDemo } from "@/componentes/inicial/HeroDemo";
+import { Parede } from "@/componentes/inicial/Parede";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
 import { Planos } from "@/componentes/inicial/Planos";
 import { Salas, type Sala } from "@/componentes/inicial/Salas";
-import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { IconeEntrar } from "@/componentes/Icones";
 import { combinacao } from "@/lib/fontes";
@@ -24,7 +23,7 @@ import {
   canto,
   doceria,
   ilustracao,
-  psicologia,
+  massagem,
   tatuagem,
 } from "@/lib/exemplos";
 
@@ -151,17 +150,18 @@ const SALA_LOJA: Sala = {
 };
 
 /*
- * Quem fica pendurado na abertura.
+ * A parede da abertura: as três obras penduradas.
  *
- * Três, e não quatro: as outras duas páginas aparecem inteiras logo abaixo,
- * nas duas salas, e repetir negócio na mesma tela gasta imagem sem responder
- * nada de novo. Os três são de ofícios bem distantes entre si, porque a
- * pergunta dos dois primeiros segundos é "serve para mim".
+ * Escolhidas para mostrar o alcance do produto num relance: três ofícios bem
+ * distantes entre si e, de propósito, três caras diferentes de página. A
+ * astróloga veste o tema Cósmico com vinheta, a massoterapeuta o Minimal com
+ * grão de papel, e o tatuador a parede escura das fotos. Quem chega vê, nos
+ * primeiros segundos, que a página vira a cara de quem a faz.
  */
-const EM_CARTAZ = [
+const PAREDE = [
   { negocio: astrologia, tipo: "Astróloga" },
-  { negocio: canto, tipo: "Professora de canto" },
-  { negocio: psicologia, tipo: "Psicóloga" },
+  { negocio: massagem, tipo: "Massoterapeuta" },
+  { negocio: tatuagem, tipo: "Tatuador" },
 ];
 
 export default async function Home() {
@@ -262,53 +262,50 @@ export default async function Home() {
           cartaz. É o único movimento orquestrado da página; o resto da rolagem
           usa o `surge`, que já existia.
         */}
-        <section id="comecar" className="mx-auto w-full max-w-5xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-28">
-          {/*
-            O herói é uma galeria de parede branca. A frase que abre é a promessa
-            aspiracional ("seu trabalho merece uma parede branca"), a placa
-            reserva o endereço, e a obra fica pendurada logo abaixo: o celular
-            com a página de um ofício, com a legenda ao pé. A placa escreve o
-            endereço e o celular mostra a página daquele endereço, os dois
-            sincronizados pelo HeroDemo, sem piscar. Aqui ficam as frases; o
-            componente de cliente recebe texto pronto e os aparelhos prontos do
-            servidor.
-          */}
-          <HeroDemo
-            rotulo={rotulo}
-            slugs={EM_CARTAZ.map(({ negocio }) => negocio.slug)}
-            legendas={EM_CARTAZ.map(({ negocio, tipo }) => ({
-              nome: negocio.nome,
-              tipo,
-              cidade: negocio.cidade,
-            }))}
-            cabecalho={
-              <>
-                <h1
-                  className="acende titulo text-[2.3rem] leading-[1.06] text-balance text-texto sm:text-[2.9rem] lg:text-[3.4rem]"
-                  style={{ "--atraso": "120ms" } as React.CSSProperties}
-                >
-                  Seu trabalho merece uma parede branca.
-                </h1>
+        {/*
+          A abertura é a parede da galeria: primeiro a frase, o convite e a
+          placa, e logo abaixo as obras entram penduradas, uma depois da outra.
+          A ordem do `--atraso` é a ordem da leitura, e a parede (o componente
+          `Parede`) começa a se montar depois que a placa assenta, então o
+          movimento tem começo, meio e fim, em vez de cinco efeitos soltos.
+        */}
+        <section id="comecar" className="mx-auto w-full max-w-6xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-28">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1
+              className="acende titulo text-[2.5rem] leading-[1.02] text-balance text-texto sm:text-[3.3rem] lg:text-[4rem]"
+              style={{ "--atraso": "100ms" } as React.CSSProperties}
+            >
+              O feed é deles.{" "}
+              <span className="text-destaque">A parede é sua.</span>
+            </h1>
 
-                <p
-                  className="acende mx-auto mt-6 max-w-lg text-[1.1rem] leading-relaxed text-suave text-pretty"
-                  style={
-                    {
-                      fontFamily: "var(--f-corpo)",
-                      "--atraso": "220ms",
-                    } as React.CSSProperties
-                  }
-                >
-                  O endereço na internet de quem vive do próprio ofício. Um lugar
-                  bem iluminado, onde a imagem vem primeiro.
-                </p>
-              </>
-            }
-          >
-            {EM_CARTAZ.map(({ negocio: n }, i) => (
-              <Telefone key={n.slug} negocio={n} prioridade={i === 0} leve />
-            ))}
-          </HeroDemo>
+            <p
+              className="acende mx-auto mt-6 max-w-xl text-[1.1rem] leading-relaxed text-suave text-pretty"
+              style={
+                {
+                  fontFamily: "var(--f-corpo)",
+                  "--atraso": "220ms",
+                } as React.CSSProperties
+              }
+            >
+              Tire o seu trabalho da listinha de links e pendure numa página
+              inteira, bem iluminada, com a sua cara. Grátis para começar.
+            </p>
+
+            <div
+              className="acende mx-auto mt-8 max-w-md"
+              style={{ "--atraso": "340ms" } as React.CSSProperties}
+            >
+              <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
+                Reserve o seu endereço
+              </p>
+              <CampoAbertura rotulo={rotulo} />
+            </div>
+          </div>
+
+          <div className="mt-16 sm:mt-24">
+            <Parede pecas={PAREDE} />
+          </div>
         </section>
 
         {/*

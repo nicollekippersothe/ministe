@@ -629,6 +629,51 @@ body {
 }
 
 /*
+ * A parede se monta: as obras entram penduradas, uma depois da outra, e depois
+ * respiram.
+ *
+ * Duas animações na mesma peça, e a ordem entre elas é de propósito. Primeiro a
+ * `pendurar`: a obra sobe e assenta, com um `--atraso` diferente por peça, então
+ * a parede se monta da esquerda para a direita em vez de tudo de uma vez.
+ * Depois, quando o pendurar termina, a `flutua` assume o transform e a obra
+ * respira de leve, para sempre, cada uma no seu tempo. É o movimento vivo que a
+ * abertura pedia, e continua sendo só transform e opacidade, resolvido na placa
+ * de vídeo, sem tocar no layout.
+ *
+ * A opacidade zero vive dentro do keyframe, nunca no estado base: onde a
+ * animação não roda (reduzido de movimento, ou navegador antigo), a obra nasce
+ * pronta e parada.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .pendura {
+    animation:
+      pendurar 780ms cubic-bezier(0.18, 0.72, 0.14, 1) both var(--atraso, 0ms),
+      flutua var(--respiro, 7s) ease-in-out
+        calc(var(--atraso, 0ms) + 900ms) infinite alternate;
+  }
+}
+
+@keyframes pendurar {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes flutua {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-12px);
+  }
+}
+
+/*
  * A faixa que corre de lado no celular e vira grade no monitor.
  *
  * No celular o mosaico empilhado virava tres mil pixels de cartao atras de
