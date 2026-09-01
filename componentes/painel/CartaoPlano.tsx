@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { EstadoDaCobranca } from "@/lib/dados";
-import { DIAS_DE_TESTE, PLANOS } from "@/lib/pagamento";
+import { DIAS_DE_TESTE, NOME_DO_PLANO, PLANOS } from "@/lib/pagamento";
 
 /**
  * O cartão do plano no painel.
@@ -47,8 +47,8 @@ function conteudo(
 ) {
   if (plano !== "pago") {
     return {
-      titulo: "Seu plano é o gratuito",
-      dica: `A página fica no ar do mesmo jeito. O plano pago abre a escolha da letra, os números completos e limites maiores, por ${PLANOS.mensal.descricao.split(",")[0]}.`,
+      titulo: `Seu plano é o ${NOME_DO_PLANO.gratuito}`,
+      dica: `A página fica no ar do mesmo jeito. O ${NOME_DO_PLANO.pago} abre a escolha da letra, os números completos e limites maiores, por ${PLANOS.mensal.descricao.split(",")[0]}.`,
       chamada: `Ver os planos e os ${DIAS_DE_TESTE} dias de teste`,
     };
   }
@@ -84,7 +84,7 @@ function conteudo(
   }
 
   return {
-    titulo: "Seu plano é o pago",
+    titulo: `Seu plano é o ${NOME_DO_PLANO.pago}`,
     dica: ate
       ? `A próxima renovação acontece em ${ate}.`
       : "Os recursos do plano pago estão liberados.",

@@ -8,16 +8,22 @@ import { porSlug } from "@/lib/dados";
 import { atelie } from "@/lib/exemplos";
 import { FONTE_PADRAO, podeEscolherFonte, type ChaveFonte } from "@/lib/fontes";
 import { preco } from "@/lib/formato";
-import { NOME_PRODUTO } from "@/lib/marca";
+import {
+  DOCUMENTO,
+  NOME_PRODUTO,
+  RESPONSAVEL,
+  tipoDeDocumento,
+} from "@/lib/marca";
 import {
   DIAS_DE_TESTE,
   MESES_DO_CICLO,
+  NOME_DO_PLANO,
   PLANOS,
   economiaAnualEmCentavos,
   mesesDeCortesia,
 } from "@/lib/pagamento";
 import type { Ciclo } from "@/lib/pagamento";
-import { CADASTRO_ABERTO } from "@/lib/site";
+import { CADASTRO_ABERTO, CONTATO_SUPORTE } from "@/lib/site";
 import type { Negocio, Plano } from "@/lib/tipos";
 
 export const revalidate = 3600;
@@ -183,8 +189,8 @@ export default async function Precos() {
         */}
         <section className="mx-auto w-full max-w-6xl px-6 pt-6 pb-20 sm:pt-12">
           <h1 className="max-w-2xl text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.038em] text-balance text-texto sm:text-[3.2rem]">
-            <span className="block text-destaque">Publicar é gratuito.</span>O
-            plano pago deixa a página inteira sua.
+            <span className="block text-destaque">Publicar é grátis.</span>O{" "}
+            {NOME_DO_PLANO.pago} deixa a página inteira sua.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-suave">
             O endereço, a página no ar, o catálogo com preço e o botão de
@@ -194,20 +200,21 @@ export default async function Precos() {
 
           <div className="mt-12 grid gap-12 lg:grid-cols-[19rem_19rem_minmax(0,1fr)] lg:gap-10 xl:gap-14">
             <Lado
-              rotulo="No plano gratuito"
+              rotulo={`No ${NOME_DO_PLANO.gratuito}`}
               legenda={`A letra padrão, e a assinatura do ${NOME_PRODUTO} no pé da página. É ela que faz uma página trazer a próxima.`}
               negocio={gratuito}
               prioridade
             />
             <Lado
-              rotulo="No plano pago"
+              rotulo={`No ${NOME_DO_PLANO.pago}`}
               legenda="A letra escolhida no painel, e o rodapé falando só do negócio."
               negocio={pago}
             />
 
             <div className="lg:pt-9">
               <h2 className="text-2xl leading-[1.15] font-semibold tracking-[-0.025em] text-balance text-texto">
-                Três coisas mudam do gratuito para o pago.
+                Três coisas mudam do {NOME_DO_PLANO.gratuito} para o{" "}
+                {NOME_DO_PLANO.pago}.
               </h2>
               <dl className="mt-6">
                 {[
@@ -256,7 +263,7 @@ export default async function Precos() {
               id="precos"
               className="max-w-xl text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto sm:text-4xl"
             >
-              O plano pago, em dois ciclos.
+              O {NOME_DO_PLANO.pago}, em dois ciclos.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
               O mesmo produto nos dois. O que muda é de quanto em quanto tempo
@@ -348,8 +355,10 @@ export default async function Precos() {
             {/* A faixa do gratuito fecha a linha, do tamanho que ela pede. */}
             <div className="mt-5 flex flex-col gap-3 rounded-3xl border border-borda border-dashed bg-fundo px-7 py-6 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-2xl leading-relaxed text-suave">
-                <span className="font-semibold text-texto">Gratuito:</span> a
-                página no ar no seu endereço, com catálogo, horário e botão de
+                <span className="font-semibold text-texto">
+                  {NOME_DO_PLANO.gratuito}:
+                </span>{" "}
+                a página no ar no seu endereço, com catálogo, horário e botão de
                 conversa, e a assinatura do {NOME_PRODUTO} no rodapé. Ela vale
                 pelo tempo que você quiser.
               </p>
@@ -398,13 +407,13 @@ export default async function Precos() {
                         scope="col"
                         className="py-3 pr-4 text-[0.95rem] font-semibold text-texto"
                       >
-                        Gratuito
+                        {NOME_DO_PLANO.gratuito}
                       </th>
                       <th
                         scope="col"
                         className="py-3 text-[0.95rem] font-semibold text-destaque"
                       >
-                        Pago
+                        {NOME_DO_PLANO.pago}
                       </th>
                     </tr>
                   </thead>
@@ -537,7 +546,7 @@ export default async function Precos() {
             </p>
             <div className="mt-9 max-w-lg">
               <CampoAbertura
-                rotulo={CADASTRO_ABERTO ? "Criar meu endereço" : "Continuar"}
+                rotulo={CADASTRO_ABERTO ? "Criar minha página grátis" : "Continuar"}
               />
             </div>
           </div>
@@ -545,16 +554,40 @@ export default async function Precos() {
       </main>
 
       <footer className="border-t border-borda">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-suave">
-          <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
-          <div className="flex gap-5">
-            <Link href="/termos" className="underline underline-offset-2">
-              Termos
-            </Link>
-            <Link href="/privacidade" className="underline underline-offset-2">
-              Privacidade
-            </Link>
+        <div className="mx-auto w-full max-w-6xl px-6 py-8 text-sm text-suave">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
+            <nav
+              aria-label="Rodapé"
+              className="flex flex-wrap items-center gap-5"
+            >
+              <Link
+                href="/termos"
+                className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+              >
+                Termos
+              </Link>
+              <Link
+                href="/privacidade"
+                className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+              >
+                Privacidade
+              </Link>
+              {CONTATO_SUPORTE ? (
+                <a
+                  href={`mailto:${CONTATO_SUPORTE}`}
+                  className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  Falar com o suporte
+                </a>
+              ) : null}
+            </nav>
           </div>
+          {RESPONSAVEL && DOCUMENTO ? (
+            <p className="mt-4">
+              {RESPONSAVEL} · {tipoDeDocumento(DOCUMENTO)} {DOCUMENTO}
+            </p>
+          ) : null}
         </div>
       </footer>
     </div>

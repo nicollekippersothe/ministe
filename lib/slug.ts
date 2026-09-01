@@ -76,13 +76,12 @@ export type Recusa =
  * linha de link do cadastro, o campo da abertura e a conferência de /criar.
  */
 export const MOTIVOS: Record<Recusa, string> = {
-  curto: `Precisa de pelo menos ${TAMANHO_MINIMO} letras.`,
-  longo: `No máximo ${TAMANHO_MAXIMO} letras.`,
+  curto: `Use pelo menos ${TAMANHO_MINIMO} caracteres.`,
+  longo: `Use no máximo ${TAMANHO_MAXIMO} caracteres.`,
   formato: "Use só letras, números e hífen.",
-  reservado: "Este link é reservado pelo sistema.",
-  restrito:
-    "Este link usa uma palavra restrita, porque pode ser confundida com banco ou cobrança.",
-  ocupado: "Este link já está em uso.",
+  reservado: "Esse endereço é reservado. Escolha outro.",
+  restrito: "Esse endereço lembra banco ou cobrança. Escolha outro.",
+  ocupado: "Esse endereço já está em uso. Tente outro nome.",
 };
 
 /** Confere só o formato. Se está ocupado é o banco que sabe. */

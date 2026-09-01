@@ -41,6 +41,7 @@ export function montar(
     logo: null,
     capa: null,
     tema: "areia",
+    fundo: "liso",
     fonte: "moderno",
     plano: "gratuito",
     publicado: false,

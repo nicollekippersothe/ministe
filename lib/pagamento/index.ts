@@ -16,6 +16,7 @@ export {
   DIAS_DE_TESTE,
   MESES_DE_CORTESIA_PROMETIDOS,
   MESES_DO_CICLO,
+  NOME_DO_PLANO,
   PLANOS,
   economiaAnualEmCentavos,
   mesesDeCortesia,

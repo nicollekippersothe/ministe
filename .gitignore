@@ -61,3 +61,7 @@ next-env.d.ts
 
 # Capturas de tela que as frentes tiram para olhar antes e depois.
 .capturas*/
+
+# Cache do Python das skills
+__pycache__/
+*.pyc

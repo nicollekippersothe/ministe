@@ -1,33 +1,63 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
-import { Carrossel } from "@/componentes/inicial/Carrossel";
-import { Cartela } from "@/componentes/inicial/Cartela";
+import { Parede } from "@/componentes/inicial/Parede";
 import { Mosaico } from "@/componentes/inicial/Mosaico";
+import { Planos } from "@/componentes/inicial/Planos";
 import { Salas, type Sala } from "@/componentes/inicial/Salas";
-import { Telefone } from "@/componentes/inicial/Telefone";
 import { Marca } from "@/componentes/Marca";
 import { IconeEntrar } from "@/componentes/Icones";
 import { combinacao } from "@/lib/fontes";
-import { NOME_PRODUTO } from "@/lib/marca";
+import {
+  DOCUMENTO,
+  NOME_PRODUTO,
+  RESPONSAVEL,
+  tipoDeDocumento,
+} from "@/lib/marca";
 import { Vitrine } from "@/componentes/inicial/Vitrine";
 import { porSlug } from "@/lib/dados";
-import { CADASTRO_ABERTO } from "@/lib/site";
+import { CADASTRO_ABERTO, CONTATO_SUPORTE, urlBase } from "@/lib/site";
 import {
+  astrologia,
   atelie,
   canto,
   doceria,
   ilustracao,
-  psicologia,
+  massagem,
   tatuagem,
 } from "@/lib/exemplos";
 
 export const revalidate = 3600;
 
+/*
+ * O título e a descrição carregam a palavra que a pessoa digita no Google
+ * (página de negócio, catálogo, WhatsApp), e não a metáfora da marca: ninguém
+ * busca "porta" nem "sala". O Open Graph e o Twitter card fazem o link colado no
+ * WhatsApp chegar com prévia em vez de retângulo cinza, que é justamente o que o
+ * produto vende. A imagem sai de `app/opengraph-image.tsx`, ao lado desta rota.
+ */
+const TITULO_OG = `${NOME_PRODUTO}, a página do seu negócio`;
+const DESCRICAO_OG =
+  "Catálogo com preço, horário, galeria e botão de WhatsApp, num endereço com o seu nome. Grátis para publicar.";
+
 export const metadata: Metadata = {
-  title: `${NOME_PRODUTO}, o endereço do seu negócio na internet`,
+  title: `${NOME_PRODUTO} | Página do seu negócio com catálogo e WhatsApp`,
   description:
-    "O seu trabalho numa página só: as fotos, o que você vende, o horário e o caminho para falar com você. Com o seu nome no endereço, escrita para aparecer na busca.",
+    "Crie a página do seu negócio em minutos: catálogo com preço, horário, galeria e botão de WhatsApp. Endereço com o seu nome. Grátis para publicar.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: urlBase,
+    siteName: NOME_PRODUTO,
+    title: TITULO_OG,
+    description: DESCRICAO_OG,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITULO_OG,
+    description: DESCRICAO_OG,
+  },
 };
 
 /*
@@ -47,30 +77,27 @@ export const metadata: Metadata = {
  */
 const BENEFICIOS = [
   {
-    titulo: "Encontrada por quem procura agora",
+    titulo: "Encontrada por quem procura",
     texto:
-      "A marcação que o Google lê sai pronta: nome, categoria, cidade, horário e o que você oferece. Uma lista de links atende quem já chegou até você. Esta atende também quem ainda está atrás do serviço.",
+      "A marcação que o Google lê sai pronta, então quem busca o seu serviço acha a sua página.",
   },
   {
-    titulo: "Um endereço para colocar em tudo",
-    texto:
-      "Bio, anúncio pago, cartão, assinatura de e-mail. Quem toca cai direto no seu catálogo.",
+    titulo: "Um endereço para tudo",
+    texto: "Na bio, no anúncio, no cartão. Quem toca cai no seu catálogo.",
   },
   {
     titulo: "Editou, já está no ar",
-    texto:
-      "Peça nova, ou o horário do feriado é outro? Você altera do celular e quem abrir em seguida já vê.",
+    texto: "Você altera pelo celular e quem abrir em seguida já vê.",
   },
   {
     titulo: "O endereço é seu",
-    texto:
-      "As redes sociais mudam de regra e de alcance quando querem. O seu endereço fica onde está, com o mesmo nome, e continua abrindo.",
+    texto: "As redes mudam de regra quando querem. O seu endereço fica.",
   },
 ];
 
 const PASSOS = [
   {
-    titulo: "Escreva o nome na placa",
+    titulo: "Escolha o seu endereço",
     texto: "Se o endereço estiver livre, ele passa a ser seu na mesma hora.",
   },
   {
@@ -79,9 +106,9 @@ const PASSOS = [
       "O que você vende, por quanto, quando atende e por onde falam com você.",
   },
   {
-    titulo: "Abra a porta",
+    titulo: "Publique e divulgue",
     texto:
-      "O endereço fica pronto para colar na bio, no anúncio, no cartão e em toda conversa que termina com alguém pedindo o seu contato.",
+      "O endereço fica pronto para colar na bio, no anúncio e no cartão.",
   },
 ];
 
@@ -100,7 +127,7 @@ const PASSOS = [
  */
 const SALA_CRIADOR: Sala = {
   publico: "Vende o próprio trabalho",
-  titulo: "A galeria abre a página.",
+  titulo: "A sua galeria ocupa a tela inteira.",
   itens: [
     "As suas fotos em tamanho grande, na ordem que você escolher.",
     "Catálogo com preço, e um botão de WhatsApp em cada peça.",
@@ -112,7 +139,7 @@ const SALA_CRIADOR: Sala = {
 
 const SALA_LOJA: Sala = {
   publico: "Tem porta na rua",
-  titulo: "O endereço abre a página.",
+  titulo: "O endereço e o mapa vêm primeiro.",
   itens: [
     "Endereço com o mapa a um toque, e o aberto agora calculado na hora.",
     "Cardápio com foto e preço, e a encomenda saindo pelo WhatsApp.",
@@ -123,17 +150,18 @@ const SALA_LOJA: Sala = {
 };
 
 /*
- * Quem fica pendurado na abertura.
+ * A parede da abertura: as três obras penduradas.
  *
- * Três, e não quatro: as outras duas páginas aparecem inteiras logo abaixo,
- * nas duas salas, e repetir negócio na mesma tela gasta imagem sem responder
- * nada de novo. Os três são de ofícios bem distantes entre si, porque a
- * pergunta dos dois primeiros segundos é "serve para mim".
+ * Escolhidas para mostrar o alcance do produto num relance: três ofícios bem
+ * distantes entre si e, de propósito, três caras diferentes de página. A
+ * astróloga veste o tema Cósmico com vinheta, a massoterapeuta o Minimal com
+ * grão de papel, e o tatuador a parede escura das fotos. Quem chega vê, nos
+ * primeiros segundos, que a página vira a cara de quem a faz.
  */
-const EM_CARTAZ = [
+const PAREDE = [
+  { negocio: astrologia, tipo: "Astróloga" },
+  { negocio: massagem, tipo: "Massoterapeuta" },
   { negocio: tatuagem, tipo: "Tatuador" },
-  { negocio: canto, tipo: "Professora de canto" },
-  { negocio: psicologia, tipo: "Psicóloga" },
 ];
 
 export default async function Home() {
@@ -151,7 +179,7 @@ export default async function Home() {
    * a tela seguinte diz o que acontece, em vez de prometer uma criação que
    * ainda não existe.
    */
-  const rotulo = CADASTRO_ABERTO ? "Criar meu endereço" : "Continuar";
+  const rotulo = CADASTRO_ABERTO ? "Criar minha página grátis" : "Continuar";
 
   /*
    * A letra dos títulos da tela inicial é a mesma que o plano gratuito entrega
@@ -175,20 +203,55 @@ export default async function Home() {
      * aparece acesa, com a cor que o dono dela escolheu.
      */
     <div
-      data-tema="noite"
+      data-tema="areia"
       data-fonte={letra.chave}
-      className={`min-h-dvh bg-fundo ${letra.classe}`}
+      className={`parede-papel min-h-dvh bg-fundo ${letra.classe}`}
     >
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Marca href={null} />
-        {CADASTRO_ABERTO ? (
-          <Link
-            href="/entrar"
-            className="-mr-3 flex h-11 items-center gap-2 rounded-full px-3 text-[0.95rem] font-medium text-texto hover:text-destaque"
+
+        {/* Âncoras para as seções, no computador. No celular a página é curta
+            e rolada de uma vez, então o menu seria peso sem função. */}
+        <nav
+          aria-label="Seções da página"
+          className="hidden items-center gap-7 lg:flex"
+        >
+          <a
+            href="#mosaico"
+            className="text-[0.92rem] font-medium text-suave hover:text-texto"
           >
-            <IconeEntrar className="h-5 w-5" />
-            Entrar
-          </Link>
+            Recursos
+          </a>
+          <a
+            href="#exemplos"
+            className="text-[0.92rem] font-medium text-suave hover:text-texto"
+          >
+            Exemplos
+          </a>
+          <a
+            href="#planos"
+            className="text-[0.92rem] font-medium text-suave hover:text-texto"
+          >
+            Preço
+          </a>
+        </nav>
+
+        {CADASTRO_ABERTO ? (
+          <div className="-mr-3 flex items-center gap-1.5">
+            <Link
+              href="/entrar"
+              className="flex h-11 items-center gap-2 rounded-full px-3 text-[0.95rem] font-medium text-texto hover:text-destaque"
+            >
+              <IconeEntrar className="h-5 w-5" />
+              Entrar
+            </Link>
+            <Link
+              href="#comecar"
+              className="hidden h-11 items-center rounded-full bg-texto px-4 text-[0.9rem] font-semibold text-fundo transition-opacity hover:opacity-90 sm:flex"
+            >
+              Criar minha página grátis
+            </Link>
+          </div>
         ) : null}
       </header>
 
@@ -199,70 +262,49 @@ export default async function Home() {
           cartaz. É o único movimento orquestrado da página; o resto da rolagem
           usa o `surge`, que já existia.
         */}
-        <section className="parede mx-auto w-full max-w-6xl px-6 pt-4 pb-12 sm:pt-10 sm:pb-24">
-          <div className="grid items-start gap-6 lg:grid-cols-[1fr_19rem] lg:gap-14">
-            <div className="max-w-2xl">
-              {/*
-                A cartela do próprio nome da marca. O trocadilho fica debaixo do
-                nariz do produto: entrais é o que se diz na porta, e a tela
-                inicial passava longe disso. Dito uma vez, em letra pequena,
-                ele arma o "Entrai" que vem logo abaixo em tamanho grande.
-              */}
-              <p
-                className="acende border-t border-borda pt-3 text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase"
-                style={{ "--atraso": "80ms" } as React.CSSProperties}
-              >
-                {NOME_PRODUTO}, verbo: o que se diz na porta
-              </p>
-
-              <h1
-                className="acende titulo mt-5 text-[2.5rem] leading-[0.96] text-balance text-texto sm:text-[3.4rem] lg:text-[4.1rem]"
-                style={{ "--atraso": "160ms" } as React.CSSProperties}
-              >
-                <span className="block">Entrai.</span>
-                O seu trabalho exposto num endereço só.
-              </h1>
-
-              <p
-                className="acende mt-6 max-w-md text-[1.05rem] leading-relaxed text-suave lg:text-[1.15rem]"
-                style={{ "--atraso": "240ms" } as React.CSSProperties}
-              >
-                As fotos, o que você vende e por quanto, o horário, e o botão
-                que já abre a conversa no WhatsApp.
-              </p>
-
-              <div
-                className="acende mt-9"
-                style={{ "--atraso": "320ms" } as React.CSSProperties}
-              >
-                <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-                  Escreva o nome que vai na placa.
-                </p>
-                <CampoAbertura rotulo={rotulo} />
-              </div>
-            </div>
-
-            {/*
-              O que está pendurado, com a etiqueta embaixo. No celular ele vem
-              logo depois da placa, e o vão entre os dois é de respiro, e não
-              mais de meia tela vazia.
-            */}
-            <div
-              className="acende"
-              style={{ "--atraso": "400ms" } as React.CSSProperties}
+        {/*
+          A abertura é a parede da galeria: primeiro a frase, o convite e a
+          placa, e logo abaixo as obras entram penduradas, uma depois da outra.
+          A ordem do `--atraso` é a ordem da leitura, e a parede (o componente
+          `Parede`) começa a se montar depois que a placa assenta, então o
+          movimento tem começo, meio e fim, em vez de cinco efeitos soltos.
+        */}
+        <section id="comecar" className="mx-auto w-full max-w-6xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-28">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1
+              className="acende titulo text-[2.5rem] leading-[1.02] text-balance text-texto sm:text-[3.3rem] lg:text-[4rem]"
+              style={{ "--atraso": "100ms" } as React.CSSProperties}
             >
-              <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-suave uppercase">
-                Em cartaz agora
+              O feed é deles.{" "}
+              <span className="text-destaque">A parede é sua.</span>
+            </h1>
+
+            <p
+              className="acende mx-auto mt-6 max-w-xl text-[1.1rem] leading-relaxed text-suave text-pretty"
+              style={
+                {
+                  fontFamily: "var(--f-corpo)",
+                  "--atraso": "220ms",
+                } as React.CSSProperties
+              }
+            >
+              Tire o seu trabalho da listinha de links e pendure numa página
+              inteira, bem iluminada, com a sua cara. Grátis para começar.
+            </p>
+
+            <div
+              className="acende mx-auto mt-8 max-w-md"
+              style={{ "--atraso": "340ms" } as React.CSSProperties}
+            >
+              <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
+                Reserve o seu endereço
               </p>
-              <Carrossel>
-                {EM_CARTAZ.map(({ negocio: n, tipo }, i) => (
-                  <div key={n.slug}>
-                    <Telefone negocio={n} prioridade={i === 0} leve />
-                    <Cartela negocio={n} tipo={tipo} className="mt-5" />
-                  </div>
-                ))}
-              </Carrossel>
+              <CampoAbertura rotulo={rotulo} />
             </div>
+          </div>
+
+          <div className="mt-16 sm:mt-24">
+            <Parede pecas={PAREDE} />
           </div>
         </section>
 
@@ -275,17 +317,13 @@ export default async function Home() {
           aria-labelledby="salas"
           className="border-t border-borda"
         >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <h2
               id="salas"
               className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Duas salas, duas montagens.
+              A sua página se monta pelo seu ramo.
             </h2>
-            <p className="mt-4 max-w-xl leading-relaxed text-suave">
-              A página se arruma pelo ramo que você escolhe: uma abre pela
-              galeria, a outra abre pelo endereço e pelo horário.
-            </p>
 
             <div className="mt-10 sm:mt-14">
               <Salas criador={SALA_CRIADOR} loja={SALA_LOJA} />
@@ -293,13 +331,13 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-labelledby="mosaico" className="parede-suave border-t border-borda">
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+        <section aria-labelledby="mosaico" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <h2
               id="mosaico"
               className="titulo max-w-2xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              O que cabe numa sala só.
+              Catálogo, horário, galeria e WhatsApp na mesma página.
             </h2>
             <div className="mt-10 sm:mt-14">
               <Mosaico
@@ -312,25 +350,58 @@ export default async function Home() {
           </div>
         </section>
 
+        {/*
+          A parede escura, o único respiro de contraste da página clara.
+          data-tema="noite" retematiza só esta seção: bg-fundo, text-texto e o
+          resto passam a ler os tokens do escuro sem uma linha de estilo nova, e
+          as páginas penduradas voltam a acender no próprio tema. É o motivo de
+          museu que o produto já carrega, e é a resposta ao "tudo muito branco":
+          a parede recua, e o trabalho avança.
+        */}
         <section
           aria-labelledby="exemplos"
-          className="border-t border-borda"
+          data-tema="noite"
+          className="bg-fundo text-texto"
         >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="parede-suave mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+            <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-destaque uppercase">
+              Galeria de exemplos
+            </p>
             <h2
               id="exemplos"
-              className="titulo max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
+              className="titulo mt-3 max-w-xl text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Salas abertas agora.
+              Como a sua página pode ficar.
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-suave">
-              Todas estas estão no ar. Abra a que mais parece com a sua e
-              percorra até o fim.
+              Sete ofícios, sete páginas montadas com o produto. Arraste para o
+              lado e toque para abrir qualquer uma.
             </p>
 
-            <div className="mt-10 sm:mt-12">
+            <div className="mt-10 sm:mt-14">
               <Vitrine />
             </div>
+          </div>
+        </section>
+
+        {/*
+          Os planos. Vêm depois de a pessoa ter visto o produto de verdade nas
+          seções acima, que é quando a pergunta passa a ser "quanto custa". O
+          grátis lista o que já entrega, e o completo lista só o que soma, sem
+          vender "por tirar" nada.
+        */}
+        <section aria-labelledby="planos" className="border-t border-borda">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
+            <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
+              <h2
+                id="planos"
+                className="titulo text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
+              >
+                Comece de graça. Cresça quando quiser.
+              </h2>
+            </div>
+
+            <Planos />
           </div>
         </section>
 
@@ -341,18 +412,15 @@ export default async function Home() {
           itens, então cada um se lê como resposta à pergunta do título.
         */}
         <section aria-labelledby="beneficios" className="border-t border-borda">
-          <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <div className="lg:grid lg:grid-cols-[20rem_1fr] lg:gap-16">
               <div className="lg:sticky lg:top-16 lg:self-start">
                 <h2
                   id="beneficios"
                   className="titulo text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
                 >
-                  O que muda depois que a porta abre.
+                  O que você ganha depois de publicar.
                 </h2>
-                <p className="mt-4 max-w-sm leading-relaxed text-suave">
-                  Quatro coisas que só aparecem depois de publicar.
-                </p>
               </div>
 
               <dl className="mt-10 lg:mt-0">
@@ -378,12 +446,12 @@ export default async function Home() {
           aria-labelledby="passos"
           className="border-t border-borda"
         >
-          <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-5xl px-6 py-14 sm:py-20">
             <h2
               id="passos"
               className="titulo max-w-lg text-[2rem] leading-[1.05] text-balance text-texto sm:text-[2.8rem]"
             >
-              Do nome à porta aberta, em três passos.
+              Como criar a sua página em três passos.
             </h2>
 
             {/*
@@ -413,7 +481,7 @@ export default async function Home() {
             {/* A mesma placa da abertura, ao alcance de quem leu até aqui. */}
             <div className="mt-14 max-w-xl">
               <p className="mb-3 text-[1.05rem] font-semibold tracking-[-0.015em] text-texto">
-                Escreva o nome que vai na placa.
+                Escolha o seu endereço
               </p>
               <CampoAbertura rotulo={rotulo} />
             </div>
@@ -422,16 +490,50 @@ export default async function Home() {
       </main>
 
       <footer className="border-t border-borda">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-suave">
-          <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
-          {CADASTRO_ABERTO ? (
-            <Link
-              href="/entrar"
-              className="-mx-2 flex h-11 items-center gap-2 rounded-full px-2 font-medium text-texto hover:text-destaque"
-            >
-              <IconeEntrar className="h-4 w-4" />
-              Entrar
-            </Link>
+        <div className="mx-auto w-full max-w-6xl px-6 py-8 text-sm text-suave">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{NOME_PRODUTO}, presença profissional para o negócio local.</p>
+            <div className="flex flex-wrap items-center gap-5">
+              <nav
+                aria-label="Rodapé"
+                className="flex flex-wrap items-center gap-5"
+              >
+                <Link
+                  href="/termos"
+                  className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  Termos
+                </Link>
+                <Link
+                  href="/privacidade"
+                  className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  Privacidade
+                </Link>
+                {CONTATO_SUPORTE ? (
+                  <a
+                    href={`mailto:${CONTATO_SUPORTE}`}
+                    className="rounded underline underline-offset-2 outline-none hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                  >
+                    Falar com o suporte
+                  </a>
+                ) : null}
+              </nav>
+              {CADASTRO_ABERTO ? (
+                <Link
+                  href="/entrar"
+                  className="-mx-2 flex h-11 items-center gap-2 rounded-full px-2 font-medium text-texto outline-none hover:text-destaque focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destaque"
+                >
+                  <IconeEntrar className="h-4 w-4" />
+                  Entrar
+                </Link>
+              ) : null}
+            </div>
+          </div>
+          {RESPONSAVEL && DOCUMENTO ? (
+            <p className="mt-4">
+              {RESPONSAVEL} · {tipoDeDocumento(DOCUMENTO)} {DOCUMENTO}
+            </p>
           ) : null}
         </div>
       </footer>

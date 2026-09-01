@@ -53,6 +53,7 @@ const base = {
   acaoPrincipal: null,
   acaoSecundaria: null,
   tema: "areia" as const,
+  fundo: "liso" as const,
   plano: "gratuito" as const,
   publicado: true,
   telefone: null,
@@ -79,6 +80,12 @@ export const massagem: Negocio = {
   frase: "Massoterapia e drenagem, com hora marcada, na Savassi.",
   logo: foto("spa-logo.jpg", "Retrato de Helena Vasques", 400),
   capa: capa("spa-capa.jpg", "Poltrona de madeira junto à cortina de linho, na sala de atendimento"),
+  // A parede branca de galeria: o bem-estar pede a página mais quieta, com a
+  // tinta grafite no lugar do preto e a cor toda vindo da foto, não do fundo.
+  tema: "minimal",
+  // O grão de papel de algodão, o acabamento mais discreto, para não roubar a
+  // quietude que o tema pede.
+  fundo: "papel",
   fonte: "moderno",
   whatsapp: "5531988886666",
   mensagemPadrao: "Olá! Vim pela página e gostaria de marcar uma sessão.",
@@ -260,12 +267,22 @@ export const psicologia: Negocio = {
  */
 export const astrologia: Negocio = {
   ...base,
+  // O slug segue "nara-bittencourt" porque é o identificador já gravado nas
+  // correções do banco; o nome de tela é o que a pessoa lê, e é ele que muda.
   slug: "nara-bittencourt",
-  categoria: "consultoria",
-  nome: "Nara Bittencourt",
+  // Astrologia não está na lista de categorias, então a astróloga de verdade
+  // marca "outro" e escreve o ofício: é o texto livre que vira a legenda de
+  // parede, "Astrologia · Salvador". A ordem das seções é a mesma da padrão.
+  categoriaLivre: "Astrologia",
+  nome: "Ísis Moraes",
   frase: "Astrologia natal e leitura de trânsitos, por chamada, com o áudio da sessão gravado.",
-  logo: foto("astro-logo.jpg", "Retrato de Nara Bittencourt", 400),
+  logo: foto("astro-logo.jpg", "Retrato de Ísis Moraes", 400),
   capa: capa("astro-capa.jpg", "Céu estrelado sobre o horizonte"),
+  // A parede de noite profunda: o céu do trabalho vira o fundo da página, com a
+  // ametista no lugar do latão. É a curadoria Cósmico levada ao produto.
+  tema: "cosmico",
+  // A vinheta fecha a luz no centro, como uma sala de mostra escura.
+  fundo: "vinheta",
   fonte: "moderno",
   whatsapp: "5571988882222",
   mensagemPadrao: "Olá! Vim pela página e gostaria de saber sobre uma leitura.",
