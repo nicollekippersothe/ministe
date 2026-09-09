@@ -34,11 +34,14 @@ const CORPO = `<div class="grao"></div>
 
 <main>
   <section class="hero" id="topo">
+    <div class="hero-deck" id="exemplos" data-parallax>
+      <div class="deck" data-deck><!-- cards injetados por JS --></div>
+    </div>
     <div class="hero-copy">
       <h1 class="mega">
         <span class="w">Tudo</span> <span class="w">o</span> <span class="w">que</span> <span class="w">você</span> <span class="w">faz</span><span class="dglyph" aria-hidden="true"><canvas id="porta3d"></canvas><svg class="fallback-arco" viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg></span><span class="w">numa</span> <span class="w"><em>página só.</em></span>
       </h1>
-      <p class="sub" data-reveal>Uma página com <span class="chip">catálogo</span>, <span class="chip">horário</span>, <span class="chip">galeria</span> e <span class="chip">WhatsApp</span>, num endereço <span class="chip">com o seu nome</span>.</p>
+      <p class="sub" data-reveal>Catálogo, horário, galeria e o botão de WhatsApp, num endereço com o seu nome.</p>
       <div class="cta-row" data-reveal>
         <form class="placa" action="/criar" method="get" data-cur>
           <span class="pre">entrais.app/</span>
@@ -46,9 +49,6 @@ const CORPO = `<div class="grao"></div>
           <button type="submit" class="pill" data-magnetic data-magnetic-strength="0.25">Criar grátis</button>
         </form>
       </div>
-    </div>
-    <div class="hero-deck" id="exemplos">
-      <div class="deck" data-deck><!-- cards injetados por JS --></div>
     </div>
   </section>
 
@@ -90,7 +90,7 @@ const CORPO = `<div class="grao"></div>
         <div class="ci"><img src="/exemplo/pao-1.jpg" alt=""><div class="cinfo"><b>Pão da casa</b><span>Fornada do dia</span></div><div class="cpr">R$ 9</div></div>
         <div class="cwpp">Chamar no WhatsApp</div>
       </div></div>
-      <div class="r-txt"><span class="n">01 — Catálogo</span><h3>Cada serviço com preço e um toque para o WhatsApp.</h3><p>Foto, valor à vista e o botão que abre a conversa já com o item escrito. O seu balcão, aberto o dia inteiro.</p></div></div>
+      <div class="r-txt"><span class="n">01 — Catálogo</span><h3>Cada serviço com preço e um toque para o WhatsApp.</h3><p>Foto, o preço na frente e o botão que abre a conversa já com o item escrito. O seu balcão, aberto o dia inteiro.</p></div></div>
 
     <div class="recurso inv" data-reveal-row><div class="r-fig" data-cur><span class="tag">Galeria</span>
       <div class="comp comp-gal"><img src="/exemplo/astro-1.jpg" alt=""><img src="/exemplo/tatu-capa.jpg" alt=""><img src="/exemplo/ilustra-3.jpg" alt=""><img src="/exemplo/canto-capa.jpg" alt=""><img src="/exemplo/bolo-3.jpg" alt=""><img src="/exemplo/spa-1.jpg" alt=""></div></div>
@@ -106,7 +106,7 @@ const CORPO = `<div class="grao"></div>
         </ul>
         <div class="hbtn">Agendar horário</div>
       </div></div>
-      <div class="r-txt"><span class="n">03 — Horário</span><h3>Diz na hora se você atende neste momento.</h3><p>O horário é calculado no seu fuso e o endereço vem com o mapa. Quem abre já sabe se pode chamar agora.</p></div></div>
+      <div class="r-txt"><span class="n">03 — Horário</span><h3>Um espaço para os seus horários, se você quiser.</h3><p>Você diz quando atende, e a página calcula no seu fuso. Quem abre já vê se pode chamar agora, com o endereço no mapa.</p></div></div>
 
     <div class="recurso inv" data-reveal-row><div class="r-fig" data-cur><span class="tag">Links</span>
       <div class="comp comp-links">
@@ -122,6 +122,7 @@ const CORPO = `<div class="grao"></div>
   <section class="section" id="preco" style="padding-bottom:0"><div class="shell">
     <div class="precos-head block">
       <h2 class="t-h2" data-split="lines">Comece de graça.<br><em>Cresça quando quiser.</em></h2>
+      <p class="precos-sub" data-reveal>A sua página fica no ar de graça. O plano pago abre os temas, a agenda e os números por dentro.</p>
     </div>
   </div>
     <div class="precos bleed" data-reveal>
@@ -135,7 +136,7 @@ const CORPO = `<div class="grao"></div>
         <ul class="bens">
           <li>A sua página no ar, com o seu endereço</li>
           <li>Até 20 itens no catálogo, com foto e preço</li>
-          <li>Quantas pessoas abriram e quantas chamaram você, nos últimos 7 dias</li>
+          <li>Um relatório de quantas pessoas abriram a sua página, a cada 7 dias</li>
         </ul>
         <a class="verlink" href="#dentro">Ver tudo que vem junto</a>
       </div>
@@ -143,14 +144,14 @@ const CORPO = `<div class="grao"></div>
         <span class="tag">Tudo liberado</span>
         <div class="nome">Pago</div>
         <div class="preco">R$19,90 <u>por mês</u></div>
-        <p class="sub2">No ano são R$179, o mesmo que nove meses. Os outros três ficam por conta nossa.</p>
+        <p class="sub2">No ano são R$179, com 3 meses de graça. Cancele quando quiser.</p>
         <a class="cta" href="#comecar" data-cur>Assinar</a>
         <div class="rule2"></div>
         <ul class="bens forte">
           <li>Tudo do plano grátis, e mais</li>
           <li>Até 400 itens no catálogo</li>
-          <li>Todos os temas e as texturas</li>
-          <li>A letra da sua marca no título</li>
+          <li>Agendamento de horário</li>
+          <li>5 temas, 5 texturas e a letra da sua marca</li>
           <li>Os números dia a dia, com a origem de cada visita</li>
         </ul>
         <a class="verlink" href="#aparencia">Ver o que muda</a>

@@ -236,6 +236,9 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
         .to(".dglyph", { scale: 1, opacity: 1, duration: 1.0, ease: "osmo-out" }, 0.45)
         .from(".hero .sub", { y: 16, opacity: 0, duration: 0.6, ease: "osmo" }, 0.7)
         .from(".hero .cta-row", { y: 18, opacity: 0, duration: 0.6, ease: "osmo" }, 0.85);
+      // paralaxe suave: o carrossel das lojinhas desliza mais devagar que a rolagem
+      var pdeck = document.querySelector(".hero-deck[data-parallax]");
+      if (pdeck) { gsap.to(pdeck, { yPercent: -16, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } }); }
       document.querySelectorAll("[data-split]").forEach(function (el) { if (!el.closest(".hero")) splitReveal(el); });
       document.querySelectorAll("[data-reveal]").forEach(function (el) { if (!el.closest(".hero")) reveal(el); });
       // recursos deslizam dos lados
