@@ -1,5 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
+import { normalizar, conferirFormato, MOTIVOS } from "@/lib/slug";
 export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, Lenis, IMGS) {
 
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -81,8 +82,47 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     document.querySelectorAll(".placa button").forEach(function (b) { b.addEventListener("click", function (e) { var i = b.parentElement.querySelector("input"); if (i && !i.value.trim()) { e.preventDefault(); i.focus(); } }); });
   }
 
+  /* ---------- placa: confere o endereço livre ao vivo ---------- */
+  function initPlaca() {
+    document.querySelectorAll("form.placa").forEach(function (form) {
+      var input = form.querySelector("input[name=slug]");
+      var botao = form.querySelector("button");
+      if (!input) return;
+      var msg = document.createElement("p");
+      msg.className = "placa-msg";
+      msg.setAttribute("role", "status");
+      msg.setAttribute("aria-live", "polite");
+      form.insertAdjacentElement("afterend", msg);
+
+      function estado(e, texto) { form.setAttribute("data-estado", e); msg.setAttribute("data-estado", e); msg.textContent = texto || ""; if (botao) botao.disabled = (e === "ocupado"); }
+      var espera, ctrl;
+      function conferir() {
+        if (espera) clearTimeout(espera);
+        if (ctrl) ctrl.abort();
+        var slug = normalizar(input.value);
+        if (slug === "") { estado("vazio", "Letras, números e hífen. Mínimo de 3 caracteres."); return; }
+        var recusa = conferirFormato(slug);
+        if (recusa) { estado("ocupado", MOTIVOS[recusa]); return; }
+        estado("conferindo", "A sua página vai ficar em entrais.app/" + slug);
+        ctrl = new AbortController();
+        espera = setTimeout(function () {
+          fetch("/api/endereco?slug=" + encodeURIComponent(slug), { signal: ctrl.signal })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              if (normalizar(input.value) !== slug) return;
+              if (d.livre) estado("livre", "A sua página vai ficar em entrais.app/" + slug);
+              else estado("ocupado", d.motivo || MOTIVOS.ocupado);
+            })
+            .catch(function () { /* sem rede: o servidor confere de novo no /criar */ });
+        }, 350);
+      }
+      input.addEventListener("input", conferir);
+    });
+  }
+
   var deckEl = initDeck(document.querySelector("[data-deck]"));
   initSwitcher();
+  initPlaca();
 
   /* ---------- 3D: a porta em arco ---------- */
   function initPorta() {
