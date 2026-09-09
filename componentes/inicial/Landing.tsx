@@ -4,8 +4,10 @@ import { useEffect, useRef } from "react";
 import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import "./landing.css";
 
-const sans = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-instrument", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono", display: "swap" });
+// Fontes variáveis: um arquivo por família cobre todos os pesos que o CSS usa,
+// então a home baixa só duas letras, do mesmo jeito que a prévia antiga.
+const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 const IMGS = {
   isis: "/exemplo/astro-1.jpg",

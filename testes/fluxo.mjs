@@ -61,7 +61,7 @@ const p = await contexto.newPage();
 await p.goto(`${BASE}/`, { waitUntil: "networkidle" });
 passo(
   "a tela inicial abre e chama para criar",
-  (await p.textContent("body")).includes("Criar minha página grátis"),
+  (await p.textContent("body")).includes("Criar grátis"),
 );
 
 // O campo da abertura é o que transforma visita em intenção, então ele precisa
