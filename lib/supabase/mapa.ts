@@ -144,6 +144,11 @@ export function paraNegocio(linha: Linha): Negocio {
     logo: foto(linha.logo_url, nome, LOGO),
     capa,
     tema: (linha.tema as Negocio["tema"]) ?? "areia",
+    // A coluna `fundo` entra numa correção junto com o seletor do painel, então
+    // linha sem ela cai no acabamento liso, que é o de sempre. Por isso ela fica
+    // de fora de `paraLinha`: mandar coluna que ainda não existe travaria todo
+    // salvamento, do mesmo jeito que o ponto focal da capa.
+    fundo: (linha.fundo as Negocio["fundo"]) ?? "liso",
     fonte: (linha.fonte as Negocio["fonte"]) ?? "moderno",
     categoria: texto(linha.categoria),
     categoriaLivre: texto(linha.categoria_livre),

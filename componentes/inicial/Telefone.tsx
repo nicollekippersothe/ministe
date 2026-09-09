@@ -93,13 +93,16 @@ export function Telefone({
 
           <div className="flex flex-col items-center px-4 text-center">
             {negocio.logo ? (
-              <div className="relative -mt-9 h-18 w-18 overflow-hidden rounded-full border-4 border-superficie bg-superficie">
+              /* O mesmo retrato no nicho da página de verdade, em miniatura:
+                 retângulo em pé com o topo em arco, para a prévia combinar com o
+                 produto. */
+              <div className="relative -mt-10 h-20 w-16 overflow-hidden rounded-t-[999px] rounded-b-md border-[3px] border-superficie bg-superficie">
                 <Image
                   src={negocio.logo.url}
                   alt=""
                   width={negocio.logo.largura}
                   height={negocio.logo.altura}
-                  sizes="72px"
+                  sizes="64px"
                   className="h-full w-full object-cover"
                 />
               </div>

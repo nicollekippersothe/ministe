@@ -1,4 +1,5 @@
 import { preco } from "../formato.ts";
+import type { Plano } from "../tipos.ts";
 import type { Ciclo } from "./tipos.ts";
 
 /**
@@ -19,6 +20,23 @@ import type { Ciclo } from "./tipos.ts";
  * pessoa, então um teste ali seria só uma semana de graça seguida de silêncio.
  */
 export const DIAS_DE_TESTE = 7;
+
+/**
+ * Os nomes dos planos na propaganda, num lugar só.
+ *
+ * O modelo, o banco e o painel falam `gratuito` e `pago`, que descrevem o
+ * estado da cobrança. A tela de venda precisa de nome que a pessoa queira ter:
+ * "Grátis" e "Completo". Este mapa é a única fonte desses dois nomes, então a
+ * página inicial e a `/precos` nunca divergem, e trocar um nome é uma linha.
+ *
+ * Só a superfície de venda usa isto. Onde o texto fala do mecanismo da
+ * cobrança ("a página segue no ar no plano pago"), "pago" continua sendo a
+ * palavra certa, porque ali o assunto é o estado, e não o nome comercial.
+ */
+export const NOME_DO_PLANO: Record<Plano, string> = {
+  gratuito: "Grátis",
+  pago: "Completo",
+};
 
 export type PrecoDoPlano = {
   ciclo: Ciclo;

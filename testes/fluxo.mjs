@@ -61,7 +61,7 @@ const p = await contexto.newPage();
 await p.goto(`${BASE}/`, { waitUntil: "networkidle" });
 passo(
   "a tela inicial abre e chama para criar",
-  (await p.textContent("body")).includes("Criar meu endereço"),
+  (await p.textContent("body")).includes("Criar minha página grátis"),
 );
 
 // O campo da abertura é o que transforma visita em intenção, então ele precisa
@@ -70,7 +70,7 @@ await p.fill('form[action="/criar"] input[name=slug]', "helena massagem nova");
 await p.waitForTimeout(900);
 passo(
   "o campo da abertura confere o endereço ao vivo",
-  (await p.textContent('form[action="/criar"] ~ p')).includes("disponível"),
+  (await p.textContent('form[action="/criar"] ~ p')).includes("vai ficar em"),
 );
 
 await p.goto(`${BASE}/criar`, { waitUntil: "networkidle" });
@@ -85,7 +85,7 @@ await p.fill("input[name=slug]", "painel");
 await p.waitForTimeout(800);
 passo(
   "endereço reservado é avisado na hora",
-  (await p.textContent(ESTADO_DO_ENDERECO)).includes("reservado pelo sistema"),
+  (await p.textContent(ESTADO_DO_ENDERECO)).includes("reservado"),
 );
 
 await p.fill("input[name=slug]", "demo");
@@ -679,7 +679,7 @@ await p.fill("input[name=slug]", "pix caixa");
 await p.waitForTimeout(800);
 passo(
   "endereço com cara de banco é barrado no cadastro",
-  (await p.textContent(ESTADO_DO_ENDERECO)).includes("palavra restrita"),
+  (await p.textContent(ESTADO_DO_ENDERECO)).includes("banco ou cobrança"),
 );
 
 // ---------------------------------------------------------------------------

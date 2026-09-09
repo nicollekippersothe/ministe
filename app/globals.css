@@ -58,6 +58,8 @@
   --c-suave: #68686d; /* cinza de apoio neutro: 4,9 sobre o fundo */
   --c-borda: #e6e6e4; /* fio neutro */
   --c-destaque: #8f4451; /* Marsala, a cor auxiliar: 6,6 sobre o branco */
+  /* Cor semântica de erro, própria e separada da marca: a marsala não é o erro. */
+  --c-erro: #b42318;
   /* Ouro só para detalhe decorativo, nunca para texto: contraste não se aplica. */
   --c-ouro: #b08d3a;
   --c-zap: #0e7a55; /* Conversa */
@@ -120,6 +122,58 @@
   --c-aberto-texto: #0b6647;
   --c-fechado-fundo: #e6e9e6;
   --c-fechado-texto: #5a6560;
+}
+
+/*
+ * Cósmico. A parede de noite profunda, para quem lê o céu.
+ *
+ * Nasceu no laboratório de curadorias e virou tema do produto. É a irmã fria da
+ * noite: um azul quase preto de espaço, texto em lavanda clara e o acento numa
+ * ametista luminosa, no lugar do latão. Serve a astrólogo, tarólogo, fotógrafo
+ * de longa exposição, músico de palco escuro. Contrastes conferidos sobre o
+ * fundo: texto 15+, o suave 6,1, a ametista 6,7 — todos acima do AA.
+ */
+[data-tema="cosmico"] {
+  --c-fundo: #0b0b16;
+  --c-superficie: #14131f;
+  --c-texto: #efeaf6;
+  --c-suave: #a59fbb;
+  --c-borda: #292740;
+  --c-destaque: #a493f2;
+  --c-erro: #ff7a7a;
+  --c-ouro: #d7b46a;
+  --c-zap: #34b37e;
+  --c-zap-forte: #2a9468;
+  --c-aberto-fundo: #14302a;
+  --c-aberto-texto: #74dcac;
+  --c-fechado-fundo: #221f30;
+  --c-fechado-texto: #b7b1c8;
+}
+
+/*
+ * Minimal. A parede branca de galeria, padrão Apple.
+ *
+ * A base é o branco quase puro sobre um cinza claríssimo de fundo, tinta grafite
+ * no lugar do preto duro, e o acento na própria tinta: quem tem cor é a obra, e
+ * não a página. Serve a estúdio de bem-estar, arquiteto, ceramista, fotógrafo
+ * de produto. O cinza de apoio é o secundário da Apple, medido em 4,6 sobre o
+ * branco. O verde da conversa continua sendo o do WhatsApp.
+ */
+[data-tema="minimal"] {
+  --c-fundo: #f5f5f7;
+  --c-superficie: #ffffff;
+  --c-texto: #1d1d1f;
+  --c-suave: #66666b;
+  --c-borda: #e4e4e7;
+  --c-destaque: #1d1d1f;
+  --c-erro: #c8321f;
+  --c-ouro: #9c8a5e;
+  --c-zap: #0e7a55;
+  --c-zap-forte: #0b6647;
+  --c-aberto-fundo: #eef0ee;
+  --c-aberto-texto: #0b6647;
+  --c-fechado-fundo: #efefef;
+  --c-fechado-texto: #5f5f64;
 }
 
 * {
@@ -188,19 +242,43 @@ body {
 }
 
 /* Selo de horario. O estado vem do servidor e o script inline so atualiza. */
-.selo[data-aberto="1"] {
-  background: var(--c-aberto-fundo);
+.selo {
+  font-variant-numeric: tabular-nums;
+}
+/* O rótulo do estado é a legenda em maiúsculas espaçadas, a mesma língua da
+   plaquinha de parede. A cor do estado mora no rótulo e no ponto, e não num
+   fundo chapado, que é o que dava cara de aplicativo. */
+.selo [data-t] {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.78rem;
+}
+.selo[data-aberto="1"] [data-t] {
   color: var(--c-aberto-texto);
 }
-.selo[data-aberto="0"] {
-  background: var(--c-fechado-fundo);
-  color: var(--c-fechado-texto);
-}
-.selo .bolinha {
-  background: currentColor;
+.selo[data-aberto="0"] [data-t] {
+  color: var(--c-suave);
 }
 .selo[data-aberto="1"] .bolinha {
-  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+  background: var(--c-aberto-texto);
+}
+.selo[data-aberto="0"] .bolinha {
+  background: var(--c-suave);
+}
+/* Pulso muito discreto so no estado aberto. A regra global de
+   prefers-reduced-motion mais abaixo zera esta animacao, e o ponto continua
+   limpo e visivel, sem anel fixo pesado. */
+.selo[data-aberto="1"] .bolinha {
+  animation: selo-pulso 2.8s ease-out infinite;
+}
+@keyframes selo-pulso {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-aberto-texto) 30%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 5px transparent;
+  }
 }
 
 /* Dia de hoje na tabela de horarios, marcado pelo script. */
@@ -388,6 +466,78 @@ body {
  * unico brilho da pagina: e o estado que importa no momento em que ele
  * aparece, entao ele merece corpo em vez de so uma linha de texto.
  */
+/*
+ * A textura da parede.
+ *
+ * Uma parede de galeria não é um chapado perfeito: tem grão, como papel de
+ * algodão ou reboco fino. Um ruído monocromático baixíssimo, gerado no próprio
+ * SVG (sem baixar imagem), tiled sobre o fundo areia. Fica atrás de tudo, e as
+ * superfícies brancas dos cartões cobrem onde precisam, então o grão aparece só
+ * na parede. É o "tchan" discreto: textura em vez de cor, no espírito sóbrio da
+ * mostra.
+ */
+.parede-papel {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  background-size: 170px 170px;
+}
+
+/*
+ * O acabamento da parede, separado do tema.
+ *
+ * O tema escolhe a cor da parede; o acabamento escolhe a textura ou a luz dela,
+ * e os dois se combinam livremente porque o acabamento é todo feito dos tokens
+ * do tema (a mesma pintura serve à parede clara e à escura). Fica dentro do
+ * cartão (`main`), atrás do conteúdo: as obras emolduradas, os cartões do
+ * catálogo e a chapa de links têm superfície própria e cobrem o acabamento onde
+ * precisam, então ele aparece só na parede, atrás do que está pendurado nela.
+ * `liso` é a ausência, e por isso não precisa de regra.
+ *
+ * Tudo em `background-image` e `box-shadow`, sobre a cor que o Tailwind já pôs
+ * em `main`: pintura, sem custo de layout e sem roubar toque.
+ */
+/* Papel: o grão da parede de algodão. O ruído do tema claro é escuro, então
+   some sobre parede escura; os temas escuros recebem a versão invertida, um
+   grão claro, pela mesma técnica de SVG sem baixar imagem. */
+[data-fundo="papel"] main {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  background-size: 170px 170px;
+}
+[data-tema="noite"] [data-fundo="papel"] main,
+[data-tema="cosmico"] [data-fundo="papel"] main {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='table' tableValues='1 0'/%3E%3CfeFuncG type='table' tableValues='1 0'/%3E%3CfeFuncB type='table' tableValues='1 0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+}
+
+/* Tinta: a parede inteira ganha um véu do acento do tema, uma cor de fundo
+   diferente do branco, no espírito do linkbio, mas tirada do próprio tema. */
+[data-fundo="tinta"] main {
+  background-image: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--c-destaque) 13%, transparent),
+    color-mix(in srgb, var(--c-destaque) 13%, transparent)
+  );
+}
+
+/* Degradê: uma passagem diagonal do acento ao latão, de canto a canto, cobrindo
+   a parede toda. É a opção com mais cor e movimento. */
+[data-fundo="degrade"] main {
+  background-image: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--c-destaque) 24%, transparent) 0%,
+    transparent 48%,
+    color-mix(in srgb, var(--c-ouro) 18%, transparent) 100%
+  );
+  background-repeat: no-repeat;
+}
+
+/* Vinheta: as bordas da parede escurecem, como a luz caindo no centro de uma
+   sala de mostra. Estática, então continua no reduzido de movimento. Dá corpo
+   especialmente aos temas escuros. */
+[data-fundo="vinheta"] main {
+  box-shadow:
+    inset 0 0 8rem color-mix(in srgb, var(--c-texto) 16%, transparent),
+    0 12px 36px -12px rgba(28, 25, 23, 0.14);
+}
+
 .placa {
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent);
   transition:
@@ -412,11 +562,27 @@ body {
   outline: none;
 }
 
-.placa[data-livre="1"] {
-  border-color: var(--c-destaque);
+/*
+ * Um estado, tres sinais juntos: borda, icone e texto. Nunca so a cor.
+ *
+ * Vazio e conferindo ficam na borda neutra da placa (o fio suave do Tailwind),
+ * sem brilho e sem icone. Livre acende no verde do proprio token de aberto, com
+ * o tique ao lado. Ocupado acende no vermelho de erro, que e cor semantica
+ * propria e nao a marsala da marca, com o alerta ao lado. O icone e o texto
+ * abaixo do campo vivem no componente; aqui fica a borda e o brilho.
+ */
+.placa[data-estado="livre"] {
+  border-color: var(--c-aberto-texto);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent),
-    0 0 0 4px color-mix(in srgb, var(--c-destaque) 16%, transparent);
+    0 0 0 4px color-mix(in srgb, var(--c-aberto-texto) 16%, transparent);
+}
+
+.placa[data-estado="ocupado"] {
+  border-color: var(--c-erro);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--c-texto) 7%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--c-erro) 16%, transparent);
 }
 
 /*
@@ -459,6 +625,51 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+
+/*
+ * A parede se monta: as obras entram penduradas, uma depois da outra, e depois
+ * respiram.
+ *
+ * Duas animações na mesma peça, e a ordem entre elas é de propósito. Primeiro a
+ * `pendurar`: a obra sobe e assenta, com um `--atraso` diferente por peça, então
+ * a parede se monta da esquerda para a direita em vez de tudo de uma vez.
+ * Depois, quando o pendurar termina, a `flutua` assume o transform e a obra
+ * respira de leve, para sempre, cada uma no seu tempo. É o movimento vivo que a
+ * abertura pedia, e continua sendo só transform e opacidade, resolvido na placa
+ * de vídeo, sem tocar no layout.
+ *
+ * A opacidade zero vive dentro do keyframe, nunca no estado base: onde a
+ * animação não roda (reduzido de movimento, ou navegador antigo), a obra nasce
+ * pronta e parada.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .pendura {
+    animation:
+      pendurar 780ms cubic-bezier(0.18, 0.72, 0.14, 1) both var(--atraso, 0ms),
+      flutua var(--respiro, 7s) ease-in-out
+        calc(var(--atraso, 0ms) + 900ms) infinite alternate;
+  }
+}
+
+@keyframes pendurar {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes flutua {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-12px);
   }
 }
 
@@ -566,13 +777,18 @@ body {
  */
 :root,
 [data-tema="areia"],
-[data-tema="menta"] {
+[data-tema="menta"],
+[data-tema="minimal"] {
   --c-fio-da-obra: color-mix(in srgb, var(--c-texto) 9%, transparent);
   --sombra-da-obra:
     0 1px 2px rgba(28, 25, 23, 0.07), 0 12px 32px -20px rgba(28, 25, 23, 0.4);
 }
 
-[data-tema="noite"] {
+/* Os dois temas escuros compartilham o fio mais forte e a sombra funda: sobre
+   parede escura a foto precisa de mais borda para terminar, e a sombra some se
+   for a mesma da parede clara. */
+[data-tema="noite"],
+[data-tema="cosmico"] {
   --c-fio-da-obra: color-mix(in srgb, var(--c-texto) 15%, transparent);
   --sombra-da-obra:
     0 1px 2px rgba(0, 0, 0, 0.55), 0 16px 38px -20px rgba(0, 0, 0, 0.85);

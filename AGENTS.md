@@ -51,6 +51,11 @@ Na tela inicial, as peças mostradas são os componentes de verdade
 (`componentes/inicial/`), com os dados de verdade. Assim a propaganda não
 consegue divergir do produto.
 
+O padrão de design completo, o padrão Apple da marca, a escala de tipo e espaço,
+a cor semântica e as skills de UX obrigatórias (rodar a `webapp-testing` no
+navegador antes de dar qualquer tela por pronta) estão em **`DESIGN.md`**. Ler
+antes de mexer em qualquer tela.
+
 ## Regras do produto
 
 1. Celular primeiro, de verdade. O painel também vai ser usado no celular.

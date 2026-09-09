@@ -7,7 +7,16 @@
 
 import type { ChaveFonte } from "./fontes";
 
-export type Tema = "areia" | "noite" | "menta";
+export type Tema = "areia" | "noite" | "menta" | "cosmico" | "minimal";
+
+/**
+ * O acabamento da parede, separado do tema.
+ *
+ * O tema escolhe a cor; o acabamento escolhe a textura ou a luz, e os dois se
+ * combinam livremente. `liso` é a parede chapada de sempre. Ver as regras
+ * `[data-fundo=...]` em app/globals.css, e a Capa que veste o atributo.
+ */
+export type Fundo = "liso" | "papel" | "tinta" | "degrade" | "vinheta";
 
 export type Plano = "gratuito" | "pago";
 
@@ -109,6 +118,8 @@ export type Negocio = {
   logo: Foto | null;
   capa: Foto | null;
   tema: Tema;
+  /** Acabamento da parede, combinado com o tema. Ver o tipo Fundo. */
+  fundo: Fundo;
   /** Combinação de fontes da página pública. Ver lib/fontes.ts. */
   fonte: ChaveFonte;
 

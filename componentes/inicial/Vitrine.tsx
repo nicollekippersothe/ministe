@@ -1,45 +1,62 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Telefone } from "@/componentes/inicial/Telefone";
+import { IconeSeta } from "@/componentes/Icones";
 import { VITRINE } from "@/lib/exemplos";
 
 /**
- * Quatro páginas prontas, de tipos de negócio bem diferentes.
+ * A parede de exemplos: a galeria da tela inicial.
  *
- * Existe para responder a dúvida que aparece em dois segundos na cabeça de
- * quem chega: "serve para o meu caso?". Cada cartão leva para a página de
- * verdade, que dá para abrir e usar.
+ * Antes eram cartões brancos com a foto de capa e um "Abrir a página" embaixo,
+ * um do lado do outro. Respondiam "serve para o meu caso?" só pela capa, e a
+ * pergunta de verdade, "como fica o meu produto lá dentro?", ficava sem
+ * resposta até a pessoa clicar.
+ *
+ * Aqui a resposta está à vista: cada exemplo é a página de verdade, montada com
+ * o produto, pendurada e acesa numa parede escura. É o motivo de museu que o
+ * tema noite carrega (ver globals.css): a parede recua e a peça avança. O
+ * aparelho não é desenho nem captura, são os componentes de verdade com os
+ * dados de verdade, calculados no servidor.
+ *
+ * Uma fileira que corre de lado, como quem passeia por uma mostra. No celular a
+ * próxima peça já espia pela direita, convidando o polegar; no monitor três ou
+ * quatro aparecem de uma vez e o resto vem ao arrastar. Sete ofícios bem
+ * distantes entre si, porque a largura é a prova de que serve para muita gente.
+ *
+ * Os aparelhos ficam parados: aqui eles são a coleção, e sete telas rolando ao
+ * mesmo tempo seria a definição de barulho. A rolagem viva mora numa peça só,
+ * no carrossel do herói.
  */
 export function Vitrine() {
   return (
-    <ul className="trilho -mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
-      {VITRINE.map(({ negocio, tipo }) => (
-        <li key={negocio.slug} className="w-[15rem] shrink-0 snap-start sm:w-auto">
+    <ul className="trilho -mx-6 flex snap-x snap-mandatory scroll-px-6 gap-5 overflow-x-auto px-6 pb-4 sm:gap-6">
+      {VITRINE.map(({ negocio, tipo }, i) => (
+        <li
+          key={negocio.slug}
+          className="surge w-[15.5rem] shrink-0 snap-start sm:w-[17rem]"
+        >
           <Link
             href={`/${negocio.slug}`}
-            className="group flex h-full flex-col overflow-hidden rounded-2xl border border-borda bg-superficie"
+            aria-label={`Abrir a página de exemplo de ${negocio.nome}, ${tipo}, em ${negocio.cidade}`}
+            className="group block"
           >
-            {negocio.capa ? (
-              <Image
-                src={negocio.capa.url}
-                alt=""
-                width={negocio.capa.largura}
-                height={negocio.capa.altura}
-                sizes="(max-width: 640px) 60vw, 260px"
-                className="aspect-[16/10] w-full object-cover"
-              />
-            ) : null}
-            <div className="flex flex-1 flex-col gap-1 px-4 py-3.5">
-              <span className="text-xs font-semibold tracking-[0.12em] text-suave uppercase">
-                {tipo}
-              </span>
-              <span className="font-semibold text-texto">{negocio.nome}</span>
-              <span className="text-sm leading-snug text-suave">
-                {negocio.cidade}
-                {negocio.estado ? `, ${negocio.estado}` : null}
-              </span>
-              <span className="mt-2 text-sm font-medium text-destaque group-hover:underline">
-                Abrir a página
-              </span>
+            {/*
+              O aparelho pendurado. Sobe um fio ao passar o ponteiro, como quadro
+              que se aproxima de quem chega perto. Só transform, resolvido na
+              placa de vídeo, e some para quem pediu menos movimento.
+            */}
+            <div className="transition-transform duration-300 group-hover:-translate-y-1.5">
+              <Telefone negocio={negocio} prioridade={false} leve />
+            </div>
+
+            {/*
+              A plaquinha de parede, ao pé da peça. Só o ofício, que é o que a
+              pessoa procura ("serve para o meu caso?"): o nome já está aceso na
+              própria página logo acima, e repeti-lo aqui seria eco. A leitura
+              de sete plaquinhas vira a lista de ofícios que o produto atende.
+            */}
+            <div className="mt-4 flex items-center justify-between gap-3 px-1">
+              <p className="font-semibold text-texto">{tipo}</p>
+              <IconeSeta className="h-4 w-4 shrink-0 text-suave transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-destaque" />
             </div>
           </Link>
         </li>

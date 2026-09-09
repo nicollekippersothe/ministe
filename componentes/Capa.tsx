@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { categoriaPorId } from "@/lib/categorias";
 import { posicaoDoFoco } from "@/lib/supabase/imagens";
 import type { Negocio } from "@/lib/tipos";
 
@@ -23,6 +24,18 @@ export function Capa({
   const Titulo = nivel === 1 ? "h1" : "h2";
   const mostrarCapa = !apenasIdentidade;
   const mostrarIdentidade = !apenasCapa;
+
+  /*
+   * A legenda de parede: o ofício e a cidade, como a plaquinha ao pé de uma
+   * obra numa mostra. É a mesma linha que o herói da tela inicial usa, trazida
+   * para a página de verdade, e a que dá o ar de exposição. O ofício sai do que
+   * a pessoa escreveu quando marcou "outro", senão do nome da categoria que ela
+   * escolheu; some inteira quando nem um nem outro existe, sem virar rótulo
+   * vazio.
+   */
+  const oficio =
+    negocio.categoriaLivre ?? categoriaPorId(negocio.categoria)?.nome ?? null;
+  const legenda = [oficio, negocio.cidade].filter(Boolean).join(" · ");
 
   return (
     <header className="relative">
@@ -70,15 +83,19 @@ export function Capa({
         >
           {temLogo && negocio.logo ? (
             /*
-              O retrato sobe metade da propria altura para cima da capa, e por
-              isso a margem negativa acompanha o tamanho: 44 de 88 no celular,
-              52 de 104 no monitor. Fora de sincronia, ele encosta na foto de um
-              lado e sobra do outro.
+              O retrato deixou de ser a bolinha de rede social e virou a peça no
+              nicho: um retângulo em pé com o topo em arco, emoldurado pela mesma
+              cor da superfície, como um quadro pendurado numa parede de galeria.
+              Sobe metade da própria altura para cima da capa, então a margem
+              negativa acompanha o tamanho: 56 de 112 no celular, 64 de 128 no
+              monitor. Fora de sincronia, ele encosta na foto de um lado e sobra
+              do outro. O arco vem de um raio de topo maior que a meia-largura,
+              que o navegador limita à meia-largura e fecha em meia-lua.
             */
             <div
               className={`relative ${
-                negocio.capa ? "-mt-11 lg:-mt-13" : ""
-              } retrato h-22 w-22 overflow-hidden rounded-full border-4 border-superficie bg-superficie lg:h-26 lg:w-26`}
+                negocio.capa ? "-mt-14 lg:-mt-16" : ""
+              } retrato h-28 w-24 overflow-hidden rounded-t-[999px] rounded-b-xl border-[3px] border-superficie bg-superficie lg:h-32 lg:w-26`}
             >
               <Image
                 src={negocio.logo.url}
@@ -86,9 +103,28 @@ export function Capa({
                 width={negocio.logo.largura}
                 height={negocio.logo.altura}
                 loading="eager"
-                sizes="(min-width: 1024px) 104px, 88px"
+                sizes="(min-width: 1024px) 104px, 96px"
                 className="h-full w-full object-cover"
               />
+            </div>
+          ) : null}
+
+          {/*
+            A plaquinha da parede, acima do nome: um fio curto de latão e, sob
+            ele, o ofício e a cidade em maiúsculas espaçadas, como a legenda de
+            uma obra. O latão vem de `--c-ouro`, que existe em todos os temas e
+            é o mesmo detalhe do herói da tela inicial.
+          */}
+          {legenda ? (
+            <div className="mt-4 flex flex-col items-center gap-2 lg:items-start">
+              <span
+                aria-hidden
+                className="block h-px w-8"
+                style={{ background: "var(--c-ouro)" }}
+              />
+              <p className="text-[0.72rem] font-semibold tracking-[0.16em] text-suave uppercase">
+                {legenda}
+              </p>
             </div>
           ) : null}
 
@@ -97,7 +133,11 @@ export function Capa({
             por isso ele tem escala de verdade. Escolher a letra e recurso pago,
             e ela precisa se ver de longe para valer o que custa.
           */}
-          <Titulo className="titulo mt-3.5 text-[2.05rem] leading-[1.1] text-balance text-texto lg:text-[2.5rem]">
+          <Titulo
+            className={`titulo ${
+              legenda ? "mt-2.5" : "mt-3.5"
+            } text-[2.05rem] leading-[1.1] text-balance text-texto lg:text-[2.5rem]`}
+          >
             {negocio.nome}
           </Titulo>
 
