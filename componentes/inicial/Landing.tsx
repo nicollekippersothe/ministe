@@ -67,6 +67,11 @@ const CORPO = `<div class="grao"></div>
               <div class="p-selo"><span class="d"></span><b>Aberto</b><span>grátis para começar</span></div>
             </div>
             <div class="p-grade"><div class="p-cel"><img src="/exemplo/astro-1.jpg" alt=""></div><div class="p-cel"><img src="/exemplo/tatu-capa.jpg" alt=""></div><div class="p-cel"><img src="/exemplo/ilustra-3.jpg" alt=""></div><div class="p-cel swatch"></div></div>
+            <div class="p-links">
+              <a class="p-lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>Instagram<span>@entrais</span></a>
+              <a class="p-lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/></svg>Site<span>entrais.app</span></a>
+            </div>
+            <div class="p-wpp">Chamar no WhatsApp</div>
           </div>
         </div>
       </div>

@@ -161,6 +161,10 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 .p-cel { border-radius: .4rem; overflow: hidden; background: var(--bd); aspect-ratio: 1/1; }
 .p-cel img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .p-cel.swatch { background: color-mix(in srgb, var(--dq) 82%, var(--superficie)); }
+.p-links { padding: 0 1rem .9rem; display: flex; flex-direction: column; gap: .4rem; }
+.p-lk { display: flex; align-items: center; gap: .5rem; padding: .5rem .62rem; border: 1px solid var(--bd); border-radius: .62rem; font-size: .62rem; font-weight: 600; color: var(--tx); background: color-mix(in srgb, var(--superficie) 88%, var(--tx)); transition: background-color .55s var(--ease), border-color .55s var(--ease); }
+.p-lk svg { width: .95rem; height: .95rem; flex: none; color: var(--dq); }
+.p-lk span { margin-left: auto; color: var(--sv); font-weight: 500; }
 .p-wpp { margin: 0 1rem 1.1rem; border-radius: 999px; padding: .55rem; text-align: center; font-size: .62rem; font-weight: 600; background: var(--dq); color: #fff; letter-spacing: .01em; }
 
 /* aparência: switcher */
