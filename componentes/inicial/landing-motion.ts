@@ -38,22 +38,34 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
   function initDeck(deck) {
     NEG.concat(NEG).forEach(function(n){ var w=document.createElement("div"); w.className="deck__card"; w.innerHTML=mock(n); deck.appendChild(w); });
     var cards = [].slice.call(deck.querySelectorAll(".deck__card"));
+    // Medimos a largura de um cartao, o vao e o respiro uma vez (em measure),
+    // e a cada quadro lemos so o scrollLeft. Evita chamar getBoundingClientRect
+    // em todos os cartoes por quadro, que forcava reflow e travava a rolagem.
+    var cw = 260, gap = 24, padL = 0, vw = 0;
     function update() {
-      var mid = window.innerWidth / 2;
-      cards.forEach(function (c) {
-        var r = c.getBoundingClientRect();
-        var d = (r.left + r.width / 2 - mid) / window.innerWidth;
+      var mid = deck.scrollLeft + vw / 2;
+      for (var i = 0; i < cards.length; i++) {
+        var c = cards[i];
+        var center = padL + i * (cw + gap) + cw / 2;
+        var d = (center - mid) / vw;
         var ad = Math.min(Math.abs(d), 0.62);
-        var ty = ad * ad * 170;
-        var rot = Math.max(-14, Math.min(14, d * 22));
-        var sc = 1 - ad * 0.12;
+        var ty = ad * ad * 230;
+        var rot = Math.max(-17, Math.min(17, d * 27));
+        var sc = 1 - ad * 0.15;
         c.style.transform = "translateY(" + ty + "px) rotate(" + rot + "deg) scale(" + sc + ")";
-        c.style.opacity = String(1 - ad * 0.5);
+        c.style.opacity = String(1 - ad * 0.55);
         c.style.zIndex = String(200 - Math.round(ad * 200));
-      });
+      }
     }
     var down = false, sx = 0, ss = 0, moved = 0, hover = false, half = 0;
-    function measure(){ half = deck.scrollWidth / 2; }
+    function measure(){
+      half = deck.scrollWidth / 2;
+      var cs = getComputedStyle(deck);
+      if (cards[0]) cw = cards[0].offsetWidth || cw;
+      gap = parseFloat(cs.columnGap || cs.gap) || gap;
+      padL = parseFloat(cs.paddingLeft) || 0;
+      vw = deck.clientWidth || window.innerWidth;
+    }
     function wrap(){ if (half) { if (deck.scrollLeft >= half) deck.scrollLeft -= half; else if (deck.scrollLeft < 0) deck.scrollLeft += half; } }
     deck.addEventListener("pointerenter", function(){ hover = true; });
     deck.addEventListener("pointerleave", function(){ hover = false; });
@@ -129,7 +141,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     if (typeof THREE === "undefined") throw new Error("no three");
     var canvas = document.getElementById("porta3d");
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
     THREE.ColorManagement.enabled = false;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping;
@@ -183,6 +195,11 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     }
     resize(); window.addEventListener("resize", resize);
     if (window.ResizeObserver) { try { new ResizeObserver(resize).observe(canvas); } catch(_){} }
+    // A fonte grande do titulo muda o tamanho do glifo depois do primeiro
+    // desenho; sem redimensionar de novo, a porta fica num buffer pequeno e
+    // aparece serrilhada. Redesenha quando a fonte carrega e quando o layout assenta.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+    requestAnimationFrame(resize); setTimeout(resize, 500);
 
     var mx = 0, my = 0, tmx = 0, tmy = 0;
     window.addEventListener("pointermove", function (e) { tmx = (e.clientX / window.innerWidth - 0.5); tmy = (e.clientY / window.innerHeight - 0.5); });
@@ -249,10 +266,6 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
         gsap.from(txt, { xPercent: -9 * dir, opacity: 0, duration: 1, ease: "osmo", scrollTrigger: { trigger: row, start: "top 82%", once: true } });
       });
       var panel = document.querySelector(".transition__panel"); gsap.set(panel, { scaleY: 1, transformOrigin: "top" }); gsap.to(panel, { scaleY: 0, duration: 1.1, ease: "osmo", delay: 0.05 });
-      // esconde o trocador no herói e no fecho
-      ScrollTrigger.create({ trigger: ".noite", start: "top 70%", end: "bottom 40%",
-        onToggle: function (s) { gsap.to(".trocador", { autoAlpha: s.isActive ? 1 : 0.0, y: s.isActive ? 0 : 20, duration: .5 }); } });
-      gsap.set(".trocador", { autoAlpha: 0, y: 20 });
       ScrollTrigger.refresh(); window.__mr = true;
     });
     setTimeout(function () { if (!window.__mr) revealAll(); }, 3500);

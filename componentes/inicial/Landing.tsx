@@ -77,8 +77,27 @@ const CORPO = `<div class="grao"></div>
       </div>
       <div class="block">
         <h3 class="t-h3" data-split="lines">A mesma página, <em>cinco interfaces.</em></h3>
-        <p class="t-lead" data-reveal style="font-size:1.1em">Esta é a nossa própria página, feita no Entrais. Troque o tema e a textura na barra de baixo e veja a interface mudar na hora. Cada negócio fica com a cara que combina com ele.</p>
-        <p class="eyebrow-num kal" data-reveal>↓ experimente na barra de baixo</p>
+        <p class="t-lead" data-reveal style="font-size:1.1em">Esta é a nossa própria página, feita no Entrais. Troque o tema e a textura no console e veja a interface mudar na hora. Cada negócio fica com a cara que combina com ele.</p>
+        <div class="console" role="group" aria-label="Trocar a aparência da página" data-reveal>
+          <div class="console__row"><span class="console__lbl">Tema</span>
+            <div class="fila" id="temas">
+              <button class="chip" data-tema="areia" aria-pressed="true"><span class="am" style="background:#f6f5f3"></span>Areia</button>
+              <button class="chip" data-tema="minimal" aria-pressed="false"><span class="am" style="background:#f5f5f7"></span>Minimal</button>
+              <button class="chip" data-tema="menta" aria-pressed="false"><span class="am" style="background:#1f6b4f"></span>Menta</button>
+              <button class="chip" data-tema="noite" aria-pressed="false"><span class="am" style="background:#1e1b17"></span>Noite</button>
+              <button class="chip" data-tema="cosmico" aria-pressed="false"><span class="am" style="background:#0b0b16"></span>Cósmico</button>
+            </div>
+          </div>
+          <div class="console__row"><span class="console__lbl">Textura</span>
+            <div class="fila" id="fundos">
+              <button class="chip" data-fundo="liso" aria-pressed="true">Liso</button>
+              <button class="chip" data-fundo="papel" aria-pressed="false">Papel</button>
+              <button class="chip" data-fundo="tinta" aria-pressed="false">Tinta</button>
+              <button class="chip" data-fundo="degrade" aria-pressed="false">Degradê</button>
+              <button class="chip" data-fundo="vinheta" aria-pressed="false">Vinheta</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div></section>
   </div>
@@ -179,25 +198,7 @@ const CORPO = `<div class="grao"></div>
 <footer><div class="shell in">
   <span class="feito"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>feito com <b>Entrais</b></span>
   <nav class="rodape-links" aria-label="Rodapé"><a href="/termos">Termos</a><a href="/privacidade">Privacidade</a><a href="/entrar">Entrar</a></nav>
-</div></footer>
-
-<div class="trocador" role="group" aria-label="Trocar a aparência da página">
-  <p class="cap"><span>A mesma página, todas as interfaces</span><b>Troque o tema →</b></p>
-  <div class="fila" id="temas">
-    <button class="chip" data-tema="areia" aria-pressed="true"><span class="am" style="background:#f6f5f3"></span>Areia</button>
-    <button class="chip" data-tema="minimal" aria-pressed="false"><span class="am" style="background:#f5f5f7"></span>Minimal</button>
-    <button class="chip" data-tema="menta" aria-pressed="false"><span class="am" style="background:#1f6b4f"></span>Menta</button>
-    <button class="chip" data-tema="noite" aria-pressed="false"><span class="am" style="background:#1e1b17"></span>Noite</button>
-    <button class="chip" data-tema="cosmico" aria-pressed="false"><span class="am" style="background:#0b0b16"></span>Cósmico</button>
-  </div>
-  <div class="fila" id="fundos">
-    <button class="chip" data-fundo="liso" aria-pressed="true">Liso</button>
-    <button class="chip" data-fundo="papel" aria-pressed="false">Papel</button>
-    <button class="chip" data-fundo="tinta" aria-pressed="false">Tinta</button>
-    <button class="chip" data-fundo="degrade" aria-pressed="false">Degradê</button>
-    <button class="chip" data-fundo="vinheta" aria-pressed="false">Vinheta</button>
-  </div>
-</div>`;
+</div></footer>`;
 
 export function Landing() {
   const ref = useRef<HTMLDivElement>(null);
