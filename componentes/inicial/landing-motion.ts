@@ -162,12 +162,12 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     // moldura (marsala)
     var frameGeo = new THREE.ExtrudeGeometry(archShape(W, H), { depth: 0.7, bevelEnabled: true, bevelThickness: 0.13, bevelSize: 0.13, bevelSegments: 8, curveSegments: 96 });
     frameGeo.center();
-    var marsala = new THREE.MeshStandardMaterial({ color: 0x83263a, roughness: 0.88, metalness: 0.0 });
+    var marsala = new THREE.MeshStandardMaterial({ color: 0xc65266, roughness: 0.62, metalness: 0.0 });
     var frame = new THREE.Mesh(frameGeo, marsala); grupo.add(frame);
-    // folha interna, levemente à frente e mais escura
+    // folha interna, levemente à frente e um tom mais fundo (sem virar buraco preto)
     var leafGeo = new THREE.ExtrudeGeometry(archShape(W * 0.74, H * 0.74, 0), { depth: 0.5, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.07, bevelSegments: 6, curveSegments: 80 });
     leafGeo.center();
-    var leaf = new THREE.Mesh(leafGeo, new THREE.MeshStandardMaterial({ color: 0x581824, roughness: 0.95, metalness: 0.0 }));
+    var leaf = new THREE.Mesh(leafGeo, new THREE.MeshStandardMaterial({ color: 0x9c3b4d, roughness: 0.72, metalness: 0.0 }));
     leaf.position.z = 0.34; leaf.position.y = -0.12; grupo.add(leaf);
     // vinco central (latão)
     var latao = new THREE.MeshStandardMaterial({ color: 0xb9853c, roughness: 0.34, metalness: 0.9 });
@@ -181,10 +181,11 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     scene.add(grupo);
 
     // luz
-    var key = new THREE.DirectionalLight(0xfff2df, 1.05); key.position.set(-5, 6, 8); scene.add(key);
-    var rim = new THREE.DirectionalLight(0xffc79a, 1.5); rim.position.set(7, 3, -6); scene.add(rim);
-    var fill = new THREE.DirectionalLight(0xffe9d2, 0.4); fill.position.set(2, -3, 7); scene.add(fill);
-    scene.add(new THREE.HemisphereLight(0xfff6ea, 0x36281f, 0.35));
+    var key = new THREE.DirectionalLight(0xfff2df, 1.7); key.position.set(-5, 6, 8); scene.add(key);
+    var rim = new THREE.DirectionalLight(0xffc79a, 1.8); rim.position.set(7, 3, -6); scene.add(rim);
+    var fill = new THREE.DirectionalLight(0xffe9d2, 0.9); fill.position.set(2, -3, 7); scene.add(fill);
+    scene.add(new THREE.HemisphereLight(0xfff6ea, 0x6b4b3f, 0.8));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
     function resize() {
       var r = canvas.getBoundingClientRect();
