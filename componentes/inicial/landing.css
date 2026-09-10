@@ -48,10 +48,10 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 
 /* escala tipográfica · pesos finos */
 .t-lead { font-size: 1.2em; line-height: 1.45; letter-spacing: -0.015em; color: var(--muted); }
-.t-h3 { font-family: var(--sans); font-weight: 600; font-size: 2.5em; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; }
-.t-h2 { font-family: var(--sans); font-weight: 500; font-size: 4.6em; line-height: 1.06; letter-spacing: -0.045em; text-wrap: balance; }
-.t-h1 { font-family: var(--sans); font-weight: 500; font-size: 6.2em; line-height: 1.06; letter-spacing: -0.05em; text-wrap: balance; }
-.t-display { font-family: var(--sans); font-weight: 500; font-size: 7.2em; line-height: 1.05; letter-spacing: -0.05em; text-wrap: balance; }
+.t-h3 { font-family: var(--sans); font-weight: 600; font-size: 2.5em; line-height: 1.14; letter-spacing: -0.035em; text-wrap: balance; }
+.t-h2 { font-family: var(--sans); font-weight: 500; font-size: 4.4em; line-height: 1.14; letter-spacing: -0.045em; text-wrap: balance; }
+.t-h1 { font-family: var(--sans); font-weight: 500; font-size: 6.2em; line-height: 1.14; letter-spacing: -0.05em; text-wrap: balance; }
+.t-display { font-family: var(--sans); font-weight: 500; font-size: 7.2em; line-height: 1.1; letter-spacing: -0.05em; text-wrap: balance; }
 .t-h1 em, .t-h2 em, .t-h3 em, .t-display em { font-style: normal; color: var(--accent); }
 @media (max-width: 760px) {
   .t-display { font-size: 3.5em; letter-spacing: -0.035em; }
