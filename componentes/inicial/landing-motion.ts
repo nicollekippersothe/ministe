@@ -16,22 +16,16 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     { s:"alecrim", nome:"Alecrim", of:"Confeitaria", cid:"São Paulo", tema:"areia", fundo:"tinta", frase:"Bolos, tortas e docinhos feitos no dia. Balcão e encomendas.", img:I.alecrim, aberto:"Aberto agora", forma:"circulo" },
     { s:"helenavasques", nome:"Helena Vasques", of:"Massoterapia", cid:"Belo Horizonte", tema:"minimal", fundo:"papel", frase:"Massoterapia e drenagem, com hora marcada, na Savassi.", img:I.helena, aberto:"Com hora marcada", forma:"porta" }
   ];
-  var DOOR = '<svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>';
+  // Cartão limpo, no estilo Osmo: a foto num quadro, o endereço discreto no
+  // canto, e o nome + ofício embaixo do quadro, sem texto solto por dentro.
   function mock(n) {
-    return '<article class="mock produto" data-tema="'+n.tema+'" data-fundo="'+n.fundo+'">'+
-      '<span class="cap">entrais.app/'+n.s+'</span>'+
-      '<div class="miolo">'+
-        '<div class="p-banner"><img src="'+n.img+'" alt=""><span class="over"></span></div>'+
-        '<div class="p-id">'+
-          '<div class="p-nicho" data-forma="'+n.forma+'"><img src="'+n.img+'" alt="'+n.nome+'"></div>'+
-          '<div class="p-fio"></div><div class="p-rot">'+n.of+' · '+n.cid+'</div>'+
-          '<div class="p-nome">'+n.nome+'</div>'+
-          '<div class="p-frase">'+n.frase+'</div>'+
-          '<div class="p-selo"><span class="d"></span><b>Aberto</b><span>'+n.aberto+'</span></div>'+
-        '</div>'+
-        '<div class="p-wpp">Chamar no WhatsApp</div>'+
+    return '<figure class="loja" data-tema="'+n.tema+'">'+
+      '<div class="loja__quadro">'+
+        '<img class="loja__foto" src="'+n.img+'" alt="" loading="lazy">'+
+        '<span class="loja__tag">entrais.app/'+n.s+'</span>'+
       '</div>'+
-    '</article>';
+      '<figcaption class="loja__id"><b>'+n.nome+'</b><span>'+n.of+' · '+n.cid+'</span></figcaption>'+
+    '</figure>';
   }
 
   /* ---------- deck em arco (coverflow) ---------- */
@@ -69,7 +63,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
       gap = parseFloat(cs.columnGap || cs.gap) || gap;
       padL = parseFloat(cs.paddingLeft) || 0;
       vw = deck.clientWidth || window.innerWidth;
-      R = vw * 1.5;                            // raio do arco (curvatura)
+      R = vw * 2.7;                            // raio do arco (curvatura suave, Osmo)
     }
     function wrap(){ if (half) { if (deck.scrollLeft >= half) deck.scrollLeft -= half; else if (deck.scrollLeft < 0) deck.scrollLeft += half; } }
     deck.addEventListener("pointerenter", function(){ hover = true; });

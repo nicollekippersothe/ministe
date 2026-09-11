@@ -110,14 +110,23 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
    buffer rasterizado a 1x, e em tela retina os cartões saem borrados. O
    esmaecido das pontas vira degradê sobreposto, e cada cartão pinta na
    resolução real do aparelho. */
-.hero-deck { order: 1; position: relative; z-index: 1; margin-top: 0; width: 100vw; height: min(29vh, 19rem); overflow: hidden; }
+.hero-deck { order: 1; position: relative; z-index: 1; margin-top: 0; width: 100vw; height: min(36vh, 23.5rem); overflow: hidden; }
 .hero-deck::before, .hero-deck::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .hero-deck::before { background: linear-gradient(90deg, var(--paper), transparent 11%, transparent 89%, var(--paper)); }
 .hero-deck::after { background: linear-gradient(0deg, var(--paper), transparent 15%); }
-.deck { display: flex; gap: clamp(32px, 3.4vw, 64px); overflow-x: scroll; overflow-y: hidden; scrollbar-width: none; padding: 0.4rem var(--gutter) 0; cursor: grab; align-items: flex-start; height: calc(100% + 8rem); }
+.deck { display: flex; gap: clamp(26px, 2.8vw, 52px); overflow-x: scroll; overflow-y: hidden; scrollbar-width: none; padding: 0.6rem var(--gutter) 0; cursor: grab; align-items: flex-start; height: calc(100% + 5rem); }
 .deck::-webkit-scrollbar { display: none; }
 .deck.is-dragging { cursor: grabbing; }
-.deck__card { flex: 0 0 clamp(248px, 24vw, 340px); transform-origin: 50% 50%; }
+.deck__card { flex: 0 0 clamp(160px, 16vw, 208px); transform-origin: 50% 50%; }
+
+/* cartão limpo do carrossel (estilo Osmo): foto no quadro, nome embaixo */
+.loja { display: flex; flex-direction: column; gap: .6rem; }
+.loja__quadro { position: relative; border-radius: 1.05em; overflow: hidden; aspect-ratio: 6 / 7; background: var(--line2); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 1.2em 2em -1.4em rgba(0,0,0,.4); }
+.loja__foto { width: 100%; height: 100%; object-fit: cover; display: block; }
+.loja__tag { position: absolute; top: .6rem; left: .6rem; font-family: var(--mono); font-size: .56rem; letter-spacing: .02em; color: #fff; background: rgba(20,18,15,.4); backdrop-filter: blur(3px); padding: .28rem .55rem; border-radius: 999px; }
+.loja__id { display: flex; flex-direction: column; gap: .12rem; padding-left: .15rem; text-align: left; }
+.loja__id b { font-weight: 600; font-size: 1em; letter-spacing: -0.02em; color: var(--ink); }
+.loja__id span { font-family: var(--mono); font-size: .64em; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 
 /* ====== NOITE: mergulho no escuro ====== */
 .noite { position: relative; color: var(--night-tx);
