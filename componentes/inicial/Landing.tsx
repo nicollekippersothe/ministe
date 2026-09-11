@@ -141,6 +141,16 @@ const CORPO = `<div class="grao"></div>
       <div class="r-txt"><span class="n">04 — Links</span><h3>Instagram, site, Spotify e agenda, num endereço só.</h3><p>Tudo o que estava espalhado, reunido num link com o seu nome. E os números de quem abre e quem chama você, para provar que a página trabalha.</p></div></div>
   </div></section>
 
+  <!-- ====== SEGMENTOS (carrossel 3D) ====== -->
+  <section class="segmentos" id="segmentos"><div class="shell">
+    <div class="seg-head block">
+      <span class="eyebrow-num">Para cada ofício</span>
+      <h2 class="t-h2" data-split="lines">Serve para <em>o que você faz.</em></h2>
+      <p class="t-lead" data-reveal>Tatuador, confeiteira, ilustradora, terapeuta. A mesma página se ajeita para o seu ramo. Arraste para girar.</p>
+    </div>
+    <div class="palco" data-anel data-reveal><div class="anel"><!-- cards injetados por JS --></div></div>
+  </div></section>
+
   <!-- ====== PREÇO ====== -->
   <section class="section" id="preco" style="padding-bottom:0"><div class="shell">
     <div class="precos-head block">

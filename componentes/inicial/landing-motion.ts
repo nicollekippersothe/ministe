@@ -84,6 +84,58 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     return deck;
   }
 
+  /* ---------- carrossel 3D de segmentos (cilindro CSS) ---------- */
+  var SEG = [
+    { of: "Tatuagem", img: "/exemplo/tatu-1.jpg" },
+    { of: "Confeitaria", img: "/exemplo/bolo-3.jpg" },
+    { of: "Ilustração", img: "/exemplo/ilustra-3.jpg" },
+    { of: "Astrologia", img: "/exemplo/astro-1.jpg" },
+    { of: "Canto", img: "/exemplo/canto-2.jpg" },
+    { of: "Massoterapia", img: "/exemplo/spa-1.jpg" },
+    { of: "Psicologia", img: "/exemplo/psi-capa.jpg" },
+    { of: "Fotografia", img: "/exemplo/galeria-2.jpg" }
+  ];
+  function initAnel(palco) {
+    if (!palco) return;
+    var anel = palco.querySelector(".anel");
+    if (!anel) return;
+    var N = SEG.length, step = 360 / N;
+    SEG.forEach(function (s) {
+      var f = document.createElement("figure"); f.className = "seg";
+      f.innerHTML = '<div class="seg-foto"><img src="' + s.img + '" alt=""></div><figcaption>' + s.of + '</figcaption>';
+      anel.appendChild(f);
+    });
+    var cards = [].slice.call(anel.querySelectorAll(".seg"));
+    var R = 300;
+    function measure() {
+      var w = cards[0] ? cards[0].offsetWidth : 190;
+      R = Math.round((w / 2) / Math.tan(Math.PI / N)) + 28;   // folga entre cartões
+      cards.forEach(function (c, i) { c.style.transform = "rotateY(" + (i * step) + "deg) translateZ(" + R + "px)"; });
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    var ang = 0, down = false, sx = 0, sa = 0, vel = 0;
+    function apply() {
+      anel.style.transform = "translateZ(-" + R + "px) rotateY(" + ang.toFixed(2) + "deg)";
+      for (var i = 0; i < cards.length; i++) {
+        var a = ((ang + i * step) % 360 + 360) % 360; if (a > 180) a -= 360;
+        var f = Math.cos(a * Math.PI / 180);
+        cards[i].style.opacity = (0.3 + 0.7 * Math.max(0, f)).toFixed(3);
+        cards[i].style.zIndex = String(100 + Math.round(f * 100));
+      }
+    }
+    palco.addEventListener("pointerdown", function (e) { down = true; sx = e.clientX; sa = ang; vel = 0; palco.classList.add("is-dragging"); try { palco.setPointerCapture(e.pointerId); } catch (_) {} });
+    palco.addEventListener("pointermove", function (e) { if (!down) return; var d = e.clientX - sx; var na = sa + d * 0.45; vel = na - ang; ang = na; });
+    function end(e) { if (!down) return; down = false; palco.classList.remove("is-dragging"); try { palco.releasePointerCapture(e.pointerId); } catch (_) {} }
+    palco.addEventListener("pointerup", end); palco.addEventListener("pointercancel", end);
+    var last = performance.now();
+    function loop(now) { var dt = Math.min(now - last, 60); last = now;
+      if (!down) { ang += dt * 0.012 + vel; vel *= 0.9; }   // gira sozinha devagar, com inércia do arrasto
+      apply(); requestAnimationFrame(loop);
+    }
+    apply(); requestAnimationFrame(loop);
+  }
+
   /* ---------- switcher ---------- */
   function initSwitcher() {
     var pagina = document.getElementById("produto");
@@ -134,6 +186,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
   }
 
   var deckEl = initDeck(document.querySelector("[data-deck]"));
+  initAnel(document.querySelector("[data-anel]"));
   initSwitcher();
   initPlaca();
 
