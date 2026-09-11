@@ -130,7 +130,9 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 
 /* ====== NOITE: mergulho no escuro ====== */
 .noite { position: relative; color: var(--night-tx);
-  background: linear-gradient(180deg, var(--paper) 0%, var(--paper) 1.2%, var(--night) 3.2%, var(--night) 96.8%, var(--paper) 98.8%, var(--paper) 100%); }
+  /* corte reto: as paradas de cor coincidem, então a borda claro/escuro é uma
+     linha nítida em vez de um degradê borrado. */
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper) 1.6%, var(--night) 1.6%, var(--night) 98.4%, var(--paper) 98.4%, var(--paper) 100%); }
 .noite .t-lead { color: var(--night-mut); }
 .noite .kal { color: var(--accent-2); }
 .eyebrow-num { font-family: var(--mono); font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); display: inline-flex; gap: .8em; align-items: baseline; }
@@ -238,8 +240,8 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 
 /* segmentos: carrossel 3D em cilindro (CSS puro, sem WebGL) */
 .segmentos { padding-block: calc(var(--body) * var(--rhythm)); overflow: hidden; }
-.seg-head { text-align: center; align-items: center; max-width: 42rem; margin: 0 auto calc(var(--body) * 3); }
-.palco { perspective: 1200px; width: 100%; height: min(46vh, 30rem); display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: pan-y; }
+.seg-head { text-align: center; align-items: center; max-width: 42rem; margin: 0 auto calc(var(--body) * 1.6); }
+.palco { perspective: 1200px; width: 100%; height: min(38vh, 20rem); display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: pan-y; }
 .palco.is-dragging { cursor: grabbing; }
 .anel { position: relative; width: clamp(150px, 16vw, 204px); height: clamp(206px, 22vw, 280px); transform-style: preserve-3d; will-change: transform; }
 .seg { position: absolute; inset: 0; backface-visibility: hidden; display: flex; flex-direction: column; }
