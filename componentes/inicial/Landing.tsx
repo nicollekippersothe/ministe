@@ -19,7 +19,6 @@ const IMGS = {
 };
 
 const CORPO = `<div class="grao"></div>
-<div class="cursor" id="cursor" aria-hidden="true"></div>
 <div class="transition" aria-hidden="true"><div class="transition__panel"></div></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="porta"><path fill-rule="evenodd" d="M4 21 V11 a8 8 0 0 1 8 -8 v18 z M9.2 11 a1.3 1.3 0 0 1 -2.6 0 a1.3 1.3 0 0 1 2.6 0 z M14.5 3.5 a8 8 0 0 1 5.5 7.5 V21 h-2.8 V11 a5.2 5.2 0 0 0 -2.7 -4.6 z"/></g></defs></svg>
 

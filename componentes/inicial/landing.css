@@ -21,7 +21,6 @@ html,body{margin:0;overflow-x:hidden;background:#f1f1ef;}
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 .lp { background: var(--paper); color: var(--ink); min-height:100dvh; font-family: var(--sans); font-size: var(--body); line-height: 1.35; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-@media (min-width: 900px) { .lp:not(.touch) { cursor: none; } }
 ::selection { background: var(--accent); color: var(--paper); }
 
 .js [data-split], .js [data-reveal] { visibility: hidden; }
@@ -30,9 +29,6 @@ html { -webkit-text-size-adjust: 100%; }
 
 .grao { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.38; mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); }
-.cursor { position: fixed; top: 0; left: 0; z-index: 200; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); pointer-events: none; transform: translate(-50%,-50%); transition: width .3s var(--ease-out), height .3s var(--ease-out), background .3s; }
-.cursor.big { width: 3.2em; height: 3.2em; background: rgba(27,26,22,0.06); border: 1px solid var(--line); }
-@media (max-width: 899px) { .cursor { display: none; } }
 
 /* glifo 3D da porta, no meio do título */
 .dglyph { display: inline-block; width: 1.5em; height: 1.5em; vertical-align: -0.34em; margin: 0 0.12em; position: relative; }
@@ -91,7 +87,7 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .strip__track { animation: none; } }
 
 /* HERÓI (centrado, molde Osmo) */
-.hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: calc(var(--body) * 7); overflow: hidden; }
+.hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: calc(var(--body) * 6.2); overflow: hidden; }
 .hero-copy { order: 2; position: relative; z-index: 2; margin-block: auto; display: flex; flex-direction: column; align-items: center; gap: calc(var(--body) * 1.5); padding: calc(var(--body) * 1.4) var(--gutter); }
 .mega { font-family: var(--sans); font-weight: 500; font-size: clamp(2.5em, 6.4vw, 6.1em); line-height: 1.0; letter-spacing: -0.045em; max-width: 15ch; padding-bottom: 0.06em; }
 .mega .w { display: inline-block; }
@@ -110,7 +106,7 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
    buffer rasterizado a 1x, e em tela retina os cartões saem borrados. O
    esmaecido das pontas vira degradê sobreposto, e cada cartão pinta na
    resolução real do aparelho. */
-.hero-deck { order: 1; position: relative; z-index: 1; margin-top: 0; width: 100vw; height: min(36vh, 23.5rem); overflow: hidden; }
+.hero-deck { order: 1; position: relative; z-index: 1; margin-top: 0; width: 100vw; height: min(38vh, 24.5rem); overflow: hidden; }
 .hero-deck::before, .hero-deck::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .hero-deck::before { background: linear-gradient(90deg, var(--paper), transparent 11%, transparent 89%, var(--paper)); }
 .hero-deck::after { background: linear-gradient(0deg, var(--paper), transparent 15%); }
@@ -122,7 +118,9 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 /* cartão limpo do carrossel (estilo Osmo): foto no quadro, nome embaixo */
 .loja { display: flex; flex-direction: column; gap: .6rem; }
 .loja__quadro { position: relative; border-radius: 1.05em; overflow: hidden; aspect-ratio: 6 / 7; background: var(--line2); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 1.2em 2em -1.4em rgba(0,0,0,.4); }
-.loja__foto { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* o quadro gira no arco, e o clip arredondado do pai falha no canto durante a
+   rotação em alguns navegadores; arredondar a própria foto tapa o retângulo. */
+.loja__foto { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: inherit; }
 .loja__tag { position: absolute; top: .6rem; left: .6rem; font-family: var(--mono); font-size: .56rem; letter-spacing: .02em; color: #fff; background: rgba(20,18,15,.4); backdrop-filter: blur(3px); padding: .28rem .55rem; border-radius: 999px; }
 .loja__id { display: flex; flex-direction: column; gap: .12rem; padding-left: .15rem; text-align: left; }
 .loja__id b { font-weight: 600; font-size: 1em; letter-spacing: -0.02em; color: var(--ink); }

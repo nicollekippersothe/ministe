@@ -21,7 +21,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
   function mock(n) {
     return '<figure class="loja" data-tema="'+n.tema+'">'+
       '<div class="loja__quadro">'+
-        '<img class="loja__foto" src="'+n.img+'" alt="" loading="lazy">'+
+        '<img class="loja__foto" src="'+n.img+'" alt="">'+
         '<span class="loja__tag">entrais.app/'+n.s+'</span>'+
       '</div>'+
       '<figcaption class="loja__id"><b>'+n.nome+'</b><span>'+n.of+' · '+n.cid+'</span></figcaption>'+
@@ -63,7 +63,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
       gap = parseFloat(cs.columnGap || cs.gap) || gap;
       padL = parseFloat(cs.paddingLeft) || 0;
       vw = deck.clientWidth || window.innerWidth;
-      R = vw * 2.7;                            // raio do arco (curvatura suave, Osmo)
+      R = vw * 1.8;                            // raio do arco (curvatura mais marcada)
     }
     function wrap(){ if (half) { if (deck.scrollLeft >= half) deck.scrollLeft -= half; else if (deck.scrollLeft < 0) deck.scrollLeft += half; } }
     deck.addEventListener("pointerenter", function(){ hover = true; });
@@ -208,15 +208,17 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
 
     var mx = 0, my = 0, tmx = 0, tmy = 0;
     window.addEventListener("pointermove", function (e) { tmx = (e.clientX / window.innerWidth - 0.5); tmy = (e.clientY / window.innerHeight - 0.5); });
-    var t0 = performance.now();
+    var t0 = performance.now(), lastDraw = 0;
     function tick(now) {
+      if (!window.__stop3d) requestAnimationFrame(tick);
+      if (now - lastDraw < 33) return;   // teto de ~30fps: alivia CPU/GPU
+      lastDraw = now;
       var t = (now - t0) / 1000;
-      mx += (tmx - mx) * 0.05; my += (tmy - my) * 0.05;
+      mx += (tmx - mx) * 0.09; my += (tmy - my) * 0.09;
       // gira devagar sozinha, sempre mostrando a face (fica claro que é uma porta)
       grupo.rotation.y = Math.sin(t * 0.5) * 0.6 + mx * 0.35;
       grupo.rotation.x = 0.05 + Math.sin(t * 0.7) * 0.04 - my * 0.25;
       renderer.render(scene, camera);
-      if (!window.__stop3d) requestAnimationFrame(tick);
     }
     if (reduced) { renderer.render(scene, camera); }
     else requestAnimationFrame(tick);
@@ -233,12 +235,6 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     var lenis = new Lenis({ lerp: 0.1, smoothWheel: true }); lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add(function (t) { lenis.raf(t * 1000); }); gsap.ticker.lagSmoothing(0);
 
-    if (!touch) {
-      var cur = document.getElementById("cursor");
-      var xT = gsap.quickTo(cur, "x", { duration: 0.3, ease: "osmo-out" }), yT = gsap.quickTo(cur, "y", { duration: 0.3, ease: "osmo-out" });
-      window.addEventListener("pointermove", function (e) { xT(e.clientX); yT(e.clientY); });
-      document.querySelectorAll("a, button, [data-cur], .chip, .deck__card").forEach(function (el) { el.addEventListener("mouseenter", function () { cur.classList.add("big"); }); el.addEventListener("mouseleave", function () { cur.classList.remove("big"); }); });
-    }
     function splitReveal(el, opts) { opts = opts || {}; var type = el.dataset.split || "lines";
       var cfg = { lines: { duration: 0.9, stagger: 0.09 }, words: { duration: 0.6, stagger: 0.045 } }[type] || { duration: 0.8, stagger: 0.05 };
       var split = SplitText.create(el, { type: "lines, words, chars", mask: "lines", linesClass: "line" });
