@@ -81,7 +81,9 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     window.addEventListener("resize", function(){ measure(); update(); });
     var last = performance.now();
     function loop(now){ var dt = Math.min(now - last, 60); last = now;
-      if (!down && !hover) deck.scrollLeft += dt * 0.028; // devagar, ~28px/s
+      // Anda sempre (só para quando a pessoa arrasta). Antes pausava no hover,
+      // e como no herói o cursor vive sobre o carrossel, ele parecia travado.
+      if (!down) deck.scrollLeft += dt * 0.06; // ~60px/s, deriva suave e visível
       wrap(); update(); requestAnimationFrame(loop); }
     requestAnimationFrame(function(){ measure(); deck.scrollLeft = 1; update(); requestAnimationFrame(loop); });
     deck.__update = update;
