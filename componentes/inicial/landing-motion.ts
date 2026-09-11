@@ -63,7 +63,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
       gap = parseFloat(cs.columnGap || cs.gap) || gap;
       padL = parseFloat(cs.paddingLeft) || 0;
       vw = deck.clientWidth || window.innerWidth;
-      R = vw * 1.8;                            // raio do arco (curvatura mais marcada)
+      R = vw * 2.0;                            // raio do arco (curva marcada, mas cabe em tela baixa)
     }
     function wrap(){ if (half) { if (deck.scrollLeft >= half) deck.scrollLeft -= half; else if (deck.scrollLeft < 0) deck.scrollLeft += half; } }
     deck.addEventListener("pointerenter", function(){ hover = true; });

@@ -87,9 +87,10 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .strip__track { animation: none; } }
 
 /* HERÓI (centrado, molde Osmo) */
-.hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: calc(var(--body) * 6.2); overflow: hidden; }
-.hero-copy { order: 2; position: relative; z-index: 2; margin-block: auto; display: flex; flex-direction: column; align-items: center; gap: calc(var(--body) * 1.5); padding: calc(var(--body) * 1.4) var(--gutter); }
-.mega { font-family: var(--sans); font-weight: 500; font-size: clamp(2.5em, 6.4vw, 6.1em); line-height: 1.0; letter-spacing: -0.045em; max-width: 15ch; padding-bottom: 0.06em; }
+.hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: calc(var(--body) * 4); overflow: hidden; }
+.hero-copy { order: 2; position: relative; z-index: 2; margin-block: auto; display: flex; flex-direction: column; align-items: center; gap: calc(var(--body) * 1.2); padding: calc(var(--body) * 0.9) var(--gutter); }
+.mega { font-family: var(--sans); font-weight: 500; font-size: clamp(2.3em, 5.6vw, 5.3em); line-height: 1.02; letter-spacing: -0.045em; max-width: 15ch; padding-bottom: 0.06em; }
+@media (min-width: 900px) and (max-height: 780px) { .mega { font-size: clamp(2.2em, 4.6vw, 4.4em); } .hero-deck { height: 30vh; } .hero { padding-top: calc(var(--body) * 3.2); } .hero-copy { gap: calc(var(--body) * 0.85); } }
 .mega .w { display: inline-block; }
 .mega em { font-style: normal; color: var(--accent); }
 .sub { font-size: 1.28em; line-height: 1.5; letter-spacing: -0.01em; color: var(--ink); max-width: 32ch; }
@@ -106,14 +107,14 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
    buffer rasterizado a 1x, e em tela retina os cartões saem borrados. O
    esmaecido das pontas vira degradê sobreposto, e cada cartão pinta na
    resolução real do aparelho. */
-.hero-deck { order: 1; position: relative; z-index: 1; margin-top: 0; width: 100vw; height: min(38vh, 24.5rem); overflow: hidden; }
+.hero-deck { order: 1; position: relative; z-index: 1; margin-top: 0; width: 100vw; height: min(33vh, 21rem); overflow: hidden; }
 .hero-deck::before, .hero-deck::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .hero-deck::before { background: linear-gradient(90deg, var(--paper), transparent 11%, transparent 89%, var(--paper)); }
 .hero-deck::after { background: linear-gradient(0deg, var(--paper), transparent 15%); }
 .deck { display: flex; gap: clamp(26px, 2.8vw, 52px); overflow-x: scroll; overflow-y: hidden; scrollbar-width: none; padding: 0.6rem var(--gutter) 0; cursor: grab; align-items: flex-start; height: calc(100% + 5rem); }
 .deck::-webkit-scrollbar { display: none; }
 .deck.is-dragging { cursor: grabbing; }
-.deck__card { flex: 0 0 clamp(160px, 16vw, 208px); transform-origin: 50% 50%; }
+.deck__card { flex: 0 0 clamp(146px, 14.2vw, 178px); transform-origin: 50% 50%; }
 
 /* cartão limpo do carrossel (estilo Osmo): foto no quadro, nome embaixo */
 .loja { display: flex; flex-direction: column; gap: .6rem; }
