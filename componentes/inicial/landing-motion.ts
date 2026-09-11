@@ -16,44 +16,55 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     { s:"alecrim", nome:"Alecrim", of:"Confeitaria", cid:"São Paulo", tema:"areia", fundo:"tinta", frase:"Bolos, tortas e docinhos feitos no dia. Balcão e encomendas.", img:I.alecrim, aberto:"Aberto agora", forma:"circulo" },
     { s:"helenavasques", nome:"Helena Vasques", of:"Massoterapia", cid:"Belo Horizonte", tema:"minimal", fundo:"papel", frase:"Massoterapia e drenagem, com hora marcada, na Savassi.", img:I.helena, aberto:"Com hora marcada", forma:"porta" }
   ];
-  var DOOR = '<svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>';
+  // Cartão limpo, no estilo Osmo: a foto num quadro, o endereço discreto no
+  // canto, e o nome + ofício embaixo do quadro, sem texto solto por dentro.
   function mock(n) {
-    return '<article class="mock produto" data-tema="'+n.tema+'" data-fundo="'+n.fundo+'">'+
-      '<span class="cap">entrais.app/'+n.s+'</span>'+
-      '<div class="miolo">'+
-        '<div class="p-banner"><img src="'+n.img+'" alt=""><span class="over"></span></div>'+
-        '<div class="p-id">'+
-          '<div class="p-nicho" data-forma="'+n.forma+'"><img src="'+n.img+'" alt="'+n.nome+'"></div>'+
-          '<div class="p-fio"></div><div class="p-rot">'+n.of+' · '+n.cid+'</div>'+
-          '<div class="p-nome">'+n.nome+'</div>'+
-          '<div class="p-frase">'+n.frase+'</div>'+
-          '<div class="p-selo"><span class="d"></span><b>Aberto</b><span>'+n.aberto+'</span></div>'+
-        '</div>'+
-        '<div class="p-wpp">Chamar no WhatsApp</div>'+
+    return '<figure class="loja" data-tema="'+n.tema+'">'+
+      '<div class="loja__quadro">'+
+        '<img class="loja__foto" src="'+n.img+'" alt="">'+
+        '<span class="loja__tag">entrais.app/'+n.s+'</span>'+
       '</div>'+
-    '</article>';
+      '<figcaption class="loja__id"><b>'+n.nome+'</b><span>'+n.of+' · '+n.cid+'</span></figcaption>'+
+    '</figure>';
   }
 
   /* ---------- deck em arco (coverflow) ---------- */
   function initDeck(deck) {
     NEG.concat(NEG).forEach(function(n){ var w=document.createElement("div"); w.className="deck__card"; w.innerHTML=mock(n); deck.appendChild(w); });
     var cards = [].slice.call(deck.querySelectorAll(".deck__card"));
+    // Medimos a largura de um cartao, o vao e o respiro uma vez (em measure),
+    // e a cada quadro lemos so o scrollLeft. Evita chamar getBoundingClientRect
+    // em todos os cartoes por quadro, que forcava reflow e travava a rolagem.
+    var cw = 260, gap = 24, padL = 0, vw = 0, R = 2000;
+    // Arco de verdade (padrao Osmo): cada cartao fica num ponto do circulo,
+    // afunda pela sagitta e gira pela tangente do mesmo angulo. Uma conta so,
+    // então a curva é limpa e o giro acompanha o arco, sem parecer emenda.
     function update() {
-      var mid = window.innerWidth / 2;
-      cards.forEach(function (c) {
-        var r = c.getBoundingClientRect();
-        var d = (r.left + r.width / 2 - mid) / window.innerWidth;
-        var ad = Math.min(Math.abs(d), 0.62);
-        var ty = ad * ad * 170;
-        var rot = Math.max(-14, Math.min(14, d * 22));
-        var sc = 1 - ad * 0.12;
-        c.style.transform = "translateY(" + ty + "px) rotate(" + rot + "deg) scale(" + sc + ")";
-        c.style.opacity = String(1 - ad * 0.5);
-        c.style.zIndex = String(200 - Math.round(ad * 200));
-      });
+      var mid = deck.scrollLeft + vw / 2;
+      for (var i = 0; i < cards.length; i++) {
+        var c = cards[i];
+        var center = padL + i * (cw + gap) + cw / 2;
+        var x = center - mid;                 // distancia ao centro da tela
+        var th = x / R;                        // angulo no arco
+        var ty = R * (1 - Math.cos(th));       // afunda simetrico nas pontas
+        var rot = th * 57.2958;                // graus, tangente do arco
+        var ad = Math.min(Math.abs(x) / vw, 0.75);
+        var sc = 1 - ad * 0.07;                // encolhe de leve nas pontas
+        c.style.transform = "translateY(" + ty.toFixed(2) + "px) rotate(" + rot.toFixed(2) + "deg) scale(" + sc.toFixed(3) + ")";
+        c.style.opacity = (1 - ad * 0.16).toFixed(3);   // fica vivo, sem lavar
+        c.style.zIndex = String(300 - Math.round(Math.abs(x) / 10));
+      }
     }
     var down = false, sx = 0, ss = 0, moved = 0, hover = false, half = 0;
-    function measure(){ half = deck.scrollWidth / 2; }
+    function measure(){
+      half = deck.scrollWidth / 2;
+      var cs = getComputedStyle(deck);
+      if (cards[0]) cw = cards[0].offsetWidth || cw;
+      gap = parseFloat(cs.columnGap || cs.gap) || gap;
+      padL = parseFloat(cs.paddingLeft) || 0;
+      vw = deck.clientWidth || window.innerWidth;
+      R = vw * 2.0;                            // raio do arco (curva marcada, mas cabe em tela baixa)
+    }
     function wrap(){ if (half) { if (deck.scrollLeft >= half) deck.scrollLeft -= half; else if (deck.scrollLeft < 0) deck.scrollLeft += half; } }
     deck.addEventListener("pointerenter", function(){ hover = true; });
     deck.addEventListener("pointerleave", function(){ hover = false; });
@@ -64,7 +75,9 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     window.addEventListener("resize", function(){ measure(); update(); });
     var last = performance.now();
     function loop(now){ var dt = Math.min(now - last, 60); last = now;
-      if (!down && !hover) deck.scrollLeft += dt * 0.028; // devagar, ~28px/s
+      // Anda sempre (só para quando a pessoa arrasta). Antes pausava no hover,
+      // e como no herói o cursor vive sobre o carrossel, ele parecia travado.
+      if (!down) deck.scrollLeft += dt * 0.06; // ~60px/s, deriva suave e visível
       wrap(); update(); requestAnimationFrame(loop); }
     requestAnimationFrame(function(){ measure(); deck.scrollLeft = 1; update(); requestAnimationFrame(loop); });
     deck.__update = update;
@@ -129,7 +142,10 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     if (typeof THREE === "undefined") throw new Error("no three");
     var canvas = document.getElementById("porta3d");
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
+    // Supersampling: desenha num buffer 2x maior que a tela e deixa o CSS
+    // reduzir. Numa porta pequena isso é barato e mata o serrilhado que fazia
+    // ela parecer de baixa qualidade.
+    renderer.setPixelRatio(Math.min((window.devicePixelRatio || 1) * 2, 4));
     THREE.ColorManagement.enabled = false;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping;
@@ -150,12 +166,12 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     // moldura (marsala)
     var frameGeo = new THREE.ExtrudeGeometry(archShape(W, H), { depth: 0.7, bevelEnabled: true, bevelThickness: 0.13, bevelSize: 0.13, bevelSegments: 8, curveSegments: 96 });
     frameGeo.center();
-    var marsala = new THREE.MeshStandardMaterial({ color: 0x83263a, roughness: 0.88, metalness: 0.0 });
+    var marsala = new THREE.MeshStandardMaterial({ color: 0xc65266, roughness: 0.62, metalness: 0.0 });
     var frame = new THREE.Mesh(frameGeo, marsala); grupo.add(frame);
-    // folha interna, levemente à frente e mais escura
+    // folha interna, levemente à frente e um tom mais fundo (sem virar buraco preto)
     var leafGeo = new THREE.ExtrudeGeometry(archShape(W * 0.74, H * 0.74, 0), { depth: 0.5, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.07, bevelSegments: 6, curveSegments: 80 });
     leafGeo.center();
-    var leaf = new THREE.Mesh(leafGeo, new THREE.MeshStandardMaterial({ color: 0x581824, roughness: 0.95, metalness: 0.0 }));
+    var leaf = new THREE.Mesh(leafGeo, new THREE.MeshStandardMaterial({ color: 0x9c3b4d, roughness: 0.72, metalness: 0.0 }));
     leaf.position.z = 0.34; leaf.position.y = -0.12; grupo.add(leaf);
     // vinco central (latão)
     var latao = new THREE.MeshStandardMaterial({ color: 0xb9853c, roughness: 0.34, metalness: 0.9 });
@@ -169,10 +185,11 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     scene.add(grupo);
 
     // luz
-    var key = new THREE.DirectionalLight(0xfff2df, 1.05); key.position.set(-5, 6, 8); scene.add(key);
-    var rim = new THREE.DirectionalLight(0xffc79a, 1.5); rim.position.set(7, 3, -6); scene.add(rim);
-    var fill = new THREE.DirectionalLight(0xffe9d2, 0.4); fill.position.set(2, -3, 7); scene.add(fill);
-    scene.add(new THREE.HemisphereLight(0xfff6ea, 0x36281f, 0.35));
+    var key = new THREE.DirectionalLight(0xfff2df, 1.7); key.position.set(-5, 6, 8); scene.add(key);
+    var rim = new THREE.DirectionalLight(0xffc79a, 1.8); rim.position.set(7, 3, -6); scene.add(rim);
+    var fill = new THREE.DirectionalLight(0xffe9d2, 0.9); fill.position.set(2, -3, 7); scene.add(fill);
+    scene.add(new THREE.HemisphereLight(0xfff6ea, 0x6b4b3f, 0.8));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
     function resize() {
       var r = canvas.getBoundingClientRect();
@@ -183,18 +200,25 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     }
     resize(); window.addEventListener("resize", resize);
     if (window.ResizeObserver) { try { new ResizeObserver(resize).observe(canvas); } catch(_){} }
+    // A fonte grande do titulo muda o tamanho do glifo depois do primeiro
+    // desenho; sem redimensionar de novo, a porta fica num buffer pequeno e
+    // aparece serrilhada. Redesenha quando a fonte carrega e quando o layout assenta.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+    requestAnimationFrame(resize); setTimeout(resize, 500);
 
     var mx = 0, my = 0, tmx = 0, tmy = 0;
     window.addEventListener("pointermove", function (e) { tmx = (e.clientX / window.innerWidth - 0.5); tmy = (e.clientY / window.innerHeight - 0.5); });
-    var t0 = performance.now();
+    var t0 = performance.now(), lastDraw = 0;
     function tick(now) {
+      if (!window.__stop3d) requestAnimationFrame(tick);
+      if (now - lastDraw < 33) return;   // teto de ~30fps: alivia CPU/GPU
+      lastDraw = now;
       var t = (now - t0) / 1000;
-      mx += (tmx - mx) * 0.05; my += (tmy - my) * 0.05;
+      mx += (tmx - mx) * 0.09; my += (tmy - my) * 0.09;
       // gira devagar sozinha, sempre mostrando a face (fica claro que é uma porta)
       grupo.rotation.y = Math.sin(t * 0.5) * 0.6 + mx * 0.35;
       grupo.rotation.x = 0.05 + Math.sin(t * 0.7) * 0.04 - my * 0.25;
       renderer.render(scene, camera);
-      if (!window.__stop3d) requestAnimationFrame(tick);
     }
     if (reduced) { renderer.render(scene, camera); }
     else requestAnimationFrame(tick);
@@ -211,12 +235,6 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     var lenis = new Lenis({ lerp: 0.1, smoothWheel: true }); lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add(function (t) { lenis.raf(t * 1000); }); gsap.ticker.lagSmoothing(0);
 
-    if (!touch) {
-      var cur = document.getElementById("cursor");
-      var xT = gsap.quickTo(cur, "x", { duration: 0.3, ease: "osmo-out" }), yT = gsap.quickTo(cur, "y", { duration: 0.3, ease: "osmo-out" });
-      window.addEventListener("pointermove", function (e) { xT(e.clientX); yT(e.clientY); });
-      document.querySelectorAll("a, button, [data-cur], .chip, .deck__card").forEach(function (el) { el.addEventListener("mouseenter", function () { cur.classList.add("big"); }); el.addEventListener("mouseleave", function () { cur.classList.remove("big"); }); });
-    }
     function splitReveal(el, opts) { opts = opts || {}; var type = el.dataset.split || "lines";
       var cfg = { lines: { duration: 0.9, stagger: 0.09 }, words: { duration: 0.6, stagger: 0.045 } }[type] || { duration: 0.8, stagger: 0.05 };
       var split = SplitText.create(el, { type: "lines, words, chars", mask: "lines", linesClass: "line" });
@@ -236,6 +254,9 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
         .to(".dglyph", { scale: 1, opacity: 1, duration: 1.0, ease: "osmo-out" }, 0.45)
         .from(".hero .sub", { y: 16, opacity: 0, duration: 0.6, ease: "osmo" }, 0.7)
         .from(".hero .cta-row", { y: 18, opacity: 0, duration: 0.6, ease: "osmo" }, 0.85);
+      // paralaxe suave: o carrossel das lojinhas desliza mais devagar que a rolagem
+      var pdeck = document.querySelector(".hero-deck[data-parallax]");
+      if (pdeck) { gsap.to(pdeck, { yPercent: -16, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } }); }
       document.querySelectorAll("[data-split]").forEach(function (el) { if (!el.closest(".hero")) splitReveal(el); });
       document.querySelectorAll("[data-reveal]").forEach(function (el) { if (!el.closest(".hero")) reveal(el); });
       // recursos deslizam dos lados
@@ -246,10 +267,6 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
         gsap.from(txt, { xPercent: -9 * dir, opacity: 0, duration: 1, ease: "osmo", scrollTrigger: { trigger: row, start: "top 82%", once: true } });
       });
       var panel = document.querySelector(".transition__panel"); gsap.set(panel, { scaleY: 1, transformOrigin: "top" }); gsap.to(panel, { scaleY: 0, duration: 1.1, ease: "osmo", delay: 0.05 });
-      // esconde o trocador no herói e no fecho
-      ScrollTrigger.create({ trigger: ".noite", start: "top 70%", end: "bottom 40%",
-        onToggle: function (s) { gsap.to(".trocador", { autoAlpha: s.isActive ? 1 : 0.0, y: s.isActive ? 0 : 20, duration: .5 }); } });
-      gsap.set(".trocador", { autoAlpha: 0, y: 20 });
       ScrollTrigger.refresh(); window.__mr = true;
     });
     setTimeout(function () { if (!window.__mr) revealAll(); }, 3500);

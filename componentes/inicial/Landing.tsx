@@ -19,7 +19,6 @@ const IMGS = {
 };
 
 const CORPO = `<div class="grao"></div>
-<div class="cursor" id="cursor" aria-hidden="true"></div>
 <div class="transition" aria-hidden="true"><div class="transition__panel"></div></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="porta"><path fill-rule="evenodd" d="M4 21 V11 a8 8 0 0 1 8 -8 v18 z M9.2 11 a1.3 1.3 0 0 1 -2.6 0 a1.3 1.3 0 0 1 2.6 0 z M14.5 3.5 a8 8 0 0 1 5.5 7.5 V21 h-2.8 V11 a5.2 5.2 0 0 0 -2.7 -4.6 z"/></g></defs></svg>
 
@@ -34,11 +33,14 @@ const CORPO = `<div class="grao"></div>
 
 <main>
   <section class="hero" id="topo">
+    <div class="hero-deck" id="exemplos" data-parallax>
+      <div class="deck" data-deck><!-- cards injetados por JS --></div>
+    </div>
     <div class="hero-copy">
       <h1 class="mega">
         <span class="w">Tudo</span> <span class="w">o</span> <span class="w">que</span> <span class="w">você</span> <span class="w">faz</span><span class="dglyph" aria-hidden="true"><canvas id="porta3d"></canvas><svg class="fallback-arco" viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg></span><span class="w">numa</span> <span class="w"><em>página só.</em></span>
       </h1>
-      <p class="sub" data-reveal>Uma página com <span class="chip">catálogo</span>, <span class="chip">horário</span>, <span class="chip">galeria</span> e <span class="chip">WhatsApp</span>, num endereço <span class="chip">com o seu nome</span>.</p>
+      <p class="sub" data-reveal>Catálogo, horário, galeria e o botão de WhatsApp, num endereço com o seu nome.</p>
       <div class="cta-row" data-reveal>
         <form class="placa" action="/criar" method="get" data-cur>
           <span class="pre">entrais.app/</span>
@@ -46,9 +48,6 @@ const CORPO = `<div class="grao"></div>
           <button type="submit" class="pill" data-magnetic data-magnetic-strength="0.25">Criar grátis</button>
         </form>
       </div>
-    </div>
-    <div class="hero-deck" id="exemplos">
-      <div class="deck" data-deck><!-- cards injetados por JS --></div>
     </div>
   </section>
 
@@ -67,13 +66,37 @@ const CORPO = `<div class="grao"></div>
               <div class="p-selo"><span class="d"></span><b>Aberto</b><span>grátis para começar</span></div>
             </div>
             <div class="p-grade"><div class="p-cel"><img src="/exemplo/astro-1.jpg" alt=""></div><div class="p-cel"><img src="/exemplo/tatu-capa.jpg" alt=""></div><div class="p-cel"><img src="/exemplo/ilustra-3.jpg" alt=""></div><div class="p-cel swatch"></div></div>
+            <div class="p-links">
+              <a class="p-lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>Instagram<span>@entrais</span></a>
+              <a class="p-lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/></svg>Site<span>entrais.app</span></a>
+            </div>
+            <div class="p-wpp">Chamar no WhatsApp</div>
           </div>
         </div>
       </div>
       <div class="block">
         <h3 class="t-h3" data-split="lines">A mesma página, <em>cinco interfaces.</em></h3>
-        <p class="t-lead" data-reveal style="font-size:1.1em">Esta é a nossa própria página, feita no Entrais. Troque o tema e a textura na barra de baixo e veja a interface mudar na hora. Cada negócio fica com a cara que combina com ele.</p>
-        <p class="eyebrow-num kal" data-reveal>↓ experimente na barra de baixo</p>
+        <p class="t-lead" data-reveal style="font-size:1.1em">Esta é a nossa própria página, feita no Entrais. Troque o tema e a textura no console e veja a interface mudar na hora. Cada negócio fica com a cara que combina com ele.</p>
+        <div class="console" role="group" aria-label="Trocar a aparência da página" data-reveal>
+          <div class="console__row"><span class="console__lbl">Tema</span>
+            <div class="fila" id="temas">
+              <button class="chip" data-tema="areia" aria-pressed="true"><span class="am" style="background:#f6f5f3"></span>Areia</button>
+              <button class="chip" data-tema="minimal" aria-pressed="false"><span class="am" style="background:#f5f5f7"></span>Minimal</button>
+              <button class="chip" data-tema="menta" aria-pressed="false"><span class="am" style="background:#1f6b4f"></span>Menta</button>
+              <button class="chip" data-tema="noite" aria-pressed="false"><span class="am" style="background:#1e1b17"></span>Noite</button>
+              <button class="chip" data-tema="cosmico" aria-pressed="false"><span class="am" style="background:#0b0b16"></span>Cósmico</button>
+            </div>
+          </div>
+          <div class="console__row"><span class="console__lbl">Textura</span>
+            <div class="fila" id="fundos">
+              <button class="chip" data-fundo="liso" aria-pressed="true">Liso</button>
+              <button class="chip" data-fundo="papel" aria-pressed="false">Papel</button>
+              <button class="chip" data-fundo="tinta" aria-pressed="false">Tinta</button>
+              <button class="chip" data-fundo="degrade" aria-pressed="false">Degradê</button>
+              <button class="chip" data-fundo="vinheta" aria-pressed="false">Vinheta</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div></section>
   </div>
@@ -90,7 +113,7 @@ const CORPO = `<div class="grao"></div>
         <div class="ci"><img src="/exemplo/pao-1.jpg" alt=""><div class="cinfo"><b>Pão da casa</b><span>Fornada do dia</span></div><div class="cpr">R$ 9</div></div>
         <div class="cwpp">Chamar no WhatsApp</div>
       </div></div>
-      <div class="r-txt"><span class="n">01 — Catálogo</span><h3>Cada serviço com preço e um toque para o WhatsApp.</h3><p>Foto, valor à vista e o botão que abre a conversa já com o item escrito. O seu balcão, aberto o dia inteiro.</p></div></div>
+      <div class="r-txt"><span class="n">01 — Catálogo</span><h3>Cada serviço com preço e um toque para o WhatsApp.</h3><p>Foto, o preço na frente e o botão que abre a conversa já com o item escrito. O seu balcão, aberto o dia inteiro.</p></div></div>
 
     <div class="recurso inv" data-reveal-row><div class="r-fig" data-cur><span class="tag">Galeria</span>
       <div class="comp comp-gal"><img src="/exemplo/astro-1.jpg" alt=""><img src="/exemplo/tatu-capa.jpg" alt=""><img src="/exemplo/ilustra-3.jpg" alt=""><img src="/exemplo/canto-capa.jpg" alt=""><img src="/exemplo/bolo-3.jpg" alt=""><img src="/exemplo/spa-1.jpg" alt=""></div></div>
@@ -106,7 +129,7 @@ const CORPO = `<div class="grao"></div>
         </ul>
         <div class="hbtn">Agendar horário</div>
       </div></div>
-      <div class="r-txt"><span class="n">03 — Horário</span><h3>Diz na hora se você atende neste momento.</h3><p>O horário é calculado no seu fuso e o endereço vem com o mapa. Quem abre já sabe se pode chamar agora.</p></div></div>
+      <div class="r-txt"><span class="n">03 — Horário</span><h3>Um espaço para os seus horários, se você quiser.</h3><p>Você diz quando atende, e a página calcula no seu fuso. Quem abre já vê se pode chamar agora, com o endereço no mapa.</p></div></div>
 
     <div class="recurso inv" data-reveal-row><div class="r-fig" data-cur><span class="tag">Links</span>
       <div class="comp comp-links">
@@ -122,6 +145,7 @@ const CORPO = `<div class="grao"></div>
   <section class="section" id="preco" style="padding-bottom:0"><div class="shell">
     <div class="precos-head block">
       <h2 class="t-h2" data-split="lines">Comece de graça.<br><em>Cresça quando quiser.</em></h2>
+      <p class="precos-sub" data-reveal>A sua página fica no ar de graça. O plano pago abre os temas, a agenda e os números por dentro.</p>
     </div>
   </div>
     <div class="precos bleed" data-reveal>
@@ -135,7 +159,7 @@ const CORPO = `<div class="grao"></div>
         <ul class="bens">
           <li>A sua página no ar, com o seu endereço</li>
           <li>Até 20 itens no catálogo, com foto e preço</li>
-          <li>Quantas pessoas abriram e quantas chamaram você, nos últimos 7 dias</li>
+          <li>Um relatório de quantas pessoas abriram a sua página, a cada 7 dias</li>
         </ul>
         <a class="verlink" href="#dentro">Ver tudo que vem junto</a>
       </div>
@@ -143,14 +167,14 @@ const CORPO = `<div class="grao"></div>
         <span class="tag">Tudo liberado</span>
         <div class="nome">Pago</div>
         <div class="preco">R$19,90 <u>por mês</u></div>
-        <p class="sub2">No ano são R$179, o mesmo que nove meses. Os outros três ficam por conta nossa.</p>
+        <p class="sub2">No ano são R$179, com 3 meses de graça. Cancele quando quiser.</p>
         <a class="cta" href="#comecar" data-cur>Assinar</a>
         <div class="rule2"></div>
         <ul class="bens forte">
           <li>Tudo do plano grátis, e mais</li>
           <li>Até 400 itens no catálogo</li>
-          <li>Todos os temas e as texturas</li>
-          <li>A letra da sua marca no título</li>
+          <li>Agendamento de horário</li>
+          <li>5 temas, 5 texturas e a letra da sua marca</li>
           <li>Os números dia a dia, com a origem de cada visita</li>
         </ul>
         <a class="verlink" href="#aparencia">Ver o que muda</a>
@@ -173,25 +197,7 @@ const CORPO = `<div class="grao"></div>
 <footer><div class="shell in">
   <span class="feito"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>feito com <b>Entrais</b></span>
   <nav class="rodape-links" aria-label="Rodapé"><a href="/termos">Termos</a><a href="/privacidade">Privacidade</a><a href="/entrar">Entrar</a></nav>
-</div></footer>
-
-<div class="trocador" role="group" aria-label="Trocar a aparência da página">
-  <p class="cap"><span>A mesma página, todas as interfaces</span><b>Troque o tema →</b></p>
-  <div class="fila" id="temas">
-    <button class="chip" data-tema="areia" aria-pressed="true"><span class="am" style="background:#f6f5f3"></span>Areia</button>
-    <button class="chip" data-tema="minimal" aria-pressed="false"><span class="am" style="background:#f5f5f7"></span>Minimal</button>
-    <button class="chip" data-tema="menta" aria-pressed="false"><span class="am" style="background:#1f6b4f"></span>Menta</button>
-    <button class="chip" data-tema="noite" aria-pressed="false"><span class="am" style="background:#1e1b17"></span>Noite</button>
-    <button class="chip" data-tema="cosmico" aria-pressed="false"><span class="am" style="background:#0b0b16"></span>Cósmico</button>
-  </div>
-  <div class="fila" id="fundos">
-    <button class="chip" data-fundo="liso" aria-pressed="true">Liso</button>
-    <button class="chip" data-fundo="papel" aria-pressed="false">Papel</button>
-    <button class="chip" data-fundo="tinta" aria-pressed="false">Tinta</button>
-    <button class="chip" data-fundo="degrade" aria-pressed="false">Degradê</button>
-    <button class="chip" data-fundo="vinheta" aria-pressed="false">Vinheta</button>
-  </div>
-</div>`;
+</div></footer>`;
 
 export function Landing() {
   const ref = useRef<HTMLDivElement>(null);
