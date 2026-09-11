@@ -41,20 +41,24 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     // Medimos a largura de um cartao, o vao e o respiro uma vez (em measure),
     // e a cada quadro lemos so o scrollLeft. Evita chamar getBoundingClientRect
     // em todos os cartoes por quadro, que forcava reflow e travava a rolagem.
-    var cw = 260, gap = 24, padL = 0, vw = 0;
+    var cw = 260, gap = 24, padL = 0, vw = 0, R = 2000;
+    // Arco de verdade (padrao Osmo): cada cartao fica num ponto do circulo,
+    // afunda pela sagitta e gira pela tangente do mesmo angulo. Uma conta so,
+    // então a curva é limpa e o giro acompanha o arco, sem parecer emenda.
     function update() {
       var mid = deck.scrollLeft + vw / 2;
       for (var i = 0; i < cards.length; i++) {
         var c = cards[i];
         var center = padL + i * (cw + gap) + cw / 2;
-        var d = (center - mid) / vw;
-        var ad = Math.min(Math.abs(d), 0.62);
-        var ty = ad * ad * 230;
-        var rot = Math.max(-17, Math.min(17, d * 27));
-        var sc = 1 - ad * 0.15;
-        c.style.transform = "translateY(" + ty + "px) rotate(" + rot + "deg) scale(" + sc + ")";
-        c.style.opacity = String(1 - ad * 0.55);
-        c.style.zIndex = String(200 - Math.round(ad * 200));
+        var x = center - mid;                 // distancia ao centro da tela
+        var th = x / R;                        // angulo no arco
+        var ty = R * (1 - Math.cos(th));       // afunda simetrico nas pontas
+        var rot = th * 57.2958;                // graus, tangente do arco
+        var ad = Math.min(Math.abs(x) / vw, 0.75);
+        var sc = 1 - ad * 0.07;                // encolhe de leve nas pontas
+        c.style.transform = "translateY(" + ty.toFixed(2) + "px) rotate(" + rot.toFixed(2) + "deg) scale(" + sc.toFixed(3) + ")";
+        c.style.opacity = (1 - ad * 0.16).toFixed(3);   // fica vivo, sem lavar
+        c.style.zIndex = String(300 - Math.round(Math.abs(x) / 10));
       }
     }
     var down = false, sx = 0, ss = 0, moved = 0, hover = false, half = 0;
@@ -65,6 +69,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
       gap = parseFloat(cs.columnGap || cs.gap) || gap;
       padL = parseFloat(cs.paddingLeft) || 0;
       vw = deck.clientWidth || window.innerWidth;
+      R = vw * 1.5;                            // raio do arco (curvatura)
     }
     function wrap(){ if (half) { if (deck.scrollLeft >= half) deck.scrollLeft -= half; else if (deck.scrollLeft < 0) deck.scrollLeft += half; } }
     deck.addEventListener("pointerenter", function(){ hover = true; });
@@ -141,7 +146,10 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     if (typeof THREE === "undefined") throw new Error("no three");
     var canvas = document.getElementById("porta3d");
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+    // Supersampling: desenha num buffer 2x maior que a tela e deixa o CSS
+    // reduzir. Numa porta pequena isso é barato e mata o serrilhado que fazia
+    // ela parecer de baixa qualidade.
+    renderer.setPixelRatio(Math.min((window.devicePixelRatio || 1) * 2, 4));
     THREE.ColorManagement.enabled = false;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping;

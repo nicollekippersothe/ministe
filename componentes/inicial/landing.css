@@ -112,12 +112,12 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
    resolução real do aparelho. */
 .hero-deck { order: 1; position: relative; z-index: 1; margin-top: 0; width: 100vw; height: min(29vh, 19rem); overflow: hidden; }
 .hero-deck::before, .hero-deck::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.hero-deck::before { background: linear-gradient(90deg, var(--paper), transparent 14%, transparent 86%, var(--paper)); }
-.hero-deck::after { background: linear-gradient(0deg, var(--paper), transparent 34%); }
+.hero-deck::before { background: linear-gradient(90deg, var(--paper), transparent 11%, transparent 89%, var(--paper)); }
+.hero-deck::after { background: linear-gradient(0deg, var(--paper), transparent 15%); }
 .deck { display: flex; gap: clamp(32px, 3.4vw, 64px); overflow-x: scroll; overflow-y: hidden; scrollbar-width: none; padding: 0.4rem var(--gutter) 0; cursor: grab; align-items: flex-start; height: calc(100% + 8rem); }
 .deck::-webkit-scrollbar { display: none; }
 .deck.is-dragging { cursor: grabbing; }
-.deck__card { flex: 0 0 clamp(248px, 24vw, 340px); transform-origin: 50% 140%; }
+.deck__card { flex: 0 0 clamp(248px, 24vw, 340px); transform-origin: 50% 50%; }
 
 /* ====== NOITE: mergulho no escuro ====== */
 .noite { position: relative; color: var(--night-tx);
