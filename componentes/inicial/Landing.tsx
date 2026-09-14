@@ -143,12 +143,17 @@ const CORPO = `<div class="grao"></div>
 
   <!-- ====== SEGMENTOS (carrossel 3D) ====== -->
   <section class="segmentos" id="segmentos"><div class="shell">
-    <div class="seg-head block">
-      <span class="eyebrow-num">Para cada ofício</span>
-      <h2 class="t-h2" data-split="lines">Serve para <em>o que você faz.</em></h2>
-      <p class="t-lead" data-reveal>Tatuador, confeiteira, ilustradora, terapeuta. A mesma página se ajeita para o seu ramo. Arraste para girar.</p>
+    <div class="seg-explorer" data-explorer>
+      <div class="seg-lado">
+        <span class="eyebrow-num">Para cada ofício</span>
+        <h2 class="t-h2" data-split="lines">Serve para <em>o que você faz.</em></h2>
+        <p class="t-lead" data-reveal>A mesma página se ajeita para o seu ramo. Passe o olho pelos ofícios e veja um exemplo de cada um.</p>
+        <ol class="seg-lista" data-reveal><!-- itens injetados por JS --></ol>
+      </div>
+      <figure class="seg-preview" data-reveal>
+        <div class="seg-molde"><img class="seg-img" src="/exemplo/tatu-1.jpg" alt=""><span class="seg-tag">entrais.app/teosarmento</span></div>
+      </figure>
     </div>
-    <div class="palco" data-anel data-reveal><div class="anel"><!-- cards injetados por JS --></div></div>
   </div></section>
 
   <!-- ====== PREÇO ====== -->
