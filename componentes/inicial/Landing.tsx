@@ -141,6 +141,21 @@ const CORPO = `<div class="grao"></div>
       <div class="r-txt"><span class="n">04 — Links</span><h3>Instagram, site, Spotify e agenda, num endereço só.</h3><p>Tudo o que estava espalhado, reunido num link com o seu nome. E os números de quem abre e quem chama você, para provar que a página trabalha.</p></div></div>
   </div></section>
 
+  <!-- ====== SEGMENTOS (carrossel 3D) ====== -->
+  <section class="segmentos" id="segmentos"><div class="shell">
+    <div class="seg-explorer" data-explorer>
+      <div class="seg-lado">
+        <span class="eyebrow-num">Para cada ofício</span>
+        <h2 class="t-h2" data-split="lines">Serve para <em>o que você faz.</em></h2>
+        <p class="t-lead" data-reveal>A mesma página se ajeita para o seu ramo. Passe o olho pelos ofícios e veja um exemplo de cada um.</p>
+        <ol class="seg-lista" data-reveal><!-- itens injetados por JS --></ol>
+      </div>
+      <figure class="seg-preview" data-reveal>
+        <div class="seg-molde"><img class="seg-img" src="/exemplo/tatu-1.jpg" alt=""><span class="seg-tag">entrais.app/teosarmento</span></div>
+      </figure>
+    </div>
+  </div></section>
+
   <!-- ====== PREÇO ====== -->
   <section class="section" id="preco" style="padding-bottom:0"><div class="shell">
     <div class="precos-head block">

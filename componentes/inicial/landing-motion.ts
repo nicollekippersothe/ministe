@@ -84,6 +84,50 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     return deck;
   }
 
+  /* ---------- explorador de ofícios (lista troca a prévia) ---------- */
+  var SEG = [
+    { of: "Tatuagem", img: "/exemplo/tatu-1.jpg", ex: "teosarmento" },
+    { of: "Confeitaria", img: "/exemplo/bolo-3.jpg", ex: "alecrim" },
+    { of: "Ilustração", img: "/exemplo/ilustra-3.jpg", ex: "liaprado" },
+    { of: "Astrologia", img: "/exemplo/astro-1.jpg", ex: "isismoraes" },
+    { of: "Canto", img: "/exemplo/canto-2.jpg", ex: "biamarconi" },
+    { of: "Massoterapia", img: "/exemplo/spa-1.jpg", ex: "helenavasques" },
+    { of: "Psicologia", img: "/exemplo/psi-capa.jpg", ex: "marianaalves" },
+    { of: "Fotografia", img: "/exemplo/galeria-2.jpg", ex: "estudioluz" }
+  ];
+  function initExplorer(root) {
+    if (!root) return;
+    var lista = root.querySelector(".seg-lista");
+    var img = root.querySelector(".seg-img");
+    var tag = root.querySelector(".seg-tag");
+    if (!lista || !img) return;
+    SEG.forEach(function (s, i) {
+      var li = document.createElement("li");
+      li.innerHTML = '<button type="button" class="seg-item" data-i="' + i + '" aria-pressed="' + (i === 0 ? "true" : "false") + '">' +
+        '<span class="seg-num">' + ("0" + (i + 1)).slice(-2) + '</span><span class="seg-nome">' + s.of + '</span></button>';
+      lista.appendChild(li);
+    });
+    SEG.forEach(function (s) { var im = new Image(); im.src = s.img; }); // pré-carrega
+    var items = [].slice.call(lista.querySelectorAll(".seg-item"));
+    var cur = -1, timer = null;
+    function show(i) {
+      if (i === cur) return; cur = i;
+      items.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+      var s = SEG[i];
+      img.style.opacity = "0";
+      setTimeout(function () { img.src = s.img; if (tag) tag.textContent = "entrais.app/" + s.ex; img.style.opacity = "1"; }, 180);
+    }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    function start() { stop(); timer = setInterval(function () { show((cur + 1) % SEG.length); }, 2600); }
+    items.forEach(function (b, i) {
+      b.addEventListener("pointerenter", function () { stop(); show(i); });
+      b.addEventListener("focus", function () { stop(); show(i); });
+      b.addEventListener("click", function () { stop(); show(i); });
+    });
+    root.addEventListener("pointerleave", start);
+    show(0); start();
+  }
+
   /* ---------- switcher ---------- */
   function initSwitcher() {
     var pagina = document.getElementById("produto");
@@ -134,6 +178,7 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
   }
 
   var deckEl = initDeck(document.querySelector("[data-deck]"));
+  initExplorer(document.querySelector("[data-explorer]"));
   initSwitcher();
   initPlaca();
 
