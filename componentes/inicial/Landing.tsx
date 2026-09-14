@@ -211,7 +211,7 @@ const CORPO = `<div class="grao"></div>
 
 <footer><div class="shell in">
   <span class="feito"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>feito com <b>Entrais</b></span>
-  <nav class="rodape-links" aria-label="Rodapé"><a href="/termos">Termos</a><a href="/privacidade">Privacidade</a><a href="/entrar">Entrar</a></nav>
+  <nav class="rodape-links" aria-label="Rodapé"><a href="/blog">Blog</a><a href="/termos">Termos</a><a href="/privacidade">Privacidade</a><a href="/entrar">Entrar</a></nav>
 </div></footer>`;
 
 export function Landing() {

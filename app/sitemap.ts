@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const paginas: { caminho: string; prioridade: number }[] = [
     { caminho: "", prioridade: 1 },
     { caminho: "/precos", prioridade: 0.8 },
+    { caminho: "/blog", prioridade: 0.5 },
     { caminho: "/termos", prioridade: 0.3 },
     { caminho: "/privacidade", prioridade: 0.3 },
   ];
