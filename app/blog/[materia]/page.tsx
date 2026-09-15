@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { NOME_PRODUTO } from "@/lib/marca";
+import { MolduraBlog } from "@/componentes/blog/MolduraBlog";
 import { MATERIAS, dataPorExtenso, materiaPorSlug } from "@/lib/blog";
 
 /**
@@ -41,46 +42,28 @@ export default async function PaginaMateria({
   if (!materia) notFound();
 
   return (
-    <main
-      data-tema="areia"
-      className="mx-auto w-full max-w-[38rem] px-5 py-10"
-    >
-      <Link href="/blog" className="text-sm text-suave">
-        {NOME_PRODUTO} · Blog
-      </Link>
+    <MolduraBlog>
+      <article className="blog-artigo">
+        <span className="blog-eyebrow">Blog</span>
+        <h1 className="blog-artigo-titulo">{materia.titulo}</h1>
+        <time dateTime={materia.publicadoEm} className="blog-artigo-data">
+          {dataPorExtenso(materia.publicadoEm)}
+        </time>
 
-      <h1 className="mt-3 text-[2.1rem] leading-[1.1] font-semibold tracking-[-0.03em] text-balance text-texto">
-        {materia.titulo}
-      </h1>
-      <time
-        dateTime={materia.publicadoEm}
-        className="mt-3 block text-sm text-suave"
-      >
-        {dataPorExtenso(materia.publicadoEm)}
-      </time>
+        <div className="blog-artigo-corpo">
+          {materia.corpo.map((bloco, i) =>
+            bloco.tipo === "subtitulo" ? (
+              <h2 key={i}>{bloco.texto}</h2>
+            ) : (
+              <p key={i}>{bloco.texto}</p>
+            ),
+          )}
+        </div>
 
-      <article className="mt-8 flex flex-col gap-5">
-        {materia.corpo.map((bloco, i) =>
-          bloco.tipo === "subtitulo" ? (
-            <h2
-              key={i}
-              className="mt-2 text-lg font-semibold tracking-tight text-texto"
-            >
-              {bloco.texto}
-            </h2>
-          ) : (
-            <p key={i} className="leading-relaxed text-suave">
-              {bloco.texto}
-            </p>
-          ),
-        )}
-      </article>
-
-      <p className="mt-12 border-t border-borda pt-8 text-sm text-suave">
-        <Link href="/blog" className="underline underline-offset-2">
+        <Link href="/blog" className="blog-voltar">
           Voltar para o blog
         </Link>
-      </p>
-    </main>
+      </article>
+    </MolduraBlog>
   );
 }
