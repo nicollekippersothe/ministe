@@ -1,0 +1,378 @@
+/* A cara do Entrais para o blog, no mesmo sistema da inicial (componentes/
+   inicial/landing.css), sem o motion nem o 3D. Papel areia, acento marsala,
+   Instrument Sans no display e JetBrains Mono nos rótulos. Escopo em .blog para
+   ficar longe do resto do painel e dos documentos. */
+.blog {
+  --paper: #f1f1ef;
+  --ink: #17161a;
+  --muted: #78776f;
+  --line: #e0dfd9;
+  --line2: #e9e8e2;
+  --chip: #e5e4dd;
+  --accent: #a5384c;   /* marsala, a marca */
+  --accent-2: #ab8236; /* latão, o detalhe */
+  --lime: #c4e64f;
+  --lime-ink: #1c2408;
+  --sans: var(--font-instrument), system-ui, sans-serif;
+  --mono: var(--font-mono), ui-monospace, monospace;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100dvh;
+  font-family: var(--sans);
+  font-size: clamp(15px, 1.05vw, 18px);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+.blog *,
+.blog *::before,
+.blog *::after {
+  box-sizing: border-box;
+}
+.blog ::selection {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+/* o mesmo grão da inicial, que dá a textura do papel */
+.blog-grao {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.38;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+}
+.blog > *:not(.blog-grao) {
+  position: relative;
+  z-index: 2;
+}
+
+.blog-shell {
+  width: 92vw;
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+/* topo: marca e o convite, no papel */
+.blog-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 1.4rem;
+}
+.blog-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  font-size: 1.14rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.blog-marca svg {
+  width: 0.9em;
+  height: 0.9em;
+  color: var(--accent);
+}
+.blog-topo .pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6em 1.2em;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.4s var(--ease-out);
+}
+.blog-topo .pill:hover {
+  background: #b6da3d;
+}
+.blog a:focus-visible,
+.blog button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* rótulo em monoespaçada, o mesmo da inicial */
+.blog-eyebrow {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* masthead editorial, que ocupa a largura no monitor */
+.blog-hero {
+  padding-block: clamp(2.5rem, 7vw, 6rem) clamp(2rem, 5vw, 4rem);
+  border-bottom: 1px solid var(--line);
+}
+.blog-hero-grade {
+  display: grid;
+  gap: clamp(1.2rem, 3vw, 2.6rem);
+}
+@media (min-width: 880px) {
+  .blog-hero-grade {
+    grid-template-columns: 1.35fr 0.65fr;
+    align-items: end;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+}
+.blog-titulo {
+  margin-top: 0.7rem;
+  font-weight: 500;
+  font-size: clamp(2.7rem, 7.5vw, 6rem);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+.blog-titulo em {
+  font-style: normal;
+  color: var(--accent);
+}
+.blog-lead {
+  font-size: clamp(1.1rem, 1.4vw, 1.35rem);
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+@media (min-width: 880px) {
+  .blog-lead {
+    padding-bottom: 0.4rem;
+  }
+}
+
+/* as duas trilhas, banda de largura cheia */
+.blog-trilhas {
+  display: grid;
+  gap: 1rem;
+  padding-block: clamp(2rem, 5vw, 4rem);
+}
+@media (min-width: 720px) {
+  .blog-trilhas {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(1rem, 2.5vw, 2rem);
+  }
+}
+.trilha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: clamp(1.4rem, 2.6vw, 2.2rem);
+  border: 1px solid var(--line);
+  border-radius: 1.4rem;
+  background: #fbfaf7;
+}
+.trilha-num {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  color: var(--accent-2);
+}
+.trilha h2 {
+  font-weight: 600;
+  font-size: clamp(1.35rem, 2.1vw, 1.8rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.trilha p {
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 34ch;
+}
+
+/* a lista de matérias, editorial */
+.blog-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.blog-lista li {
+  border-bottom: 1px solid var(--line);
+}
+.materia-link {
+  display: grid;
+  gap: 0.4rem;
+  padding-block: clamp(1.4rem, 2.6vw, 2.2rem);
+  text-decoration: none;
+  transition: padding-left 0.3s var(--ease-out);
+}
+@media (min-width: 720px) {
+  .materia-link {
+    grid-template-columns: 12rem 1fr;
+    gap: 2rem;
+    align-items: baseline;
+  }
+  .materia-link:hover {
+    padding-left: 0.6rem;
+  }
+}
+.materia-data {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.materia-titulo {
+  font-weight: 600;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  line-height: 1.14;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  transition: color 0.3s var(--ease-out);
+}
+.materia-link:hover .materia-titulo {
+  color: var(--accent);
+}
+.materia-resumo {
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 52ch;
+}
+
+/* fecho: o convite grande, molde da inicial */
+.blog-fecho {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.4rem;
+  padding-block: clamp(3rem, 7vw, 6rem);
+  border-top: 1px solid var(--line);
+}
+.blog-fecho p {
+  font-weight: 500;
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+  max-width: 20ch;
+}
+.blog-fecho p em {
+  font-style: normal;
+  color: var(--accent);
+}
+.blog-fecho .pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.9em 1.7em;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: background 0.4s var(--ease-out);
+}
+.blog-fecho .pill:hover {
+  background: #b6da3d;
+}
+
+/* rodapé, o mesmo espírito da inicial */
+.blog-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 2.4rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.blog-rodape .feito {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.blog-rodape .feito svg {
+  width: 0.95em;
+  height: 0.95em;
+  color: var(--accent);
+}
+.blog-rodape .feito b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.blog-rodape nav {
+  display: inline-flex;
+  gap: 1.4rem;
+}
+.blog-rodape nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.blog-rodape nav a:hover {
+  color: var(--ink);
+}
+
+/* corpo de uma matéria: coluna de leitura confortável */
+.blog-artigo {
+  max-width: 40rem;
+  padding-block: clamp(2.5rem, 6vw, 5rem) clamp(2rem, 4vw, 3.5rem);
+}
+.blog-artigo-titulo {
+  margin-top: 0.7rem;
+  font-weight: 500;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.blog-artigo-data {
+  display: block;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.blog-artigo-corpo {
+  margin-top: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+.blog-artigo-corpo h2 {
+  margin-top: 0.8rem;
+  font-weight: 600;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.blog-artigo-corpo p {
+  font-size: 1.08rem;
+  line-height: 1.6;
+  color: #2c2b28;
+}
+.blog-voltar {
+  display: inline-block;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-decoration: none;
+}
+.blog-voltar:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
