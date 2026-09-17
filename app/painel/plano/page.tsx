@@ -127,7 +127,7 @@ export default async function Plano({
 
   return (
     <div className="pb-16 lg:max-w-2xl">
-      <h1 className="titulo text-2xl text-texto">Plano</h1>
+      <h1 className="titulo text-[2rem] leading-tight text-texto">Plano</h1>
 
       <AvisoCobranca erro={params.erro} />
 
@@ -675,7 +675,7 @@ function Assinado({
   return (
     <div className="mt-6 flex flex-col gap-8">
       <section className="rounded-2xl border border-borda bg-superficie p-5">
-        <p className="text-xs font-semibold tracking-[0.14em] text-suave uppercase">
+        <p className="font-mono text-[0.7rem] font-medium tracking-[0.14em] text-destaque uppercase">
           {NOME_DO_PLANO.pago}
         </p>
 
