@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { EstadoDaCobranca } from "@/lib/dados";
+import { preco } from "@/lib/formato";
 import { DIAS_DE_TESTE, NOME_DO_PLANO, PLANOS } from "@/lib/pagamento";
 
 /**
@@ -20,22 +21,38 @@ export function CartaoPlano({ estado }: { estado: EstadoDaCobranca }) {
   const ate = dataCurta(estado.expiraEm);
   const status = assinatura?.status ?? null;
 
-  const { titulo, dica, chamada } = conteudo(estado.plano, status, ate);
+  const { olho, titulo, dica, chamada } = conteudo(estado.plano, status, ate);
+  // Só o gratuito é convite de venda, e só ele ganha a pílula verde da inicial.
+  // Os estados de quem já paga fecham num link discreto, porque ali não se
+  // vende nada, se administra.
+  const upsell = estado.plano !== "pago";
 
   return (
-    <section className="rounded-2xl border border-borda bg-superficie p-4">
-      <p className="text-[1.05rem] leading-snug font-medium text-texto">
+    <section className="rounded-2xl border border-borda bg-superficie p-5">
+      <span className="font-mono text-[0.7rem] font-medium tracking-[0.14em] text-destaque uppercase">
+        {olho}
+      </span>
+      <p className="titulo mt-2 text-[1.15rem] leading-snug text-texto">
         {titulo}
       </p>
-      <p className="mt-1 text-sm leading-relaxed text-suave">{dica}</p>
-      <p className="mt-2 text-sm">
+      <p className="mt-1.5 text-sm leading-relaxed text-suave">{dica}</p>
+      {upsell ? (
         <Link
           href="/painel/plano"
-          className="inline-flex min-h-11 items-center font-medium text-destaque underline-offset-4 hover:underline"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-[#c4e64f] px-5 text-sm font-semibold text-[#1c2408] transition-[background] hover:bg-[#b6da3d]"
         >
           {chamada}
         </Link>
-      </p>
+      ) : (
+        <p className="mt-3 text-sm">
+          <Link
+            href="/painel/plano"
+            className="inline-flex min-h-11 items-center font-medium text-destaque underline-offset-4 hover:underline"
+          >
+            {chamada}
+          </Link>
+        </p>
+      )}
     </section>
   );
 }
@@ -47,14 +64,16 @@ function conteudo(
 ) {
   if (plano !== "pago") {
     return {
+      olho: "Plano",
       titulo: `Seu plano é o ${NOME_DO_PLANO.gratuito}`,
-      dica: `A página fica no ar do mesmo jeito. O ${NOME_DO_PLANO.pago} abre a escolha da letra, os números completos e limites maiores, por ${PLANOS.mensal.descricao.split(",")[0]}.`,
-      chamada: `Ver os planos e os ${DIAS_DE_TESTE} dias de teste`,
+      dica: `A página fica no ar do mesmo jeito. O ${NOME_DO_PLANO.pago} abre a escolha da letra, os números completos e limites maiores, por ${preco(PLANOS.mensal.valorCentavos)}, com ${DIAS_DE_TESTE} dias de teste.`,
+      chamada: "Ver os planos",
     };
   }
 
   if (status === "teste") {
     return {
+      olho: "Teste",
       titulo: `Você está nos ${DIAS_DE_TESTE} dias de teste`,
       dica: ate
         ? `O teste vale até ${ate}, e a primeira cobrança acontece nesse dia.`
@@ -65,6 +84,7 @@ function conteudo(
 
   if (status === "em_atraso") {
     return {
+      olho: "Pagamento",
       titulo: "O banco está tentando a cobrança de novo",
       dica: ate
         ? `Sua página segue no ar até ${ate}. Trocar o cartão resolve na hora.`
@@ -75,6 +95,7 @@ function conteudo(
 
   if (status === null || status === "encerrada") {
     return {
+      olho: "Plano pago",
       titulo: "Seu plano pago vale até o fim do período",
       dica: ate
         ? `Os recursos do plano pago valem até ${ate}, e tudo o que você cadastrou continua salvo depois disso.`
@@ -84,6 +105,7 @@ function conteudo(
   }
 
   return {
+    olho: "Assinatura",
     titulo: `Seu plano é o ${NOME_DO_PLANO.pago}`,
     dica: ate
       ? `A próxima renovação acontece em ${ate}.`
