@@ -709,24 +709,24 @@ select testes.ok('nenhuma função de public fica aberta para PUBLIC',
 -- Esta é a que vale a longo prazo: lista exata, e não "não existe nenhuma".
 -- Função nova que nasça chamável cai aqui, sem ninguém precisar lembrar de
 -- escrever teste para ela.
-select testes.ok('visitante chama exatamente as quatro funções que ele precisa',
+select testes.ok('visitante chama exatamente as funções que ele precisa',
   (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('anon', p.oid, 'EXECUTE'))
-  = array['endereco_livre', 'negocio_publico',
-          'registrar_denuncia', 'registrar_evento']::name[]);
+  = array['criar_agendamento', 'endereco_livre', 'negocio_publico',
+          'ocupacao_do_negocio', 'registrar_denuncia', 'registrar_evento']::name[]);
 
-select testes.ok('quem está logado chama essas quatro, mais plano_de, os números e o conferidor de link',
+select testes.ok('quem está logado chama essas, mais plano_de, os números e o conferidor de link',
   (select coalesce(array_agg(p.proname order by p.proname), '{}'::name[])
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('authenticated', p.oid, 'EXECUTE'))
-  = array['endereco_de_link_valido', 'endereco_livre', 'negocio_publico',
-          'numeros_do_negocio', 'plano_de', 'registrar_denuncia',
-          'registrar_evento']::name[]);
+  = array['criar_agendamento', 'endereco_de_link_valido', 'endereco_livre',
+          'negocio_publico', 'numeros_do_negocio', 'ocupacao_do_negocio',
+          'plano_de', 'registrar_denuncia', 'registrar_evento']::name[]);
 
 select testes.ok('toda função de public tem search_path fixo',
   not exists (
