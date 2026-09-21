@@ -94,7 +94,7 @@ export function deslocamento(ts: number, fuso: string): number {
 }
 
 /** Converte uma data e hora local do negocio para epoch em ms. */
-function epochDeCivil(
+export function epochDeCivil(
   ano: number,
   mes: number,
   dia: number,
