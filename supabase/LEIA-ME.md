@@ -6,6 +6,11 @@ bateria terminando em 164 asserções depois da última passada.
 **Esperando aplicação:** a 013, a 014 e a 015. O passo a passo das três está no
 **Prompt 7** de `PROMPT-SUPABASE.md`, que substitui os Prompts 5 e 6.
 
+Depois delas entra a **016**, o agendamento: as tabelas de serviços,
+disponibilidade, bloqueios e reservas, com a trava de sobreposição e a função
+de reserva aberta a visitante, com teto por contato e por dia. Ela é
+independente das três acima e roda por último, antes de a bateria conferir.
+
 A 015 é conserto de segurança, e é a que tem pressa: as regras de link do
 produto moravam só na tela, e o painel escreve direto pelo PostgREST. Enquanto
 ela não roda, um PATCH à mão põe endereço disfarçado no botão principal de uma
