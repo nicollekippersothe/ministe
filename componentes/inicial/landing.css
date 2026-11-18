@@ -164,7 +164,7 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 .mega .w { display: inline-block; }
 .mega em { font-style: normal; color: var(--accent); }
 .sub { font-size: 1.18em; line-height: 1.45; letter-spacing: -0.01em; color: var(--ink); max-width: 36ch; }
-.hero-deck { order: 2; position: relative; z-index: 1; width: 100vw; height: 20rem; margin-top: calc(var(--body) * -1); overflow-x: clip; overflow-y: visible; }
+.hero-deck { order: 2; position: relative; z-index: 1; width: 100vw; height: 20rem; margin-top: calc(var(--body) * 2.6); overflow-x: clip; overflow-y: visible; }
 .hero-deck::before { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(90deg, var(--paper), transparent 9%, transparent 91%, var(--paper)); }
 .deck { position: relative; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .deck.is-dragging { cursor: grabbing; }
@@ -173,7 +173,7 @@ footer .feito b { color: var(--ink); font-weight: 600; }
   .hero { padding-top: 6.9rem; }
   .mega { font-size: clamp(2.3em, 9.4vw, 3.2em); }
   .sub { font-size: 1.08em; }
-  .hero-deck { margin-top: -.6rem; }
+  .hero-deck { margin-top: 2.2rem; }
 }
 /* a entrada do herói: as palavras sobem em sequência e o resto chega depois. É a
    única animação de entrada da página; o resto aparece onde está. */
@@ -311,3 +311,6 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 .ex:hover { border-color: var(--wine-mut); }
 .ex[aria-pressed="true"] { background: var(--wine-tx); color: var(--wine); border-color: var(--wine-tx); }
 .ex:focus-visible { outline: 2px solid var(--wine-em); outline-offset: 2px; }
+
+/* os links de âncora (#comecar, #preco) param abaixo da barra fixa, e não debaixo dela */
+.lp section[id] { scroll-margin-top: 5.8rem; }
