@@ -78,14 +78,16 @@ export function initLanding(IMGS) {
       deck.parentElement.style.height = Math.ceil(cards[0].offsetHeight + afunda + 24) + "px";
       layout();
     }
-    var arrastando = false, sx = 0, so = 0, visivel = true, ultimo = 0, raf = 0, VEL = 34;
+    var arrastando = false, sobre = false, sx = 0, so = 0, visivel = true, ultimo = 0, raf = 0, VEL = 34;
     function quadro(t) {
       raf = 0; if (!visivel || document.hidden) { ultimo = 0; return; }
       var dt = ultimo ? Math.min(t - ultimo, 50) : 16; ultimo = t;
-      if (!arrastando) off += dt * VEL / 1000;
+      if (!arrastando && !sobre) off += dt * VEL / 1000;   // com o mouse em cima, o arco espera
       layout(); raf = requestAnimationFrame(quadro);
     }
     function liga() { if (!raf && !reduced) { ultimo = 0; raf = requestAnimationFrame(quadro); } }
+    deck.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") sobre = true; });
+    deck.addEventListener("pointerleave", function () { sobre = false; });
     deck.addEventListener("pointerdown", function (e) { arrastando = true; sx = e.clientX; so = off; deck.classList.add("is-dragging"); try { deck.setPointerCapture(e.pointerId); } catch (_) {} });
     deck.addEventListener("pointermove", function (e) { if (!arrastando) return; off = so - (e.clientX - sx); if (reduced) layout(); });
     function fim(e) { if (!arrastando) return; arrastando = false; deck.classList.remove("is-dragging"); try { deck.releasePointerCapture(e.pointerId); } catch (_) {} }
@@ -127,38 +129,6 @@ export function initLanding(IMGS) {
     root.addEventListener("pointerdown", para);
     if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visivel = es[0].isIntersecting; }, { threshold: 0.4 }).observe(root);
     mostra(0, false); inicia();
-  }
-
-  /* ---------- ofícios: lista e foto lado a lado ----------
-   * A lista e a foto cabem na mesma tela, então escolher o último ofício não
-   * deixa a foto lá em cima, fora de vista. A lista usa os mesmos doze cartões do
-   * arco, e a legenda fica dentro da foto, sobre o escurecido. */
-  function initExplorer(root) {
-    if (!root) return;
-    var lista = root.querySelector(".seg__lista");
-    var img = root.querySelector(".seg__img");
-    var leg = root.querySelector(".seg__leg");
-    if (!lista || !img) return;
-    NEG.forEach(function (n, i) {
-      var li = document.createElement("li");
-      li.innerHTML = '<button type="button" class="seg__item" data-i="' + i + '" aria-pressed="' + (i === 0 ? "true" : "false") + '">' + n.of + '</button>';
-      lista.appendChild(li);
-    });
-    var items = [].slice.call(lista.querySelectorAll(".seg__item"));
-    var cur = 0, timer = null, visivel = false;
-    function show(i) {
-      if (i === cur) return; cur = i;
-      items.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
-      var n = NEG[i];
-      img.style.opacity = "0";
-      setTimeout(function () { img.src = n.img; leg.querySelector("b").textContent = n.nome; leg.querySelector("span").textContent = n.of; img.style.opacity = "1"; }, 160);
-    }
-    function para() { if (timer) { clearInterval(timer); timer = null; } }
-    function inicia() { para(); if (reduced) return; timer = setInterval(function () { if (visivel) show((cur + 1) % NEG.length); }, 3200); }
-    NEG.forEach(function (n) { var im = new Image(); im.src = n.img; });
-    items.forEach(function (b, i) { b.addEventListener("click", function () { para(); show(i); }); b.addEventListener("focus", function () { para(); show(i); }); });
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visivel = es[0].isIntersecting; }, { threshold: 0.4 }).observe(root);
-    inicia();
   }
 
   /* ---------- a mesma página, em exemplos diferentes ----------
@@ -269,7 +239,6 @@ export function initLanding(IMGS) {
 
   initDeck(document.querySelector("[data-deck]"));
   initAbas(document.querySelector("[data-abas]"));
-  initExplorer(document.querySelector("[data-explorer]"));
   initDemo();
   initPlaca();
 }
