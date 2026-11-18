@@ -166,7 +166,7 @@ export function CartaoEstado({
         e o Google como o lugar onde a página passa a ser dela.
       */}
       {!noAr && provisoria ? (
-        <p className="mt-3 text-xs leading-relaxed text-suave">
+        <p className="mt-3 text-sm leading-relaxed text-suave">
           A sua página está numa conta provisória, criada quando você começou a
           montar. O Google guarda ela na sua conta de sempre, e aí o link da sua
           página abre para qualquer pessoa.

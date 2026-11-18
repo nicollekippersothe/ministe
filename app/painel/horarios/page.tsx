@@ -358,7 +358,7 @@ function HoraMarcada({ negocio }: { negocio: Negocio }) {
           </span>
         </>
       ) : (
-        <p className="mt-4 rounded-lg border border-dashed border-borda px-3 py-2 text-xs leading-relaxed text-suave">
+        <p className="mt-4 rounded-lg border border-dashed border-borda px-3 py-2 text-sm leading-relaxed text-suave">
           O botão aparece assim que você escolher o que ele faz, em Links e
           botões.
         </p>

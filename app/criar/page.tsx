@@ -48,15 +48,15 @@ async function EnderecoConferido({ slug }: { slug: string }) {
     >
       <div className="flex flex-col gap-6">
         <p className="leading-relaxed text-suave">
-          O cadastro abre junto com o login. Enquanto isso, veja uma galeria
-          por dentro.
+          O cadastro abre junto com o login. Enquanto isso, veja uma página
+          de exemplo por dentro.
         </p>
 
         <Link
           href="/demo"
           className="flex h-13 w-full items-center justify-center rounded-full bg-texto px-6 text-[1.05rem] font-semibold text-superficie"
         >
-          Abrir uma galeria
+          Abrir uma página de exemplo
         </Link>
       </div>
     </Moldura>

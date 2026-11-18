@@ -167,6 +167,26 @@ export function FormularioCriar({
   const [restaurado, setRestaurado] = useState<Guardado | null>(null);
   const primeira = useRef(true);
 
+  /*
+   * A barra de baixo é grudada e cobre o pé da tela. `scroll-padding` é o que o
+   * navegador usa ao levar um campo em foco para a tela: com a folga da altura
+   * da barra (botão, linha de "já tem uma página" e esmaecido), o campo sobe
+   * para ficar inteiro à vista, e não com a metade de baixo atrás dela.
+   *
+   * É uma proteção para o Safari do iPhone, que rola só até o campo aparecer.
+   * No Chromium o foco já leva o campo para longe da barra, então ali não dá
+   * para ver diferença, e eu não consegui testar no WebKit. Sai junto com a
+   * tela, para não vazar para as outras rotas.
+   */
+  useEffect(() => {
+    const raiz = document.documentElement;
+    const antes = raiz.style.scrollPaddingBottom;
+    raiz.style.scrollPaddingBottom = "10rem";
+    return () => {
+      raiz.style.scrollPaddingBottom = antes;
+    };
+  }, []);
+
   useEffect(() => {
     if (categoriaInicial !== "" || nomeInicial !== "" || slugInicial !== "") {
       return;
@@ -274,7 +294,7 @@ export function FormularioCriar({
 
   return (
     <Moldura
-      titulo="Sua galeria em duas perguntas"
+      titulo="Sua página em duas perguntas"
       voltar={{ href: "/" }}
       lado={
         <PreviaViva
@@ -406,7 +426,7 @@ export function FormularioCriar({
           seguinte.
         */}
         <p className="text-center text-sm text-suave">
-          Começa de graça, e fica em rascunho até você mandar para o ar.
+          É grátis, e a página fica em rascunho até você publicar.
         </p>
 
         {/*

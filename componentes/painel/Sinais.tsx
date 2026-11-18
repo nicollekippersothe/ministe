@@ -109,7 +109,7 @@ export function FaixaDeRecado({
     <p
       role={tom === "recusa" ? "alert" : "status"}
       aria-live="polite"
-      className={`flex items-start gap-2 text-xs leading-relaxed ${CAIXA[tom]} ${className}`}
+      className={`flex items-start gap-2 text-sm leading-relaxed ${CAIXA[tom]} ${className}`}
     >
       {tom === "andamento" ? (
         <IconeGirando className="mt-px h-4 w-4 shrink-0 motion-reduce:hidden" />

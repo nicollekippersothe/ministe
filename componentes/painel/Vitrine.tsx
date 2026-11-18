@@ -33,7 +33,7 @@ export function Vitrine({
 }) {
   return (
     <div inert className="rounded-xl border border-borda bg-fundo p-3">
-      <p className="text-xs leading-relaxed text-suave">{chamada}</p>
+      <p className="text-sm leading-relaxed text-suave">{chamada}</p>
       {/*
         O `Catalogo` de verdade abre em duas colunas a partir de 640px, que é a
         medida certa na página e a errada aqui: numa moldura estreita a segunda
@@ -56,7 +56,7 @@ export function Vitrine({
  */
 export function VitrineAvulsa({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-xl border border-dashed border-borda bg-fundo px-3 py-2.5 text-xs leading-relaxed text-suave">
+    <p className="rounded-xl border border-dashed border-borda bg-fundo px-3 py-2.5 text-sm leading-relaxed text-suave">
       {children}
     </p>
   );

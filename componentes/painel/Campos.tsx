@@ -66,7 +66,7 @@ function Rotulo({
         {children}
       </label>
       {dica ? (
-        <p id={`${htmlFor}-dica`} className="mt-0.5 text-xs leading-relaxed text-suave">
+        <p id={`${htmlFor}-dica`} className="mt-0.5 text-sm leading-relaxed text-suave">
           {dica}
         </p>
       ) : null}
@@ -245,7 +245,7 @@ export function Marcar({
           {rotulo}
         </span>
         {dica ? (
-          <p id={`${id}-dica`} className="mt-0.5 text-xs leading-relaxed text-suave">
+          <p id={`${id}-dica`} className="mt-0.5 text-sm leading-relaxed text-suave">
             {dica}
           </p>
         ) : null}
@@ -289,7 +289,7 @@ export function Opcoes({
     <fieldset className={className}>
       <legend className="text-sm font-medium text-texto">{rotulo}</legend>
       {dica ? (
-        <p className="mt-0.5 text-xs leading-relaxed text-suave">{dica}</p>
+        <p className="mt-0.5 text-sm leading-relaxed text-suave">{dica}</p>
       ) : null}
 
       <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
@@ -310,7 +310,7 @@ export function Opcoes({
                 {o.rotulo}
               </span>
               {o.dica ? (
-                <span className="mt-0.5 block text-xs leading-relaxed text-suave">
+                <span className="mt-0.5 block text-sm leading-relaxed text-suave">
                   {o.dica}
                 </span>
               ) : null}
@@ -409,7 +409,7 @@ export function GrupoRecolhivel({
           <span className="block text-lg font-semibold tracking-tight text-texto">
             {titulo}
           </span>
-          <span className="mt-0.5 block truncate text-xs leading-relaxed text-suave">
+          <span className="mt-0.5 block truncate text-sm leading-relaxed text-suave">
             {resumo}
           </span>
         </span>

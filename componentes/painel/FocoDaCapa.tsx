@@ -381,7 +381,7 @@ export function FocoDaCapa({
         largura que sobrava ao lado da pílula deixava a explicação em cinco
         linhas de três palavras, medido no iPhone 13.
       */}
-      <p className="mt-2 text-xs leading-relaxed text-suave">
+      <p className="mt-2 text-sm leading-relaxed text-suave">
         {ajustando
           ? "Arraste o ponto para o que precisa aparecer. A área clara é o corte do celular."
           : "A capa aparece assim na sua página. O ajuste escolhe o que fica dentro do corte."}

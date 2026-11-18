@@ -42,7 +42,7 @@ export function ListaSecoes() {
                   do painel e já leu uma vez, e cinco linhas de apoio empurram
                   o cartão de estado para fora da tela.
                 */}
-                <span className="block text-xs text-suave lg:hidden">
+                <span className="block text-sm text-suave lg:hidden">
                   {s.resumo}
                 </span>
               </span>

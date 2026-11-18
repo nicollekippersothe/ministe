@@ -417,7 +417,7 @@ export function CamposCartao({
           */}
           <p
             id="documento-dica"
-            className="mt-0.5 mb-1.5 text-xs leading-relaxed text-suave"
+            className="mt-0.5 mb-1.5 text-sm leading-relaxed text-suave"
           >
             O banco pede para confirmar quem é o dono do cartão. Ele fica no seu
             navegador e vai direto para quem processa o pagamento.

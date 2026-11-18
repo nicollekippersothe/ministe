@@ -82,7 +82,7 @@ function Opcao({
           {rotulo}
         </span>
         {detalhe ? (
-          <span className="block text-xs text-suave">{detalhe}</span>
+          <span className="block text-sm text-suave">{detalhe}</span>
         ) : null}
       </span>
     </label>

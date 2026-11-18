@@ -25,7 +25,7 @@
 export function PreviaAoVivo({ chave }: { chave: string }) {
   return (
     <div className="hidden lg:sticky lg:top-8 lg:block">
-      <p className="mb-3 text-xs font-medium text-suave">A sua página agora</p>
+      <p className="mb-3 text-sm font-medium text-suave">A sua página agora</p>
       {/*
         A moldura de celular. A largura de 320 é a de um celular pequeno, que é
         onde a maioria abre a página, e cabe na coluna da direita sem apertar o
