@@ -81,6 +81,18 @@ export const PLANOS: Record<Ciclo, PrecoDoPlano> = {
   },
 };
 
+/**
+ * Quantos itens cabem no catálogo de cada plano.
+ *
+ * Espelha `limite_do_plano('itens')` em `supabase/schema.sql`, que é quem barra
+ * de verdade. Está aqui para a tela inicial citar o número sem digitá-lo, e
+ * mudou lá, muda aqui no mesmo commit.
+ */
+export const ITENS_NO_CATALOGO: Record<Plano, number> = {
+  gratuito: 20,
+  pago: 500,
+};
+
 /** O que o plano anual poupa em um ano, em centavos. */
 export function economiaAnualEmCentavos(): number {
   const doze = PLANOS.mensal.valorCentavos * MESES_DO_CICLO.anual;
