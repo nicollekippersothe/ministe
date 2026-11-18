@@ -99,18 +99,18 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
     </div>
   </section>
 
-  <!-- ====== PERSONALIZAÇÃO: a mesma página, em exemplos diferentes ====== -->
+  <!-- ====== OFÍCIOS: a página final de verdade, em exemplos diferentes ====== -->
   <div class="noite">
-    <section class="aparencia" id="aparencia"><div class="shell">
+    <section class="aparencia" id="segmentos"><div class="shell">
       <div class="ap">
-        <h2 class="t-h3 ap__tit">Cada página com a cara <em>do negócio.</em></h2>
+        <h2 class="t-h3 ap__tit">Serve para <em>o que você faz.</em></h2>
         <div class="palco ap__pal">
           <div class="fone">
-            <iframe id="demo-pagina" class="fone__tela" src="/nara-bittencourt" title="Página de exemplo, do jeito que o cliente dela vê" loading="lazy" tabindex="-1" scrolling="no"></iframe>
+            <iframe id="demo-pagina" class="fone__tela" src="/nara-bittencourt" title="Página de exemplo de um negócio, do jeito que o cliente dele vê" loading="lazy" tabindex="-1" scrolling="no"></iframe>
           </div>
         </div>
         <div class="ap__ctl">
-          <p class="ap__txt">Você escolhe o visual da página e coloca o que fizer sentido para o seu negócio: serviços, fotos, horários, endereço e links.</p>
+          <p class="ap__txt">Escolha um ofício e veja a página final de verdade. Cada negócio escolhe o próprio visual e coloca serviços, fotos, horários, endereço e links.</p>
           <ul class="ap__exemplos" aria-label="Exemplos de páginas"><!-- botões injetados por JS --></ul>
           <p class="ap__nota">Páginas de exemplo que montamos.</p>
         </div>
@@ -161,20 +161,6 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
         </div>
         <p class="abas__desc" aria-live="polite"></p>
       </div>
-    </div>
-  </div></section>
-
-  <!-- ====== OFÍCIOS: lista e foto lado a lado ====== -->
-  <section class="section segmentos" id="segmentos"><div class="shell">
-    <div class="seg" data-explorer>
-      <div class="seg__cab">
-        <h2 class="t-h2">Serve para <em>o que você faz.</em></h2>
-        <p class="t-lead">Escolha um ofício e veja a página de exemplo.</p>
-      </div>
-      <ul class="seg__lista"><!-- botões injetados por JS --></ul>
-      <figure class="seg__preview">
-        <div class="seg__molde"><img class="seg__img" src="/vitrine/tatuagem.jpg" alt="" width="480" height="600"><figcaption class="seg__leg"><b>Téo Sarmento</b><span>Tatuagem</span></figcaption></div>
-      </figure>
     </div>
   </div></section>
 
