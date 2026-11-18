@@ -158,14 +158,25 @@ export function initLanding(IMGS) {
     inicia();
   }
 
-  /* ---------- página de exemplo ----------
-   * A página ao lado é a de verdade (um iframe da rota pública de um exemplo).
-   * Ela não recebe toque e não mostra barra de rolagem: quem rola a tela inteira
-   * nunca fica preso dentro dela. Em troca, desce e sobe sozinha, devagar,
-   * enquanto está à vista, para mostrar o que existe lá dentro. */
+  /* ---------- a mesma página, em exemplos diferentes ----------
+   * O celular mostra a página de verdade de um exemplo (iframe da rota pública),
+   * sem toque e sem barra de rolagem, descendo e subindo sozinha enquanto está à
+   * vista. De tempos em tempos troca de exemplo, cada um com o tema, a textura e
+   * a letra dele: é isso que mostra, sem texto, que a página muda de cara.
+   * A pessoa pode escolher o exemplo nos botões, e aí a troca automática para. */
+  var EXEMPLOS = [
+    { s: "nara-bittencourt", of: "Astrologia" },
+    { s: "teo-sarmento", of: "Tatuagem" },
+    { s: "lia-prado", of: "Ilustração" },
+    { s: "bia-marconi", of: "Canto" },
+    { s: "demo", of: "Massoterapia" },
+    { s: "camila-reis", of: "Psicologia" },
+    { s: "alecrim-confeitaria", of: "Confeitaria" }
+  ];
   function initDemo() {
     var quadro = document.getElementById("demo-pagina");
-    if (!quadro) return;
+    var lista = document.querySelector(".ap__exemplos");
+    if (!quadro || !lista) return;
     function doc() { try { return quadro.contentDocument; } catch (_) { return null; } }
     function semBarra() {
       var d = doc(); if (!d || !d.head || d.getElementById("sem-barra")) return;
@@ -173,9 +184,28 @@ export function initLanding(IMGS) {
       st.textContent = "html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}";
       d.head.appendChild(st);
     }
-    quadro.addEventListener("load", semBarra); semBarra();
+    var t0 = 0;
+    quadro.addEventListener("load", function () { semBarra(); t0 = 0; quadro.style.opacity = "1"; });
+    semBarra();
 
-    var visivel = false, t0 = 0, raf = 0;
+    EXEMPLOS.forEach(function (e, i) {
+      var li = document.createElement("li");
+      li.innerHTML = '<button type="button" class="ex" data-i="' + i + '" aria-pressed="' + (i === 0 ? "true" : "false") + '">' + e.of + '</button>';
+      lista.appendChild(li);
+    });
+    var botoes = [].slice.call(lista.querySelectorAll(".ex"));
+    var atual = 0, timer = null, visivel = false;
+    function mostra(i) {
+      if (i === atual) return; atual = i;
+      botoes.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+      quadro.style.opacity = "0";
+      setTimeout(function () { quadro.src = "/" + EXEMPLOS[i].s; }, 220);
+    }
+    function para() { if (timer) { clearInterval(timer); timer = null; } }
+    function inicia() { para(); if (reduced) return; timer = setInterval(function () { if (visivel) mostra((atual + 1) % EXEMPLOS.length); }, 9000); }
+    botoes.forEach(function (b, i) { b.addEventListener("click", function () { para(); mostra(i); }); });
+
+    var raf = 0;
     function passo(t) {
       raf = 0; if (!visivel || document.hidden) return;
       var d = doc(), el = d && d.scrollingElement;
@@ -183,13 +213,17 @@ export function initLanding(IMGS) {
         var max = el.scrollHeight - el.clientHeight;
         if (max > 0) {
           if (!t0) t0 = t;
-          var ph = ((t - t0) / 26000) % 1, k = ph < 0.5 ? ph * 2 : 2 - ph * 2;   // desce e sobe
+          var ph = ((t - t0) / 12000) % 1, k = ph < 0.5 ? ph * 2 : 2 - ph * 2;   // desce e sobe
           el.scrollTop = k * k * (3 - 2 * k) * max;
         }
       }
       raf = requestAnimationFrame(passo);
     }
-    if (!reduced && "IntersectionObserver" in window) new IntersectionObserver(function (es) { visivel = es[0].isIntersecting; if (visivel && !raf) raf = requestAnimationFrame(passo); }, { threshold: 0.3 }).observe(quadro);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) {
+      visivel = es[0].isIntersecting;
+      if (visivel && !raf && !reduced) raf = requestAnimationFrame(passo);
+    }, { threshold: 0.3 }).observe(quadro);
+    inicia();
   }
 
   /* ---------- placa: confere o endereço livre ao vivo ---------- */

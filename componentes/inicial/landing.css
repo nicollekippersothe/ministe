@@ -189,7 +189,7 @@ footer .feito b { color: var(--ink); font-weight: 600; }
    No celular a ordem é título, página, console; no desktop a página fica à
    esquerda e título e console à direita, centrados um no outro. */
 .noite { position: relative; z-index: 2; background: var(--wine); color: var(--wine-tx); }
-.aparencia { padding-block: calc(var(--body) * 3.2); }
+.aparencia { padding-block: calc(var(--body) * 2.6); }
 .ap { display: grid; gap: calc(var(--body) * 1.3); grid-template-areas: "tit" "pal" "ctl"; }
 .ap__tit { grid-area: tit; color: var(--wine-tx); max-width: 18ch; }
 .ap__tit em { color: var(--wine-em); }
@@ -203,8 +203,8 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 .palco { display: flex; justify-content: center; }
 .fone { width: min(100%, 20rem); padding: .5rem; border-radius: 2.4rem; background: #0b0a08; box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 2em 3.4em -1.6em rgba(0,0,0,.65); }
 /* o iframe não recebe toque: rolar a página nunca fica preso na rolagem de dentro */
-.fone__tela { display: block; width: 100%; height: min(58vh, 27rem); min-height: 21rem; border: 0; border-radius: 1.9rem; background: #0b0b16; pointer-events: none; }
-@media (min-width: 940px) { .fone__tela { height: min(74vh, 40rem); } }
+.fone__tela { display: block; width: 100%; height: min(54vh, 25rem); min-height: 20rem; transition: opacity .22s ease; border: 0; border-radius: 1.9rem; background: #0b0b16; pointer-events: none; }
+@media (min-width: 940px) { .fone__tela { height: min(68vh, 34rem); } }
 
 .console__row { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }
 .console__lbl { font-size: .86rem; font-weight: 600; color: var(--wine-mut); }
@@ -295,14 +295,6 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 .strip__grupo li::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 1.1rem 0.12em 2.2rem; border-radius: 50%; background: var(--accent); vertical-align: middle; }
 
 /* o que a pessoa pode alterar: lista só de leitura, sem controle */
-.ap__lista { list-style: none; display: flex; flex-direction: column; }
-.ap__item { padding: 1rem 0; border-top: 1px solid var(--wine-line); }
-.ap__item:first-child { border-top: 0; padding-top: 0; }
-.ap__item h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
-.ap__item small { font-size: .9rem; font-weight: 500; color: var(--wine-mut); margin-left: .35rem; }
-.ap__tags { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .65rem; }
-.tag-fixa { display: inline-flex; align-items: center; gap: .5rem; padding: .4rem .9rem; border: 1px solid var(--wine-line); border-radius: 999px; font-size: .92rem; color: var(--wine-tx); background: rgba(255,255,255,.05); }
-.tag-fixa i { width: .85rem; height: .85rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
 .ap__nota { margin-top: 1rem; }
 
 /* a porta, desenhada e parada, no fecho */
@@ -311,3 +303,11 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 /* o aviso do endereço fica acima do arco, com fundo, para ler por cima dos cartões */
 .hero .placa-msg { position: relative; z-index: 4; }
 .hero .placa-msg:not(:empty) { background: var(--paper); border-radius: 999px; padding: .15rem .8rem; width: fit-content; margin-inline: auto; }
+
+/* texto curto e a escolha do exemplo ao lado do celular */
+.ap__txt { font-size: 1.12em; line-height: 1.5; color: var(--wine-mut); max-width: 36ch; }
+.ap__exemplos { list-style: none; display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1.1rem; }
+.ex { cursor: pointer; min-height: 40px; padding: .4rem .95rem; border: 1px solid var(--wine-line); border-radius: 999px; background: rgba(255,255,255,.05); color: var(--wine-tx); font: 500 .92rem var(--sans); transition: background-color .2s, color .2s, border-color .2s; }
+.ex:hover { border-color: var(--wine-mut); }
+.ex[aria-pressed="true"] { background: var(--wine-tx); color: var(--wine); border-color: var(--wine-tx); }
+.ex:focus-visible { outline: 2px solid var(--wine-em); outline-offset: 2px; }

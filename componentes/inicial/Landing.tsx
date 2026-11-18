@@ -99,32 +99,20 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
     </div>
   </section>
 
-  <!-- ====== PERSONALIZAÇÃO ====== -->
+  <!-- ====== PERSONALIZAÇÃO: a mesma página, em exemplos diferentes ====== -->
   <div class="noite">
     <section class="aparencia" id="aparencia"><div class="shell">
       <div class="ap">
-        <h2 class="t-h3 ap__tit">A página com a cara <em>de quem assina.</em></h2>
+        <h2 class="t-h3 ap__tit">Cada página com a cara <em>do negócio.</em></h2>
         <div class="palco ap__pal">
           <div class="fone">
-            <iframe id="demo-pagina" class="fone__tela" src="/nara-bittencourt" title="Página de exemplo de uma astróloga, do jeito que o cliente dela vê" loading="lazy" tabindex="-1" scrolling="no"></iframe>
+            <iframe id="demo-pagina" class="fone__tela" src="/nara-bittencourt" title="Página de exemplo, do jeito que o cliente dela vê" loading="lazy" tabindex="-1" scrolling="no"></iframe>
           </div>
         </div>
         <div class="ap__ctl">
-          <ul class="ap__lista">
-            <li class="ap__item"><h3>Tema <small>grátis</small></h3>
-              <div class="ap__tags">
-                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#f6f5f3 50%,#8f4451 50%)"></i>Areia</span>
-                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#f5f5f7 50%,#1d1d1f 50%)"></i>Minimal</span>
-                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#f2f5f2 50%,#1f6b4f 50%)"></i>Menta</span>
-                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#14120f 50%,#e0a878 50%)"></i>Noite</span>
-                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#0b0b16 50%,#a493f2 50%)"></i>Cósmico</span>
-              </div></li>
-            <li class="ap__item"><h3>Textura <small>grátis</small></h3>
-              <div class="ap__tags"><span class="tag-fixa">Liso</span><span class="tag-fixa">Papel</span><span class="tag-fixa">Tinta</span><span class="tag-fixa">Degradê</span><span class="tag-fixa">Vinheta</span></div></li>
-            <li class="ap__item"><h3>Letra <small>plano ${NOME_DO_PLANO.pago}</small></h3>
-              <div class="ap__tags"><span class="tag-fixa">Editorial</span><span class="tag-fixa">Artesanal</span><span class="tag-fixa">Moderno</span><span class="tag-fixa">Marcante</span><span class="tag-fixa">Direto</span></div></li>
-          </ul>
-          <p class="ap__nota">Página de exemplo que montamos. Você escolhe tudo isso no painel, depois de criar a sua.</p>
+          <p class="ap__txt">Você escolhe o visual da página e coloca o que fizer sentido para o seu negócio: serviços, fotos, horários, endereço e links.</p>
+          <ul class="ap__exemplos" aria-label="Exemplos de páginas"><!-- botões injetados por JS --></ul>
+          <p class="ap__nota">Páginas de exemplo que montamos.</p>
         </div>
       </div>
     </div></section>
@@ -250,6 +238,11 @@ export function Landing() {
     (async () => {
       if (parado || !ref.current) return;
       const { initLanding } = await import("./landing-motion");
+      // Conferir de novo depois do import: no modo de desenvolvimento o React roda
+      // o efeito duas vezes, e sem isto a inicialização rodava nas duas.
+      const raiz = ref.current;
+      if (parado || !raiz || raiz.dataset.pronto) return;
+      raiz.dataset.pronto = "1";
       initLanding(IMGS);
     })();
     return () => { parado = true; };
