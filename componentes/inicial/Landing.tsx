@@ -57,11 +57,10 @@ const ANUAL = preco(PLANOS.anual.valorCentavos).replace(/,00$/, "");
  * dois grupos medem igual e o laço fecha no pixel.
  */
 const FRASES = [
-  "A página do seu negócio, pronta para o WhatsApp",
+  "A página do seu negócio",
   "Serviços com preço, foto e horário num link só",
-  "Grátis para publicar",
-  "Mostra na hora se você está atendendo",
-  "Para quem vende o próprio trabalho",
+  "Publicar é grátis",
+  "Feita para autônomos e negócios",
 ];
 const grupo = (oculto: boolean) =>
   `<ul class="strip__grupo"${oculto ? ' aria-hidden="true"' : ""}>` +
