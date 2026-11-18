@@ -26,9 +26,6 @@ html { -webkit-text-size-adjust: 100%; }
 ::selection { background: var(--accent); color: var(--paper); }
 
 /* glifo 3D da porta, no meio do título */
-.dglyph { display: inline-block; width: 1.5em; height: 1.5em; vertical-align: -0.34em; margin: 0 0.12em; position: relative; }
-.dglyph canvas { width: 100%; height: 100%; display: block; }
-.dglyph .fallback-arco { position: absolute; inset: 8%; color: var(--accent); display: none; }
 
 /* container e ritmo */
 .shell { width: 95.8vw; max-width: 86rem; margin-inline: auto; }
@@ -69,9 +66,6 @@ main, header, footer, .trocador { position: relative; z-index: 2; }
 .nav__cta .join:hover { background: #b6da3d; }
 
 .strip { width: 100%; background: var(--lime); color: var(--lime-ink); border-radius: 0; overflow: hidden; white-space: nowrap; padding: .4rem 0; font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; box-shadow: 0 12px 24px -18px rgba(0,0,0,.4); }
-.strip__track { display: inline-block; will-change: transform; animation: stripslide 26s linear infinite; }
-.strip__track span { padding: 0 1.1rem; }
-.strip__track i { color: var(--accent); font-style: normal; }
 @keyframes stripslide { to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .strip__track { animation: none; } }
 
@@ -162,7 +156,6 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 
 /* faixa: texto de frase, sem caixa alta nem mono, e um ponto desenhado no lugar do glifo */
 .strip { font-family: var(--sans); font-size: .82rem; font-weight: 600; letter-spacing: 0; text-transform: none; padding: .38rem 0; }
-.strip__track i { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin: 0 1.1rem .12em; vertical-align: middle; }
 
 /* herói: copy primeiro, botão de criar dentro da primeira tela, arco logo abaixo */
 .hero { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: calc(var(--body) * 6.8); overflow-x: clip; }
@@ -171,7 +164,7 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 .mega .w { display: inline-block; }
 .mega em { font-style: normal; color: var(--accent); }
 .sub { font-size: 1.18em; line-height: 1.45; letter-spacing: -0.01em; color: var(--ink); max-width: 36ch; }
-.hero-deck { order: 2; position: relative; z-index: 1; width: 100vw; height: 20rem; margin-top: calc(var(--body) * 2.2); overflow-x: clip; overflow-y: visible; }
+.hero-deck { order: 2; position: relative; z-index: 1; width: 100vw; height: 20rem; margin-top: calc(var(--body) * -1); overflow-x: clip; overflow-y: visible; }
 .hero-deck::before { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(90deg, var(--paper), transparent 9%, transparent 91%, var(--paper)); }
 .deck { position: relative; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .deck.is-dragging { cursor: grabbing; }
@@ -179,9 +172,8 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 @media (max-width: 899px) {
   .hero { padding-top: 6.9rem; }
   .mega { font-size: clamp(2.3em, 9.4vw, 3.2em); }
-  .dglyph { width: 1.25em; height: 1.25em; vertical-align: -0.28em; }
   .sub { font-size: 1.08em; }
-  .hero-deck { margin-top: 1.4rem; }
+  .hero-deck { margin-top: -.6rem; }
 }
 /* a entrada do herói: as palavras sobem em sequência e o resto chega depois. É a
    única animação de entrada da página; o resto aparece onde está. */
@@ -214,15 +206,8 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 .fone__tela { display: block; width: 100%; height: min(58vh, 27rem); min-height: 21rem; border: 0; border-radius: 1.9rem; background: #0b0b16; pointer-events: none; }
 @media (min-width: 940px) { .fone__tela { height: min(74vh, 40rem); } }
 
-.console { display: flex; flex-direction: column; gap: .9rem; background: rgba(255,255,255,.06); border: 1px solid var(--wine-line); border-radius: 1rem; padding: 1rem; }
 .console__row { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }
 .console__lbl { font-size: .86rem; font-weight: 600; color: var(--wine-mut); }
-.fila { display: flex; flex-wrap: wrap; gap: .4rem; }
-.chip { cursor: pointer; border: 1px solid var(--wine-line); background: rgba(255,255,255,.05); color: var(--wine-tx); border-radius: 999px; min-height: 40px; padding: .4rem .9rem; font-size: .86rem; font-family: var(--sans); display: inline-flex; align-items: center; gap: .45rem; transition: background-color .2s, color .2s, border-color .2s; }
-.chip:hover { border-color: var(--wine-mut); }
-.chip[aria-pressed="true"] { background: var(--wine-tx); color: var(--wine); border-color: var(--wine-tx); }
-.chip .am { width: .85rem; height: .85rem; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
-.chip:focus-visible { outline: 2px solid var(--wine-em); outline-offset: 2px; }
 .ap__nota { margin-top: .8rem; font-size: .88rem; line-height: 1.45; color: var(--wine-mut); }
 
 /* o que tem na página: abas. A aba e a figura mudam juntas, e as duas colunas
@@ -301,3 +286,28 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 /* fecho */
 .fecho { text-align: center; padding-block: calc(var(--body) * 3.4); }
 .fecho .cta-row { justify-content: center; margin-top: calc(var(--body) * 1.4); }
+
+/* faixa do topo: dois grupos idênticos, e o deslocamento de meio trilho fecha o laço */
+.strip { overflow: hidden; white-space: nowrap; }
+.strip__track { display: flex; width: max-content; animation: stripslide 110s linear infinite; }
+.strip__grupo { display: flex; flex: none; list-style: none; }
+.strip__grupo li { padding-inline: 1.1rem 0; }
+.strip__grupo li::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 1.1rem 0.12em 2.2rem; border-radius: 50%; background: var(--accent); vertical-align: middle; }
+
+/* o que a pessoa pode alterar: lista só de leitura, sem controle */
+.ap__lista { list-style: none; display: flex; flex-direction: column; }
+.ap__item { padding: 1rem 0; border-top: 1px solid var(--wine-line); }
+.ap__item:first-child { border-top: 0; padding-top: 0; }
+.ap__item h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+.ap__item small { font-size: .9rem; font-weight: 500; color: var(--wine-mut); margin-left: .35rem; }
+.ap__tags { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .65rem; }
+.tag-fixa { display: inline-flex; align-items: center; gap: .5rem; padding: .4rem .9rem; border: 1px solid var(--wine-line); border-radius: 999px; font-size: .92rem; color: var(--wine-tx); background: rgba(255,255,255,.05); }
+.tag-fixa i { width: .85rem; height: .85rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+.ap__nota { margin-top: 1rem; }
+
+/* a porta, desenhada e parada, no fecho */
+.fecho__porta { display: block; width: 3rem; height: 3rem; margin: 0 auto calc(var(--body) * 1); color: var(--accent); }
+
+/* o aviso do endereço fica acima do arco, com fundo, para ler por cima dos cartões */
+.hero .placa-msg { position: relative; z-index: 4; }
+.hero .placa-msg:not(:empty) { background: var(--paper); border-radius: 999px; padding: .15rem .8rem; width: fit-content; margin-inline: auto; }

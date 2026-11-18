@@ -49,6 +49,20 @@ const ANUAL = preco(PLANOS.anual.valorCentavos).replace(/,00$/, "");
  * Nenhuma seção tem rótulo acima do título nem número de capítulo, e a única
  * animação de entrada é a do herói. O resto aparece onde está.
  */
+/*
+ * A faixa que corre no topo. Dois grupos idênticos lado a lado e um deslocamento
+ * de meio trilho: quando o primeiro sai, o segundo ocupa o lugar exato dele, sem
+ * emenda. Cada grupo repete as frases até ser mais largo que qualquer tela, e o
+ * espaço entre frases é padding do próprio item (e não margem solta), então os
+ * dois grupos medem igual e o laço fecha no pixel.
+ */
+const FRASES = ["Uma vitrine com o seu nome", "Catálogo, horário e galeria num link só"];
+const grupo = (oculto: boolean) =>
+  `<ul class="strip__grupo"${oculto ? ' aria-hidden="true"' : ""}>` +
+  Array.from({ length: 6 }, () => FRASES).flat().map((f) => `<li>${f}</li>`).join("") +
+  "</ul>";
+const FAIXA = grupo(false) + grupo(true);
+
 const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="porta"><path fill-rule="evenodd" d="M4 21 V11 a8 8 0 0 1 8 -8 v18 z M9.2 11 a1.3 1.3 0 0 1 -2.6 0 a1.3 1.3 0 0 1 2.6 0 z M14.5 3.5 a8 8 0 0 1 5.5 7.5 V21 h-2.8 V11 a5.2 5.2 0 0 0 -2.7 -4.6 z"/></g></defs></svg>
 
 <header class="topbar">
@@ -57,14 +71,14 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
     <a class="nav__brand" href="#topo"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>Entrais</a>
     <div class="nav__cta"><a class="entrar" href="/entrar">Entrar</a><a class="join" href="/criar">Criar grátis</a></div>
   </div>
-  <div class="strip" aria-hidden="true"><div class="strip__track"><span>Exemplos que montamos com o Entrais<i></i>Catálogo, horário e galeria num link só<i></i>O seu trabalho, com o seu nome<i></i></span><span>Exemplos que montamos com o Entrais<i></i>Catálogo, horário e galeria num link só<i></i>O seu trabalho, com o seu nome<i></i></span></div></div>
+  <div class="strip"><div class="strip__track">${FAIXA}</div></div>
 </header>
 
 <main>
   <section class="hero" id="topo">
     <div class="hero-copy">
       <h1 class="mega">
-        <span class="w" style="--i:0">Tudo</span> <span class="w" style="--i:1">o</span> <span class="w" style="--i:2">que</span> <span class="w" style="--i:3">você</span> <span class="w" style="--i:4">faz</span><span class="dglyph" aria-hidden="true"><canvas id="porta3d"></canvas><svg class="fallback-arco" viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg></span><span class="w" style="--i:5">numa</span> <span class="w" style="--i:6"><em>página só.</em></span>
+        <span class="w" style="--i:0">Tudo</span> <span class="w" style="--i:1">o</span> <span class="w" style="--i:2">que</span> <span class="w" style="--i:3">você</span> <span class="w" style="--i:4">faz</span> <span class="w" style="--i:5">numa</span> <span class="w" style="--i:6"><em>página só.</em></span>
       </h1>
       <p class="sub">Catálogo, horário, galeria e o botão de WhatsApp, num endereço com o seu nome.</p>
       <div class="cta-row">
@@ -87,31 +101,25 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
         <h2 class="t-h3 ap__tit">A página com a cara <em>de quem assina.</em></h2>
         <div class="palco ap__pal">
           <div class="fone">
-            <iframe id="demo-pagina" class="fone__tela" src="/nara-bittencourt" title="Página de exemplo de uma astróloga, do jeito que o cliente dela vê" loading="lazy" tabindex="-1"></iframe>
+            <iframe id="demo-pagina" class="fone__tela" src="/nara-bittencourt" title="Página de exemplo de uma astróloga, do jeito que o cliente dela vê" loading="lazy" tabindex="-1" scrolling="no"></iframe>
           </div>
         </div>
         <div class="ap__ctl">
-          <div class="console" role="group" aria-label="Trocar a aparência da página de exemplo">
-            <div class="console__row"><span class="console__lbl">Tema</span>
-              <div class="fila" id="temas">
-                <button class="chip" data-tema="areia" aria-pressed="false"><span class="am" style="background:linear-gradient(135deg,#f6f5f3 50%,#8f4451 50%)"></span>Areia</button>
-                <button class="chip" data-tema="minimal" aria-pressed="false"><span class="am" style="background:linear-gradient(135deg,#f5f5f7 50%,#1d1d1f 50%)"></span>Minimal</button>
-                <button class="chip" data-tema="menta" aria-pressed="false"><span class="am" style="background:linear-gradient(135deg,#f2f5f2 50%,#1f6b4f 50%)"></span>Menta</button>
-                <button class="chip" data-tema="noite" aria-pressed="false"><span class="am" style="background:linear-gradient(135deg,#14120f 50%,#e0a878 50%)"></span>Noite</button>
-                <button class="chip" data-tema="cosmico" aria-pressed="true"><span class="am" style="background:linear-gradient(135deg,#0b0b16 50%,#a493f2 50%)"></span>Cósmico</button>
-              </div>
-            </div>
-            <div class="console__row"><span class="console__lbl">Textura</span>
-              <div class="fila" id="fundos">
-                <button class="chip" data-fundo="liso" aria-pressed="false">Liso</button>
-                <button class="chip" data-fundo="papel" aria-pressed="false">Papel</button>
-                <button class="chip" data-fundo="tinta" aria-pressed="false">Tinta</button>
-                <button class="chip" data-fundo="degrade" aria-pressed="false">Degradê</button>
-                <button class="chip" data-fundo="vinheta" aria-pressed="true">Vinheta</button>
-              </div>
-            </div>
-          </div>
-          <p class="ap__nota">Página de exemplo que montamos. Tema e textura são grátis, a letra é do plano ${NOME_DO_PLANO.pago}.</p>
+          <ul class="ap__lista">
+            <li class="ap__item"><h3>Tema <small>grátis</small></h3>
+              <div class="ap__tags">
+                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#f6f5f3 50%,#8f4451 50%)"></i>Areia</span>
+                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#f5f5f7 50%,#1d1d1f 50%)"></i>Minimal</span>
+                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#f2f5f2 50%,#1f6b4f 50%)"></i>Menta</span>
+                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#14120f 50%,#e0a878 50%)"></i>Noite</span>
+                <span class="tag-fixa"><i style="background:linear-gradient(135deg,#0b0b16 50%,#a493f2 50%)"></i>Cósmico</span>
+              </div></li>
+            <li class="ap__item"><h3>Textura <small>grátis</small></h3>
+              <div class="ap__tags"><span class="tag-fixa">Liso</span><span class="tag-fixa">Papel</span><span class="tag-fixa">Tinta</span><span class="tag-fixa">Degradê</span><span class="tag-fixa">Vinheta</span></div></li>
+            <li class="ap__item"><h3>Letra <small>plano ${NOME_DO_PLANO.pago}</small></h3>
+              <div class="ap__tags"><span class="tag-fixa">Editorial</span><span class="tag-fixa">Artesanal</span><span class="tag-fixa">Moderno</span><span class="tag-fixa">Marcante</span><span class="tag-fixa">Direto</span></div></li>
+          </ul>
+          <p class="ap__nota">Página de exemplo que montamos. Você escolhe tudo isso no painel, depois de criar a sua.</p>
         </div>
       </div>
     </div></section>
@@ -213,6 +221,7 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
   </section>
 
   <section class="fecho" id="comecar"><div class="shell">
+    <svg class="fecho__porta" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="#porta"/></svg>
     <p class="t-display">Abra a sua página. <em>É de graça.</em></p>
     <div class="cta-row">
       <form class="placa" action="/criar" method="get">
@@ -233,14 +242,12 @@ export function Landing() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let parado = false;
-    (window as any).__stop3d = false;
     (async () => {
-      const THREE = await import("three");
       if (parado || !ref.current) return;
       const { initLanding } = await import("./landing-motion");
-      initLanding(THREE, IMGS);
+      initLanding(IMGS);
     })();
-    return () => { parado = true; (window as any).__stop3d = true; };
+    return () => { parado = true; };
   }, []);
   return (
     <div
