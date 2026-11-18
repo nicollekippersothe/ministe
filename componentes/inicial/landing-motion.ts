@@ -159,7 +159,18 @@ export function initLanding(IMGS) {
     }
     var t0 = 0;
     quadro.addEventListener("load", function () { semBarra(); t0 = 0; quadro.style.opacity = "1"; });
-    semBarra();
+    // A página de exemplo só começa a baixar quando a seção está perto da tela.
+    // Com o `loading="lazy"` do navegador ela já descia na abertura (ele dispara a
+    // uns 1250 px de distância), e a tela inicial pagava uma página inteira, o
+    // JavaScript dela e duas letras a mais antes de a pessoa chegar aqui.
+    if ("IntersectionObserver" in window) {
+      var carga = new IntersectionObserver(function (es) {
+        if (!es[0].isIntersecting) return;
+        carga.disconnect();
+        if (!quadro.getAttribute("src")) quadro.src = quadro.getAttribute("data-src");
+      }, { rootMargin: "300px 0px" });
+      carga.observe(quadro);
+    } else { quadro.src = quadro.getAttribute("data-src"); }
 
     EXEMPLOS.forEach(function (e, i) {
       var li = document.createElement("li");
@@ -172,7 +183,7 @@ export function initLanding(IMGS) {
       if (i === atual) return; atual = i;
       botoes.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
       quadro.style.opacity = "0";
-      setTimeout(function () { quadro.src = "/" + EXEMPLOS[i].s; }, 220);
+      setTimeout(function () { quadro.src = "/" + EXEMPLOS[i].s; }, 220);   // trocar de exemplo só acontece depois do primeiro carregamento
     }
     function para() { if (timer) { clearInterval(timer); timer = null; } }
     function inicia() { para(); if (reduced) return; timer = setInterval(function () { if (visivel) mostra((atual + 1) % EXEMPLOS.length); }, 9000); }
