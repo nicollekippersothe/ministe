@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
 import { normalizar, conferirFormato, MOTIVOS } from "@/lib/slug";
-export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, Lenis, IMGS) {
+export function initLanding(THREE, IMGS) {
 
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var touch = window.matchMedia("(pointer: coarse)").matches;
@@ -69,10 +69,10 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
       cw = cards[0].offsetWidth || cw;
       s = cw + Math.round(cw * 0.22);
       total = s * cards.length;
-      R = vw * 1.5;                                          // arco largo, de borda a borda, suave
-      var th = Math.min((vw / 2 + cw * 1.6) / R, 1.1);
+      R = vw * (vw < 700 ? 2.3 : 1.5);                       // arco largo, de borda a borda; no celular, mais suave
+      var th = Math.min((vw / 2 + cw * 0.9) / R, 1.1);
       var afunda = R * (1 - Math.cos(th));
-      deck.style.height = Math.ceil(cards[0].offsetHeight + afunda + cw * 0.5 + 24) + "px";   // + o que a inclinação da ponta empurra o nome para baixo
+      deck.parentElement.style.height = Math.ceil(cards[0].offsetHeight + afunda + cw * 0.4 + 20) + "px";   // + o que a inclinação da ponta empurra o nome para baixo
       layout();
     }
     var arrastando = false, sx = 0, so = 0, visivel = true, ultimo = 0, raf = 0, VEL = 34;
@@ -94,57 +94,83 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     return deck;
   }
 
-  /* ---------- explorador de ofícios (lista troca a prévia) ---------- */
-  var SEG = [
-    { of: "Tatuagem", img: "/exemplo/tatu-1.jpg", ex: "teosarmento" },
-    { of: "Confeitaria", img: "/exemplo/bolo-3.jpg", ex: "alecrim" },
-    { of: "Ilustração", img: "/exemplo/ilustra-3.jpg", ex: "liaprado" },
-    { of: "Astrologia", img: "/exemplo/astro-1.jpg", ex: "isismoraes" },
-    { of: "Canto", img: "/exemplo/canto-2.jpg", ex: "biamarconi" },
-    { of: "Massoterapia", img: "/exemplo/spa-1.jpg", ex: "helenavasques" },
-    { of: "Psicologia", img: "/exemplo/psi-capa.jpg", ex: "marianaalves" },
-    { of: "Fotografia", img: "/exemplo/galeria-2.jpg", ex: "estudioluz" }
-  ];
+  /* ---------- abas do que tem na página ----------
+   * Uma peça por vez: a aba escolhida e a figura mudam no mesmo instante, então
+   * esquerda e direita nunca ficam em momentos diferentes. Passa sozinha enquanto
+   * a pessoa não mexe (e não passa para quem pediu menos movimento), e para de vez
+   * no primeiro toque ou foco, que é o que a WCAG pede de conteúdo que se move. */
+  function initAbas(root) {
+    if (!root) return;
+    var abas = [].slice.call(root.querySelectorAll(".aba"));
+    var paineis = [].slice.call(root.querySelectorAll(".painel"));
+    var desc = root.querySelector(".abas__desc");
+    var atual = 0, timer = null, visivel = false;
+    function mostra(i, foco) {
+      atual = i;
+      abas.forEach(function (a, k) { a.setAttribute("aria-selected", k === i ? "true" : "false"); a.tabIndex = k === i ? 0 : -1; });
+      paineis.forEach(function (p, k) { p.hidden = k !== i; });
+      if (desc) desc.textContent = abas[i].getAttribute("data-desc") || "";
+      if (foco) abas[i].focus();
+    }
+    function para() { if (timer) { clearInterval(timer); timer = null; } }
+    function inicia() { para(); if (reduced) return; timer = setInterval(function () { if (visivel) mostra((atual + 1) % abas.length, false); }, 5500); }
+    abas.forEach(function (a, i) {
+      a.addEventListener("click", function () { para(); mostra(i, false); });
+      a.addEventListener("keydown", function (e) {
+        var d = e.key === "ArrowDown" || e.key === "ArrowRight" ? 1 : e.key === "ArrowUp" || e.key === "ArrowLeft" ? -1 : 0;
+        if (!d) return; e.preventDefault(); para(); mostra((i + d + abas.length) % abas.length, true);
+      });
+    });
+    root.addEventListener("pointerdown", para);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visivel = es[0].isIntersecting; }, { threshold: 0.4 }).observe(root);
+    mostra(0, false); inicia();
+  }
+
+  /* ---------- ofícios: lista e foto lado a lado ----------
+   * A lista e a foto cabem na mesma tela, então escolher o último ofício não
+   * deixa a foto lá em cima, fora de vista. A lista usa os mesmos doze cartões do
+   * arco, e a legenda fica dentro da foto, sobre o escurecido. */
   function initExplorer(root) {
     if (!root) return;
-    var lista = root.querySelector(".seg-lista");
-    var img = root.querySelector(".seg-img");
-    var tag = root.querySelector(".seg-tag");
+    var lista = root.querySelector(".seg__lista");
+    var img = root.querySelector(".seg__img");
+    var leg = root.querySelector(".seg__leg");
     if (!lista || !img) return;
-    SEG.forEach(function (s, i) {
+    NEG.forEach(function (n, i) {
       var li = document.createElement("li");
-      li.innerHTML = '<button type="button" class="seg-item" data-i="' + i + '" aria-pressed="' + (i === 0 ? "true" : "false") + '">' +
-        '<span class="seg-num">' + ("0" + (i + 1)).slice(-2) + '</span><span class="seg-nome">' + s.of + '</span></button>';
+      li.innerHTML = '<button type="button" class="seg__item" data-i="' + i + '" aria-pressed="' + (i === 0 ? "true" : "false") + '">' + n.of + '</button>';
       lista.appendChild(li);
     });
-    SEG.forEach(function (s) { var im = new Image(); im.src = s.img; }); // pré-carrega
-    var items = [].slice.call(lista.querySelectorAll(".seg-item"));
-    var cur = -1, timer = null;
+    var items = [].slice.call(lista.querySelectorAll(".seg__item"));
+    var cur = 0, timer = null, visivel = false;
     function show(i) {
       if (i === cur) return; cur = i;
       items.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
-      var s = SEG[i];
+      var n = NEG[i];
       img.style.opacity = "0";
-      setTimeout(function () { img.src = s.img; if (tag) tag.textContent = "entrais.app/" + s.ex; img.style.opacity = "1"; }, 180);
+      setTimeout(function () { img.src = n.img; leg.querySelector("b").textContent = n.nome; leg.querySelector("span").textContent = n.of; img.style.opacity = "1"; }, 160);
     }
-    function stop() { if (timer) { clearInterval(timer); timer = null; } }
-    function start() { stop(); timer = setInterval(function () { show((cur + 1) % SEG.length); }, 2600); }
-    items.forEach(function (b, i) {
-      b.addEventListener("pointerenter", function () { stop(); show(i); });
-      b.addEventListener("focus", function () { stop(); show(i); });
-      b.addEventListener("click", function () { stop(); show(i); });
-    });
-    root.addEventListener("pointerleave", start);
-    show(0); start();
+    function para() { if (timer) { clearInterval(timer); timer = null; } }
+    function inicia() { para(); if (reduced) return; timer = setInterval(function () { if (visivel) show((cur + 1) % NEG.length); }, 3200); }
+    NEG.forEach(function (n) { var im = new Image(); im.src = n.img; });
+    items.forEach(function (b, i) { b.addEventListener("click", function () { para(); show(i); }); b.addEventListener("focus", function () { para(); show(i); }); });
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visivel = es[0].isIntersecting; }, { threshold: 0.4 }).observe(root);
+    inicia();
   }
 
   /* ---------- console de aparência ----------
-   * A página à esquerda é a página de verdade (um iframe da rota pública de um
-   * exemplo, sem script). O console só troca `data-tema` e `data-fundo` na raiz
-   * dela, que é exatamente o que a página do cliente faz com o que o dono escolhe. */
+   * A página ao lado é a de verdade (um iframe da rota pública de um exemplo). O
+   * console só troca `data-tema` e `data-fundo` na raiz dela, que é o que a página
+   * do cliente faz com o que o dono escolhe.
+   *
+   * O iframe não recebe toque nem roda: quem rola a tela inteira nunca fica preso
+   * numa rolagem dentro da outra. Em troca, a página de exemplo desce e sobe
+   * sozinha, devagar, enquanto está à vista, para mostrar o que existe dentro. */
   function initSwitcher() {
     var quadro = document.getElementById("demo-pagina");
-    function raiz() { try { var d = quadro.contentDocument; return d && d.querySelector("[data-tema]"); } catch (_) { return null; } }
+    if (!quadro) return;
+    function doc() { try { return quadro.contentDocument; } catch (_) { return null; } }
+    function raiz() { var d = doc(); return d && d.querySelector("[data-tema]"); }
     function aplica(attr, valor) {
       var r = raiz(); if (!r) return;
       if (attr === "data-fundo" && valor === "liso") r.removeAttribute("data-fundo"); else r.setAttribute(attr, valor);
@@ -154,7 +180,22 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
         aplica(attr, b.getAttribute(attr));
         box.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); }); }); }
     liga("temas", "data-tema"); liga("fundos", "data-fundo");
-    document.querySelectorAll(".placa button").forEach(function (b) { b.addEventListener("click", function (e) { var i = b.parentElement.querySelector("input"); if (i && i.value.trim() === "") { e.preventDefault(); i.focus(); } }); });
+
+    var visivel = false, t0 = 0, raf = 0;
+    function passo(t) {
+      raf = 0; if (!visivel || document.hidden) return;
+      var d = doc(), el = d && d.scrollingElement;
+      if (el) {
+        var max = el.scrollHeight - el.clientHeight;
+        if (max > 0) {
+          if (!t0) t0 = t;
+          var ph = ((t - t0) / 26000) % 1, k = ph < 0.5 ? ph * 2 : 2 - ph * 2;   // desce e sobe
+          el.scrollTop = k * k * (3 - 2 * k) * max;
+        }
+      }
+      raf = requestAnimationFrame(passo);
+    }
+    if (!reduced && "IntersectionObserver" in window) new IntersectionObserver(function (es) { visivel = es[0].isIntersecting; if (visivel && !raf) raf = requestAnimationFrame(passo); }, { threshold: 0.3 }).observe(quadro);
   }
 
   /* ---------- placa: confere o endereço livre ao vivo ---------- */
@@ -195,7 +236,8 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     });
   }
 
-  var deckEl = initDeck(document.querySelector("[data-deck]"));
+  initDeck(document.querySelector("[data-deck]"));
+  initAbas(document.querySelector("[data-abas]"));
   initExplorer(document.querySelector("[data-explorer]"));
   initSwitcher();
   initPlaca();
@@ -291,48 +333,5 @@ export function initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, L
     return true;
   }
   try { initPorta(); } catch (e) { var fb = document.querySelector(".fallback-arco"); if (fb) fb.style.display = "block"; var cv = document.getElementById("porta3d"); if (cv) cv.style.display = "none"; }
-
-  /* ---------- motion GSAP ---------- */
-  function revealAll() { document.querySelectorAll("[data-split],[data-reveal]").forEach(function (e) { e.classList.add("is-ready"); }); window.__mr = true; }
-  if (reduced || typeof gsap === "undefined" || typeof Lenis === "undefined") { revealAll(); return; }
-  try {
-    gsap.registerPlugin(ScrollTrigger, SplitText, CustomEase);
-    CustomEase.create("osmo", "0.625, 0.05, 0, 1"); CustomEase.create("osmo-out", "0.16, 1, 0.3, 1");
-    var lenis = new Lenis({ lerp: 0.1, smoothWheel: true }); lenis.on("scroll", ScrollTrigger.update);
-    gsap.ticker.add(function (t) { lenis.raf(t * 1000); }); gsap.ticker.lagSmoothing(0);
-
-    function splitReveal(el, opts) { opts = opts || {}; var type = el.dataset.split || "lines";
-      var cfg = { lines: { duration: 0.9, stagger: 0.09 }, words: { duration: 0.6, stagger: 0.045 } }[type] || { duration: 0.8, stagger: 0.05 };
-      var split = SplitText.create(el, { type: "lines, words, chars", mask: "lines", linesClass: "line" });
-      el.classList.add("is-ready");
-      var vars = { yPercent: 106, duration: cfg.duration, stagger: cfg.stagger, ease: "osmo" };
-      if (!opts.noTrigger) vars.scrollTrigger = { trigger: el, start: "top 86%", once: true };
-      return gsap.from(split[type], vars);
-    }
-    function reveal(el) { el.classList.add("is-ready"); gsap.from(el, { y: 40, opacity: 0, duration: 0.9, ease: "osmo", scrollTrigger: { trigger: el, start: "top 90%", once: true } }); }
-
-    document.fonts.ready.then(function () {
-      document.querySelectorAll(".hero [data-reveal]").forEach(function (e) { e.classList.add("is-ready"); });
-      gsap.set(".mega .w", { yPercent: 46, opacity: 0 });
-      gsap.set(".dglyph", { scale: 0.2, opacity: 0, transformOrigin: "50% 55%" });
-      gsap.timeline({ delay: 0.35 })
-        .to(".mega .w", { yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: "osmo" }, 0)
-        .to(".dglyph", { scale: 1, opacity: 1, duration: 1.0, ease: "osmo-out" }, 0.45)
-        .from(".hero .sub", { y: 16, opacity: 0, duration: 0.6, ease: "osmo" }, 0.7)
-        .from(".hero .cta-row", { y: 18, opacity: 0, duration: 0.6, ease: "osmo" }, 0.85);
-      document.querySelectorAll("[data-split]").forEach(function (el) { if (!el.closest(".hero")) splitReveal(el); });
-      document.querySelectorAll("[data-reveal]").forEach(function (el) { if (!el.closest(".hero")) reveal(el); });
-      // recursos: figura e texto da mesma linha entram juntos, no mesmo gatilho,
-      // com o mesmo deslocamento. Deslizar de lados opostos deixava um lado
-      // chegando enquanto o outro já tinha parado.
-      document.querySelectorAll("[data-reveal-row]").forEach(function (row) {
-        var par = [row.querySelector(".r-fig"), row.querySelector(".r-txt")];
-        gsap.from(par, { y: 28, opacity: 0, duration: 0.8, ease: "osmo", scrollTrigger: { trigger: row, start: "top 85%", once: true } });
-      });
-      var panel = document.querySelector(".transition__panel"); gsap.set(panel, { scaleY: 1, transformOrigin: "top" }); gsap.to(panel, { scaleY: 0, duration: 1.1, ease: "osmo", delay: 0.05 });
-      ScrollTrigger.refresh(); window.__mr = true;
-    });
-    setTimeout(function () { if (!window.__mr) revealAll(); }, 3500);
-  } catch (err) { revealAll(); }
 
 }
