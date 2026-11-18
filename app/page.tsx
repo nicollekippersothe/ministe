@@ -37,9 +37,10 @@ export const metadata: Metadata = {
 };
 
 /*
- * A tela inicial é renderizada no servidor, com os componentes de verdade do
- * produto e os dados dos exemplos. Só a placa de endereço e o console de
- * aparência rodam no navegador. Ver `componentes/inicial/Landing.tsx`.
+ * A tela inicial é a landing "fachada": herói com a porta em 3D, os exemplos
+ * espiando por baixo num carrossel em arco, os componentes de verdade do app, e
+ * o preço em dois painéis. Todo o movimento (three.js, GSAP, Lenis) vive dentro
+ * de `componentes/inicial/Landing.tsx`, que é um componente de cliente.
  */
 export default function Home() {
   return <Landing />;
