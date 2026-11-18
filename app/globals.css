@@ -1091,3 +1091,56 @@ body {
       color 240ms ease;
   }
 }
+
+/*
+ * A fileira de exemplos que passa sozinha.
+ *
+ * Duas cópias da lista lado a lado e um deslocamento de meio trilho: quando a
+ * primeira cópia sai, a segunda ocupa o lugar exato dela, e o laço não tem
+ * emenda. Só transform, na placa de vídeo, sem script. Para com o ponteiro em
+ * cima ou o foco dentro, e para de vez para quem pediu menos movimento, que
+ * recebe a mesma fileira como faixa de rolagem com encaixe.
+ */
+.passa {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+}
+
+.passa-trilho {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  padding-inline: 12px;
+  list-style: none;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .passa-trilho {
+    animation: passa 45s linear infinite;
+  }
+  .passa:hover .passa-trilho,
+  .passa:focus-within .passa-trilho {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .passa {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    mask-image: none;
+  }
+  .passa-trilho > li {
+    scroll-snap-align: start;
+  }
+  .passa-trilho > li[aria-hidden] {
+    display: none;
+  }
+}
+
+@keyframes passa {
+  to {
+    transform: translateX(calc(-50% - 12px));
+  }
+}

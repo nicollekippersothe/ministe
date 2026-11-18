@@ -240,54 +240,58 @@ export function Landing() {
           </Secao2>
         </div>
 
-        {/* ====== Ofícios: a vitrine de exemplos ====== */}
-        <Secao2 id="oficios">
-          <div className="surge max-w-[40rem]">
-            <h2 className="titulo-venda text-[26px] text-balance sm:text-[38px]">
-              Serve para quem vende o próprio trabalho.
-            </h2>
-            <p className="mt-4 text-xl leading-snug text-suave">
-              Sete exemplos que montamos para mostrar como fica. Cada um abre a página inteira,
-              do jeito que o cliente dela vê.
-            </p>
+        {/* ====== Ofícios: a fileira de exemplos que passa sozinha ====== */}
+        <section id="oficios" className="py-16 lg:py-20">
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <div className="surge max-w-[40rem]">
+              <h2 className="titulo-venda text-[26px] text-balance sm:text-[38px]">
+                Serve para quem vende o próprio trabalho.
+              </h2>
+              <p className="mt-4 text-xl leading-snug text-suave">
+                Sete exemplos que montamos para mostrar como fica. Cada um abre a página inteira,
+                do jeito que o cliente dela vê.
+              </p>
+            </div>
           </div>
 
-          <ul className="mt-12 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-12 lg:gap-x-6">
-            {VITRINE.map(({ negocio, tipo }, i) => {
-              /* Tamanhos diferentes de propósito: a profissional autônoma na
-                 frente, a loja fechando a fila. */
-              const largura =
-                i === 0 ? "col-span-2 lg:col-span-7" : i === 1 ? "lg:col-span-5" : "lg:col-span-4";
-              const proporcao = i === 0 ? "aspect-[16/9]" : "aspect-[4/3]";
-              return (
-                <li key={negocio.slug} className={`surge ${largura}`}>
-                  <Link
-                    href={`/${negocio.slug}`}
-                    aria-label={`Abrir a página de exemplo de ${negocio.nome}, ${tipo}, em ${negocio.cidade}`}
-                    className="group block"
+          <div className="passa mt-12">
+            <ul className="passa-trilho">
+              {[0, 1].map((copia) =>
+                VITRINE.map(({ negocio, tipo }, i) => (
+                  <li
+                    key={`${copia}-${negocio.slug}`}
+                    aria-hidden={copia === 1 ? true : undefined}
+                    className={`w-[16rem] shrink-0 sm:w-[18rem] ${i % 2 === 1 ? "mt-8" : ""}`}
                   >
-                    {negocio.capa ? (
-                      <div className={`overflow-hidden rounded-2xl border border-borda ${proporcao}`}>
-                        <Image
-                          src={negocio.capa.url}
-                          alt=""
-                          width={negocio.capa.largura}
-                          height={negocio.capa.altura}
-                          sizes={i === 0 ? "(min-width: 1024px) 700px, 100vw" : "(min-width: 1024px) 380px, 50vw"}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                        />
-                      </div>
-                    ) : null}
-                    <p className="mt-3 text-base font-semibold">{tipo}</p>
-                    <p className="text-sm text-suave">
-                      {negocio.nome}, {negocio.cidade}
-                    </p>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Secao2>
+                    <Link
+                      href={`/${negocio.slug}`}
+                      tabIndex={copia === 1 ? -1 : undefined}
+                      aria-label={`Abrir a página de exemplo de ${negocio.nome}, ${tipo}, em ${negocio.cidade}`}
+                      className="group block"
+                    >
+                      {negocio.capa ? (
+                        <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-borda">
+                          <Image
+                            src={negocio.capa.url}
+                            alt=""
+                            width={negocio.capa.largura}
+                            height={negocio.capa.altura}
+                            sizes="288px"
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                          />
+                        </div>
+                      ) : null}
+                      <p className="mt-3 text-base font-semibold">{tipo}</p>
+                      <p className="text-sm text-suave">
+                        {negocio.nome}, {negocio.cidade}
+                      </p>
+                    </Link>
+                  </li>
+                )),
+              )}
+            </ul>
+          </div>
+        </section>
 
         {/* ====== Preço ====== */}
         <div className="border-t border-borda">
