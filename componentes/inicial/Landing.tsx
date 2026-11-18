@@ -85,11 +85,11 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
       <h1 class="mega">
         <span class="w" style="--i:0">Tudo</span> <span class="w" style="--i:1">o</span> <span class="w" style="--i:2">que</span> <span class="w" style="--i:3">você</span> <span class="w" style="--i:4">faz</span> <span class="w" style="--i:5">numa</span> <span class="w" style="--i:6"><em>página só.</em></span>
       </h1>
-      <p class="sub">Catálogo, horário, galeria e o botão de WhatsApp, num endereço com o seu nome.</p>
+      <p class="sub">Catálogo, horário, galeria e o botão de WhatsApp, num endereço só seu.</p>
       <div class="cta-row">
         <form class="placa" action="/criar" method="get">
           <span class="pre">entrais.app/</span>
-          <input name="slug" id="nome-topo" type="text" autocomplete="off" spellcheck="false" placeholder="seunome" aria-label="Escreva o seu nome no endereço">
+          <input name="slug" id="nome-topo" type="text" autocomplete="off" spellcheck="false" placeholder="seunegocio" aria-label="Escreva o endereço da sua página">
           <button type="submit" class="pill">Criar grátis</button>
         </form>
       </div>
@@ -231,7 +231,7 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
     <div class="cta-row">
       <form class="placa" action="/criar" method="get">
         <span class="pre">entrais.app/</span>
-        <input name="slug" id="nome-fim" type="text" autocomplete="off" spellcheck="false" placeholder="seunome" aria-label="Escreva o seu nome no endereço">
+        <input name="slug" id="nome-fim" type="text" autocomplete="off" spellcheck="false" placeholder="seunegocio" aria-label="Escreva o endereço da sua página">
         <button type="submit" class="pill">Criar grátis</button>
       </form>
     </div>
