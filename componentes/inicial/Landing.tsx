@@ -56,10 +56,16 @@ const ANUAL = preco(PLANOS.anual.valorCentavos).replace(/,00$/, "");
  * espaço entre frases é padding do próprio item (e não margem solta), então os
  * dois grupos medem igual e o laço fecha no pixel.
  */
-const FRASES = ["Uma vitrine com o seu nome", "Catálogo, horário e galeria num link só"];
+const FRASES = [
+  "A página do seu negócio, pronta para o WhatsApp",
+  "Serviços com preço, foto e horário num link só",
+  "Grátis para publicar",
+  "Mostra na hora se você está atendendo",
+  "Para quem vende o próprio trabalho",
+];
 const grupo = (oculto: boolean) =>
   `<ul class="strip__grupo"${oculto ? ' aria-hidden="true"' : ""}>` +
-  Array.from({ length: 6 }, () => FRASES).flat().map((f) => `<li>${f}</li>`).join("") +
+  Array.from({ length: 3 }, () => FRASES).flat().map((f) => `<li>${f}</li>`).join("") +
   "</ul>";
 const FAIXA = grupo(false) + grupo(true);
 

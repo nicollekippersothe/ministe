@@ -289,7 +289,7 @@ footer .feito b { color: var(--ink); font-weight: 600; }
 
 /* faixa do topo: dois grupos idênticos, e o deslocamento de meio trilho fecha o laço */
 .strip { overflow: hidden; white-space: nowrap; }
-.strip__track { display: flex; width: max-content; animation: stripslide 110s linear infinite; }
+.strip__track { display: flex; width: max-content; animation: stripslide 130s linear infinite; }
 .strip__grupo { display: flex; flex: none; list-style: none; }
 .strip__grupo li { padding-inline: 1.1rem 0; }
 .strip__grupo li::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 1.1rem 0.12em 2.2rem; border-radius: 50%; background: var(--accent); vertical-align: middle; }
