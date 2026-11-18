@@ -2,6 +2,8 @@ import Link from "next/link";
 import { DOMINIO_PUBLICO } from "@/lib/marca";
 import { preco } from "@/lib/formato";
 import {
+  DIAS_DE_TESTE,
+  ITENS_NO_CATALOGO,
   MESES_DE_CORTESIA_PROMETIDOS,
   NOME_DO_PLANO,
   PLANOS,
@@ -30,9 +32,11 @@ const DO_GRATIS = [
     Endereço próprio, <b className="font-semibold text-texto">{DOMINIO_PUBLICO}/seu-nome</b>
   </>,
   <>
-    Catálogo com até <b className="font-semibold text-texto">20 itens</b>, com foto e preço
+    Catálogo de até{" "}
+    <b className="font-semibold text-texto">{ITENS_NO_CATALOGO.gratuito} itens</b>, com foto e preço
   </>,
   <>Galeria, horários e o botão do WhatsApp</>,
+  <>Cinco temas e cinco texturas para escolher</>,
   <>Dois números dos últimos 7 dias: quem abriu e quem chamou</>,
 ];
 
@@ -41,13 +45,14 @@ const DO_COMPLETO = [
     <b className="font-semibold text-texto">Letra própria</b>, para a página ter a sua cara
   </>,
   <>
-    Catálogo <b className="font-semibold text-texto">sem o limite de 20 itens</b>
+    Catálogo de até{" "}
+    <b className="font-semibold text-texto">{ITENS_NO_CATALOGO.pago} itens</b>
   </>,
   <>
     <b className="font-semibold text-texto">Números completos</b>: de onde vêm as visitas, dia a
     dia, por botão, comparado ao período anterior
   </>,
-  <>Cancela quando quiser, direto no painel</>,
+  <>Cancelamento direto no painel, quando você quiser</>,
 ];
 
 /** O tique de cada item. Desenhado, e não emoji, como o resto do produto. */
@@ -72,17 +77,17 @@ export function Planos() {
   const anual = preco(PLANOS.anual.valorCentavos).replace(/,00$/, "");
 
   return (
-    <div className="mx-auto grid max-w-3xl gap-5 sm:grid-cols-[1fr_1.1fr] sm:items-stretch">
+    <div className="grid max-w-4xl gap-5 sm:grid-cols-[1fr_1.1fr] sm:items-stretch">
       {/* Grátis */}
-      <div className="surge flex flex-col rounded-3xl border border-borda bg-superficie p-6 sm:p-7">
-        <p className="titulo text-[1.35rem] text-texto">{NOME_DO_PLANO.gratuito}</p>
+      <div className="surge flex flex-col rounded-2xl border border-borda bg-superficie p-6 sm:p-8">
+        <p className="titulo-venda text-[20px] text-texto">{NOME_DO_PLANO.gratuito}</p>
         <p className="mt-3 flex items-baseline gap-1.5">
-          <span className="titulo text-[2.4rem] leading-none text-texto">R$ 0</span>
+          <span className="titulo-venda text-[38px] leading-none text-texto">R$ 0</span>
           <span className="text-sm text-suave">para sempre</span>
         </p>
         <p className="mt-1 text-sm text-suave">Sua página pública, no ar hoje.</p>
 
-        <ul className="mt-6 flex flex-1 flex-col gap-3 text-[0.95rem] leading-snug text-suave">
+        <ul className="mt-6 flex flex-1 flex-col gap-3 text-base leading-snug text-suave">
           {DO_GRATIS.map((linha, i) => (
             <li key={i} className="flex gap-2.5">
               <Certo />
@@ -93,34 +98,31 @@ export function Planos() {
 
         <Link
           href="#comecar"
-          className="mt-7 flex h-12 items-center justify-center rounded-2xl border border-borda bg-superficie px-6 text-[0.98rem] font-semibold text-texto transition-colors hover:border-suave"
+          className="mt-7 flex h-12 items-center justify-center rounded-lg border border-borda bg-superficie px-6 text-base font-semibold text-texto transition-colors hover:border-suave"
         >
-          Criar minha página grátis
+          Criar grátis
         </Link>
       </div>
 
       {/* Completo */}
-      <div className="surge relative flex flex-col rounded-3xl border border-destaque bg-superficie p-6 shadow-[0_0_0_1px_var(--c-destaque)] sm:p-7">
-        <span className="absolute -top-3 left-7 rounded-full bg-destaque px-3 py-1 text-[0.68rem] font-bold tracking-[0.1em] text-superficie uppercase">
-          Mais escolhido
-        </span>
+      <div className="surge relative flex flex-col rounded-2xl border border-destaque bg-superficie p-6 sm:p-8">
 
-        <p className="titulo text-[1.35rem] text-texto">{NOME_DO_PLANO.pago}</p>
+        <p className="titulo-venda text-[20px] text-texto">{NOME_DO_PLANO.pago}</p>
         <p className="mt-3 flex items-baseline gap-1.5">
-          <span className="titulo text-[2.4rem] leading-none text-texto">
+          <span className="titulo-venda text-[38px] leading-none text-texto">
             {preco(PLANOS.mensal.valorCentavos)}
           </span>
-          <span className="text-sm text-suave">no mês</span>
+          <span className="text-sm text-suave">por mês</span>
         </p>
         <p className="mt-1 text-sm text-suave">
           ou <b className="font-semibold text-destaque">{anual} no ano</b>, com{" "}
           {MESES_DE_CORTESIA_PROMETIDOS} meses por nossa conta.
         </p>
 
-        <p className="mt-6 text-[0.78rem] font-semibold tracking-[0.06em] text-suave uppercase">
+        <p className="mt-6 text-sm font-semibold text-texto">
           Tudo do grátis, e mais
         </p>
-        <ul className="mt-3 flex flex-1 flex-col gap-3 text-[0.95rem] leading-snug text-suave">
+        <ul className="mt-3 flex flex-1 flex-col gap-3 text-base leading-snug text-suave">
           {DO_COMPLETO.map((linha, i) => (
             <li key={i} className="flex gap-2.5">
               <Certo />
@@ -131,12 +133,13 @@ export function Planos() {
 
         <Link
           href="#comecar"
-          className="mt-7 flex h-12 items-center justify-center rounded-2xl bg-texto px-6 text-[0.98rem] font-semibold text-fundo transition-opacity hover:opacity-90"
+          className="mt-7 flex h-12 items-center justify-center rounded-lg bg-texto px-6 text-base font-semibold text-fundo transition-opacity hover:opacity-90"
         >
           Assinar o Completo
         </Link>
-        <p className="mt-3 text-center text-xs text-suave">
-          Você cria a página primeiro. A assinatura fica a um toque no seu painel.
+        <p className="mt-3 text-center text-sm text-suave">
+          {DIAS_DE_TESTE} dias de teste no cartão de crédito. A assinatura fica a um toque no seu
+          painel, depois que a página existir.
         </p>
       </div>
     </div>

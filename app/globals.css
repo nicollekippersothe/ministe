@@ -498,18 +498,18 @@ body {
 /* Papel: o grão da parede de algodão. O ruído do tema claro é escuro, então
    some sobre parede escura; os temas escuros recebem a versão invertida, um
    grão claro, pela mesma técnica de SVG sem baixar imagem. */
-[data-fundo="papel"] main {
+[data-fundo="papel"] :is(main, .cartao-demo) {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
   background-size: 170px 170px;
 }
-[data-tema="noite"] [data-fundo="papel"] main,
-[data-tema="cosmico"] [data-fundo="papel"] main {
+[data-tema="noite"] [data-fundo="papel"] :is(main, .cartao-demo),
+[data-tema="cosmico"] [data-fundo="papel"] :is(main, .cartao-demo) {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='table' tableValues='1 0'/%3E%3CfeFuncG type='table' tableValues='1 0'/%3E%3CfeFuncB type='table' tableValues='1 0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
 }
 
 /* Tinta: a parede inteira ganha um véu do acento do tema, uma cor de fundo
    diferente do branco, no espírito do linkbio, mas tirada do próprio tema. */
-[data-fundo="tinta"] main {
+[data-fundo="tinta"] :is(main, .cartao-demo) {
   background-image: linear-gradient(
     0deg,
     color-mix(in srgb, var(--c-destaque) 13%, transparent),
@@ -519,7 +519,7 @@ body {
 
 /* Degradê: uma passagem diagonal do acento ao latão, de canto a canto, cobrindo
    a parede toda. É a opção com mais cor e movimento. */
-[data-fundo="degrade"] main {
+[data-fundo="degrade"] :is(main, .cartao-demo) {
   background-image: linear-gradient(
     165deg,
     color-mix(in srgb, var(--c-destaque) 24%, transparent) 0%,
@@ -532,7 +532,7 @@ body {
 /* Vinheta: as bordas da parede escurecem, como a luz caindo no centro de uma
    sala de mostra. Estática, então continua no reduzido de movimento. Dá corpo
    especialmente aos temas escuros. */
-[data-fundo="vinheta"] main {
+[data-fundo="vinheta"] :is(main, .cartao-demo) {
   box-shadow:
     inset 0 0 8rem color-mix(in srgb, var(--c-texto) 16%, transparent),
     0 12px 36px -12px rgba(28, 25, 23, 0.14);
@@ -1053,4 +1053,41 @@ body {
 .chapa:hover .seta {
   transform: translate(2px, -2px);
   color: var(--c-destaque);
+}
+
+/* ==========================================================================
+ * A tela inicial.
+ *
+ * Duas letras declaradas (ver componentes/inicial/letras.ts), um título de
+ * venda e uma animação de cada espécie, e só.
+ * ========================================================================== */
+
+.titulo-venda {
+  font-family: var(--f-venda-titulo), var(--f-sistema);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+
+/*
+ * A rolagem do celular do herói, devagar e de ida e volta, sem pressa e sem
+ * salto. É a mesma animação de `.rolando`, só que contínua, porque aqui há um
+ * aparelho só e ele é o produto. Fora do herói os aparelhos ficam parados.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .rolando-sempre .rolagem {
+    animation: rolar-quadro 16s ease-in-out 1.2s infinite alternate;
+  }
+}
+
+/* O console de aparência: a troca de tema e de textura é uma transição curta
+   de cor, e não um salto. Só vale dentro da página de exemplo. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-pagina-demo],
+  [data-pagina-demo] * {
+    transition:
+      background-color 240ms ease,
+      border-color 240ms ease,
+      color 240ms ease;
+  }
 }

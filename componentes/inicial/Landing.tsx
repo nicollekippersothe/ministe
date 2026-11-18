@@ -1,242 +1,348 @@
-"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { BotaoAcao } from "@/componentes/BarraAcoes";
+import { Capa } from "@/componentes/Capa";
+import { Catalogo } from "@/componentes/Catalogo";
+import { Marca } from "@/componentes/Marca";
+import { Secao } from "@/componentes/Secao";
+import { Aparencia, type OpcaoDeLetra } from "@/componentes/inicial/Aparencia";
+import { Cartela } from "@/componentes/inicial/Cartela";
+import { CampoAbertura } from "@/componentes/inicial/CampoAbertura";
+import { corpo, titulo } from "@/componentes/inicial/letras";
+import { Planos } from "@/componentes/inicial/Planos";
+import { Telefone } from "@/componentes/inicial/Telefone";
+import { acoesDoRodape } from "@/lib/acoes";
+import { doceria, ilustracao, tatuagem, VITRINE } from "@/lib/exemplos";
+import { FONTE_PADRAO, LISTA_COMBINACOES } from "@/lib/fontes";
+import { DOMINIO_PUBLICO } from "@/lib/marca";
+import { DIAS_DE_TESTE, ITENS_NO_CATALOGO } from "@/lib/pagamento/precos";
+import { CADASTRO_ABERTO } from "@/lib/site";
 
-import { useEffect, useRef } from "react";
-import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
-import "./landing.css";
+/**
+ * A tela inicial, inteira no servidor.
+ *
+ * As peças são as da página do cliente (`Telefone`, `Capa`, `Catalogo`,
+ * `BotaoAcao`), com os dados dos exemplos, então a propaganda não consegue
+ * divergir do produto. Só duas ilhas rodam no navegador: a placa de endereço e
+ * o console de aparência. Todo o resto é HTML.
+ *
+ * O movimento é de uma língua só: o `.surge` (opacidade e 12px de deslocamento,
+ * ligado ao progresso da rolagem pelo próprio navegador, sem script), a rolagem
+ * lenta do celular do herói e a troca de cor do console. Cada um some para quem
+ * pediu menos movimento no sistema, e nenhum esconde conteúdo onde o CSS novo
+ * não chega.
+ *
+ * Os preços e limites saem de `lib/pagamento/precos`, a tabela que o checkout
+ * usa. Os fatos da faixa abaixo do herói também: nenhum número é digitado aqui.
+ */
 
-// Fontes variáveis: um arquivo por família cobre todos os pesos que o CSS usa,
-// então a home baixa só duas letras, do mesmo jeito que a prévia antiga.
-const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
+const FATOS = [
+  { numero: "R$ 0", texto: "para publicar a página, com endereço próprio" },
+  {
+    numero: `${ITENS_NO_CATALOGO.gratuito} itens`,
+    texto: `de catálogo no plano grátis, e ${ITENS_NO_CATALOGO.pago} no Completo`,
+  },
+  { numero: "5 temas", texto: "e 5 texturas para a página ficar com a sua cara" },
+  { numero: `${DIAS_DE_TESTE} dias`, texto: "de teste do plano Completo, no cartão de crédito" },
+];
 
-const IMGS = {
-  isis: "/exemplo/astro-1.jpg",
-  teo: "/exemplo/tatu-capa.jpg",
-  lia: "/exemplo/ilustra-3.jpg",
-  bia: "/exemplo/canto-capa.jpg",
-  alecrim: "/exemplo/bolo-3.jpg",
-  helena: "/exemplo/spa-1.jpg",
-};
+const PERGUNTAS = [
+  {
+    quem: "O que você faz",
+    texto: "Nome, frase e foto de capa. Quem abre entende o seu trabalho antes de rolar.",
+  },
+  {
+    quem: "Quanto custa",
+    texto: "Catálogo com foto e preço, ou o preço guardado para combinar pela conversa.",
+  },
+  {
+    quem: "Quando atende",
+    texto: "Os horários valem no seu fuso, e a página calcula se está aberto agora.",
+  },
+  {
+    quem: "Onde fica",
+    texto: "Endereço com botão de mapa. Quem atende em casa mostra só a cidade.",
+  },
+  {
+    quem: "Como chamar",
+    texto: "Um botão de WhatsApp que abre a conversa com a mensagem já escrita, e o item escolhido junto.",
+  },
+];
 
-const CORPO = `<div class="grao"></div>
-<div class="transition" aria-hidden="true"><div class="transition__panel"></div></div>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="porta"><path fill-rule="evenodd" d="M4 21 V11 a8 8 0 0 1 8 -8 v18 z M9.2 11 a1.3 1.3 0 0 1 -2.6 0 a1.3 1.3 0 0 1 2.6 0 z M14.5 3.5 a8 8 0 0 1 5.5 7.5 V21 h-2.8 V11 a5.2 5.2 0 0 0 -2.7 -4.6 z"/></g></defs></svg>
+/** As cinco letras, com a classe que cada uma aplica, vindas do servidor. */
+const LETRAS: OpcaoDeLetra[] = LISTA_COMBINACOES.map((c) => ({
+  chave: c.chave,
+  nome: c.nome,
+  classe: c.classe,
+}));
 
-<header class="topbar">
-  <div class="nav">
-    <button class="nav__menu" type="button" aria-label="Menu"><span class="bars" aria-hidden="true"><i></i><i></i></span><span>Menu</span></button>
-    <a class="nav__brand" href="#topo"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>Entrais</a>
-    <div class="nav__cta"><a class="entrar" href="/entrar">Entrar</a><a class="join" href="/criar" data-cur>Criar grátis</a></div>
-  </div>
-  <div class="strip" aria-hidden="true"><div class="strip__track"><span>Páginas feitas com Entrais <i>&#10033;</i> Catálogo, horário e galeria num link só <i>&#10033;</i> O seu trabalho, com o seu nome <i>&#10033;</i> </span><span>Páginas feitas com Entrais <i>&#10033;</i> Catálogo, horário e galeria num link só <i>&#10033;</i> O seu trabalho, com o seu nome <i>&#10033;</i> </span></div></div>
-</header>
-
-<main>
-  <section class="hero" id="topo">
-    <div class="hero-deck" id="exemplos" data-parallax>
-      <div class="deck" data-deck><!-- cards injetados por JS --></div>
-    </div>
-    <div class="hero-copy">
-      <h1 class="mega">
-        <span class="w">Tudo</span> <span class="w">o</span> <span class="w">que</span> <span class="w">você</span> <span class="w">faz</span><span class="dglyph" aria-hidden="true"><canvas id="porta3d"></canvas><svg class="fallback-arco" viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg></span><span class="w">numa</span> <span class="w"><em>página só.</em></span>
-      </h1>
-      <p class="sub" data-reveal>Catálogo, horário, galeria e o botão de WhatsApp, num endereço com o seu nome.</p>
-      <div class="cta-row" data-reveal>
-        <form class="placa" action="/criar" method="get" data-cur>
-          <span class="pre">entrais.app/</span>
-          <input name="slug" id="nome-topo" type="text" autocomplete="off" spellcheck="false" placeholder="seunome" aria-label="Escreva o seu nome no endereço">
-          <button type="submit" class="pill" data-magnetic data-magnetic-strength="0.25">Criar grátis</button>
-        </form>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====== NOITE ====== -->
-  <div class="noite">
-    <section class="aparencia" id="aparencia"><div class="shell in">
-      <div class="molde" data-reveal>
-        <div class="produto" id="produto" data-tema="areia" data-fundo="liso">
-          <div class="miolo">
-            <div class="p-banner"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg></div>
-            <div class="p-id">
-              <div class="p-nicho" data-forma="porta"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg></div>
-              <div class="p-fio"></div><div class="p-rot">Plataforma · Brasil</div>
-              <div class="p-nome">Entrais</div>
-              <div class="p-frase">A página do seu negócio, bonita como o seu trabalho.</div>
-              <div class="p-selo"><span class="d"></span><b>Aberto</b><span>grátis para começar</span></div>
-            </div>
-            <div class="p-grade"><div class="p-cel"><img src="/exemplo/astro-1.jpg" alt=""></div><div class="p-cel"><img src="/exemplo/tatu-capa.jpg" alt=""></div><div class="p-cel"><img src="/exemplo/ilustra-3.jpg" alt=""></div><div class="p-cel swatch"></div></div>
-            <div class="p-links">
-              <a class="p-lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>Instagram<span>@entrais</span></a>
-              <a class="p-lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/></svg>Site<span>entrais.app</span></a>
-            </div>
-            <div class="p-wpp">Chamar no WhatsApp</div>
-          </div>
-        </div>
-      </div>
-      <div class="block">
-        <h3 class="t-h3" data-split="lines">A mesma página, <em>cinco interfaces.</em></h3>
-        <p class="t-lead" data-reveal style="font-size:1.1em">Esta é a nossa própria página, feita no Entrais. Troque o tema e a textura no console e veja a interface mudar na hora. Cada negócio fica com a cara que combina com ele.</p>
-        <div class="console" role="group" aria-label="Trocar a aparência da página" data-reveal>
-          <div class="console__row"><span class="console__lbl">Tema</span>
-            <div class="fila" id="temas">
-              <button class="chip" data-tema="areia" aria-pressed="true"><span class="am" style="background:#f6f5f3"></span>Areia</button>
-              <button class="chip" data-tema="minimal" aria-pressed="false"><span class="am" style="background:#f5f5f7"></span>Minimal</button>
-              <button class="chip" data-tema="menta" aria-pressed="false"><span class="am" style="background:#1f6b4f"></span>Menta</button>
-              <button class="chip" data-tema="noite" aria-pressed="false"><span class="am" style="background:#1e1b17"></span>Noite</button>
-              <button class="chip" data-tema="cosmico" aria-pressed="false"><span class="am" style="background:#0b0b16"></span>Cósmico</button>
-            </div>
-          </div>
-          <div class="console__row"><span class="console__lbl">Textura</span>
-            <div class="fila" id="fundos">
-              <button class="chip" data-fundo="liso" aria-pressed="true">Liso</button>
-              <button class="chip" data-fundo="papel" aria-pressed="false">Papel</button>
-              <button class="chip" data-fundo="tinta" aria-pressed="false">Tinta</button>
-              <button class="chip" data-fundo="degrade" aria-pressed="false">Degradê</button>
-              <button class="chip" data-fundo="vinheta" aria-pressed="false">Vinheta</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div></section>
-  </div>
-
-  <!-- ====== RECURSOS ====== -->
-  <section class="section" id="dentro"><div class="shell">
-    <div class="head block" style="max-width:40rem;margin-bottom:calc(var(--body)*2)">
-      <h2 class="t-h2" data-split="lines">Tudo cabe numa <em>página só.</em></h2>
-    </div>
-
-    <div class="recurso" data-reveal-row><div class="r-fig" data-cur><span class="tag">Catálogo</span>
-      <div class="comp comp-cat">
-        <div class="ci"><img src="/exemplo/bolo-3.jpg" alt=""><div class="cinfo"><b>Bolo de chocolate</b><span>Fatia individual</span></div><div class="cpr">R$ 12</div></div>
-        <div class="ci"><img src="/exemplo/pao-1.jpg" alt=""><div class="cinfo"><b>Pão da casa</b><span>Fornada do dia</span></div><div class="cpr">R$ 9</div></div>
-        <div class="cwpp">Chamar no WhatsApp</div>
-      </div></div>
-      <div class="r-txt"><span class="n">01 — Catálogo</span><h3>Cada serviço com preço e um toque para o WhatsApp.</h3><p>Foto, o preço na frente e o botão que abre a conversa já com o item escrito. O seu balcão, aberto o dia inteiro.</p></div></div>
-
-    <div class="recurso inv" data-reveal-row><div class="r-fig" data-cur><span class="tag">Galeria</span>
-      <div class="comp comp-gal"><img src="/exemplo/astro-1.jpg" alt=""><img src="/exemplo/tatu-capa.jpg" alt=""><img src="/exemplo/ilustra-3.jpg" alt=""><img src="/exemplo/canto-capa.jpg" alt=""><img src="/exemplo/bolo-3.jpg" alt=""><img src="/exemplo/spa-1.jpg" alt=""></div></div>
-      <div class="r-txt"><span class="n">02 — Galeria</span><h3>As suas fotos grandes, do jeito que uma obra pede.</h3><p>Tela cheia, na ordem que você escolher. O trabalho aparece primeiro, como numa parede de exposição.</p></div></div>
-
-    <div class="recurso" data-reveal-row><div class="r-fig" data-cur><span class="tag">Horário</span>
-      <div class="comp comp-hor">
-        <div class="hstat"><span class="dot"></span> Aberto agora <em>· fecha 18h</em></div>
-        <ul>
-          <li><span>Segunda a sexta</span><b>9h – 18h</b></li>
-          <li><span>Sábado</span><b>9h – 13h</b></li>
-          <li><span>Domingo</span><b>a combinar</b></li>
-        </ul>
-        <div class="hbtn">Agendar horário</div>
-      </div></div>
-      <div class="r-txt"><span class="n">03 — Horário</span><h3>Um espaço para os seus horários, se você quiser.</h3><p>Você diz quando atende, e a página calcula no seu fuso. Quem abre já vê se pode chamar agora, com o endereço no mapa.</p></div></div>
-
-    <div class="recurso inv" data-reveal-row><div class="r-fig" data-cur><span class="tag">Links</span>
-      <div class="comp comp-links">
-        <a class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="#E1306C" stroke="none"/></svg>Instagram<span>@seunome</span></a>
-        <a class="lk"><svg viewBox="0 0 24 24" fill="#1DB954"><circle cx="12" cy="12" r="10"/><path d="M7 9.6c3.2-1 7.4-.6 9.4 1" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M7.6 12.6c2.6-.8 5.8-.4 7.4.9" stroke="#fff" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M8.2 15.3c2-.6 4.2-.3 5.3.7" stroke="#fff" stroke-width="1.1" fill="none" stroke-linecap="round"/></svg>Spotify<span>Playlist</span></a>
-        <a class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="#a5384c" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>Site<span>seunome.com</span></a>
-        <a class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="#17161a" stroke-width="1.6"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M3.5 9.5h17M8 3.2v3.6M16 3.2v3.6"/></svg>Agenda<span>Marcar horário</span></a>
-      </div></div>
-      <div class="r-txt"><span class="n">04 — Links</span><h3>Instagram, site, Spotify e agenda, num endereço só.</h3><p>Tudo o que estava espalhado, reunido num link com o seu nome. E os números de quem abre e quem chama você, para provar que a página trabalha.</p></div></div>
-  </div></section>
-
-  <!-- ====== SEGMENTOS (carrossel 3D) ====== -->
-  <section class="segmentos" id="segmentos"><div class="shell">
-    <div class="seg-explorer" data-explorer>
-      <div class="seg-lado">
-        <span class="eyebrow-num">Para cada ofício</span>
-        <h2 class="t-h2" data-split="lines">Serve para <em>o que você faz.</em></h2>
-        <p class="t-lead" data-reveal>A mesma página se ajeita para o seu ramo. Passe o olho pelos ofícios e veja um exemplo de cada um.</p>
-        <ol class="seg-lista" data-reveal><!-- itens injetados por JS --></ol>
-      </div>
-      <figure class="seg-preview" data-reveal>
-        <div class="seg-molde"><img class="seg-img" src="/exemplo/tatu-1.jpg" alt=""><span class="seg-tag">entrais.app/teosarmento</span></div>
-      </figure>
-    </div>
-  </div></section>
-
-  <!-- ====== PREÇO ====== -->
-  <section class="section" id="preco" style="padding-bottom:0"><div class="shell">
-    <div class="precos-head block">
-      <h2 class="t-h2" data-split="lines">Comece de graça.<br><em>Cresça quando quiser.</em></h2>
-      <p class="precos-sub" data-reveal>A sua página fica no ar de graça. O plano pago abre os temas, a agenda e os números por dentro.</p>
-    </div>
-  </div>
-    <div class="precos bleed" data-reveal>
-      <div class="plano free">
-        <span class="tag">Para começar</span>
-        <div class="nome">Grátis</div>
-        <div class="preco">R$0 <u>para sempre</u></div>
-        <p class="sub2">A sua página no ar, com o seu endereço.</p>
-        <a class="cta" href="#comecar" data-cur>Criar de graça</a>
-        <div class="rule2"></div>
-        <ul class="bens">
-          <li>A sua página no ar, com o seu endereço</li>
-          <li>Até 20 itens no catálogo, com foto e preço</li>
-          <li>Um relatório de quantas pessoas abriram a sua página, a cada 7 dias</li>
-        </ul>
-        <a class="verlink" href="#dentro">Ver tudo que vem junto</a>
-      </div>
-      <div class="plano pago">
-        <span class="tag">Tudo liberado</span>
-        <div class="nome">Pago</div>
-        <div class="preco">R$19,90 <u>por mês</u></div>
-        <p class="sub2">No ano são R$179, com 3 meses de graça. Cancele quando quiser.</p>
-        <a class="cta" href="#comecar" data-cur>Assinar</a>
-        <div class="rule2"></div>
-        <ul class="bens forte">
-          <li>Tudo do plano grátis, e mais</li>
-          <li>Até 400 itens no catálogo</li>
-          <li>Agendamento de horário</li>
-          <li>5 temas, 5 texturas e a letra da sua marca</li>
-          <li>Os números dia a dia, com a origem de cada visita</li>
-        </ul>
-        <a class="verlink" href="#aparencia">Ver o que muda</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="fecho" id="comecar"><div class="shell">
-    <p class="t-display" data-split="lines">Abra a sua fachada<br>digital. <em>É de graça.</em></p>
-    <div class="cta-row" style="display:flex">
-      <form class="placa" action="/criar" method="get" data-cur>
-        <span class="pre">entrais.app/</span>
-        <input name="slug" id="nome-fim" type="text" autocomplete="off" spellcheck="false" placeholder="seunome" aria-label="Escreva o seu nome no endereço">
-        <button type="submit" class="pill" data-magnetic data-magnetic-strength="0.25">Criar a minha</button>
-      </form>
-    </div>
-  </div></section>
-</main>
-
-<footer><div class="shell in">
-  <span class="feito"><svg viewBox="0 0 24 24" fill="currentColor"><use href="#porta"/></svg>feito com <b>Entrais</b></span>
-  <nav class="rodape-links" aria-label="Rodapé"><a href="/blog">Blog</a><a href="/termos">Termos</a><a href="/privacidade">Privacidade</a><a href="/entrar">Entrar</a></nav>
-</div></footer>`;
+function Secao2({
+  id,
+  className = "",
+  children,
+}: {
+  id?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className={`mx-auto w-full max-w-6xl px-6 py-16 lg:py-20 ${className}`}>
+      {children}
+    </section>
+  );
+}
 
 export function Landing() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    let parado = false;
-    (window as any).__stop3d = false;
-    (async () => {
-      const THREE = await import("three");
-      const { gsap } = await import("gsap");
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-      const { SplitText } = await import("gsap/SplitText");
-      const { CustomEase } = await import("gsap/CustomEase");
-      const Lenis = (await import("lenis")).default;
-      if (parado || !ref.current) return;
-      const { initLanding } = await import("./landing-motion");
-      initLanding(THREE, gsap, ScrollTrigger, SplitText, CustomEase, Lenis, IMGS);
-    })();
-    return () => { parado = true; (window as any).__stop3d = true; };
-  }, []);
+  const acaoDemo = acoesDoRodape(ilustracao)[0];
+  const acaoCatalogo = acoesDoRodape(doceria)[0];
+
   return (
     <div
-      ref={ref}
-      className={`lp js ${sans.variable} ${mono.variable}`}
-      dangerouslySetInnerHTML={{ __html: CORPO }}
-    />
+      data-tema="areia"
+      className={`${titulo.variable} ${corpo.variable} min-h-dvh bg-fundo font-[family-name:var(--f-venda-corpo)] text-texto`}
+    >
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
+        <Marca />
+        <nav aria-label="Principal" className="flex items-center gap-2">
+          {CADASTRO_ABERTO ? (
+            <Link
+              href="/entrar"
+              className="inline-flex min-h-11 items-center px-3 text-base font-medium text-texto underline-offset-4 hover:underline"
+            >
+              Entrar
+            </Link>
+          ) : null}
+          <Link
+            href="/criar"
+            className="inline-flex min-h-11 items-center rounded-full bg-texto px-5 text-base font-semibold text-fundo transition-opacity hover:opacity-90"
+          >
+            Criar grátis
+          </Link>
+        </nav>
+      </header>
+
+      <main>
+        {/* ====== Herói: a promessa e o produto lado a lado ====== */}
+        <section
+          id="topo"
+          className="mx-auto grid w-full max-w-6xl gap-12 px-6 pt-8 pb-16 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-center lg:gap-20 lg:pt-16 lg:pb-20"
+        >
+          <div>
+            <h1 className="titulo-venda max-w-[16ch] text-[38px] text-balance sm:text-[64px]">
+              O seu trabalho numa página com preço, horário e WhatsApp.
+            </h1>
+            <p className="mt-6 max-w-[34rem] text-xl leading-snug text-suave">
+              Você escreve o seu nome e a página já vem montada: o que você faz, quanto custa,
+              quando atende e um botão que abre a conversa com a mensagem escrita.
+            </p>
+            <div className="mt-8 max-w-[34rem]">
+              <CampoAbertura rotulo="Criar grátis" />
+            </div>
+          </div>
+
+          <figure className="flex flex-col gap-4">
+            <div className="rolando-sempre">
+              <Telefone negocio={tatuagem} />
+            </div>
+            <figcaption className="mx-auto w-full max-w-[19rem]">
+              <Cartela negocio={tatuagem} tipo="Exemplo que montamos" />
+            </figcaption>
+          </figure>
+        </section>
+
+        {/* ====== Fatos: o que dá para conferir ====== */}
+        <div className="border-y border-borda">
+          <dl className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-6 py-8 lg:grid-cols-4">
+            {FATOS.map((f) => (
+              <div key={f.numero}>
+                <dt className="titulo-venda text-[26px]">{f.numero}</dt>
+                <dd className="mt-1 max-w-[16rem] text-sm leading-snug text-suave">{f.texto}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        {/* ====== O que fica na página: cinco perguntas e a resposta de verdade ====== */}
+        <Secao2 id="dentro">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20">
+            <div className="surge">
+              <h2 className="titulo-venda max-w-[14ch] text-[26px] text-balance sm:text-[38px]">
+                Cada parte da página responde uma pergunta de quem chega.
+              </h2>
+              <ul className="mt-8 flex flex-col">
+                {PERGUNTAS.map((p) => (
+                  <li key={p.quem} className="border-t border-borda py-4 first:border-t-0 first:pt-0">
+                    <p className="text-base font-semibold">{p.quem}</p>
+                    <p className="mt-1 text-base leading-snug text-suave">{p.texto}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="surge flex flex-col gap-3">
+              <div
+                data-tema={doceria.tema}
+                className="janela h-[34rem] rounded-2xl border border-borda bg-superficie"
+              >
+                <Secao id="demo-catalogo" titulo={doceria.tituloCatalogo}>
+                  <Catalogo negocio={doceria} />
+                </Secao>
+              </div>
+              {acaoCatalogo ? (
+                <div data-tema={doceria.tema}>
+                  <BotaoAcao acao={acaoCatalogo} principal interativo={false} />
+                </div>
+              ) : null}
+              <p className="text-sm text-suave">
+                O catálogo da {doceria.nome}, um exemplo que montamos. Cada item tem o botão que
+                abre a conversa com o nome dele.
+              </p>
+            </div>
+          </div>
+        </Secao2>
+
+        {/* ====== Aparência: a mesma página, trocando tema, textura e letra ====== */}
+        <div className="border-y border-borda bg-superficie">
+          <Secao2 id="aparencia">
+            <div className="surge mb-12 max-w-[40rem]">
+              <h2 className="titulo-venda text-[26px] text-balance sm:text-[38px]">
+                A mesma página, com a cara de quem assina.
+              </h2>
+              <p className="mt-4 text-xl leading-snug text-suave">
+                Troque o tema e a textura aqui embaixo, na própria página de exemplo, e veja ela se
+                repintar. Tema e textura valem no plano grátis. A letra é do plano Completo.
+              </p>
+            </div>
+
+            <Aparencia
+              inicial={{ tema: ilustracao.tema, fundo: ilustracao.fundo, fonte: FONTE_PADRAO }}
+              letras={LETRAS}
+            >
+              <div
+                data-pagina-demo
+                data-tema={ilustracao.tema}
+                data-fonte={FONTE_PADRAO}
+                className={`marca ${LETRAS.find((l) => l.chave === FONTE_PADRAO)?.classe ?? ""}`}
+              >
+                <div className="cartao-demo janela h-[26rem] rounded-2xl sm:h-[36rem] border border-borda bg-superficie">
+                  <Capa negocio={ilustracao} nivel={2} />
+                  <Secao id="demo-servicos" titulo={ilustracao.tituloCatalogo}>
+                    <Catalogo negocio={ilustracao} />
+                  </Secao>
+                </div>
+                {acaoDemo ? (
+                  <div className="mt-3">
+                    <BotaoAcao acao={acaoDemo} principal interativo={false} />
+                  </div>
+                ) : null}
+              </div>
+            </Aparencia>
+          </Secao2>
+        </div>
+
+        {/* ====== Ofícios: a vitrine de exemplos ====== */}
+        <Secao2 id="oficios">
+          <div className="surge max-w-[40rem]">
+            <h2 className="titulo-venda text-[26px] text-balance sm:text-[38px]">
+              Serve para quem vende o próprio trabalho.
+            </h2>
+            <p className="mt-4 text-xl leading-snug text-suave">
+              Sete exemplos que montamos para mostrar como fica. Cada um abre a página inteira,
+              do jeito que o cliente dela vê.
+            </p>
+          </div>
+
+          <ul className="mt-12 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-12 lg:gap-x-6">
+            {VITRINE.map(({ negocio, tipo }, i) => {
+              /* Tamanhos diferentes de propósito: a profissional autônoma na
+                 frente, a loja fechando a fila. */
+              const largura =
+                i === 0 ? "col-span-2 lg:col-span-7" : i === 1 ? "lg:col-span-5" : "lg:col-span-4";
+              const proporcao = i === 0 ? "aspect-[16/9]" : "aspect-[4/3]";
+              return (
+                <li key={negocio.slug} className={`surge ${largura}`}>
+                  <Link
+                    href={`/${negocio.slug}`}
+                    aria-label={`Abrir a página de exemplo de ${negocio.nome}, ${tipo}, em ${negocio.cidade}`}
+                    className="group block"
+                  >
+                    {negocio.capa ? (
+                      <div className={`overflow-hidden rounded-2xl border border-borda ${proporcao}`}>
+                        <Image
+                          src={negocio.capa.url}
+                          alt=""
+                          width={negocio.capa.largura}
+                          height={negocio.capa.altura}
+                          sizes={i === 0 ? "(min-width: 1024px) 700px, 100vw" : "(min-width: 1024px) 380px, 50vw"}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      </div>
+                    ) : null}
+                    <p className="mt-3 text-base font-semibold">{tipo}</p>
+                    <p className="text-sm text-suave">
+                      {negocio.nome}, {negocio.cidade}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </Secao2>
+
+        {/* ====== Preço ====== */}
+        <div className="border-t border-borda">
+          <Secao2 id="preco">
+            <div className="surge mb-12 max-w-[40rem]">
+              <h2 className="titulo-venda text-[26px] text-balance sm:text-[38px]">
+                Publicar é grátis. O Completo abre a letra e os números inteiros.
+              </h2>
+            </div>
+            <Planos />
+            <p className="mt-8 text-sm">
+              <Link href="/precos" className="font-medium text-destaque underline underline-offset-4">
+                Ver a comparação completa
+              </Link>
+            </p>
+          </Secao2>
+        </div>
+
+        {/* ====== Fecho ====== */}
+        <Secao2 id="comecar" className="pb-24">
+          <div className="surge max-w-[40rem]">
+            <h2 className="titulo-venda text-[38px] text-balance sm:text-[64px]">
+              Escolha o seu endereço.
+            </h2>
+            <p className="mt-4 text-xl leading-snug text-suave">
+              {DOMINIO_PUBLICO}/seunome leva até a sua página, e ela já nasce montada.
+            </p>
+            <div className="mt-8">
+              <CampoAbertura rotulo="Criar grátis" />
+            </div>
+          </div>
+        </Secao2>
+      </main>
+
+      <footer className="border-t border-borda">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
+          <Marca />
+          <nav aria-label="Rodapé" className="flex flex-wrap gap-x-2">
+            {[
+              ["/precos", "Preços"],
+              ["/blog", "Blog"],
+              ["/termos", "Termos"],
+              ["/privacidade", "Privacidade"],
+            ].map(([href, rotulo]) => (
+              <Link
+                key={href}
+                href={href}
+                className="inline-flex min-h-11 items-center px-2 text-sm text-suave underline-offset-4 hover:text-texto hover:underline"
+              >
+                {rotulo}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </footer>
+    </div>
   );
 }
