@@ -69,10 +69,13 @@ export function initLanding(IMGS) {
       cw = cards[0].offsetWidth || cw;
       s = cw + Math.round(cw * 0.22);
       total = s * cards.length;
-      R = vw * (vw < 700 ? 2.3 : 1.5);                       // arco largo, de borda a borda; no celular, mais suave
-      var th = Math.min((vw / 2 + cw * 0.9) / R, 1.1);
+      R = vw * (vw < 700 ? 2.3 : 1.9);                       // arco largo, de borda a borda; no celular, mais suave
+      // O palco reserva só o quanto desce o último cartão que ainda aparece na
+      // tela (o centro dele na borda). Reservar a ponta inteira deixava o vão
+      // embaixo do centro com mais de 200 px.
+      var th = (vw / 2 + cw * 0.3) / R;
       var afunda = R * (1 - Math.cos(th));
-      deck.parentElement.style.height = Math.ceil(cards[0].offsetHeight + afunda + cw * 0.4 + 20) + "px";   // + o que a inclinação da ponta empurra o nome para baixo
+      deck.parentElement.style.height = Math.ceil(cards[0].offsetHeight + afunda + 24) + "px";
       layout();
     }
     var arrastando = false, sx = 0, so = 0, visivel = true, ultimo = 0, raf = 0, VEL = 34;
