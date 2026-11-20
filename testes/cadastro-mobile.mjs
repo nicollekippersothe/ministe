@@ -154,6 +154,69 @@ for (const ap of APARELHOS) {
   passo("painel logo depois de criar: não rola para o lado", painel.lateral <= 0, `${painel.lateral}px a mais`);
   passo("painel logo depois de criar: botões com 44px ou mais", painel.alvos.length === 0, painel.alvos.join("; "));
 
+  // -------------------------------------------------------------------------
+  // A tela inicial é a porta do cadastro: o campo de endereço
+  // -------------------------------------------------------------------------
+  await p.goto(BASE + "/", { waitUntil: "networkidle" });
+  await p.waitForTimeout(800);
+  const campoHome = await p.evaluate(() => {
+    const i = document.querySelector("#nome-topo");
+    const cs = getComputedStyle(i);
+    return { fonte: parseFloat(cs.fontSize), largura: i.clientWidth };
+  });
+  // Abaixo de 16px o Safari do iPhone dá zoom ao tocar no campo e a digitação sai do lugar.
+  passo("home: o campo de endereço tem 16px, para o iPhone não dar zoom", campoHome.fonte >= 16, `${campoHome.fonte}px`);
+  // Letra mono: cerca de 0,6 da altura da fonte por caractere.
+  passo(
+    "home: o campo de endereço comporta 20 caracteres",
+    campoHome.largura >= 20 * campoHome.fonte * 0.6,
+    `${campoHome.largura}px para ${Math.round(20 * campoHome.fonte * 0.6)}px`,
+  );
+  await p.screenshot({ path: `${SAIDA}/${ap.nome}_home_campo.png` });
+
+  // -------------------------------------------------------------------------
+  // Quando o servidor recusa, a pessoa precisa ver o motivo
+  // -------------------------------------------------------------------------
+  // O nome vira o link, e "camila-reis" é de uma página de exemplo. A recusa
+  // volta a tela ao topo, e o aviso mora embaixo do campo do link: antes ele
+  // ficava a mais de mil pixels do topo, fora da tela, e parecia que o botão
+  // não fazia nada.
+  await p.goto(BASE + "/criar", { waitUntil: "networkidle" });
+  await p.fill('input[type="search"], input[role="combobox"]', "psic");
+  await p.getByRole("radio").first().click();
+  await p.fill("input[name=nome]", "Camila Reis");
+  await p.waitForTimeout(1000);
+  await p.locator('button[type="submit"]').tap();
+  await p.waitForURL(/erro=/, { timeout: 15000 }).catch(() => {});
+  await p.waitForTimeout(1800);
+  const recusa = await p.evaluate(() => {
+    const aviso = [...document.querySelectorAll("form p, form [role=alert], form [role=status]")].find((e) =>
+      /reservado|em uso|ocupado|restrito/i.test(e.textContent),
+    );
+    if (!aviso) return null;
+    const r = aviso.getBoundingClientRect();
+    return { topo: Math.round(r.top), base: Math.round(r.bottom), tela: window.innerHeight };
+  });
+  passo("recusa: o aviso do link existe na tela", recusa !== null);
+  passo(
+    "recusa: o aviso do link está à vista, sem a pessoa precisar rolar",
+    recusa !== null && recusa.topo >= 0 && recusa.base <= recusa.tela,
+    recusa ? `aviso em ${recusa.topo}-${recusa.base} numa tela de ${recusa.tela}` : "sem aviso",
+  );
+  await p.screenshot({ path: `${SAIDA}/${ap.nome}_recusa.png` });
+
+  // Quando o cadastro está fora do ar, a pessoa ouve isso, e não vê a tela quebrar.
+  await p.goto(`${BASE}/criar?erro=indisponivel&nome=Camila`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(1200);
+  const fora = await p.evaluate(() => {
+    const a = document.querySelector("#aviso-cadastro");
+    if (!a) return null;
+    const r = a.getBoundingClientRect();
+    return { texto: a.textContent.trim(), visivel: r.top >= 0 && r.bottom <= window.innerHeight, link: a.querySelector("a") !== null };
+  });
+  passo("manutenção: o aviso aparece, à vista", fora !== null && fora.visivel, fora ? "" : "sem aviso");
+  passo("manutenção: o aviso diz que as respostas continuam ali e não manda para o painel", fora !== null && /continua aqui/i.test(fora.texto) && !fora.link);
+
   passo("nenhuma tela deu erro de console", erros.length === 0, erros.slice(0, 2).join(" | "));
   await contexto.close();
 }

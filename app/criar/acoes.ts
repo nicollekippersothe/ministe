@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { categoriaPorId } from "@/lib/categorias";
-import { criar, enderecoLivre } from "@/lib/dados";
+import { ContaProvisoriaFalhou, criar, enderecoLivre } from "@/lib/dados";
 import { motivoDaRecusa, type RecusaDados } from "@/lib/dados/erros";
 import { conferirFormato, normalizar } from "@/lib/slug";
 
@@ -106,6 +106,9 @@ export async function criarPagina(formData: FormData) {
   try {
     await criar(slug, nome, escolhida?.id ?? null, categoriaLivre);
   } catch (erro) {
+    // Sem conta provisória não há onde guardar o rascunho. A pessoa precisa
+    // ouvir isso e voltar com as respostas, e não ver a tela de erro do Next.
+    if (erro instanceof ContaProvisoriaFalhou) volta("indisponivel");
     const motivo = motivoDaRecusa(erro);
     const palavra = motivo === null ? undefined : PALAVRA_DO_CADASTRO[motivo];
     if (palavra) volta(palavra);

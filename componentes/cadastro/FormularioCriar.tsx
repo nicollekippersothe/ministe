@@ -168,6 +168,31 @@ export function FormularioCriar({
   const primeira = useRef(true);
 
   /*
+   * Depois de uma recusa do servidor, a tela volta ao topo, e o aviso mora
+   * embaixo do campo que errou: a mais de mil pixels do topo, fora da tela em
+   * qualquer celular. A pessoa tocava em "Criar página", a página recarregava
+   * igual e nada parecia ter acontecido. Aqui o navegador leva o campo com
+   * problema (ou o aviso geral) para o meio da tela, com o aviso à vista, e
+   * põe o foco nele. O `autoFocus` sozinho não basta: o Safari do iPhone
+   * costuma ignorá-lo ao abrir a página, e ele nunca rolava até o campo.
+   */
+  useEffect(() => {
+    const alvo = erroGeral
+      ? document.getElementById("aviso-cadastro")
+      : erroNome
+        ? document.querySelector<HTMLElement>("input[name=nome]")
+        : erroEndereco
+          ? document.querySelector<HTMLElement>("input[name=slug]")
+          : null;
+    if (!alvo) return;
+    const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    alvo.scrollIntoView({ block: "center", behavior: reduzido ? "auto" : "smooth" });
+    alvo.focus({ preventScroll: true });
+    // Só na primeira pintura, que é quando a tela volta de uma recusa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /*
    * A barra de baixo é grudada e cobre o pé da tela. `scroll-padding` é o que o
    * navegador usa ao levar um campo em foco para a tela: com a folga da altura
    * da barra (botão, linha de "já tem uma página" e esmaecido), o campo sobe
@@ -309,7 +334,9 @@ export function FormularioCriar({
       <form action={acao} onSubmit={esquecer} className="flex flex-col gap-10">
         {erroGeral ? (
           <div
+            id="aviso-cadastro"
             role="alert"
+            tabIndex={-1}
             className="rounded-2xl border border-destaque/30 bg-destaque/8 px-4 py-3 text-sm leading-relaxed text-destaque"
           >
             {erroGeral}

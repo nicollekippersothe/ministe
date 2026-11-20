@@ -177,6 +177,18 @@ export async function enderecoLivre(slug: string): Promise<boolean> {
  * Cria a conta provisória se ainda não houver nenhuma, que é o que permite
  * montar a página antes de entrar com o Google.
  */
+/**
+ * O Supabase recusou abrir a conta provisória: projeto pausado, login anônimo
+ * desligado ou serviço fora do ar. Tem classe própria para a Server Action
+ * conseguir dizer isso à pessoa em vez de deixar a tela quebrar.
+ */
+export class ContaProvisoriaFalhou extends Error {
+  constructor() {
+    super("a conta provisória falhou");
+    this.name = "ContaProvisoriaFalhou";
+  }
+}
+
 export async function criar(
   slug: string,
   nome: string,
@@ -193,7 +205,7 @@ export async function criar(
   }
 
   const dono = await garantirConta();
-  if (dono === null) throw new Error("a conta provisória falhou");
+  if (dono === null) throw new ContaProvisoriaFalhou();
 
   const sb = await servidor();
   const { data, error } = await sb

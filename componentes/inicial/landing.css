@@ -5,7 +5,7 @@ html,body{margin:0;overflow-x:clip;background:#f1f1ef;}
 /* ============ DESIGN SYSTEM ENTRAIS ============ */
 .lp {
   --u: clamp(11px, 1.39vw, 20px);
-  --body: calc(var(--u) * 0.84);
+  --body: max(14px, calc(var(--u) * 0.84));   /* piso de 14px: no celular a base dava 9,2px */
   --gutter: 2.1vw;
   --rhythm: 4;
   --ink: #17161a; --paper: #f1f1ef; --surface: #14120f; --muted: #78776f;
@@ -311,3 +311,34 @@ footer .feito b { color: var(--ink); font-weight: 600; }
   .rodape-links a:hover, footer .feito:hover b { color: var(--accent); }
   .placa:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 }
+
+/*
+ * O campo de endereço: comprido e fino.
+ *
+ * Tinha largura de 11 caracteres, e quem digitava um nome maior via o começo
+ * sumir à esquerda enquanto escrevia, sem enxergar o que já tinha posto. Agora
+ * o campo ocupa o que sobra da linha (cerca de 27 caracteres no computador) e
+ * a caixa ficou mais baixa: o botão mantém os 44 px do toque, e a caixa em volta
+ * só dá a folga de 4 px. No celular o botão desce para uma segunda linha dentro
+ * da mesma caixa, e a linha do endereço ganha a largura inteira.
+ */
+.hero-copy .cta-row, .fecho .cta-row { width: 100%; max-width: 36rem; }
+.placa { width: 100%; padding: .28rem .28rem .28rem 1.2rem; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 1.2em 2.2em -1.6em rgba(0,0,0,.28); }
+.placa .pre { flex: none; }
+.placa input { flex: 1 1 auto; width: auto; min-width: 0; text-overflow: clip; }
+.placa .pill { flex: none; min-height: 44px; padding: .5em 1.4em; }
+@media (max-width: 560px) {
+  .placa { flex-wrap: wrap; border-radius: 1.4rem; padding: .35rem; }
+  .placa .pre { padding-left: .7rem; }
+  .placa input { flex: 1 1 0; padding: .55rem .3rem; }
+  .placa .pill { flex: 1 1 100%; justify-content: center; }
+}
+
+/* O campo de endereço precisa de 16px: abaixo disso o Safari do iPhone dá zoom
+   na tela ao tocar nele, e a digitação sai do lugar. */
+.placa input, .placa .pre { font-size: max(16px, 1.06em); }
+.placa .pill { font-size: max(16px, 1.05em); }
+
+/* rodapé: 14px e alvos de 44px, no lugar dos 10px que a base antiga dava no celular */
+footer .in { font-size: 14px; }
+.rodape-links a { display: inline-flex; align-items: center; min-height: 44px; }

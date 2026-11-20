@@ -74,7 +74,7 @@ async function EnderecoConferido({ slug }: { slug: string }) {
  */
 function ondeMostrar(erro: string | undefined): "nome" | "endereco" | "geral" {
   if (erro === "nome") return "nome";
-  if (erro === "limite") return "geral";
+  if (erro === "limite" || erro === "indisponivel") return "geral";
   return "endereco";
 }
 
@@ -112,7 +112,9 @@ export default async function Criar({
       ? "Escreva o nome que vai na página."
       : erro === "limite"
         ? "Sua conta já tem uma página no plano gratuito. Abra o painel para editar."
-        : (MOTIVOS[erro as Recusa] ?? null);
+        : erro === "indisponivel"
+          ? "O cadastro está em manutenção neste momento. Volte em alguns minutos: o que você respondeu continua aqui."
+          : (MOTIVOS[erro as Recusa] ?? null);
   const onde = ondeMostrar(erro);
 
   /*
@@ -124,7 +126,9 @@ export default async function Criar({
    * com o formulário preenchido na frente.
    */
   const geral =
-    onde === "geral" && mensagem !== null ? (
+    onde === "geral" && mensagem !== null && erro === "indisponivel" ? (
+      mensagem
+    ) : onde === "geral" && mensagem !== null ? (
       <>
         {mensagem}{" "}
         <Link
