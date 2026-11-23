@@ -209,10 +209,14 @@ passo("a página pública baixa só duas fontes", (await fontesBaixadas("/demo")
 // marca no cabeçalho não usa `.marca`, então a Inter nunca é pedida. Antes
 // eram zero, e a mudança é a marca deixando de morrer na porta do painel.
 passo("o painel carrega só a letra de título da marca", (await fontesBaixadas("/painel")) === 1);
-// A tela inicial mostra a página de verdade dentro de um telefone, com a
-// letra de verdade. São as mesmas duas fontes da página do negócio, e não
-// mais que isso.
-passo("a tela inicial baixa só as duas da prévia", (await fontesBaixadas("/")) === 2);
+// A tela inicial tem as duas letras dela (Instrument Sans no texto e JetBrains
+// Mono no campo de endereço) e mostra a página de verdade dentro de um telefone,
+// que traz as duas letras da página do negócio (a Bricolage do título e a Inter
+// do corpo). São quatro, e nenhuma além delas: a troca de exemplo no telefone
+// usa a mesma letra padrão em todos, por decisão (ver os exemplos, mais abaixo).
+// Antes eram duas, quando a home não tinha letra própria declarada nem a página
+// de exemplo dentro dela.
+passo("a tela inicial baixa só as quatro dela e do telefone", (await fontesBaixadas("/")) === 4);
 
 // ---------------------------------------------------------------------------
 // Contagem de visitas e cliques

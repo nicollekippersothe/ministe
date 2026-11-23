@@ -120,7 +120,7 @@ export function EscolhaDoEndereco({
                 <span className="block text-sm font-medium text-texto">
                   {o.rotulo}
                 </span>
-                <span className="mt-0.5 block text-xs leading-relaxed text-suave">
+                <span className="mt-0.5 block text-sm leading-relaxed text-suave">
                   {o.dica}
                 </span>
               </span>

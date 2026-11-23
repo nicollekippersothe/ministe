@@ -113,7 +113,7 @@ export function MapaDaPagina({
      * do formulário. Quem usa leitor de tela lê e edita nos campos ao lado.
      */
     <div className="max-w-[19rem]">
-      <p className="mb-2 text-xs leading-relaxed text-suave">{chamada}</p>
+      <p className="mb-2 text-sm leading-relaxed text-suave">{chamada}</p>
 
       <div inert className="overflow-hidden rounded-2xl border border-borda">
         <div className="flex flex-col gap-3 bg-superficie px-3 pt-3 pb-4">

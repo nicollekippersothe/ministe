@@ -106,7 +106,7 @@ const CORPO = `<svg width="0" height="0" style="position:absolute" aria-hidden="
         <h2 class="t-h3 ap__tit">Serve para <em>o que você faz.</em></h2>
         <div class="palco ap__pal">
           <div class="fone">
-            <iframe id="demo-pagina" class="fone__tela" src="/nara-bittencourt" title="Página de exemplo de um negócio, do jeito que o cliente dele vê" loading="lazy" tabindex="-1" scrolling="no"></iframe>
+            <iframe id="demo-pagina" class="fone__tela" data-src="/nara-bittencourt" title="Página de exemplo de um negócio, do jeito que o cliente dele vê" tabindex="-1" scrolling="no"></iframe>
           </div>
         </div>
         <div class="ap__ctl">

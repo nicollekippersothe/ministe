@@ -332,7 +332,7 @@ export function LinksEBotoes({
                 />
               ))
             ) : (
-              <p className="rounded-lg border border-dashed border-borda px-3 py-2 text-[0.7rem] leading-relaxed text-suave">
+              <p className="rounded-lg border border-dashed border-borda px-3 py-2 text-sm leading-relaxed text-suave">
                 {aviso}
               </p>
             )

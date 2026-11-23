@@ -47,7 +47,7 @@ export function PreviaViva({
    * o texto livre da pessoa na plaquinha faria a prévia prometer uma receita
    * própria para um ramo que ainda não tem nenhuma.
    */
-  const rotuloDaPeca = categoriaPorId(categoria)?.nome ?? "Sua galeria";
+  const rotuloDaPeca = categoriaPorId(categoria)?.nome ?? "Sua página";
 
   const catalogo = (
     <Secao titulo={receita.tituloCatalogo}>

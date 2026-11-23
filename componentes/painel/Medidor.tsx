@@ -126,7 +126,7 @@ export function Medidor({ negocio }: { negocio: Negocio }) {
             <span className="block font-semibold text-destaque">
               {proxima.convite}
             </span>
-            <span className="mt-0.5 block text-xs text-suave">
+            <span className="mt-0.5 block text-sm text-suave">
               {proxima.titulo}
             </span>
           </span>

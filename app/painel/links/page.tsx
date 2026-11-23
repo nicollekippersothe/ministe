@@ -142,7 +142,7 @@ export default async function LinksEBotoesDaPagina({
           total > 0 ? (
             <LinksExtras negocio={negocio} />
           ) : (
-            <p className="rounded-lg border border-dashed border-borda px-3 py-2 text-[0.7rem] leading-relaxed text-suave">
+            <p className="rounded-lg border border-dashed border-borda px-3 py-2 text-sm leading-relaxed text-suave">
               O primeiro link que entrar aqui aparece neste lugar.
             </p>
           )

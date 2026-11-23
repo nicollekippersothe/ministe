@@ -15,7 +15,8 @@
     "revisao": "node scripts/exportar-telas.mjs",
     "fotos": "node scripts/baixar-fotos.mjs",
     "tratar": "node scripts/tratar-fotos.mjs",
-    "logos": "node scripts/gerar-logos.mjs"
+    "logos": "node scripts/gerar-logos.mjs",
+    "cadastro:mobile": "node testes/cadastro-mobile.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

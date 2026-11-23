@@ -56,8 +56,8 @@ export default async function Entrar({
       voltar={{ href: motivo ? "/painel" : "/" }}
       subtitulo={
         publicando
-          ? "Sua galeria entra no ar agora. Ela continua sua, com o mesmo endereço."
-          : "Sua galeria abre do jeito que você deixou."
+          ? "Sua página entra no ar agora. Ela continua sua, com o mesmo endereço."
+          : "Sua página abre do jeito que você deixou."
       }
       rodape={
         <p className="text-center text-[0.95rem] text-suave">

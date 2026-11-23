@@ -46,7 +46,7 @@ export function CartaoNumero({
         {rotulo}
       </p>
       {antes === null ? null : (
-        <p className="mt-1.5 text-xs leading-snug text-suave">
+        <p className="mt-1.5 text-sm leading-snug text-suave">
           {comparacao(valor, antes)}
         </p>
       )}

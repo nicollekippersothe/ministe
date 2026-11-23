@@ -428,7 +428,7 @@ export function EnvioDeImagem({
       <p id={`${id}-titulo`} className="text-sm font-medium text-texto">
         {ROTULOS[pasta]}
       </p>
-      <p id={`${id}-dica`} className="mt-0.5 text-xs leading-relaxed text-suave">
+      <p id={`${id}-dica`} className="mt-0.5 text-sm leading-relaxed text-suave">
         {DICAS[pasta]} JPG, PNG ou WebP. A foto sai reduzida daqui, e cabe nos{" "}
         {LIMITE_MB} MB que a página guarda.
       </p>

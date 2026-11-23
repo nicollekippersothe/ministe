@@ -118,7 +118,7 @@ function Moldura({
      * ela mora.
      */
     <div inert className="mt-2.5 rounded-xl border border-borda bg-fundo p-2.5">
-      <p className="text-xs leading-relaxed text-suave">{chamada}</p>
+      <p className="text-sm leading-relaxed text-suave">{chamada}</p>
 
       {espera ? (
         <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-destaque/10 px-2.5 py-1 text-[0.7rem] font-semibold text-destaque">
@@ -154,7 +154,7 @@ function Moldura({
         {gatilho}
       </div>
 
-      <p className="mt-2 mb-1.5 text-xs leading-relaxed text-suave">
+      <p className="mt-2 mb-1.5 text-sm leading-relaxed text-suave">
         E o WhatsApp abre assim:
       </p>
       <div className="max-w-[17rem]">{conversa}</div>
